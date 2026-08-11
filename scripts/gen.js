@@ -266,8 +266,11 @@ const days = [];
 
     html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
 
+    const alreadyProcessed = /<div class="mrhx-dl"><a class="mrhx-btn/.test(html);
+
+    if (!alreadyProcessed) {
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
-      (m, inner) => inner.includes('mrhx-dl') ? m
+      (m, inner) => (inner.includes('mrhx-dl') || extractLinks(inner).length === 0) ? m
         : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
 
 html = (function reorderNodes(str) {
@@ -308,6 +311,7 @@ html = (function reorderNodes(str) {
     });
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
   })(html);
+    }
 
     html = html.replace(PUBLISH_RE, newPublish);
 
