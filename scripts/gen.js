@@ -70,18 +70,28 @@ function dayTag(file) {
 
 async function localize(html, tag) {
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))];
-  if (!urls.length) return html;
-  const dir = path.join('assets', tag);
-  fs.mkdirSync(dir, { recursive: true });
-  let n = 0;
-  for (const url of urls) {
-    const name = `img_${String(++n).padStart(2, '0')}.png`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`下载失败 ${url} (HTTP ${res.status})`);
-    fs.writeFileSync(path.join(dir, name), Buffer.from(await res.arrayBuffer()));
-    html = html.split(url).join(`assets/${tag}/${name}`);
-    console.log('  img', tag, name);
+  if (urls.length) {
+    const dir = path.join('assets', tag);
+    fs.mkdirSync(dir, { recursive: true });
+    let n = 0;
+    for (const url of urls) {
+      const name = `img_${String(++n).padStart(2, '0')}.png`;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          fs.writeFileSync(path.join(dir, name), Buffer.from(await res.arrayBuffer()));
+          html = html.split(url).join(`assets/${tag}/${name}`);
+          console.log('  img', tag, name);
+          break;
+        } catch (e) {
+          if (attempt === 3) console.warn('  下载失败(保留原链接):', url, e.message);
+          else await new Promise(r => setTimeout(r, 1500 * attempt));
+        }
+      }
+    }
   }
+  html = html.replace(/assets\/[^"/]+(?=\/)/g, 'assets/' + tag);
   return html.split('crossorigin="anonymous"').join('');
 }
 

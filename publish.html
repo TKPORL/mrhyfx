@@ -169,8 +169,9 @@ $('tabHtml').onclick = () => { $('tabHtml').classList.add('on'); $('tabForm').cl
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function gameHtml(c) {
-  const rows = c.imgs.split('\n').map(u => u.trim()).filter(Boolean)
+function gameHtml(c, imgPaths) {
+  const imgs = (imgPaths && imgPaths.length) ? imgPaths : c.imgs.split('\n').map(u => u.trim()).filter(Boolean);
+  const rows = imgs
     .map(u => `    <li class="image-row">
     <img
       src="${esc(u)}"
@@ -204,7 +205,11 @@ function addGameCard() {
   d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span><button class="del">删除</button></div>
   <div class="field"><label>游戏名称</label><input type="text" class="g-name" placeholder="如：精灵雷亚"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro" placeholder="如：[神作/亚洲风SLG/动态] 汉化步兵 [PC+安卓 18G]&#10;有作弊码就写：作弊码 158078"></textarea></div>
-  <div class="field"><label>封面图片 URL（每行一个，可多张，发布后自动下载保存）</label><textarea class="g-imgs" placeholder="https://api2.mubu.com/... 每行一个"></textarea></div>
+  <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
+    <input type="file" class="g-files" accept="image/*" multiple>
+    <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
+    <textarea class="g-imgs" placeholder="https://... 每行一个（上传了文件就不用填）"></textarea>
+  </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
       <input type="text" class="g-linkM" placeholder="移动云盘 URL（可选）">
@@ -228,7 +233,33 @@ function collectGames() {
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
-  })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB);
+    files: [...el.querySelector('.g-files').files],
+  })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB || c.files.length);
+}
+
+function fileToBase64(f) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(f);
+  });
+}
+
+async function uploadGameImages(repo, token, name, cards, statusEl) {
+  let n = 0;
+  const paths = [];
+  for (const c of cards) {
+    const cardPaths = [];
+    for (const f of c.files) {
+      const imgName = `img_${String(++n).padStart(2, '0')}.png`;
+      const b64 = await fileToBase64(f);
+      await putFile(repo, token, `assets/${name}/${imgName}`, b64, '发布: 上传图片 ' + imgName, statusEl, '图片 ' + n);
+      cardPaths.push(`assets/${name}/${imgName}`);
+    }
+    paths.push(cardPaths);
+  }
+  return paths;
 }
 
 function stripNodeList(html, blocks) {
@@ -243,13 +274,11 @@ function stripNodeList(html, blocks) {
   return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 5);
 }
 
-async function buildFormHtml() {
+async function buildFormHtml(cards, imagePaths) {
   const res = await fetch('8.10.html');
   if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
   const skeleton = await res.text();
-  const cards = collectGames();
-  if (!cards.length) throw new Error('请至少添加一个游戏');
-  const blocks = cards.map(gameHtml).join('\n');
+  const blocks = cards.map((c, i) => gameHtml(c, imagePaths[i])).join('\n');
   return stripNodeList(skeleton, blocks);
 }
 
@@ -314,7 +343,14 @@ $('pubForm').onclick = async () => {
     const name = $('fName').value.trim();
     const title = $('fTitle').value.trim();
     const count = $('fCount').value.trim();
-    const htmlContent = await buildFormHtml();
+    const token = $('token').value.trim();
+    const repo = $('repo').value.trim();
+    const cards = collectGames();
+    if (!cards.length) throw new Error('请至少添加一个游戏');
+    if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
+    if (!title) throw new Error('请填写帖子标题');
+    const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
+    const htmlContent = await buildFormHtml(cards, imagePaths);
     await publish(stF, name, title, count, htmlContent);
   } catch (e) {
     show(stF, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
