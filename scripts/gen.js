@@ -257,7 +257,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">Tsinho<br><em>黄油站</em></a>
+    <a class="site" href="index.html">Tsinho<br><em>黄油推荐站</em></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -600,7 +600,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">Tsinho<br><em>黄油站</em></a>
+    <a class="site" href="index.html">Tsinho<br><em>黄油推荐站</em></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
