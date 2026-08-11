@@ -1375,7 +1375,110 @@
 .node:nth-child(19){animation-delay:0.9s}
 .node:nth-child(20){animation-delay:0.9500000000000001s}
 </style>
-    <!--mrhx-stagger--><style>
+    <!--mrhx-comments-->
+<div class="mrhx-comments" id="mrhx-comments">
+  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
+  <div id="mrhx-clist"></div>
+  <form id="mrhx-cform" class="mrhx-cform">
+    <div class="mrhx-crow">
+      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
+      <input type="email" id="mrhx-mail" placeholder="邮箱（仅后台可见）" required>
+    </div>
+    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
+    <div class="mrhx-crow mrhx-csub">
+      <span id="mrhx-creply" class="mrhx-creply"></span>
+      <button type="submit">发表评论</button>
+    </div>
+  </form>
+</div>
+<script>
+(function () {
+  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
+  var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  var PATH = '/8.10.html';
+  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
+  var list = document.getElementById('mrhx-clist');
+  var form = document.getElementById('mrhx-cform');
+  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var replyEl = document.getElementById('mrhx-creply');
+  var replyPid = null;
+  var all = [];
+  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
+  function headers(admin) {
+    var hh = { 'apikey': admin ? ADMIN : KEY, 'Authorization': 'Bearer ' + (admin ? ADMIN : KEY) };
+    return hh;
+  }
+  function render() {
+    list.textContent = '';
+    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
+    function addRow(c) {
+      var row = h('div', 'mrhx-citem' + (c.pid ? ' mrhx-creply-item' : ''));
+      var head = h('div', 'mrhx-chead');
+      head.appendChild(h('span', 'mrhx-cav', String(c.nick || '匿')[0].toUpperCase()));
+      var meta = h('div', 'mrhx-cmeta');
+      meta.appendChild(h('b', '', c.nick || '匿名'));
+      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
+      head.appendChild(meta);
+      row.appendChild(head);
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));
+      var bar = h('div', 'mrhx-cbar');
+      var topId = c.pid || c.id;
+      var rp = h('button', 'mrhx-cbtn', '回复');
+      rp.onclick = function () {
+        if (replyPid === topId) { replyPid = null; replyEl.textContent = ''; }
+        else { replyPid = topId; replyEl.textContent = '回复楼层：' + (c.nick || '匿名') + '（再次点击取消）'; }
+      };
+      bar.appendChild(rp);
+      if (ADMIN) {
+        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+        dl.onclick = function () {
+          if (!confirm('删除这条评论及其回复？')) return;
+          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: headers(true) })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+            .catch(function (e) { alert('删除失败：' + e.message); });
+        };
+        bar.appendChild(dl);
+      }
+      row.appendChild(bar);
+      list.appendChild(row);
+    }
+    function addTree(pid) {
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); })
+        .forEach(function (c) { addRow(c); addTree(c.id); });
+    }
+    addTree(null);
+    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
+  }
+  function load() {
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,content,created_at&order=created_at.asc', { headers: headers(false) })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { all = d || []; render(); })
+      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+  }
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
+    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    fetch(SB + '/rest/v1/comments', {
+      method: 'POST',
+      headers: Object.assign(headers(false), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+    }).then(function (r) {
+      if (r.status === 400) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || '内容未通过检查'); });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      replyPid = null; replyEl.textContent = '';
+      form.reset();
+      load();
+    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+  };
+  load();
+})();
+</script>
+<!--mrhx-comments-end-->
+  <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
 .node:nth-child(3){animation-delay:0.1s}
