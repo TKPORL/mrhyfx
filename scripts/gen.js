@@ -46,7 +46,6 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
 const sharedCss = `<style>
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
   .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
-  .mrhx-bar .mlogo img{width:22px;height:22px;border-radius:4px;vertical-align:middle;margin-right:6px}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
@@ -239,8 +238,8 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9}
 .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:28px;height:28px;border-radius:5px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
+.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
 nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
@@ -255,7 +254,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.jpg" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html">Tsinho<br><em>黄油站</em></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -343,7 +342,7 @@ html = (function reorderNodes(str) {
     const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="logo.jpg" alt="">${SITE_NAME.replace(SITE_LOGO_EM, '<span>' + SITE_LOGO_EM + '</span>')}</a>
+  <a class="mlogo" href="index.html">黄油<span>分享</span></a>
   <div class="mnav">${navPills}</div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
@@ -541,8 +540,8 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
 .hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:34px;height:34px;border-radius:6px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
+.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
@@ -598,7 +597,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.jpg" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html">Tsinho<br><em>黄油站</em></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
