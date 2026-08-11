@@ -76,24 +76,75 @@ const days = [];
 
   const dayLis = days.map(d => {
     const title = path.parse(d.file).name;
-    return `<li class="node heading3">
-    <div class="bullet">
-    <div class="bullet-dot"></div>
+    const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
+    const dateM = title.match(/(\d+)月(\d+)/);
+    const date = dateM ? `${dateM[1]}月${dateM[2]}` : '';
+    return `<a class="post" href="${d.file}">
+  <div class="date">${date}</div>
+  <div class="info">
+    <div class="ptitle">${title}</div>
+    <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
   </div>
-    <div class="content mm-editor"><a href="${d.file}" style="color:#4694FF;text-decoration:none;font-weight:500"><span>${title}</span></a></div>
-    <div class="note mm-editor"><span>共 ${d.gameCount} 款游戏 · 点击进入</span></div>
-  </li>`;
+  <div class="arrow">→</div>
+</a>`;
   }).join('\n');
 
-  const index = `${newest.slice(0, headEnd)}
-        ${responsive}
-        <div class="title">黄油分享<span style="font-size:14px;font-weight:400;color:#888;margin-left:14px">每日分享 · 点击进入</span></div>
-        <ul class="node-list">
-        ${dayLis}
-        ${extrasLis.join('\n        ')}
-        </ul>
-        ${newPublish}
-      ${tail}`;
+  const navLinks = extrasLis.map(l => {
+    const href = /href="([^"]+)"/.exec(l);
+    const label = /content-link-text">([^<]*)</.exec(l);
+    return href && label ? `<a href="${href[1]}" target="_blank" rel="noreferrer">${label[1]}</a>` : '';
+  }).join('');
+
+  const index = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>黄油分享 · 每日更新</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f6f7fb;color:#333;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #e5e6e8;position:sticky;top:0;z-index:10}
+.hwrap{max-width:860px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:22px;font-weight:800;color:#5856d5}
+.site small{display:block;font-size:11px;font-weight:500;color:#888}
+nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #e5e6e8;background:#fafafa;transition:.2s}
+nav a:hover{color:#5856d5;border-color:#5856d5}
+main{max-width:860px;margin:0 auto;padding:28px 20px 40px}
+.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
+.sect h2{font-size:20px;color:#333}
+.sect span{font-size:13px;color:#999}
+.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #e5e6e8;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.2s}
+.post:hover{border-color:#5856d5;transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,86,213,.08)}
+.date{flex-shrink:0;width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#5856d5,#8b5cf6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.2}
+.date b{font-size:22px}
+.date span{font-size:11px;opacity:.85}
+.info{flex:1;min-width:0}
+.ptitle{font-size:17px;font-weight:700;color:#333;margin-bottom:6px}
+.pmeta{font-size:13px;color:#999}
+.arrow{flex-shrink:0;color:#ccc;font-size:20px;transition:.2s}
+.post:hover .arrow{color:#5856d5;transform:translateX(4px)}
+.empty{text-align:center;color:#999;padding:40px 0}
+footer{border-top:1px solid #e5e6e8;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer b{color:#dc9b04}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <span class="site">黄油分享<small>每日更新 · PC + 安卓双平台</small></span>
+    <nav>${navLinks}</nav>
+  </div>
+</header>
+<main>
+  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
+  ${dayLis || '<div class="empty">暂无分享</div>'}
+</main>
+<footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+</body>
+</html>
+`;
   fs.writeFileSync('index.html', index);
   console.log('index.html ok, days:', days.length);
 })().catch(e => { console.error(e); process.exit(1); });
