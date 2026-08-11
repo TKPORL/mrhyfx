@@ -156,6 +156,9 @@ const popupHtml = (() => {
 const viewScript = (sb, key, path) => `<script>
 (function () {
   try {
+    var k = 'mrhx_v_' + '${path}'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
     fetch('${sb}/rest/v1/rpc/inc_page_view', {
       method: 'POST',
       headers: { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' },
