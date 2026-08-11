@@ -27,11 +27,13 @@
 
 ## 评论功能（Supabase 免费版，一次配置永久使用）
 
-1. 注册 https://supabase.com → 登录后点「New project」（名称随意，地区选 Singapore/Tokyo 国内访问更快），等一两分钟
-2. 左侧「SQL Editor」→ 把下面这段 SQL 全部粘贴进去 → 点 Run：
+1. 注册 https://supabase.com → 登录后点「New project」（名称随意，地区选 Singapore / Tokyo 国内访问更快），等一两分钟
+2. 左侧「SQL Editor」→ 把下面这段 SQL 全部粘贴进去，**先把最后一行的 `你的管理密钥` 换成你自己编的一串随机字符**（如 `MrhxAdmin@2026#Abc`，要记住它，后台删除评论要用），再点 Run：
 
 ```sql
-create table if not exists comments (
+drop table if exists comments cascade;
+
+create table comments (
   id uuid primary key default gen_random_uuid(),
   url text not null,
   pid uuid references comments(id) on delete cascade,
@@ -40,8 +42,11 @@ create table if not exists comments (
   content text not null check (char_length(content) between 1 and 2000),
   created_at timestamptz not null default now()
 );
+
 alter table comments enable row level security;
+
 create policy "comments_select" on comments for select using (true);
+
 create policy "comments_insert" on comments for insert
 with check (
   char_length(nick) between 1 and 30
@@ -49,14 +54,20 @@ with check (
   and char_length(content) between 1 and 2000
   and char_length(url) between 1 and 120
 );
+
+create policy "comments_delete_admin" on comments for delete
+using (
+  coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+);
+
 create index comments_url_idx on comments (url);
 ```
 
-3. 左侧「Settings → API」：复制 **Project URL**（https://xxx.supabase.co）、**anon / publishable key**（public 那行）、**service_role / secret key**（secret 那行，只自己用，别外传）
-4. 后台管理 → 「评论管理」→ 填三个值 → 「保存配置并启用评论」→ 2-3 分钟后所有帖子底部出现评论区
-5. 访客填昵称 + 邮箱 + 内容即可评论，可回复；删除评论：后台「评论管理」页签，或把私钥填进去后帖子页面会直接出现删除按钮
+3. 左侧「Settings → API」：复制 **Project URL**（https://xxx.supabase.co）和 **publishable / anon key**（`sb_publishable_...` 或 `eyJ...` 那行 public 的）
+4. 后台管理 → 「评论管理」→ Project URL、anon 公钥、管理密钥（第 2 步 SQL 里编的那串）→ 「保存配置并启用评论」→ 2-3 分钟后所有帖子底部出现评论区
+5. 访客填昵称 + 邮箱 + 内容即可评论，可回复；删除评论：后台「评论管理」页签，或帖子页面评论下方直接出现删除按钮（管理员浏览器填了管理密钥后）
 
-> 安全说明：anon 公钥是公开的（RLS 规则限制只能发评论和读取）；service_role 私钥只存在你自己的浏览器里，绝不写入网站代码。
+> 安全说明：Supabase 浏览器端禁止使用 secret 私钥，所以本项目不碰 secret key。公开的 anon/publishable 公钥只允许评论和读取（数据库 RLS 规则控制）；删除评论靠 SQL 里的自编管理密钥验证请求头，密钥只存在你自己的浏览器里，绝不写入网站代码。
 
 ## 更新方法（方式二：本地）
 

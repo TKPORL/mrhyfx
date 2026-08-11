@@ -272,9 +272,8 @@ const days = [];
   var replyPid = null;
   var all = [];
   function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
-  function headers(admin) {
-    var hh = { 'apikey': admin ? ADMIN : KEY, 'Authorization': 'Bearer ' + (admin ? ADMIN : KEY) };
-    return hh;
+  function headers() {
+    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
   }
   function render() {
     list.textContent = '';
@@ -301,7 +300,7 @@ const days = [];
         var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
         dl.onclick = function () {
           if (!confirm('删除这条评论及其回复？')) return;
-          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: headers(true) })
+          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
             .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
             .catch(function (e) { alert('删除失败：' + e.message); });
         };
@@ -319,7 +318,7 @@ const days = [];
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,content,created_at&order=created_at.asc', { headers: headers(false) })
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,content,created_at&order=created_at.asc', { headers: headers() })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) { all = d || []; render(); })
       .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
@@ -332,7 +331,7 @@ const days = [];
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
     fetch(SB + '/rest/v1/comments', {
       method: 'POST',
-      headers: Object.assign(headers(false), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
       body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
     }).then(function (r) {
       if (r.status === 400) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || '内容未通过检查'); });

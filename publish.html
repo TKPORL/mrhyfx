@@ -160,8 +160,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <input type="text" id="sbAnon" placeholder="eyJhbGciOi..." style="font-family:Consolas,monospace;font-size:12px">
       </div>
       <div class="field">
-        <label>service_role / secret 私钥（只存本浏览器，用于后台删除评论，绝不写入网站）</label>
-        <input type="password" id="sbSecret" placeholder="eyJhbGciOi..." autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
+        <label>管理密钥（自己在 SQL 里设置的那串自定义密钥，只存本浏览器）</label>
+        <input type="password" id="sbSecret" placeholder="你在 SQL 里编的管理密钥" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
+        <p class="hint">Supabase 浏览器端禁止使用 secret 私钥，所以删除评论改用自编密钥：SQL 里设置一个，这里填同一个，即可删除评论。只存你浏览器，绝不写入网站。</p>
       </div>
       <div class="row">
         <button class="btn btn-p" id="saveCC">保存配置并启用评论</button>
@@ -169,7 +170,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <button class="btn btn-s" id="loadComments">加载评论列表</button>
       </div>
       <div id="statusC"></div>
-      <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。私钥填好后：本页签可批量删除；打开任意帖子，评论下方也会出现删除按钮。</p>
+      <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。管理密钥填好后：本页签可批量删除；打开任意帖子，评论下方也会出现删除按钮。</p>
     </div>
     <div class="card">
       <h2>评论列表</h2>
@@ -548,18 +549,17 @@ $('sbAnon').addEventListener('input', () => sbSet('anon', $('sbAnon').value.trim
 $('sbSecret').addEventListener('input', () => { sbSet('secret', $('sbSecret').value.trim()); localStorage.setItem('mrhx_comments_admin', $('sbSecret').value.trim()); });
 
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
-const sbHeaders = (secret) => {
-  const key = secret ? $('sbSecret').value.trim() : $('sbAnon').value.trim();
+const sbHeaders = () => {
+  const key = $('sbAnon').value.trim();
   return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
 };
 
 async function loadComments() {
   const box = $('commentBox');
   if (!sbBase() || !$('sbAnon').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 Project URL 和 anon 公钥。</p>'; return; }
-  if (!$('sbSecret').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 service_role 私钥（读取和删除评论都需要）。</p>'; return; }
   show(stC, '正在加载评论…', 'info');
   try {
-    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.asc&limit=1000`, { headers: sbHeaders(true) });
+    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.asc&limit=1000`, { headers: sbHeaders() });
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
     const all = await res.json();
     const byUrl = {};
@@ -603,16 +603,19 @@ async function loadComments() {
 }
 
 async function delComments(filter, desc) {
-  if (!$('sbSecret').value.trim()) { show(stC, '请先填写 service_role 私钥', 'err'); return; }
+  if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
   if (!confirm('确定删除吗？（' + desc + '，不可恢复）')) return;
   show(stC, '正在删除…', 'info');
   try {
-    const res = await fetch(`${sbBase()}/rest/v1/comments?${filter}`, { method: 'DELETE', headers: sbHeaders(true) });
+    const res = await fetch(`${sbBase()}/rest/v1/comments?${filter}`, {
+      method: 'DELETE',
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': $('sbSecret').value.trim() })
+    });
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
     show(stC, '已删除。', 'ok');
     loadComments();
   } catch (e) {
-    show(stC, '删除失败：' + e.message, 'err');
+    show(stC, '删除失败：' + e.message + '\n\n常见原因：管理密钥和 SQL 里设置的不一致。', 'err');
   }
 }
 
