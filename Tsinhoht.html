@@ -870,7 +870,7 @@ async function loadPosts() {
   try {
     const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`,
       { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
-    const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'publish.html'].includes(t.path));
+    const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'Tsinhoht.html'].includes(t.path));
     const titles = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     let views = {};

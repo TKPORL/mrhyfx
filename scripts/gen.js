@@ -5,7 +5,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html');
+const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -30,7 +30,7 @@ if (fs.existsSync('site.json')) {
   SITE.comments = Object.assign({}, SITE.comments, s.comments || {});
 }
 
-const SITE_NAME = (SITE.site && SITE.site.name) || '黄油分享';
+const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
@@ -461,6 +461,7 @@ html = (function reorderNodes(str) {
 <!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
+    html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     html = html.replace('</body>', `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
@@ -517,6 +518,8 @@ html = (function reorderNodes(str) {
   <div class="arrow">→</div>
 </a>`;
   }).join('\n');
+
+  const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
 
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -589,7 +592,7 @@ footer b{color:#e5484d}
   </div>
 </header>
 <main>
-  <div class="upd"><span class="tag">今日更新</span><b>${dayDate}</b> · 共 <b>${days[0].gameCount}</b> 款新作 · PC + 安卓双平台</div>
+  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
 </main>
