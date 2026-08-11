@@ -239,7 +239,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9}
 .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:22px;height:22px;border-radius:4px;vertical-align:-3px;margin-right:6px}
+.site img.site-logo{width:28px;height:28px;border-radius:5px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
@@ -255,7 +255,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.jpg" alt="" class="site-logo">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <a class="site" href="index.html"><img src="logo.jpg" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -541,7 +541,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
 .hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:26px;height:26px;border-radius:5px;vertical-align:-4px;margin-right:8px}
+.site img.site-logo{width:34px;height:34px;border-radius:6px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
@@ -598,7 +598,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.jpg" alt="" class="site-logo">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}<small>${esc(SITE_TAG)}</small></a>
+    <a class="site" href="index.html"><img src="logo.jpg" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
