@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>黄油分享 - 每日更新 PC+安卓</title>
+<style>
+:root{
+  --bg:#0f1117; --panel:#181c26; --panel2:#1f2430; --line:#2a3040;
+  --txt:#e8eaf0; --sub:#9aa3b5; --acc:#ff5c8a; --acc2:#8b5cf6; --green:#22c55e; --blue:#3b82f6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}
+header{position:sticky;top:0;z-index:50;background:rgba(15,17,23,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:22px}
+.logo{font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+.logo small{font-size:11px;font-weight:500;color:var(--sub);-webkit-text-fill-color:var(--sub)}
+nav.links{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+nav.links a{padding:7px 14px;border-radius:99px;font-size:13px;color:var(--sub);border:1px solid transparent;transition:.2s}
+nav.links a:hover{color:var(--txt);border-color:var(--line);background:var(--panel2)}
+.hero{padding:48px 20px 30px;text-align:center;max-width:1200px;margin:0 auto}
+.hero h1{font-size:clamp(26px,5vw,40px);font-weight:800;letter-spacing:1px}
+.hero h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin-top:10px;color:var(--sub);font-size:14px}
+.tools{max-width:1200px;margin:0 auto;padding:0 20px 8px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.search{width:min(560px,100%);position:relative}
+.search input{width:100%;padding:12px 18px 12px 44px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:14px;outline:none;transition:.2s}
+.search input:focus{border-color:var(--acc)}
+.search::before{content:'';position:absolute;left:16px;top:50%;width:16px;height:16px;transform:translateY(-50%);border:2px solid var(--sub);border-radius:50%}
+.search::after{content:'';position:absolute;left:28px;top:calc(50% + 8px);width:8px;height:2px;background:var(--sub);transform:rotate(45deg)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tag-btn{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--sub);font-size:12px;cursor:pointer;transition:.2s}
+.tag-btn:hover{color:var(--txt);border-color:var(--acc)}
+.tag-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.count{max-width:1200px;margin:0 auto;padding:14px 20px 0;color:var(--sub);font-size:13px}
+.grid{max-width:1200px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,border-color .2s,opacity .2s}
+.card:hover{transform:translateY(-4px);border-color:var(--acc)}
+.card.hidden{display:none}
+.cover{aspect-ratio:4/3;background:var(--panel2);overflow:hidden}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.card:hover .cover img{transform:scale(1.04)}
+.card.noimg .cover::after{content:'图片加载失败';display:flex;align-items:center;justify-content:center;height:100%;color:var(--sub);font-size:13px}
+.body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.name{font-size:16px;font-weight:700;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;padding:3px 9px;border-radius:99px;background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.35)}
+.meta-row{display:flex;flex-wrap:wrap;gap:12px}
+.meta{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px}
+.meta .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.cheat{font-size:12px;color:var(--txt);background:rgba(255,92,138,.12);border:1px solid rgba(255,92,138,.4);border-radius:8px;padding:6px 10px}
+.cheat b{color:var(--acc);font-size:13px;letter-spacing:1px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.btn{flex:1;min-width:110px;text-align:center;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:600;transition:.2s}
+.btn.mobile{background:var(--blue);color:#fff}
+.btn.mobile:hover{background:#2563eb}
+.btn.baidu{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+.btn.baidu:hover{background:rgba(34,197,94,.25)}
+.empty{display:none;text-align:center;color:var(--sub);padding:60px 20px;font-size:15px}
+footer{margin-top:40px;border-top:1px solid var(--line);padding:26px 20px;text-align:center;color:var(--sub);font-size:12px;line-height:1.9}
+footer a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <span class="logo">黄油分享<small> PC+安卓 每日更新</small></span>
+    <nav class="links"><a href="http://i8c.cn/f3Uor" target="_blank" rel="noreferrer">更多合集</a><a href="http://i8c.cn/1QgaV" target="_blank" rel="noreferrer">解压教程</a><a href="http://i8c.cn/45DrJ" target="_blank" rel="noreferrer">备用合集</a><a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">其他资源</a></nav>
+  </div>
+</header>
+<section class="hero">
+  <h1>🎮 <span>黄油分享博客</span></h1>
+  <p>精选单机成人向游戏 · PC + 安卓双平台 · 汉化步兵 · 不限速下载</p>
+</section>
+<div class="tools">
+  <div class="search"><input id="q" type="text" placeholder="搜索游戏名称 / 标签…"></div>
+  <div class="tags" id="tags"><button class="tag-btn" data-tag="神作">神作</button><button class="tag-btn" data-tag="亚洲风SLG">亚洲风SLG</button><button class="tag-btn" data-tag="动态">动态</button><button class="tag-btn" data-tag="互动SLG">互动SLG</button><button class="tag-btn" data-tag="抚摸触摸">抚摸触摸</button><button class="tag-btn" data-tag="日式SLG">日式SLG</button><button class="tag-btn" data-tag="触手异种X">触手异种X</button><button class="tag-btn" data-tag="爆款SLG">爆款SLG</button><button class="tag-btn" data-tag="巨乳爆乳">巨乳爆乳</button><button class="tag-btn" data-tag="巨乳堕落">巨乳堕落</button><button class="tag-btn" data-tag="精品RPG">精品RPG</button><button class="tag-btn" data-tag="像素动态">像素动态</button><button class="tag-btn" data-tag="日式RPG">日式RPG</button><button class="tag-btn" data-tag="露出巨乳">露出巨乳</button><button class="tag-btn" data-tag="姐姐x正太">姐姐x正太</button><button class="tag-btn" data-tag="精品SLG">精品SLG</button><button class="tag-btn" data-tag="互动养成">互动养成</button><button class="tag-btn" data-tag="Live2D动态">Live2D动态</button><button class="tag-btn" data-tag="恶堕NTR">恶堕NTR</button><button class="tag-btn" data-tag="异种X">异种X</button><button class="tag-btn" data-tag="抚摸">抚摸</button><button class="tag-btn" data-tag="触摸">触摸</button><button class="tag-btn" data-tag="全动态">全动态</button><button class="tag-btn" data-tag="养成互动">养成互动</button></div>
+</div>
+<div class="count">共 <b id="cnt">13</b> 款游戏</div>
+<main class="grid" id="grid"><article class="card" data-tags="神作 亚洲风SLG 动态" data-name="精灵雷亚">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_2bdb37bb-e794-4a9c-a709-abe41de415c2.png" alt="精灵雷亚" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">精灵雷亚</h3>
+    <div class="chips"><span class="chip">神作</span><span class="chip">亚洲风SLG</span><span class="chip">动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>18G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGVojM2pZgq" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGVojM2pZgq</a><a class="btn baidu" href="https://pan.baidu.com/s/1rKDlf6iCvDWDc8efF_etyg?pwd=dwbe" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1rKDlf6iCvDWDc8efF_etyg?pwd=dwbe</a></div>
+  </div>
+</article><article class="card" data-tags="互动SLG 抚摸触摸 动态" data-name="妹妹露营">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_2ebb3268-af36-45ef-e32b-b2d3c5ebc366.png" alt="妹妹露营" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">妹妹露营</h3>
+    <div class="chips"><span class="chip">互动SLG</span><span class="chip">抚摸触摸</span><span class="chip">动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>内嵌AI汉化版</span>,<span class="meta"><span class="dot"></span>1.0G</span></div>
+    <div class="cheat" title="作弊码">作弊码 <b>158078</b></div>
+    <div class="btns"><a class="btn baidu" href="https://pan.baidu.com/s/1QxvggrnsFx1mqsTf4wnwWQ?pwd=gffv" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1QxvggrnsFx1mqsTf4wnwWQ?pwd=gffv</a></div>
+  </div>
+</article><article class="card" data-tags="日式SLG 触手异种X" data-name="爱丽丝与恶魔的牢狱">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_4950fab5-9323-4f53-91bb-adbaab77847d.png" alt="爱丽丝与恶魔的牢狱" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">爱丽丝与恶魔的牢狱</h3>
+    <div class="chips"><span class="chip">日式SLG</span><span class="chip">触手异种X</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>Steam官中步兵版</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGsiiK7i7ws" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGsiiK7i7ws</a><a class="btn baidu" href="https://pan.baidu.com/s/1g0XiH1zsZ0lZBdZMtqEjtg?pwd=qsrv" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1g0XiH1zsZ0lZBdZMtqEjtg?pwd=qsrv</a></div>
+  </div>
+</article><article class="card" data-tags="爆款SLG 巨乳爆乳 动态" data-name="极道无赖EX女警-鮎川光–从处女蜕变为变态的分岔路">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_c147bc5f-406e-4372-8ab4-6893fe58983a.png" alt="极道无赖EX女警-鮎川光–从处女蜕变为变态的分岔路" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">极道无赖EX女警-鮎川光–从处女蜕变为变态的分岔路</h3>
+    <div class="chips"><span class="chip">爆款SLG</span><span class="chip">巨乳爆乳</span><span class="chip">动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>官中版</span>,<span class="meta"><span class="dot"></span>3.40G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGtCpyCzCgk" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGtCpyCzCgk</a><a class="btn baidu" href="https://pan.baidu.com/s/1y9TjtCMJ9iXcDcYYcfBrIg?pwd=bict" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1y9TjtCMJ9iXcDcYYcfBrIg?pwd=bict</a></div>
+  </div>
+</article><article class="card" data-tags="日式SLG 巨乳堕落 动态" data-name="阿瑞斯之陨">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_2e1416de-4fb4-4702-9f36-020c2edf9959.png" alt="阿瑞斯之陨" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">阿瑞斯之陨</h3>
+    <div class="chips"><span class="chip">日式SLG</span><span class="chip">巨乳堕落</span><span class="chip">动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>汉化步兵版</span>,<span class="meta"><span class="dot"></span>1.20G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGrRgJi3Hw0" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGrRgJi3Hw0</a><a class="btn baidu" href="https://pan.baidu.com/s/16QhpVHO-mrnK0P_XrQk5yw?pwd=m3h2" target="_blank" rel="noreferrer">https://pan.baidu.com/s/16QhpVHO-mrnK0P_XrQk5yw?pwd=m3h2</a></div>
+  </div>
+</article><article class="card" data-tags="精品RPG 像素动态" data-name="这就是露露的城市建设">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_e6455108-0d4f-4fd2-bcc0-3f788733d674.png" alt="这就是露露的城市建设" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">这就是露露的城市建设</h3>
+    <div class="chips"><span class="chip">精品RPG</span><span class="chip">像素动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>内嵌AI汉化版</span>,<span class="meta"><span class="dot"></span>2.60G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGuosVPSRxx" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGuosVPSRxx</a><a class="btn baidu" href="https://pan.baidu.com/s/178xT8IO_C9xmLoIk7ylJ6Q?pwd=16b8" target="_blank" rel="noreferrer">https://pan.baidu.com/s/178xT8IO_C9xmLoIk7ylJ6Q?pwd=16b8</a></div>
+  </div>
+</article><article class="card" data-tags="日式RPG 露出巨乳" data-name="金主警察">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_6ce3325e-c3ee-4f9b-a35f-2ffe3a65f5ea.png" alt="金主警察" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">金主警察</h3>
+    <div class="chips"><span class="chip">日式RPG</span><span class="chip">露出巨乳</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>内嵌AI汉化版</span></div>
+    <div class="cheat" title="作弊码">作弊码 <b>605471</b></div>
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGtMqeg9v9t" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGtMqeg9v9t</a><a class="btn baidu" href="https://pan.baidu.com/s/1mw3Crv1jkfp5wcZefYRvow?pwd=cd7v" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1mw3Crv1jkfp5wcZefYRvow?pwd=cd7v</a></div>
+  </div>
+</article><article class="card" data-tags="日式RPG 姐姐x正太" data-name="御姐正太">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_3d5b4af6-c30c-4aba-8047-ce84cc15e308.png" alt="御姐正太" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">御姐正太</h3>
+    <div class="chips"><span class="chip">日式RPG</span><span class="chip">姐姐x正太</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>内嵌AI汉化版</span>,<span class="meta"><span class="dot"></span>3.70G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGXntv9Zukk" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGXntv9Zukk</a><a class="btn baidu" href="https://pan.baidu.com/s/12wj20EbwRUJxuBqW5WE1bA?pwd=517t" target="_blank" rel="noreferrer">https://pan.baidu.com/s/12wj20EbwRUJxuBqW5WE1bA?pwd=517t</a></div>
+  </div>
+</article><article class="card" data-tags="精品SLG 互动养成 Live2D动态" data-name="与女仆一起生活">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_8de6d4c5-7e7d-4e3a-f8c5-d2cfbe55a856.png" alt="与女仆一起生活" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">与女仆一起生活</h3>
+    <div class="chips"><span class="chip">精品SLG</span><span class="chip">互动养成</span><span class="chip">Live2D动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>Steam官中步兵版</span>,<span class="meta"><span class="dot"></span>1.0G</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGWPr2R2ru0" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGWPr2R2ru0</a><a class="btn baidu" href="https://pan.baidu.com/s/130avGoF4BWUOIGHIrsoTHQ?pwd=2mpl" target="_blank" rel="noreferrer">https://pan.baidu.com/s/130avGoF4BWUOIGHIrsoTHQ?pwd=2mpl</a></div>
+  </div>
+</article><article class="card" data-tags="日式RPG 恶堕NTR" data-name="影色渐染~阿斯林顿的妹神官">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_e77b5783-ad0b-459b-e8d2-15a5f385476b.png" alt="影色渐染~阿斯林顿的妹神官" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">影色渐染~阿斯林顿的妹神官</h3>
+    <div class="chips"><span class="chip">日式RPG</span><span class="chip">恶堕NTR</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>Steam官中步兵版</span>,<span class="meta"><span class="dot"></span>7.50G</span></div>
+    
+    <div class="btns"><a class="btn baidu" href="https://pan.baidu.com/s/1sn9fy0B-9Rl3c1w8rlcLqA?pwd=3589" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1sn9fy0B-9Rl3c1w8rlcLqA?pwd=3589</a></div>
+  </div>
+</article><article class="card" data-tags="日式RPG 异种X" data-name="圣女渎神">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_34e5fc5c-8c3b-4047-f0d6-9c375b6d38af.png" alt="圣女渎神" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">圣女渎神</h3>
+    <div class="chips"><span class="chip">日式RPG</span><span class="chip">异种X</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>官中版</span>,<span class="meta"><span class="dot"></span>2.30G</span></div>
+    
+    <div class="btns"><a class="btn baidu" href="https://pan.baidu.com/s/17jCy8FAnZT1S7BshzQv_3Q?pwd=bg2u" target="_blank" rel="noreferrer">https://pan.baidu.com/s/17jCy8FAnZT1S7BshzQv_3Q?pwd=bg2u</a></div>
+  </div>
+</article><article class="card" data-tags="互动SLG 抚摸 触摸 全动态" data-name="HA电车JK线">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_f13acccd-d9ba-4aeb-e05b-2bc5670d5c49.png" alt="HA电车JK线" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">HA电车JK线</h3>
+    <div class="chips"><span class="chip">互动SLG</span><span class="chip">抚摸</span><span class="chip">触摸</span><span class="chip">全动态</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>官中版</span></div>
+    
+    <div class="btns"><a class="btn baidu" href="https://pan.baidu.com/s/1j2LWYFU6A4PcyROraInpHg?pwd=hh2j" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1j2LWYFU6A4PcyROraInpHg?pwd=hh2j</a></div>
+  </div>
+</article><article class="card" data-tags="日式RPG 养成互动" data-name="与老师同居的一周">
+  <div class="cover"><img src="https://api2.mubu.com/v3/document_image/35536383_ec3bf2e0-20b8-49cc-d7e4-deb8a86a918d.png" alt="与老师同居的一周" loading="lazy" onerror="this.closest('.card').classList.add('noimg')"></div>
+  <div class="body">
+    <h3 class="name">与老师同居的一周</h3>
+    <div class="chips"><span class="chip">日式RPG</span><span class="chip">养成互动</span></div>
+    <div class="meta-row"><span class="meta"><span class="dot"></span>内嵌AI汉化版</span></div>
+    
+    <div class="btns"><a class="btn mobile" href="https://yun.139.com/shareweb/#/w/i/2wFGVUn16fC5g" target="_blank" rel="noreferrer">https://yun.139.com/shareweb/#/w/i/2wFGVUn16fC5g</a><a class="btn baidu" href="https://pan.baidu.com/s/1v7P3eDawy3cD7PP9z8kNCg?pwd=dyk3" target="_blank" rel="noreferrer">https://pan.baidu.com/s/1v7P3eDawy3cD7PP9z8kNCg?pwd=dyk3</a></div>
+  </div>
+</article></main>
+<div class="empty" id="empty">没有找到匹配的游戏</div>
+<footer>
+  本站内容来源于网络，仅供学习与交流使用，请于下载后 24 小时内删除，支持请购买正版。<br>
+  若内容侵犯了您的权益，请联系删除。
+</footer>
+<script>
+const q = document.getElementById('q');
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+const cnt = document.getElementById('cnt');
+const btns = [...document.querySelectorAll('.tag-btn')];
+let activeTag = '';
+q.addEventListener('input', filter);
+btns.forEach(b => b.addEventListener('click', () => {
+  activeTag = activeTag === b.dataset.tag ? '' : b.dataset.tag;
+  btns.forEach(x => x.classList.toggle('active', x === b && !!activeTag));
+  filter();
+}));
+function filter(){
+  const kw = q.value.trim().toLowerCase();
+  let n = 0;
+  grid.querySelectorAll('.card').forEach(c => {
+    const okTag = !activeTag || c.dataset.tags.includes(activeTag);
+    const okKw = !kw || c.dataset.name.toLowerCase().includes(kw) || c.dataset.tags.toLowerCase().includes(kw);
+    const show = okTag && okKw;
+    c.classList.toggle('hidden', !show);
+    if (show) n++;
+  });
+  cnt.textContent = n;
+  empty.style.display = n ? 'none' : 'block';
+}
+</script>
+</body>
+</html>
