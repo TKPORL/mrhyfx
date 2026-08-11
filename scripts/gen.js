@@ -270,7 +270,44 @@ const days = [];
       (m, inner) => inner.includes('mrhx-dl') ? m
         : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
 
-    html = html.replace(/(<li class="node heading3">[\s\S]*?<div class="content mm-editor" ><span>[\s\S]*?<\/span><\/div>)\s*(<ul class="image-list">[\s\S]*?<\/ul>)\s*(<div class="note mm-editor">[\s\S]*?<\/div>)/g, '$1\n    $3\n    $2');
+html = (function reorderNodes(str) {
+    var start = str.indexOf('<ul class="node-list">');
+    if (start < 0) return str;
+    var end = str.lastIndexOf('</ul>');
+    if (end < start) return str;
+    var prefix = str.slice(0, start);
+    var inner = str.slice(start + 21, end);
+    var suffix = str.slice(end + 5);
+    var blocks = [], pos = 0;
+    while (pos < inner.length) {
+      var h3 = inner.indexOf('<li class="node heading3">', pos);
+      if (h3 < 0) { blocks.push(inner.slice(pos)); break; }
+      if (h3 > pos) blocks.push(inner.slice(pos, h3));
+      var depth = 0, i = h3 + 27;
+      while (i < inner.length) {
+        if (inner.indexOf('<li', i) === i) depth++;
+        if (inner.indexOf('</li>', i) === i) { if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } depth--; i += 5; continue; }
+        i++;
+      }
+      if (i >= inner.length) { blocks.push(inner.slice(h3)); break; }
+    }
+    blocks = blocks.map(function(block) {
+      if (block.indexOf('node heading3') < 0) return block;
+      var dlm = block.match(/<div class="mrhx-dl">[\s\S]*?<\/div>/);
+      var dlBlock = dlm ? dlm[0] : '';
+      var clean = dlBlock ? block.replace(dlBlock, '') : block;
+      var content = clean.match(/<div class="content mm-editor" ><span>[\s\S]*?<\/span><\/div>/);
+      var note = clean.match(/<div class="note mm-editor">[\s\S]*?<\/div>/);
+      var img = clean.match(/<ul class="image-list">[\s\S]*?<\/ul>/);
+      if (!note && !img) return block;
+      var noteBlock = note ? note[0] : '';
+      var imgBlock = img ? img[0] : '';
+      var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>\s*/);
+      var open = openTag ? openTag[0] : '<li class="node heading3">';
+      return open + (content ? content[0] : '') + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
+    });
+    return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
+  })(html);
 
     html = html.replace(PUBLISH_RE, newPublish);
 
