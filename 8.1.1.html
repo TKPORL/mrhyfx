@@ -1025,6 +1025,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 <link rel="icon" href="favicon.jpg" type="image/jpeg">
 <link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+<link rel="icon" href="favicon.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 </head>
       <body class="narrow">
   <!--mrhx-->
@@ -1888,6 +1890,20 @@
 <script>
 (function () {
   try {
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '/8.1.1.html' })
+    });
+  } catch (e) {}
+})();
+</script>
+<script>
+(function () {
+  try {
+    var k = 'mrhx_v_' + '/8.1.1.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
       method: 'POST',
       headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
