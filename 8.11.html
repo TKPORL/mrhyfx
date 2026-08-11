@@ -1573,6 +1573,27 @@
   } catch (e) {}
 })();
 </script>
+<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+  <script>
+(function () {
+  try {
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '/8.11.html' })
+    });
+  } catch (e) {}
+})();
+</script>
   <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
