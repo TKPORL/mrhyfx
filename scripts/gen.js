@@ -14,10 +14,11 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
 const backLink = `<div style="padding-left:10px;margin-bottom:16px;font-size:14px;"><a href="index.html" style="color:#4694FF;text-decoration:none">← 返回首页</a></div>`;
 
 const responsive = `<style>
-  body.narrow{max-width:920px}
-  .image-list .image{width:100% !important;height:auto !important;max-width:680px !important}
+  body.narrow{max-width:1000px !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
+  .image-list .image{width:100% !important;height:auto !important;max-width:720px !important}
   .image-row{justify-content:center}
-  @media (max-width:960px){body.narrow{max-width:100%}}
+  .title{text-align:center;border-bottom-color:#e5e6e8}
+  @media (max-width:1040px){body.narrow{max-width:100% !important}}
 </style>`;
 
 function dayTag(file) {
