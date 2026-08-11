@@ -39,6 +39,13 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .prow .pt{flex:1;min-width:0}
 .prow .pt b{display:block;font-size:13px;color:#333;margin-bottom:3px}
 .prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-all}
+.cwrap{border-top:1px dashed #ecebe9}
+.cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0}
+.rbox{margin:0 0 12px 22px;background:#faf9f7;border:1px solid #ecebe9;border-radius:10px;padding:10px}
+.rrow{display:flex;gap:8px;margin-bottom:8px}
+.rrow input{flex:1;border:1px solid #e2e0dc;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+.rbox textarea{width:100%;border:1px solid #e2e0dc;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:8px}
+.rbox .btn{padding:8px 18px;font-size:13px}
 .links{display:flex;gap:10px}
 .links input{flex:1}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -570,15 +577,34 @@ async function loadComments() {
       box.innerHTML = entries.map(([url, list]) => `
         <div class="game">
           <div class="ghead"><span class="gnum">${esc(url)}</span><span style="font-size:12px;color:#aaa">${list.length} 条</span></div>
-          ${list.map(c => `
-          <div class="prow">
-            <div class="pt">
-              <b>${esc(c.nick || '匿名')}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
-              <span class="pf">${esc(c.content)}</span>
-              <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
+          ${list.map(c => {
+            const topId = c.pid || c.id;
+            return `
+          <div class="cwrap">
+            <div class="prow">
+              <div class="pt">
+                <b>${esc(c.nick || '匿名')}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
+                <span class="pf">${esc(c.content)}</span>
+                <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
+              </div>
+              <div class="cactions">
+                <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
+                <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
+              </div>
             </div>
-            <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
-          </div>`).join('')}
+            <div class="rbox" id="rbox-${esc(c.id)}" style="display:none">
+              <div class="rrow">
+                <input type="text" id="rn-${esc(c.id)}" placeholder="站长昵称" value="${esc(localStorage.getItem('mrhx_admin_nick') || '站长')}">
+                <input type="email" id="re-${esc(c.id)}" placeholder="站长邮箱" value="${esc(localStorage.getItem('mrhx_admin_email') || 'mrhx@tkporl.github.io')}">
+              </div>
+              <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
+              <div class="row">
+                <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(topId)}" data-rurl="${esc(url)}">发表回复</button>
+                <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
+              </div>
+            </div>
+          </div>`;
+          }).join('')}
           <div class="row" style="margin-top:8px">
             <button class="btn btn-s" data-clear="${esc(url)}">清空该帖全部评论</button>
           </div>
@@ -594,6 +620,41 @@ async function loadComments() {
       });
       [...box.querySelectorAll('[data-clear]')].forEach(b => {
         b.onclick = () => delComments(`url=eq.${encodeURIComponent(b.dataset.clear)}`, '该帖全部评论');
+      });
+      [...box.querySelectorAll('[data-rp]')].forEach(b => {
+        b.onclick = () => {
+          const el = $('rbox-' + b.dataset.rp);
+          el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        };
+      });
+      [...box.querySelectorAll('[data-cancel]')].forEach(b => {
+        b.onclick = () => { $('rbox-' + b.dataset.cancel).style.display = 'none'; };
+      });
+      [...box.querySelectorAll('[data-send]')].forEach(b => {
+        b.onclick = async () => {
+          const id = b.dataset.send;
+          const nick = $('rn-' + id).value.trim();
+          const email = $('re-' + id).value.trim();
+          const content = $('rc-' + id).value.trim();
+          if (!nick || !email || !content) { show(stC, '请填写站长昵称、邮箱和回复内容', 'err'); return; }
+          show(stC, '正在发表回复…', 'info');
+          try {
+            const res = await fetch(`${sbBase()}/rest/v1/comments`, {
+              method: 'POST',
+              headers: Object.assign(sbHeaders(), { 'Prefer': 'return=minimal' }),
+              body: JSON.stringify({ url: b.dataset.rurl, pid: b.dataset.rtop || null, nick: nick, email: email, content: content })
+            });
+            if (res.status === 400) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || '内容未通过检查'); }
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            localStorage.setItem('mrhx_admin_nick', nick);
+            localStorage.setItem('mrhx_admin_email', email);
+            $('rbox-' + id).style.display = 'none';
+            show(stC, '回复已发布，刷新帖子页面即可看到。', 'ok');
+            loadComments();
+          } catch (e) {
+            show(stC, '回复失败：' + e.message, 'err');
+          }
+        };
       });
     }
     show(stC, '共 ' + all.length + ' 条评论', 'ok');
