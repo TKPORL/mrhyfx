@@ -150,6 +150,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <button class="tab on" id="tabForm">发布帖子</button>
     <button class="tab" id="tabManage">帖子管理</button>
     <button class="tab" id="tabComments">评论管理</button>
+    <button class="tab" id="tabStats">访问统计</button>
     <button class="tab" id="tabLinks">链接配置</button>
     <button class="tab" id="tabHtml">HTML 模式</button>
   </div>
@@ -254,6 +255,31 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     </div>
   </div>
 
+  <div class="panel" id="panelStats">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>访问统计</h2>
+        <button class="btn btn-s" id="refreshStats">刷新</button>
+      </div>
+      <div class="stat-overview" id="statOverview" style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="stat-box" style="flex:1;min-width:120px;background:#fdf3f3;border-radius:12px;padding:14px 18px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#e5484d" id="statTotalViews">-</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">总访问量</div>
+        </div>
+        <div class="stat-box" style="flex:1;min-width:120px;background:#eef4fd;border-radius:12px;padding:14px 18px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#1a5fb4" id="statTotalPosts">-</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">帖子总数</div>
+        </div>
+        <div class="stat-box" style="flex:1;min-width:120px;background:#e6f4ea;border-radius:12px;padding:14px 18px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#1a7f37" id="statAvgViews">-</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">平均访问</div>
+        </div>
+      </div>
+      <div id="statBox"></div>
+      <div id="statusS"></div>
+    </div>
+  </div>
+
   <div class="panel" id="panelLinks">
     <div class="card">
       <h2>链接配置（顶部栏 + 帖子底部按钮 + 首页导航共用）</h2>
@@ -317,12 +343,13 @@ $('repo').value = localStorage.getItem(REPO_KEY) || 'TKPORL/mrhyfx';
 $('token').addEventListener('input', () => { if ($('token').value.trim()) localStorage.setItem(TOKEN_KEY, $('token').value.trim()); });
 $('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
 
-const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabHtml: 'panelHtml' };
+const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
 function switchTab(id) {
   Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') loadLinks();
   if (id === 'tabComments') loadComments();
+  if (id === 'tabStats') loadStats();
 }
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
@@ -833,7 +860,9 @@ async function loadPosts() {
         const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
         return `<div class="game">
   <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}${views['/' + encodeURIComponent(tag + '.html')] != null ? ' · 访问 ' + views['/' + encodeURIComponent(tag + '.html')] + ' 次' : ''}</span></div>
-  <div class="row">
+  <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
+    <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || '')}" placeholder="${esc(p.path)}" style="flex:1;min-width:180px;font-size:13px">
+    <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
     <button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button>
     <button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>
@@ -952,6 +981,24 @@ async function loadPosts() {
             show(stM, '删除失败：' + e.message, 'err');
             b.disabled = false;
           }
+        };
+      });
+      [...box.querySelectorAll('[data-tsave]')].forEach(b => {
+        b.onclick = async () => {
+          const tag = b.dataset.tsave;
+          const input = box.querySelector('.t-edit[data-tag="' + tag + '"]');
+          const val = input ? input.value.trim() : '';
+          if (!val) { show(stM, '标题不能为空', 'err'); return; }
+          b.disabled = true;
+          show(stM, '正在保存标题…', 'info');
+          try {
+            await updateJson(repo, token, 'titles.json', tag, val, stM);
+            const titleEl = b.closest('.game').querySelector('.gnum');
+            if (titleEl) titleEl.textContent = val;
+            show(stM, '标题已保存！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+          } catch (e) {
+            show(stM, '保存失败：' + e.message, 'err');
+          } finally { b.disabled = false; }
         };
       });
     }
@@ -1108,6 +1155,50 @@ async function loadComments() {
     show(stC, '加载失败：' + e.message + '\n\n常见原因：URL/密钥填错、SQL 没执行、项目被暂停（Free 版 7 天不活跃会暂停，去控制台恢复）。', 'err');
   }
 }
+
+const stS = $('statusS');
+async function loadStats() {
+  const box = $('statBox');
+  const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; return; }
+  show(stS, '正在加载统计…', 'info');
+  try {
+    const res = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc`, {
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const arr = await res.json();
+    const total = arr.reduce((s, v) => s + v.count, 0);
+    const postCount = arr.length;
+    const avg = postCount ? Math.round(total / postCount) : 0;
+    $('statTotalViews').textContent = total;
+    $('statTotalPosts').textContent = postCount;
+    $('statAvgViews').textContent = avg;
+    if (!arr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
+    else {
+      box.innerHTML = arr.map(v => {
+        const pct = total ? (v.count / total * 100).toFixed(1) : 0;
+        const barW = total ? (v.count / Math.max(...arr.map(x => x.count)) * 100) : 0;
+        return `<div style="margin-bottom:10px;padding:10px 14px;background:#faf9f7;border-radius:10px;border:1px solid #ecebe9">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:600;color:#333">${esc(v.url)}</span>
+            <span style="font-size:13px;color:#e5484d;font-weight:700;white-space:nowrap">${v.count} 次访问 · ${pct}%</span>
+          </div>
+          <div style="height:6px;background:#ecebe9;border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:${barW}%;background:#e5484d;border-radius:99px;transition:width .5s"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    show(stS, arr.length + ' 个页面 · 共 ' + total + ' 次访问', 'ok');
+  } catch (e) {
+    show(stS, '加载失败：' + e.message + '\n\n请确认 Supabase 配置正确且 page_views 表已创建。', 'err');
+    $('statTotalViews').textContent = '-';
+    $('statTotalPosts').textContent = '-';
+    $('statAvgViews').textContent = '-';
+  }
+}
+$('refreshStats').onclick = loadStats;
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
