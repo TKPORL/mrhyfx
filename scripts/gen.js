@@ -13,6 +13,13 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
 
 const backLink = `<div style="padding-left:10px;margin-bottom:16px;font-size:14px;"><a href="index.html" style="color:#4694FF;text-decoration:none">← 返回首页</a></div>`;
 
+const responsive = `<style>
+  body.narrow{max-width:920px}
+  .image-list .image{width:100% !important;height:auto !important;max-width:680px !important}
+  .image-row{justify-content:center}
+  @media (max-width:960px){body.narrow{max-width:100%}}
+</style>`;
+
 function dayTag(file) {
   const m = file.match(/(\d+)月(\d+)/);
   return m ? `${m[1]}月${m[2]}` : path.parse(file).name;
@@ -42,7 +49,7 @@ const days = [];
     const gameCount = (html.match(/<li class="node[^"]*heading/g) || []).length;
     html = await localize(html, dayTag(file));
     html = html.replace(PUBLISH_RE, newPublish);
-    html = html.replace(/<body[^>]*>/, m => m + '\n  ' + backLink);
+    html = html.replace(/<body[^>]*>/, '<body class="narrow">\n  ' + responsive + '\n  ' + backLink);
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
     days.push({ file, gameCount });
@@ -79,6 +86,7 @@ const days = [];
   }).join('\n');
 
   const index = `${newest.slice(0, headEnd)}
+        ${responsive}
         <div class="title">黄油分享<span style="font-size:14px;font-weight:400;color:#888;margin-left:14px">每日分享 · 点击进入</span></div>
         <ul class="node-list">
         ${dayLis}
