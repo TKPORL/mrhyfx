@@ -44,6 +44,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .game.drag{opacity:.45}
 .game.over{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
 .game.newcard{animation:mrhxPop .5s ease both}
+.game .ghandle{cursor:grab;user-select:none;display:inline-flex;align-items:center;gap:3px;color:#ccc;font-size:14px;margin-right:4px;letter-spacing:-2px}
+.game .ghandle:hover{color:#e5484d}
+.game .ghandle:active{cursor:grabbing}
 @keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes mrhxPop{0%{box-shadow:0 0 0 3px rgba(229,72,77,.4)}100%{box-shadow:none}}
 .editbar{display:none;margin-bottom:14px;padding:11px 14px;border-radius:10px;font-size:13px;background:#fff8e6;color:#9a6700;border:1px solid #eedd9e;line-height:1.7}
@@ -59,8 +62,31 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .draftbar b{color:#1a5fb4}
 .draftbar .btn{padding:6px 14px;font-size:12px;border-radius:8px}
 .hint{font-size:12px;color:#aaa;margin-top:5px}
-.game{border:1px solid #ecebe9;border-radius:12px;padding:16px;margin-bottom:12px;background:#fefefe}
-.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.game{border:1px solid #ecebe9;border-radius:12px;padding:16px;margin-bottom:12px;background:#fefefe;position:relative}
+.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:6px}
+.game .gnum{font-size:13px;font-weight:700;color:#e5484d;white-space:nowrap}
+.game .ghead .gbtns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.game .ghead .gbtns .btn-s{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer}
+.overlay{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.35);display:none}
+.overlay.show{display:block}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:92vw;max-width:820px;max-height:88vh;overflow-y:auto;display:none}
+.modal.show{display:block;animation:mrhxFade .3s ease both}
+.modal .mhead{position:sticky;top:0;background:#fff;border-bottom:1px solid #ecebe9;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;z-index:2;border-radius:16px 16px 0 0}
+.modal .mhead h2{font-size:15px;margin:0}
+.modal .mbody{padding:20px;min-height:200px}
+.modal .mbody .game{animation:none}
+.modal-close{width:32px;height:32px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#fdf1f1;color:#e5484d}
+.del-list{display:none;margin-bottom:12px;padding:10px 14px;border-radius:10px;background:#fef8e6;border:1px solid #f0d89e;font-size:13px;line-height:1.8}
+.del-list.show{display:block}
+.del-list .dl-item{display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px dashed #f0d89e}
+.del-list .dl-item:last-child{border:none}
+.del-list .dl-item span{color:#9a6700;flex:1}
+.del-list .dl-item .btn-s{padding:3px 10px;font-size:11px;border-radius:6px;white-space:nowrap}
+.move-box{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:10px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:10;min-width:180px;margin-top:4px}
+.move-box.show{display:flex;gap:6px;align-items:center}
+.move-box input{width:60px;padding:6px 8px;border:1px solid #e2e0dc;border-radius:6px;font-size:13px;text-align:center}
+.move-box .btn-s{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer}
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d}
 .del{border:none;background:#fdf1f1;color:#c93a3f;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 .del:hover{background:#f8dcdc}
@@ -138,16 +164,16 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <h2>基本信息</h2>
       <div class="field">
         <label>文件名（英文/数字，用于网址，不要中文）</label>
-        <input type="text" id="fName" placeholder="如：8.11">
+        <input type="text" id="fName">
         <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/8.11.html</p>
       </div>
       <div class="field">
         <label>帖子标题（首页和页面顶部显示的名字）</label>
-        <input type="text" id="fTitle" placeholder="如：8.11黄油 95款（PC+安卓）">
+        <input type="text" id="fTitle">
       </div>
       <div class="field">
         <label>游戏数量（可选，留空则按下面添加的游戏条数自动统计）</label>
-        <input type="number" id="fCount" placeholder="如：95">
+        <input type="number" id="fCount">
       </div>
       <div class="row" style="gap:10px">
         <button class="btn btn-s" id="exportForm">导出数据</button>
@@ -159,7 +185,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <h2>游戏内容</h2>
-        <button class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
+        <div class="row" style="gap:6px">
+          <button class="btn btn-s" id="previewAll">预览全部</button>
+          <button class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
+        </div>
       </div>
       <div id="gameBox"></div>
     </div>
@@ -167,7 +196,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <div class="card">
       <div class="field">
         <label>GitHub Token（repo 权限，保存一次永久有效）</label>
-        <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <input type="password" id="token" autocomplete="off">
         <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 生成 → 复制 ghp_ 开头的字符串。Token 和仓库名只在本浏览器自动保存（localStorage），下次打开无需再填。</p>
       </div>
       <div class="field">
@@ -200,15 +229,15 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <p class="hint">访客填昵称、邮箱、内容即可评论，支持回复。数据存在你的 Supabase 免费项目（500MB，评论量随便用）。配置步骤见仓库 README「评论功能」一节：注册 supabase.com → 新建项目 → SQL Editor 粘贴建表语句运行 → 复制 3 个值填到下面。</p>
       <div class="field">
         <label>Project URL（项目地址，形如 https://xxx.supabase.co）</label>
-        <input type="text" id="sbUrl" placeholder="https://你的项目.supabase.co">
+        <input type="text" id="sbUrl">
       </div>
       <div class="field">
         <label>anon / publishable 公钥（公开的，会写入网站代码供访客评论）</label>
-        <input type="text" id="sbAnon" placeholder="eyJhbGciOi..." style="font-family:Consolas,monospace;font-size:12px">
+        <input type="text" id="sbAnon" style="font-family:Consolas,monospace;font-size:12px">
       </div>
       <div class="field">
         <label>管理密钥（自己在 SQL 里设置的那串自定义密钥，只存本浏览器）</label>
-        <input type="password" id="sbSecret" placeholder="你在 SQL 里编的管理密钥" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
+        <input type="password" id="sbSecret" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
         <p class="hint">Supabase 浏览器端禁止使用 secret 私钥，所以删除评论改用自编密钥：SQL 里设置一个，这里填同一个，即可删除评论。只存你浏览器，绝不写入网站。</p>
       </div>
       <div class="row">
@@ -244,15 +273,15 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <h2>HTML 模式（粘贴幕布导出或已发布页面的 HTML 全文）</h2>
       <div class="field">
         <label>文件名（英文/数字，用于网址）</label>
-        <input type="text" id="hName" placeholder="如：8.12">
+        <input type="text" id="hName">
       </div>
       <div class="field">
         <label>帖子标题</label>
-        <input type="text" id="hTitle" placeholder="如：8.12黄油 95款（PC+安卓）">
+        <input type="text" id="hTitle">
       </div>
       <div class="field">
         <label>HTML 内容</label>
-        <textarea id="html" style="height:320px" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;...&#10;把 HTML 全文粘贴到这里"></textarea>
+        <textarea id="html" style="height:320px"></textarea>
       </div>
       <div class="row">
         <button class="btn btn-p" id="pubHtml">发布</button>
@@ -263,6 +292,12 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     </div>
   </div>
 </main>
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="previewModal">
+  <div class="mhead"><h2>实时预览</h2><button class="modal-close" id="previewClose">×</button></div>
+  <div class="mbody" id="previewBody"></div>
+</div>
+<div class="del-list" id="delList"></div>
 <div class="mrhx-toast" id="toast"></div>
 <button class="mrhx-top" id="topBtn" title="回到顶部">↑</button>
 <script>
@@ -325,14 +360,10 @@ function collectDraft() {
     at: Date.now(),
     form: {
       name: $('fName').value, title: $('fTitle').value, count: $('fCount').value,
-      cards: [...$('gameBox').children].map(el => ({
-        name: el.querySelector('.g-name').value.trim(),
-        intro: el.querySelector('.g-intro').value.trim(),
-        imgs: el.querySelector('.g-imgs').value,
-        linkM: el.querySelector('.g-linkM').value.trim(),
-        linkB: el.querySelector('.g-linkB').value.trim(),
-        files: [...el.querySelector('.g-files').files].map(f => f.name)
-      }))
+      cards: [...$('gameBox').children].map(el => {
+        const c = readCard(el);
+        return { name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, files: c.files };
+      })
     },
     html: { name: $('hName').value, title: $('hTitle').value, content: $('html').value }
   };
@@ -437,10 +468,10 @@ function gameHtml(c, imgPaths) {
   </div>
     
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
+    ${(c.intro || links) ? `<div class="note mm-editor"><span>${esc(c.intro)}</span>${links}</div>` : ''}
     ${rows ? `<ul class="image-list">
 ${rows}
   </ul>` : ''}
-    ${(c.intro || links) ? `<div class="note mm-editor"><span>${esc(c.intro)}</span>${links}</div>` : ''}
     
   </li>`;
 }
@@ -451,25 +482,33 @@ function addGameCard(data) {
   const d = document.createElement('div');
   d.className = 'game';
   d.draggable = true;
-  d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span><button class="del">删除</button></div>
-  <div class="field"><label>游戏名称</label><input type="text" class="g-name" placeholder="如：精灵雷亚"></div>
-  <div class="field"><label>游戏介绍</label><textarea class="g-intro" placeholder="如：[神作/亚洲风SLG/动态] 汉化步兵 [PC+安卓 18G]&#10;有作弊码就写：作弊码 158078"></textarea></div>
+  d.innerHTML = `<div class="ghead"><span class="gnum"><span class="ghandle" title="拖动调整顺序">⠿</span>游戏 ${n}</span>
+    <div class="gbtns">
+      <button class="btn btn-s g-move" type="button">移动</button>
+      <button class="btn btn-s g-prevBtn" type="button">预览</button>
+      <button class="del" type="button">删除</button>
+    </div></div>
+  <div class="field"><label>游戏名称</label><input type="text" class="g-name"></div>
+  <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
-    <textarea class="g-imgs" placeholder="https://... 每行一个（上传了文件就不用填）"></textarea>
+    <textarea class="g-imgs"></textarea>
     <div class="g-prev"></div>
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-      <input type="text" class="g-linkM" placeholder="移动云盘 URL（可选）">
-      <input type="text" class="g-linkB" placeholder="百度网盘 URL（可选）">
+      <input type="text" class="g-linkM">
+      <input type="text" class="g-linkB">
     </div>
-  </div>`;
+  </div>
+  <div class="move-box"></div>`;
   if (data) fillCard(d, data);
-  d.querySelector('.del').onclick = () => { d.remove(); renum(); toast('已删除游戏 ' + d._num); };
+  d.querySelector('.del').onclick = () => { removeCard(d); };
   const fileInput = d.querySelector('.g-files');
   fileInput.addEventListener('change', () => previewFiles(fileInput));
+  d.querySelector('.g-move').onclick = e => openMove(d, e);
+  d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
   bindDrag(d);
   renum();
@@ -479,6 +518,75 @@ function addGameCard(data) {
     d.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   return d;
+}
+
+let deletedCards = [];
+function removeCard(d) {
+  const num = d._num;
+  const card = readCard(d);
+  card._deletedNum = num;
+  deletedCards.push(card);
+  d.remove();
+  renum();
+  renderDelList();
+  toast('已删除游戏 ' + num + '，可从上方回收站恢复');
+}
+function restoreCard(i) {
+  const card = deletedCards.splice(i, 1)[0];
+  renderDelList();
+  if (card) {
+    const d = addGameCard(card);
+    d.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('已恢复游戏 ' + (card._deletedNum || card.name || ''));
+  }
+}
+function renderDelList() {
+  const el = $('delList');
+  if (!deletedCards.length) { el.classList.remove('show'); el.innerHTML = ''; return; }
+  el.classList.add('show');
+  el.innerHTML = '<b style="color:#9a6700">已删除（本次可恢复）：</b>' + deletedCards.map((c, i) =>
+    `<div class="dl-item"><span>游戏 ${c._deletedNum || (i + 1)}：${esc(c.name || '(未命名)')}</span><button class="btn btn-s" data-office>恢复</button></div>`
+  ).join('');
+  [...el.querySelectorAll('[data-office]')].forEach((b, i) => b.onclick = () => restoreCard(i));
+}
+
+function readCard(el) {
+  return {
+    name: el.querySelector('.g-name').value.trim(),
+    intro: el.querySelector('.g-intro').value.trim(),
+    imgs: el.querySelector('.g-imgs').value,
+    linkM: el.querySelector('.g-linkM').value.trim(),
+    linkB: el.querySelector('.g-linkB').value.trim(),
+    files: [...el.querySelector('.g-files').files].map(f => f.name)
+  };
+}
+
+function openMove(d, e) {
+  document.querySelectorAll('.move-box.show').forEach(x => { x.classList.remove('show'); x.innerHTML = ''; });
+  e.stopPropagation();
+  const box = d.querySelector('.move-box');
+  box.innerHTML = '<input type="number" min="1" placeholder="位置"><button class="btn btn-s" type="button">确定</button>';
+  box.classList.add('show');
+  const inp = box.querySelector('input');
+  inp.value = d._num;
+  inp.focus();
+  inp.onkeydown = ev => { if (ev.key === 'Enter') doMove(d, inp.value); if (ev.key === 'Escape') box.classList.remove('show'); };
+  box.querySelector('button').onclick = () => doMove(d, inp.value);
+}
+function doMove(d, val) {
+  const target = parseInt(val, 10);
+  const box = $('gameBox');
+  const total = box.children.length;
+  if (!target || target < 1 || target > total) { toast('请输入 1-' + total + ' 之间的位置'); return; }
+  const children = [...box.children];
+  const from = children.indexOf(d);
+  children.splice(from, 1);
+  children.splice(target - 1, 0, d);
+  children.forEach(c => box.appendChild(c));
+  renum();
+  d.querySelector('.move-box').classList.remove('show');
+  toast('已移动到第 ' + target + ' 位');
+  d.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function previewFiles(input) {
@@ -518,13 +626,15 @@ function fillCard(card, data) {
 
 let dragEl = null;
 function bindDrag(card) {
+  const handle = card.querySelector('.ghandle');
+  handle.addEventListener('mousedown', () => { card.draggable = true; });
   card.addEventListener('dragstart', e => {
     dragEl = card;
     card.classList.add('drag');
     e.dataTransfer.effectAllowed = 'move';
     try { e.dataTransfer.setData('text/plain', ''); } catch (err) {}
   });
-  card.addEventListener('dragend', () => { card.classList.remove('drag'); dragEl = null; });
+  card.addEventListener('dragend', () => { card.classList.remove('drag'); card.draggable = false; dragEl = null; });
   card.addEventListener('dragover', e => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -826,6 +936,7 @@ async function loadPosts() {
             }
             await updateJson(repo, token, 'titles.json', tag, null, stM);
             await updateJson(repo, token, 'counts.json', tag, null, stM);
+            await updateJson(repo, token, 'timestamps.json', tag, null, stM).catch(() => {});
             show(stM, '删除成功！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
             loadPosts();
           } catch (e) {
@@ -1060,6 +1171,7 @@ $('pubForm').onclick = async () => {
     const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
     const htmlContent = await buildFormHtml(cards, imagePaths);
     await publish(stF, name, title, count, htmlContent);
+    await updateTimestamp(repo, token, name).catch(() => {});
     localStorage.removeItem(DRAFT_FORM);
     $('editBar').classList.remove('show');
   } catch (e) {
@@ -1074,6 +1186,7 @@ $('pubHtml').onclick = async () => {
     const title = $('hTitle').value.trim();
     const htmlContent = $('html').value;
     await publish(stH, name, title, '', htmlContent);
+    await updateTimestamp($('repo').value.trim(), $('token').value.trim(), name).catch(() => {});
   } catch (e) {
     show(stH, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
   } finally { btn.disabled = false; }
@@ -1092,6 +1205,36 @@ $('tpl').onclick = async () => {
     show(stH, '模板载入失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
 };
+
+$('previewClose').onclick = () => { $('overlay').classList.remove('show'); $('previewModal').classList.remove('show'); };
+$('overlay').onclick = $('previewClose').onclick;
+$('previewAll').onclick = () => { openPreview(collectGames(), $('fTitle').value.trim() || '预览'); };
+
+function openPreview(cards, title) {
+  const body = $('previewBody');
+  const fullTitle = $('fTitle').value.trim() || title || '预览';
+  let html = `<div style="font-size:20px;font-weight:700;color:#2b2b2b;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #ecebe9">${esc(fullTitle)}</div>`;
+  html += `<ul class="node-list" style="list-style:none;padding:0;margin:0">`;
+  cards.forEach((c, i) => {
+    const imgs = (c.imgs || '').split('\n').map(u => u.trim()).filter(Boolean);
+    const imgRows = imgs.map(u => `<li class="image-row" style="list-style:none;margin:6px 0"><img src="${esc(u)}" style="max-width:100%;border-radius:8px" class="image"></li>`).join('\n');
+    let links = '';
+    if (c.linkM) links += `<a href="${esc(c.linkM)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;margin:4px">移动云盘</a>`;
+    if (c.linkB) links += `<a href="${esc(c.linkB)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e6f4ea;color:#1a7f37;font-size:13px;font-weight:600;text-decoration:none;margin:4px">百度网盘</a>`;
+    const prevImgs = [...(c._prev || [])].map(u => `<img src="${esc(u)}" style="width:70px;height:50px;object-fit:cover;border-radius:6px;margin:2px;border:1px solid #ecebe9">`).join('');
+    html += `<li style="padding:12px 0;border-bottom:1px dashed #ecebe9">
+      <div style="font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span style="color:#e5484d;font-size:12px">${i + 1}</span>${esc(c.name || '游戏 ' + (i + 1))}${prevImgs ? `<span style="display:flex;gap:2px">${prevImgs}</span>` : ''}</div>
+      ${c.intro ? `<div style="font-size:13px;color:#666;line-height:1.8;margin-bottom:8px">${esc(c.intro)}</div>` : ''}
+      ${links ? `<div style="margin-bottom:8px">${links}</div>` : ''}
+      ${imgRows}
+    </li>`;
+  });
+  html += '</ul>';
+  body.innerHTML = html;
+  $('overlay').classList.add('show');
+  $('previewModal').classList.add('show');
+  $('previewModal').scrollTop = 0;
+}
 </script>
 </body>
 </html>

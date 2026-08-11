@@ -20,6 +20,9 @@ if (fs.existsSync('links.json')) {
     .map(([label, url]) => ({ label, url }));
 }
 
+let TIMESTAMPS = {};
+if (fs.existsSync('timestamps.json')) TIMESTAMPS = readJson('timestamps.json');
+
 let SITE = { comments: { enabled: false, apiBase: '' } };
 if (fs.existsSync('site.json')) {
   const s = readJson('site.json');
@@ -388,6 +391,11 @@ const days = [];
   }
 
   days.sort((a, b) => {
+    const ka = path.parse(a.file).name, kb = path.parse(b.file).name;
+    const ta = TIMESTAMPS[ka], tb = TIMESTAMPS[kb];
+    if (ta && tb) return (new Date(tb) - new Date(ta));
+    if (ta) return -1;
+    if (tb) return 1;
     const ma = a.file.match(/(\d+)月(\d+)/), mb = b.file.match(/(\d+)月(\d+)/);
     if (ma && mb) return (mb[1] - ma[1]) * 100 + (mb[2] - ma[2]);
     return b.file.localeCompare(a.file);
