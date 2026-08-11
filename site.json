@@ -3,5 +3,18 @@
     "enabled": true,
     "url": "https://kydmccknlbpczeqppbtc.supabase.co",
     "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
+  },
+  "site": {
+    "name": "黄油分享",
+    "tag": "每日更新 · PC + 安卓双平台",
+    "footer": "by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版"
+  },
+  "announcement": {
+    "enabled": true,
+    "title": "📢 公告",
+    "lines": [
+      "本站点8月10刚刚起步！可能还存在一些bug！请见谅！",
+      "有任何建议或问题，欢迎在评论区留言或联系站长。"
+    ]
   }
 }

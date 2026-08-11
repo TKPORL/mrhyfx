@@ -48,6 +48,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .game .ghandle:hover{color:#e5484d}
 .game .ghandle:active{cursor:grabbing}
 @keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes mrhxModalFade{from{opacity:0;transform:translate(-50%,-48%)}to{opacity:1;transform:translate(-50%,-50%)}}
 @keyframes mrhxPop{0%{box-shadow:0 0 0 3px rgba(229,72,77,.4)}100%{box-shadow:none}}
 .editbar{display:none;margin-bottom:14px;padding:11px 14px;border-radius:10px;font-size:13px;background:#fff8e6;color:#9a6700;border:1px solid #eedd9e;line-height:1.7}
 .editbar.show{display:block;animation:mrhxFade .3s ease both}
@@ -70,7 +71,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .overlay{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.35);display:none}
 .overlay.show{display:block}
 .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:92vw;max-width:820px;max-height:88vh;overflow-y:auto;display:none}
-.modal.show{display:block;animation:mrhxFade .3s ease both}
+.modal.show{display:block;animation:mrhxModalFade .3s ease both}
 .modal .mhead{position:sticky;top:0;background:#fff;border-bottom:1px solid #ecebe9;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;z-index:2;border-radius:16px 16px 0 0}
 .modal .mhead h2{font-size:15px;margin:0}
 .modal .mbody{padding:20px;min-height:200px}
@@ -292,6 +293,35 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       </div>
       <div id="statusL"></div>
     </div>
+
+    <div class="card">
+      <h2>站点设置</h2>
+      <div class="field">
+        <label>站点名称（首页/页面顶部 logo）</label>
+        <input type="text" id="siteName" placeholder="黄油分享">
+      </div>
+      <div class="field">
+        <label>站点副标题</label>
+        <input type="text" id="siteTag" placeholder="每日更新 · PC + 安卓双平台">
+      </div>
+      <div class="field">
+        <label>页脚文字</label>
+        <input type="text" id="siteFooter" placeholder="by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版">
+      </div>
+      <div class="field">
+        <label>公告标题</label>
+        <input type="text" id="annTitle" placeholder="📢 公告">
+      </div>
+      <div class="field">
+        <label>公告内容（每行一条，留空则禁用公告弹窗）</label>
+        <textarea id="annLines" style="height:80px" placeholder="本站点8月10刚刚起步！可能还存在一些bug！请见谅！"></textarea>
+        <p class="hint">清空公告内容和标题后保存，即可关闭公告弹窗。</p>
+      </div>
+      <div class="row">
+        <button class="btn btn-p" id="saveSite">保存站点设置</button>
+      </div>
+      <div id="statusSite"></div>
+    </div>
   </div>
 
   <div class="panel" id="panelHtml">
@@ -347,7 +377,7 @@ const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelL
 function switchTab(id) {
   Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
   if (id === 'tabManage') loadPosts();
-  if (id === 'tabLinks') loadLinks();
+  if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
   if (id === 'tabStats') loadStats();
 }
@@ -1032,6 +1062,51 @@ $('saveLinks').onclick = async () => {
     show(stL, '保存成功，全站顶部栏和底部按钮已自动更新。', 'ok');
   } catch (e) {
     show(stL, '保存失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
+
+const stSITE = $('statusSite');
+async function loadSite() {
+  const repo = $('repo').value.trim();
+  try {
+    const s = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null) || {};
+    const site = s.site || {};
+    $('siteName').value = site.name || '黄油分享';
+    $('siteTag').value = site.tag !== undefined ? site.tag : '每日更新 · PC + 安卓双平台';
+    $('siteFooter').value = site.footer !== undefined ? site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
+    const ann = s.announcement || {};
+    $('annTitle').value = ann.title || '📢 公告';
+    $('annLines').value = (ann.lines || []).join('\n');
+  } catch (e) {
+    show(stSITE, '读取站点设置失败：' + e.message, 'err');
+  }
+}
+
+$('saveSite').onclick = async () => {
+  const btn = $('saveSite'); btn.disabled = true;
+  try {
+    const token = $('token').value.trim();
+    const repo = $('repo').value.trim();
+    if (!token) throw new Error('请先填写 Token');
+    let site = {};
+    const cur = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (cur && typeof cur === 'object') site = cur;
+    site.site = {
+      name: $('siteName').value.trim() || '黄油分享',
+      tag: $('siteTag').value.trim(),
+      footer: $('siteFooter').value.trim()
+    };
+    const annLines = $('annLines').value.split('\n').map(l => l.trim()).filter(Boolean);
+    if (annLines.length && $('annTitle').value.trim()) {
+      site.announcement = { enabled: true, title: $('annTitle').value.trim(), lines: annLines };
+    } else {
+      site.announcement = { enabled: false, title: '📢 公告', lines: [] };
+    }
+    await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
+      '更新站点设置', stSITE, 'site.json');
+    show(stSITE, '保存成功！全站公告/站点名称已更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+  } catch (e) {
+    show(stSITE, '保存失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
 };
 

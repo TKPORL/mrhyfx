@@ -30,10 +30,15 @@ if (fs.existsSync('site.json')) {
   SITE.comments = Object.assign({}, SITE.comments, s.comments || {});
 }
 
+const SITE_NAME = (SITE.site && SITE.site.name) || '黄油分享';
+const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
+const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
+const SITE_AUTHOR = 'Tsinho';
+
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
-        <span style="color:#dc9b04">Tsinho</span>
+        <span style="color:#dc9b04">${SITE_AUTHOR}</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>`;
 
@@ -117,13 +122,18 @@ const topButton = `<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scro
 })();
 </script>`;
 
-const popupHtml = `<div class="mrhx-popup" id="mrhxPopup">
+const popupHtml = (() => {
+  const ann = SITE.announcement && SITE.announcement.enabled !== false ? SITE.announcement : null;
+  const lines = (ann && ann.lines && ann.lines.length) ? ann.lines
+    : ['本站点8月10刚刚起步！可能还存在一些bug！请见谅！', '有任何建议或问题，欢迎在评论区留言或联系站长。'];
+  const title = (ann && ann.title) ? ann.title : '📢 公告';
+  if (ann && ann.enabled === false) return '';
+  return `<div class="mrhx-popup" id="mrhxPopup">
   <div class="mrhx-popup-inner">
     <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
     <div class="mrhx-popup-content">
-      <h3>📢 公告</h3>
-      <p>本站点8月10刚刚起步！可能还存在一些bug！请见谅！</p>
-      <p>有任何建议或问题，欢迎在评论区留言或联系站长。</p>
+      <h3>${title}</h3>
+      ${lines.map(l => `<p>${l}</p>`).join('\n      ')}
     </div>
     <button class="mrhx-popup-btn" onclick="document.getElementById('mrhxPopup').style.display='none'">我知道了</button>
   </div>
@@ -134,12 +144,13 @@ const popupHtml = `<div class="mrhx-popup" id="mrhxPopup">
 .mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
 .mrhx-popup-content h3{font-size:18px;color:#2b2b2b;margin-bottom:12px}
-.mrhx-popup-content p{font-size:14px;color:#666;line-height:1.8;margin-bottom:8px}
+.mrhx-popup-content p{font-size:14px;color:#666;line-height:1.8;margin-bottom:8px;white-space:pre-wrap}
 .mrhx-popup-btn{margin-top:14px;padding:10px 28px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
 @keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
 @keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
 </style>`;
+})();
 
 const viewScript = (sb, key, path) => `<script>
 (function () {
@@ -219,7 +230,7 @@ function emptyIndex(navLinks) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>黄油分享 · 每日更新</title>
+<title>${SITE_NAME} · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
@@ -239,14 +250,14 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">黄油<em>分享</em></a>
+    <a class="site" href="index.html">${SITE_NAME.replace('分享', '<em>分享</em>')}</a>
     <nav>${navLinks}</nav>
   </div>
 </header>
 <main>
   <p>暂无分享，敬请期待</p>
 </main>
-<footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
@@ -338,7 +349,7 @@ html = (function reorderNodes(str) {
     const shortName = path.parse(file).name;
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
-    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · 黄油分享</title>`);
+    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
 
     const v = SITE.comments;
     let commentBlock = '';
@@ -512,7 +523,7 @@ html = (function reorderNodes(str) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>黄油分享 · 每日更新</title>
+<title>${SITE_NAME} · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
@@ -573,7 +584,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">黄油<em>分享</em><small>每日更新 · PC + 安卓双平台</small></a>
+    <a class="site" href="index.html">${SITE_NAME.replace('分享', '<em>分享</em>')}<small>${esc(SITE_TAG)}</small></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -582,7 +593,7 @@ footer b{color:#e5484d}
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
 </main>
-<footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
