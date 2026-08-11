@@ -83,6 +83,9 @@ const sharedCss = `<style>
   .mrhx-cbtn{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:6px}
   .mrhx-cbtn:hover{color:#e5484d;background:#fdf3f3}
   .mrhx-cdel{color:#c93a3f}
+  .mrhx-cav-admin{background:#e5484d;color:#fff}
+  .mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px}
+  .mrhx-citem-admin{border-left:3px solid #e5484d;padding-left:10px}
   .mrhx-cempty{font-size:13px;color:#999;padding:10px 0}
   .mrhx-cform{margin-top:16px;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:14px}
   .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
@@ -279,11 +282,12 @@ const days = [];
     list.textContent = '';
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
     function addRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.pid ? ' mrhx-creply-item' : ''));
+      var row = h('div', 'mrhx-citem' + (c.pid ? ' mrhx-creply-item' : '') + (c.is_admin ? ' mrhx-citem-admin' : ''));
       var head = h('div', 'mrhx-chead');
-      head.appendChild(h('span', 'mrhx-cav', String(c.nick || '匿')[0].toUpperCase()));
+      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
       meta.appendChild(h('b', '', c.nick || '匿名'));
+      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
       meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
       head.appendChild(meta);
       row.appendChild(head);
@@ -318,7 +322,7 @@ const days = [];
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,content,created_at&order=created_at.asc', { headers: headers() })
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,content,created_at&order=created_at.asc', { headers: headers() })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) { all = d || []; render(); })
       .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });

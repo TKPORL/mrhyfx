@@ -39,6 +39,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .prow .pt{flex:1;min-width:0}
 .prow .pt b{display:block;font-size:13px;color:#333;margin-bottom:3px}
 .prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-all}
+.mbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
 .cwrap{border-top:1px dashed #ecebe9}
 .cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0}
 .rbox{margin:0 0 12px 22px;background:#faf9f7;border:1px solid #ecebe9;border-radius:10px;padding:10px}
@@ -629,7 +630,7 @@ async function loadComments() {
           <div class="cwrap">
             <div class="prow">
               <div class="pt">
-                <b>${esc(c.nick || '匿名')}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
+                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
                 <span class="pf">${esc(c.content)}</span>
                 <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
               </div>
@@ -682,20 +683,22 @@ async function loadComments() {
           const nick = $('rn-' + id).value.trim();
           const email = $('re-' + id).value.trim();
           const content = $('rc-' + id).value.trim();
+          const admin = $('sbSecret').value.trim();
           if (!nick || !email || !content) { show(stC, '请填写站长昵称、邮箱和回复内容', 'err'); return; }
+          if (!admin) { show(stC, '请先填写管理密钥（站长回复需要验证身份）', 'err'); return; }
           show(stC, '正在发表回复…', 'info');
           try {
             const res = await fetch(`${sbBase()}/rest/v1/comments`, {
               method: 'POST',
-              headers: Object.assign(sbHeaders(), { 'Prefer': 'return=minimal' }),
-              body: JSON.stringify({ url: b.dataset.rurl, pid: b.dataset.rtop || null, nick: nick, email: email, content: content })
+              headers: Object.assign(sbHeaders(), { 'Prefer': 'return=minimal', 'x-admin-key': admin }),
+              body: JSON.stringify({ url: b.dataset.rurl, pid: b.dataset.rtop || null, nick: nick, email: email, content: content, is_admin: true })
             });
             if (res.status === 400) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || '内容未通过检查'); }
             if (!res.ok) throw new Error('HTTP ' + res.status);
             localStorage.setItem('mrhx_admin_nick', nick);
             localStorage.setItem('mrhx_admin_email', email);
             $('rbox-' + id).style.display = 'none';
-            show(stC, '回复已发布，刷新帖子页面即可看到。', 'ok');
+            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。', 'ok');
             loadComments();
           } catch (e) {
             show(stC, '回复失败：' + e.message, 'err');
