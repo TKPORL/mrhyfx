@@ -5,12 +5,12 @@
 ## 结构
 
 - `index.html` — 首页：每日分享列表（每日期一条，点击进入当天页面）
-- `X月X黄油（PC+安卓）.html` — 每日分享页面（幕布导出原风格）
+- `8.1.html` — 每日分享页面（幕布导出原风格，标题以文件名命名）
 - `publish.html` — 发布中心：浏览器在线发布新一期（自动上传 GitHub）
 - `assets/<日期>/` — 本地化的游戏封面图
 - `games.json` — 最新一期的解析数据
 - `links.json` — 顶部导航 / 底部合集按钮链接配置
-- `counts.json` — 每日游戏数覆盖（如 `{"8月10": 92}`）
+- `counts.json` — 每日游戏数覆盖（如 `{"8.1": 92}`）
 - `scripts/gen.js` — 生成器（本地化图片、注入页头/按钮/动效、生成首页）
 - `scripts/parse.js` — 解析幕布 HTML 生成 games.json
 - `.github/workflows/gen.yml` — 每次推送自动运行 gen.js 并提交生成结果
@@ -20,11 +20,11 @@
 1. 打开 `https://tkporl.github.io/mrhyfx/publish.html`
 2. 填 GitHub Token（repo 权限，本机保存不泄露）、本期标题、粘贴幕布导出 HTML
 3. 点「发布」→ 文件自动提交 → Actions 自动生成首页并部署，1-2 分钟后刷新生效
-4. 可点「载入 8月10 模板」查看标准模板格式
+4. 可点「载入 8.1 模板」查看标准模板格式
 
 ## 更新方法（方式二：本地）
 
-1. 将当天幕布导出的 HTML 放入仓库根目录（文件名建议：`X月X黄油（PC+安卓）.html`）
+1. 将当天幕布导出的 HTML 放入仓库根目录（文件名建议：`X.X.html`，如 `8.2.html`）
 2. 运行 `node scripts/gen.js`：
    - 自动下载当天图片到 `assets/<日期>/`
    - 改写页脚为 `by Tsinho 发布`

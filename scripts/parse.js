@@ -1,5 +1,5 @@
 const fs = require('fs');
-const html = fs.readFileSync('8月10黄油（PC+安卓）.html', 'utf8');
+const html = fs.readFileSync('8.1.html', 'utf8');
 
 const parts = html.split(/<li class="node/);
 const entries = [];

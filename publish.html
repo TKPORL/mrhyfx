@@ -68,7 +68,7 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
   <p class="sub">把幕布导出的 HTML 粘贴到下方，点发布即可自动上传到 GitHub，随后 GitHub Actions 会自动生成首页与每日页面，1-2 分钟后全站更新。</p>
 
   <div class="steps">
-    <div class="step"><b>1. 填写信息</b><p>输入本期标题（如：8月11黄油（PC+安卓））和幕布导出的 HTML 内容。</p></div>
+    <div class="step"><b>1. 填写信息</b><p>输入本期标题（如：8.2）和幕布导出的 HTML 内容。</p></div>
     <div class="step"><b>2. 填入密钥</b><p>使用你的 GitHub Token（需要 repo 权限）。只在你的浏览器中处理，存于本机。</p></div>
     <div class="step"><b>3. 点击发布</b><p>文件自动提交到仓库，Actions 自动生成首页并部署，等待即可。</p></div>
   </div>
@@ -85,7 +85,7 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
     </div>
     <div class="field">
       <label>本期标题</label>
-      <input type="text" id="title" placeholder="如：8月11黄油（PC+安卓）">
+      <input type="text" id="title" placeholder="如：8.2（文件名，建议不用中文）">
       <p class="hint">即保存的文件名，注意与往期不要重名。</p>
     </div>
     <div class="field">
@@ -94,7 +94,7 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
     </div>
     <div class="row">
       <button class="btn btn-p" id="publish">发布</button>
-      <button class="btn btn-s" id="tpl">载入 8月10 模板</button>
+      <button class="btn btn-s" id="tpl">载入 8.1 模板</button>
     </div>
     <div id="status"></div>
     <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后首次访问请强制刷新（Ctrl+F5）以避免浏览器缓存。</p>
@@ -115,14 +115,14 @@ $('token').value = localStorage.getItem(TOKEN_KEY) || '';
 $('tpl').addEventListener('click', async () => {
   try {
     $('tpl').disabled = true;
-    show('正在载入 8月10 模板…', 'info');
-    const res = await fetch('8月10黄油（PC+安卓）.html');
+    show('正在载入 8.1 模板…', 'info');
+    const res = await fetch('8.1.html');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     $('html').value = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\n/, '');
     show('模板已载入，请把标题改成新日期后发布（或整体替换内容）。', 'ok');
   } catch (e) {
-    show('模板载入失败：' + e.message + '\n建议直接打开 8月10黄油（PC+安卓）.html 另存一份修改。', 'err');
+    show('模板载入失败：' + e.message + '\n建议直接打开 8.1.html 另存一份修改。', 'err');
   } finally {
     $('tpl').disabled = false;
   }

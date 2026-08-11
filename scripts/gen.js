@@ -42,6 +42,8 @@ const sharedCss = `<style>
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
+  .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
   @media (max-width:720px){
@@ -124,13 +126,11 @@ const days = [];
 
     html = html.replace(PUBLISH_RE, newPublish);
 
-    const extrasNodes = NAV.map(n => `<li class="node">
-    <div class="bullet">
-    <div class="bullet-dot"></div>
-  </div>
-    
-    <div class="content mm-editor" ><a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a></div>
-  </li>`).join('\n');
+    const extrasNodes = `<li class="node">
+    <div class="content mm-editor" ><div class="mrhx-grid">
+    ${NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('\n    ')}
+  </div></div>
+  </li>`;
     const lastLi = html.lastIndexOf('</li>');
     html = html.slice(0, lastLi + 5) + '\n' + extrasNodes + html.slice(lastLi + 5);
 
@@ -145,6 +145,9 @@ const days = [];
     html = html.replace(/(<body[^>]*>)[\s\S]*?(<div class="title">)/, `$1\n  ${injected}\n  $2`);
     html = html.replace(/<!--mrhx-stagger--><style>[\s\S]*?<\/style>\n?/, '');
     html = html.replace('</body>', `<!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
+    const shortName = path.parse(file).name;
+    html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(shortName)}</div>`);
+    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(shortName)} · 黄油分享</title>`);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
@@ -169,11 +172,12 @@ const days = [];
     const title = path.parse(d.file).name;
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
+    const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>` : `<b style="font-size:13px">${esc(title)}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
-  <div class="date"><b>${dateM ? dateM[2] : '·'}</b><span>${dateM ? dateM[1] + '月' : ''}</span></div>
+  <div class="date">${badge}</div>
   <div class="info">
     <div class="ptitle">${title}</div>
     <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
