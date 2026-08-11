@@ -323,7 +323,7 @@ const days = [];
   }
   function load() {
     fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,content,created_at&order=created_at.asc', { headers: headers() })
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
       .then(function (d) { all = d || []; render(); })
       .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
   }
