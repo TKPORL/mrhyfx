@@ -56,6 +56,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 #status.ok{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 #status.err{background:#fdf1f1;color:#c93a3f;border:1px solid #f0b4b6}
 #status.info{background:#eef4fd;color:#1a5fb4;border:1px solid #bcd3f0}
+#status.warn{background:#fff8e6;color:#9a6700;border:1px solid #eedd9e}
 .warn{margin-top:14px;font-size:12px;color:#999;line-height:1.7;border-top:1px dashed #ecebe9;padding-top:12px}
 @media (max-width:720px){
   .hwrap{padding:12px 14px}
@@ -148,31 +149,27 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 
   <div class="panel" id="panelComments">
     <div class="card">
-      <h2>评论功能配置（LeanCloud）</h2>
-      <p class="hint">访客只需填昵称、邮箱、评论内容即可评论，支持回复。数据存在 LeanCloud 免费版：注册 https://leancloud.app （国际版，免备案）→ 创建应用 → 设置 → 应用凭证，把 AppID / AppKey 填到下面；Master Key 只用于后台删除评论，只保存在你的浏览器，不会写入网站代码。</p>
+      <h2>评论功能配置（Supabase 免费版）</h2>
+      <p class="hint">访客填昵称、邮箱、内容即可评论，支持回复。数据存在你的 Supabase 免费项目（500MB，评论量随便用）。配置步骤见仓库 README「评论功能」一节：注册 supabase.com → 新建项目 → SQL Editor 粘贴建表语句运行 → 复制 3 个值填到下面。</p>
       <div class="field">
-        <label>AppID</label>
-        <input type="text" id="lcId" placeholder="LeanCloud 应用 AppID">
+        <label>Project URL（项目地址，形如 https://xxx.supabase.co）</label>
+        <input type="text" id="sbUrl" placeholder="https://你的项目.supabase.co">
       </div>
       <div class="field">
-        <label>AppKey</label>
-        <input type="password" id="lcKey" placeholder="LeanCloud 应用 AppKey" autocomplete="off">
+        <label>anon / publishable 公钥（公开的，会写入网站代码供访客评论）</label>
+        <input type="text" id="sbAnon" placeholder="eyJhbGciOi..." style="font-family:Consolas,monospace;font-size:12px">
       </div>
       <div class="field">
-        <label>Master Key（删除评论用，只存本浏览器）</label>
-        <input type="password" id="lcMaster" placeholder="LeanCloud Master Key" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>serverURLs（国际版留空即可；大陆版填 https://cn-e1-api.leancloud.cn 或 https://cn-n1-api.leancloud.cn）</label>
-        <input type="text" id="lcServer" placeholder="https://api.leancloud.cn">
+        <label>service_role / secret 私钥（只存本浏览器，用于后台删除评论，绝不写入网站）</label>
+        <input type="password" id="sbSecret" placeholder="eyJhbGciOi..." autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
       </div>
       <div class="row">
-        <button class="btn btn-p" id="saveLC">保存配置并启用评论</button>
-        <button class="btn btn-s" id="disableLC">停用评论</button>
+        <button class="btn btn-p" id="saveCC">保存配置并启用评论</button>
+        <button class="btn btn-s" id="disableCC">停用评论</button>
         <button class="btn btn-s" id="loadComments">加载评论列表</button>
       </div>
       <div id="statusC"></div>
-      <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。</p>
+      <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。私钥填好后：本页签可批量删除；打开任意帖子，评论下方也会出现删除按钮。</p>
     </div>
     <div class="card">
       <h2>评论列表</h2>
@@ -540,47 +537,34 @@ $('saveLinks').onclick = async () => {
 };
 
 const stC = $('statusC');
-const LC_PREFIX = 'mrhx_lc_';
-const lcGet = k => localStorage.getItem(LC_PREFIX + k) || '';
-const lcSet = (k, v) => localStorage.setItem(LC_PREFIX + k, v);
-$('lcId').value = lcGet('id');
-$('lcKey').value = lcGet('key');
-$('lcMaster').value = lcGet('master');
-$('lcServer').value = lcGet('server');
-['id', 'key', 'master', 'server'].forEach(k => $('lc' + k[0].toUpperCase() + k.slice(1)).addEventListener('input', () => lcSet(k, $('lc' + k[0].toUpperCase() + k.slice(1)).value.trim())));
+const SB_PREFIX = 'mrhx_sb_';
+const sbGet = k => localStorage.getItem(SB_PREFIX + k) || '';
+const sbSet = (k, v) => localStorage.setItem(SB_PREFIX + k, v);
+$('sbUrl').value = sbGet('url');
+$('sbAnon').value = sbGet('anon');
+$('sbSecret').value = sbGet('secret');
+$('sbUrl').addEventListener('input', () => sbSet('url', $('sbUrl').value.trim()));
+$('sbAnon').addEventListener('input', () => sbSet('anon', $('sbAnon').value.trim()));
+$('sbSecret').addEventListener('input', () => { sbSet('secret', $('sbSecret').value.trim()); localStorage.setItem('mrhx_comments_admin', $('sbSecret').value.trim()); });
 
-const lcServer = () => ($('lcServer').value.trim() || 'https://api.leancloud.cn').replace(/\/+$/, '');
-
-async function lcFetch(path, method, withMaster) {
-  const headers = { 'X-LC-Id': $('lcId').value.trim(), 'Content-Type': 'application/json' };
-  headers['X-LC-Key'] = withMaster ? ($('lcMaster').value.trim() + ',master') : $('lcKey').value.trim();
-  const res = await fetch(lcServer() + '/1.1/' + path, { method: method || 'GET', headers: headers });
-  if (!res.ok) {
-    const err = await res.json().catch(() => null);
-    throw new Error((err && (err.error || ('code ' + err.code))) || ('HTTP ' + res.status));
-  }
-  return method === 'DELETE' ? null : res.json();
-}
-
-let ALL_COMMENTS = [];
+const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
+const sbHeaders = (secret) => {
+  const key = secret ? $('sbSecret').value.trim() : $('sbAnon').value.trim();
+  return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
+};
 
 async function loadComments() {
   const box = $('commentBox');
-  if (!$('lcId').value.trim() || !$('lcKey').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 AppID 和 AppKey。</p>'; return; }
+  if (!sbBase() || !$('sbAnon').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 Project URL 和 anon 公钥。</p>'; return; }
+  if (!$('sbSecret').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 service_role 私钥（读取和删除评论都需要）。</p>'; return; }
   show(stC, '正在加载评论…', 'info');
   try {
-    const all = [];
-    let skip = 0;
-    for (;;) {
-      const data = await lcFetch(`classes/Comment?where=${encodeURIComponent('{}')}&order=-createdAt&limit=1000&skip=${skip}`);
-      all.push(...data.results);
-      if (data.results.length < 1000) break;
-      skip += 1000;
-    }
-    ALL_COMMENTS = all;
+    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.asc&limit=1000`, { headers: sbHeaders(true) });
+    if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+    const all = await res.json();
     const byUrl = {};
     all.forEach(c => { const u = c.url || '/'; (byUrl[u] = byUrl[u] || []).push(c); });
-    const entries = Object.entries(byUrl);
+    const entries = Object.entries(byUrl).sort((a, b) => b[0].localeCompare(a[0]));
     if (!entries.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
       box.innerHTML = entries.map(([url, list]) => `
@@ -591,80 +575,78 @@ async function loadComments() {
             <div class="pt">
               <b>${esc(c.nick || '匿名')}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
               <span class="pf">${esc(c.content)}</span>
-              <span class="pf">${new Date(c.createdAt).toLocaleString()}</span>
+              <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
             </div>
-            <button class="del" data-dcid="${esc(c.objectId)}">删除</button>
+            <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
           </div>`).join('')}
           <div class="row" style="margin-top:8px">
             <button class="btn btn-s" data-clear="${esc(url)}">清空该帖全部评论</button>
           </div>
         </div>`).join('');
-      [...box.querySelectorAll('[data-dcid]')].forEach(b => { b.onclick = () => delComment(b.dataset.dcid); });
-      [...box.querySelectorAll('[data-clear]')].forEach(b => { b.onclick = () => delComment(null, b.dataset.clear); });
+      [...box.querySelectorAll('[data-dcid]')].forEach(b => {
+        b.onclick = () => {
+          if (b.dataset.pid) {
+            show(stC, '回复会自动随楼层一起删除，直接删除其所在楼层即可。', 'warn');
+            return;
+          }
+          delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该评论及其全部回复');
+        };
+      });
+      [...box.querySelectorAll('[data-clear]')].forEach(b => {
+        b.onclick = () => delComments(`url=eq.${encodeURIComponent(b.dataset.clear)}`, '该帖全部评论');
+      });
     }
     show(stC, '共 ' + all.length + ' 条评论', 'ok');
   } catch (e) {
-    show(stC, '加载失败：' + e.message + '\n\n请检查 AppID/AppKey 是否正确、serverURLs 是否匹配你的 LeanCloud 区域。', 'err');
+    show(stC, '加载失败：' + e.message + '\n\n常见原因：URL/密钥填错、SQL 没执行、项目被暂停（Free 版 7 天不活跃会暂停，去控制台恢复）。', 'err');
   }
 }
 
-async function delComment(cid, url) {
-  if (!$('lcMaster').value.trim()) { show(stC, '删除评论需要先填写 Master Key', 'err'); return; }
-  const ids = new Set();
-  if (cid) {
-    ids.add(cid);
-    let changed = true;
-    while (changed) {
-      changed = false;
-      ALL_COMMENTS.forEach(c => { if (c.pid && ids.has(c.pid) && !ids.has(c.objectId)) { ids.add(c.objectId); changed = true; } });
-    }
-  } else {
-    ALL_COMMENTS.forEach(c => { if (c.url === url) ids.add(c.objectId); });
-  }
-  if (!ids.size) return;
-  if (!confirm('确定删除 ' + ids.size + ' 条评论' + (cid ? '（含其下回复）' : '（该帖全部评论）') + '吗？')) return;
-  show(stC, '正在删除 ' + ids.size + ' 条评论…', 'info');
+async function delComments(filter, desc) {
+  if (!$('sbSecret').value.trim()) { show(stC, '请先填写 service_role 私钥', 'err'); return; }
+  if (!confirm('确定删除吗？（' + desc + '，不可恢复）')) return;
+  show(stC, '正在删除…', 'info');
   try {
-    for (const id of ids) await lcFetch('classes/Comment/' + id, 'DELETE', true);
-    show(stC, '已删除 ' + ids.size + ' 条评论。', 'ok');
+    const res = await fetch(`${sbBase()}/rest/v1/comments?${filter}`, { method: 'DELETE', headers: sbHeaders(true) });
+    if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+    show(stC, '已删除。', 'ok');
     loadComments();
   } catch (e) {
-    show(stC, '删除失败：' + e.message + '\n\n常见原因：Master Key 填错（用应用凭证里的 Master Key 原值）。', 'err');
+    show(stC, '删除失败：' + e.message, 'err');
   }
 }
 
-async function saveSiteValine(enabled) {
+async function saveSiteComments(enabled) {
   const token = $('token').value.trim();
   const repo = $('repo').value.trim();
   if (!token) throw new Error('请先填写 GitHub Token');
-  if (enabled && (!$('lcId').value.trim() || !$('lcKey').value.trim())) throw new Error('请填写 AppID 和 AppKey');
+  if (enabled && (!sbBase() || !$('sbAnon').value.trim())) throw new Error('请填写 Project URL 和 anon 公钥');
   let site = {};
   const raw = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
   if (raw && typeof raw === 'object') site = raw;
-  site.valine = {
+  site.comments = {
     enabled: enabled,
-    appId: enabled ? $('lcId').value.trim() : (site.valine && site.valine.appId) || '',
-    appKey: enabled ? $('lcKey').value.trim() : (site.valine && site.valine.appKey) || '',
-    serverURLs: enabled ? $('lcServer').value.trim() : (site.valine && site.valine.serverURLs) || ''
+    url: enabled ? sbBase() : (site.comments && site.comments.url) || '',
+    anonKey: enabled ? $('sbAnon').value.trim() : (site.comments && site.comments.anonKey) || ''
   };
   await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
     enabled ? '启用评论功能' : '停用评论功能', stC, 'site.json');
 }
 
-$('saveLC').onclick = async () => {
-  const btn = $('saveLC'); btn.disabled = true;
+$('saveCC').onclick = async () => {
+  const btn = $('saveCC'); btn.disabled = true;
   try {
-    await saveSiteValine(true);
+    await saveSiteComments(true);
     show(stC, '已保存并启用评论！所有帖子将自动带上评论区，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
   } catch (e) {
     show(stC, '保存失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
 };
 
-$('disableLC').onclick = async () => {
-  const btn = $('disableLC'); btn.disabled = true;
+$('disableCC').onclick = async () => {
+  const btn = $('disableCC'); btn.disabled = true;
   try {
-    await saveSiteValine(false);
+    await saveSiteComments(false);
     show(stC, '评论功能已停用，全站评论区将移除（2-3 分钟后生效）。', 'ok');
   } catch (e) {
     show(stC, '保存失败：' + e.message, 'err');

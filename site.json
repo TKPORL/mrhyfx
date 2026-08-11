@@ -1,8 +1,7 @@
 {
-  "valine": {
+  "comments": {
     "enabled": false,
-    "appId": "",
-    "appKey": "",
-    "serverURLs": ""
+    "url": "",
+    "anonKey": ""
   }
 }
