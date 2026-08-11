@@ -133,5 +133,16 @@ footer b{color:#e5484d}
   t();
 })();
 </script>
+<script>
+(function () {
+  try {
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '/index.html' })
+    });
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

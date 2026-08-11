@@ -249,6 +249,7 @@ footer b{color:#e5484d}
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 ${popupHtml}
 ${topButton}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 </body>
 </html>
 `;
@@ -584,6 +585,7 @@ footer b{color:#e5484d}
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 ${popupHtml}
 ${topButton}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 </body>
 </html>
 `;
