@@ -247,6 +247,8 @@ footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#9
 footer b{color:#e5484d}
 @media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}}
 </style>
+<link rel="icon" href="favicon.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 </head>
 <body>
 <header>
@@ -351,6 +353,9 @@ html = (function reorderNodes(str) {
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
+    html = html.replace('</head>', `<link rel="icon" href="favicon.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+</head>`);
 
     const v = SITE.comments;
     let commentBlock = '';
@@ -584,6 +589,8 @@ footer b{color:#e5484d}
   .arrow{display:none}
 }
 </style>
+<link rel="icon" href="favicon.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 </head>
 <body>
 <header>
