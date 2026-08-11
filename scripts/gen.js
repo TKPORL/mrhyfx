@@ -98,7 +98,33 @@ const sharedCss = `<style>
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}}
+  .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
+  .mrhx-top.show{opacity:1;pointer-events:auto}
+  .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 </style>`;
+
+const topButton = `<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>`;
+
+const viewScript = (sb, key, path) => `<script>
+(function () {
+  try {
+    fetch('${sb}/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '${path}' })
+    });
+  } catch (e) {}
+})();
+</script>`;
 
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${i * 0.05}s}`).join('\n');
 
@@ -194,6 +220,7 @@ footer b{color:#e5484d}
   <p>暂无分享，敬请期待</p>
 </main>
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+${topButton}
 </body>
 </html>
 `;
@@ -351,7 +378,9 @@ const days = [];
 <!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
-    html = html.replace('</body>', `  ${commentBlock}${commentBlock ? '\n  ' : ''}<!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
+    const topBtn = topButton;
+    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
+    html = html.replace('</body>', `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
@@ -477,6 +506,7 @@ footer b{color:#e5484d}
   ${dayLis || '<div class="empty">暂无分享</div>'}
 </main>
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+${topButton}
 </body>
 </html>
 `;

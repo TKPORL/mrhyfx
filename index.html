@@ -91,5 +91,15 @@ footer b{color:#e5484d}
 </a>
 </main>
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
 </body>
 </html>

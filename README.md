@@ -69,6 +69,43 @@ create index comments_url_idx on comments (url);
 
 > 安全说明：Supabase 浏览器端禁止使用 secret 私钥，所以本项目不碰 secret key。公开的 anon/publishable 公钥只允许评论和读取（数据库 RLS 规则控制）；删除评论靠 SQL 里的自编管理密钥验证请求头，密钥只存在你自己的浏览器里，绝不写入网站代码。
 
+## 访问统计（可选，需额外运行 SQL）
+
+帖子页面自动统计访问次数，仅后台管理可见（不在访客页面显示）。
+
+1. 在 Supabase SQL Editor 中运行以下 SQL（请把 `你的管理密钥` 换成你之前设置的同一串）：
+
+```sql
+create table if not exists page_views (
+  url text primary key,
+  count bigint not null default 0
+);
+
+alter table page_views enable row level security;
+
+drop policy if exists "page_views_select_admin" on page_views;
+create policy "page_views_select_admin" on page_views
+  for select using (
+    coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+  );
+
+create or replace function inc_page_view(p_url text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into page_views(url, count) values (p_url, 1)
+  on conflict (url) do update set count = page_views.count + 1
+$$;
+
+revoke execute on function inc_page_view(text) from public;
+grant execute on function inc_page_view(text) to anon;
+```
+
+2. 运行后，每次有人打开帖子页面自动 +1 访问次数。
+3. 后台管理「帖子管理」列表会显示每个帖子的访问量，仅管理密钥登录后可见。
+
 ## 更新方法（方式二：本地）
 
 1. 将当天幕布导出的 HTML 放入仓库根目录（文件名建议：`X.X.html`，如 `8.2.html`）

@@ -29,6 +29,35 @@ label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#444}
 input[type=text],input[type=password],input[type=number],textarea{width:100%;border:1px solid #e2e0dc;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:.2s}
 input:focus,textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
 textarea{resize:vertical;font-size:13px;line-height:1.6}
+.field{position:relative;transition:.2s}
+.field.act{padding-left:10px;padding-top:3px;padding-bottom:3px;border-left:3px solid #e5484d;border-radius:8px;background:linear-gradient(90deg,rgba(229,72,77,.06),rgba(229,72,77,0));transition:.25s}
+.field.act label{color:#e5484d}
+.field.act::after{content:'编辑中';position:absolute;top:5px;right:8px;font-size:10px;font-weight:700;color:#fff;background:#e5484d;border-radius:99px;padding:1px 8px;z-index:2}
+.field.act input,.field.act textarea{border-color:#f0a9ab}
+.g-prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.g-prev figure{margin:0;position:relative;width:86px;border:1px solid #ecebe9;border-radius:8px;overflow:hidden;background:#faf9f7;animation:mrhxFade .3s ease both}
+.g-prev img{width:86px;height:60px;object-fit:cover;display:block}
+.g-prev figcaption{font-size:10px;color:#999;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-prev .g-rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.g-prev .g-rm:hover{background:#e5484d}
+.game{cursor:grab;transition:.2s}
+.game.drag{opacity:.45}
+.game.over{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
+.game.newcard{animation:mrhxPop .5s ease both}
+@keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes mrhxPop{0%{box-shadow:0 0 0 3px rgba(229,72,77,.4)}100%{box-shadow:none}}
+.editbar{display:none;margin-bottom:14px;padding:11px 14px;border-radius:10px;font-size:13px;background:#fff8e6;color:#9a6700;border:1px solid #eedd9e;line-height:1.7}
+.editbar.show{display:block;animation:mrhxFade .3s ease both}
+.editbar b{color:#e5484d}
+.mrhx-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(45,45,45,.92);color:#fff;font-size:13px;padding:10px 20px;border-radius:99px;z-index:999;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:88vw;text-align:center}
+.mrhx-toast.show{opacity:1;top:84px}
+.mrhx-top{position:fixed;right:22px;bottom:26px;z-index:999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
+.mrhx-top.show{opacity:1;pointer-events:auto}
+.mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
+.draftbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;border-radius:10px;background:#eef4fd;color:#1a5fb4;border:1px solid #bcd3f0;font-size:13px;line-height:1.6}
+.draftbar.show{display:flex}
+.draftbar b{color:#1a5fb4}
+.draftbar .btn{padding:6px 14px;font-size:12px;border-radius:8px}
 .hint{font-size:12px;color:#aaa;margin-top:5px}
 .game{border:1px solid #ecebe9;border-radius:12px;padding:16px;margin-bottom:12px;background:#fefefe}
 .game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -100,6 +129,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   </div>
 
   <div class="panel on" id="panelForm">
+    <div class="editbar" id="editBar"></div>
+    <div class="draftbar" id="draftBar">
+      <span>已自动保存的未发布草稿（<b id="draftTime"></b>）已恢复。上传的图片文件需重新选择，图片 URL、文字、链接都已保留。</span>
+      <button class="btn btn-s" id="clearFormDraft">清空表单草稿</button>
+    </div>
     <div class="card">
       <h2>基本信息</h2>
       <div class="field">
@@ -114,6 +148,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div class="field">
         <label>游戏数量（可选，留空则按下面添加的游戏条数自动统计）</label>
         <input type="number" id="fCount" placeholder="如：95">
+      </div>
+      <div class="row" style="gap:10px">
+        <button class="btn btn-s" id="exportForm">导出数据</button>
+        <button class="btn btn-s" id="importForm">导入数据</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
       </div>
     </div>
 
@@ -224,6 +263,8 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     </div>
   </div>
 </main>
+<div class="mrhx-toast" id="toast"></div>
+<button class="mrhx-top" id="topBtn" title="回到顶部">↑</button>
 <script>
 const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
@@ -255,6 +296,127 @@ Object.keys(tabs).forEach(id => {
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+const topBtn = $('topBtn');
+window.addEventListener('scroll', () => topBtn.classList.toggle('show', window.scrollY > 400), { passive: true });
+topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+document.addEventListener('focusin', e => {
+  const f = e.target.closest('.field');
+  document.querySelectorAll('.field.act').forEach(x => x.classList.remove('act'));
+  if (f) f.classList.add('act');
+});
+
+const DRAFT_FORM = 'mrhx_draft_form_v1';
+const DRAFT_HTML = 'mrhx_draft_html_v1';
+let draftTimer;
+function collectDraft() {
+  return {
+    v: 1,
+    at: Date.now(),
+    form: {
+      name: $('fName').value, title: $('fTitle').value, count: $('fCount').value,
+      cards: [...$('gameBox').children].map(el => ({
+        name: el.querySelector('.g-name').value.trim(),
+        intro: el.querySelector('.g-intro').value.trim(),
+        imgs: el.querySelector('.g-imgs').value,
+        linkM: el.querySelector('.g-linkM').value.trim(),
+        linkB: el.querySelector('.g-linkB').value.trim(),
+        files: [...el.querySelector('.g-files').files].map(f => f.name)
+      }))
+    },
+    html: { name: $('hName').value, title: $('hTitle').value, content: $('html').value }
+  };
+}
+function saveDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    localStorage.setItem(DRAFT_FORM + '_tmp', JSON.stringify(collectDraft().form));
+    localStorage.setItem(DRAFT_HTML + '_tmp', JSON.stringify(collectDraft().html));
+    localStorage.setItem(DRAFT_FORM, localStorage.getItem(DRAFT_FORM + '_tmp'));
+    localStorage.setItem(DRAFT_HTML, localStorage.getItem(DRAFT_HTML + '_tmp'));
+  }, 400);
+}
+function restoreDraft() {
+  try {
+    const f = localStorage.getItem(DRAFT_FORM);
+    if (f) {
+      const d = JSON.parse(f);
+      $('fName').value = d.name || '';
+      $('fTitle').value = d.title || '';
+      $('fCount').value = d.count || '';
+      $('gameBox').innerHTML = '';
+      (d.cards || []).forEach(c => addGameCard(c));
+      const bar = $('draftBar');
+      bar.classList.add('show');
+      $('draftTime').textContent = new Date(d.at || Date.now()).toLocaleString();
+    }
+    const h = localStorage.getItem(DRAFT_HTML);
+    if (h) {
+      const d = JSON.parse(h);
+      $('hName').value = d.name || '';
+      $('hTitle').value = d.title || '';
+      $('html').value = d.content || '';
+    }
+  } catch (e) { /* ignore */ }
+}
+function attachDraft() {
+  ['fName', 'fTitle', 'fCount'].forEach(id => $(id).addEventListener('input', saveDraft));
+  ['hName', 'hTitle', 'html'].forEach(id => $(id).addEventListener('input', saveDraft));
+  const box = $('gameBox');
+  box.addEventListener('input', saveDraft);
+  box.addEventListener('change', e => { if (e.target.classList.contains('g-files')) { previewFiles(e.target); saveDraft(); } });
+  $('clearFormDraft').onclick = () => {
+    localStorage.removeItem(DRAFT_FORM);
+    localStorage.removeItem(DRAFT_HTML);
+    $('draftBar').classList.remove('show');
+    toast('草稿已清空');
+  };
+}
+$('exportForm').onclick = () => {
+  const data = collectDraft();
+  saveDraft();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mrhx-draft-' + new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出数据文件，可在其他设备导入');
+};
+$('importForm').onclick = () => $('importFile').click();
+$('importFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (d.form) {
+        $('fName').value = d.form.name || ''; $('fTitle').value = d.form.title || ''; $('fCount').value = d.form.count || '';
+        $('gameBox').innerHTML = '';
+        (d.form.cards || []).forEach(c => addGameCard(c));
+      }
+      if (d.html) {
+        $('hName').value = d.html.name || ''; $('hTitle').value = d.html.title || ''; $('html').value = d.html.content || '';
+      }
+      saveDraft();
+      toast('导入成功！上传的图片文件请在对应卡片重新选择');
+    } catch (err) { toast('导入失败：数据格式不正确'); }
+  };
+  rd.readAsText(file);
+  e.target.value = '';
+});
+
 function gameHtml(c, imgPaths) {
   const imgs = (imgPaths && imgPaths.length) ? imgPaths : c.imgs.split('\n').map(u => u.trim()).filter(Boolean);
   const rows = imgs
@@ -283,11 +445,12 @@ ${rows}
   </li>`;
 }
 
-function addGameCard() {
+function addGameCard(data) {
   const box = $('gameBox');
   const n = box.children.length + 1;
   const d = document.createElement('div');
   d.className = 'game';
+  d.draggable = true;
   d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span><button class="del">删除</button></div>
   <div class="field"><label>游戏名称</label><input type="text" class="g-name" placeholder="如：精灵雷亚"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro" placeholder="如：[神作/亚洲风SLG/动态] 汉化步兵 [PC+安卓 18G]&#10;有作弊码就写：作弊码 158078"></textarea></div>
@@ -295,6 +458,7 @@ function addGameCard() {
     <input type="file" class="g-files" accept="image/*" multiple>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
     <textarea class="g-imgs" placeholder="https://... 每行一个（上传了文件就不用填）"></textarea>
+    <div class="g-prev"></div>
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
@@ -302,16 +466,96 @@ function addGameCard() {
       <input type="text" class="g-linkB" placeholder="百度网盘 URL（可选）">
     </div>
   </div>`;
-  d.querySelector('.del').onclick = () => { d.remove(); renum(); };
+  if (data) fillCard(d, data);
+  d.querySelector('.del').onclick = () => { d.remove(); renum(); toast('已删除游戏 ' + d._num); };
+  const fileInput = d.querySelector('.g-files');
+  fileInput.addEventListener('change', () => previewFiles(fileInput));
   box.appendChild(d);
+  bindDrag(d);
   renum();
+  if (!data) {
+    d.classList.add('newcard');
+    toast('已添加游戏 ' + d.querySelector('.gnum').textContent);
+    d.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
   return d;
 }
-function renum() {
-  [...$('gameBox').children].forEach((el, i) => el.querySelector('.gnum').textContent = '游戏 ' + (i + 1));
+
+function previewFiles(input) {
+  const prev = input.parentElement.querySelector('.g-prev');
+  prev.innerHTML = '';
+  [...input.files].forEach((f, i) => {
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.alt = f.name;
+    const rd = new FileReader();
+    rd.onload = () => { img.src = rd.result; };
+    rd.readAsDataURL(f);
+    const cap = document.createElement('figcaption');
+    cap.textContent = f.name;
+    const rm = document.createElement('button');
+    rm.className = 'g-rm'; rm.textContent = '×';
+    rm.onclick = () => {
+      fig.remove();
+      const dt = new DataTransfer();
+      [...input.files].forEach((x, xi) => { if (xi !== i) dt.items.add(x); });
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    };
+    fig.appendChild(img); fig.appendChild(cap); fig.appendChild(rm);
+    prev.appendChild(fig);
+  });
+  toast('已选 ' + input.files.length + ' 张图片');
 }
-$('addGame').onclick = addGameCard;
-addGameCard();
+
+function fillCard(card, data) {
+  if (data.name != null) card.querySelector('.g-name').value = data.name;
+  if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
+  if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
+  if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
+  if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
+}
+
+let dragEl = null;
+function bindDrag(card) {
+  card.addEventListener('dragstart', e => {
+    dragEl = card;
+    card.classList.add('drag');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', ''); } catch (err) {}
+  });
+  card.addEventListener('dragend', () => { card.classList.remove('drag'); dragEl = null; });
+  card.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    card.classList.add('over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('over'));
+  card.addEventListener('drop', e => {
+    e.preventDefault();
+    card.classList.remove('over');
+    if (!dragEl || dragEl === card) return;
+    const box = $('gameBox');
+    const children = [...box.children];
+    const from = children.indexOf(dragEl);
+    const to = children.indexOf(card);
+    children.splice(from, 1);
+    children.splice(to, 0, dragEl);
+    children.forEach(c => box.appendChild(c));
+    renum();
+    toast('已调整顺序：' + dragEl.querySelector('.g-name').value.trim() || '游戏 ' + (to + 1));
+  });
+}
+function renum() {
+  [...$('gameBox').children].forEach((el, i) => {
+    el.querySelector('.gnum').textContent = '游戏 ' + (i + 1);
+    el._num = (i + 1);
+  });
+}
+$('addGame').onclick = () => addGameCard();
+restoreDraft();
+attachDraft();
+if (!localStorage.getItem(DRAFT_FORM)) addGameCard();
 
 function collectGames() {
   return [...$('gameBox').children].map(el => ({
@@ -453,13 +697,23 @@ async function loadPosts() {
     const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'publish.html'].includes(t.path));
     const titles = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    let views = {};
+    const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
+    if (sbUrl && sbAnon && sbSecret) {
+      try {
+        const vr = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        });
+        if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
+      } catch (e) {}
+    }
     if (!posts.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无帖子</p>'; }
     else {
       box.innerHTML = posts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
         const tag = p.path.replace(/\.html$/, '');
         const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
         return `<div class="game">
-  <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}</span></div>
+  <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}${views['/' + encodeURIComponent(tag + '.html')] != null ? ' · 访问 ' + views['/' + encodeURIComponent(tag + '.html')] + ' 次' : ''}</span></div>
   <div class="row">
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
     <button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button>
@@ -516,19 +770,42 @@ async function loadPosts() {
         b.onclick = async () => {
           const tag = b.dataset.edit;
           b.disabled = true;
-          show(stM, '正在载入 ' + tag + '.html 到编辑区…', 'info');
+          show(stM, '正在载入「' + tag + '」到表单编辑区…', 'info');
           try {
             const res = await fetch(`${RAW_BASE}/${repo}/main/${tag}.html`);
             if (!res.ok) throw new Error('HTTP ' + res.status);
-            let text = await res.text();
-            text = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\s*/g, '')
-                       .replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '')
-                       .replace(/\s*<!--mrhx-stagger--><style>[\s\S]*?<\/style>\s*/g, '\n');
-            $('hName').value = tag;
-            $('hTitle').value = titles[tag] || tag;
-            $('html').value = text;
-            switchTab('tabHtml');
-            show(stH, '已载入「' + tag + '」，修改后点发布即可覆盖更新（原有评论区、导航会自动保留）。', 'ok');
+            const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+            const lis = [...doc.querySelectorAll('li.node.heading3')];
+            if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
+            $('gameBox').innerHTML = '';
+            lis.forEach(li => {
+              const card = addGameCard();
+              const nameEl = li.querySelector('.content.mm-editor span');
+              const note = li.querySelector('.note.mm-editor');
+              let intro = '', linkM = '', linkB = '';
+              if (note) {
+                const sp = note.querySelector(':scope > span');
+                if (sp) intro = sp.textContent.trim();
+                [...note.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                  const href = a.getAttribute('href') || '';
+                  if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
+                  else linkM = href;
+                });
+              }
+              const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+              card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
+              card.querySelector('.g-intro').value = intro;
+              card.querySelector('.g-imgs').value = imgs;
+              card.querySelector('.g-linkM').value = linkM;
+              card.querySelector('.g-linkB').value = linkB;
+            });
+            $('fName').value = tag;
+            $('fTitle').value = titles[tag] || tag;
+            $('fCount').value = counts[tag] || '';
+            $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
+            $('editBar').classList.add('show');
+            switchTab('tabForm');
+            show(stF, '已载入「' + tag + '」，修改后点发布即可覆盖更新。', 'ok');
             scrollTo(0, 0);
           } catch (e) {
             show(stM, '载入失败：' + e.message, 'err');
@@ -783,6 +1060,8 @@ $('pubForm').onclick = async () => {
     const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
     const htmlContent = await buildFormHtml(cards, imagePaths);
     await publish(stF, name, title, count, htmlContent);
+    localStorage.removeItem(DRAFT_FORM);
+    $('editBar').classList.remove('show');
   } catch (e) {
     show(stF, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
   } finally { btn.disabled = false; }

@@ -1082,6 +1082,9 @@
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}}
+  .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
+  .mrhx-top.show{opacity:1;pointer-events:auto}
+  .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 </style>
 <div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
@@ -1377,7 +1380,17 @@
 .node:nth-child(19){animation-delay:0.9s}
 .node:nth-child(20){animation-delay:0.9500000000000001s}
 </style>
-    <!--mrhx-comments-->
+    <button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+  <!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
   <div id="mrhx-clist"></div>
@@ -1480,6 +1493,17 @@
 })();
 </script>
 <!--mrhx-comments-end-->
+  <script>
+(function () {
+  try {
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '/8.10.html' })
+    });
+  } catch (e) {}
+})();
+</script>
   <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
