@@ -9,6 +9,12 @@ if (!files.length) { console.error('未找到每日分享导出文件'); process
 let overrides = {};
 if (fs.existsSync('counts.json')) overrides = JSON.parse(fs.readFileSync('counts.json', 'utf8'));
 
+let NAV = [];
+if (fs.existsSync('links.json')) {
+  NAV = Object.entries(JSON.parse(fs.readFileSync('links.json', 'utf8')))
+    .map(([label, url]) => ({ label, url }));
+}
+
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
@@ -34,6 +40,14 @@ const sharedCss = `<style>
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
+  @media (max-width:720px){
+    body.narrow{padding-left:12px !important;padding-right:12px !important}
+    .mrhx-bar{padding:10px 12px;gap:10px}
+    .mrhx-bar .mlogo{font-size:16px}
+    .mrhx-bar .mnav a{padding:5px 10px;font-size:12px}
+    .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
+    .image-list .image{max-width:100% !important}
+  }
 </style>`;
 
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${i * 0.05}s}`).join('\n');
@@ -83,15 +97,7 @@ function rebuildNote(noteHtml) {
 }
 
 function extractExtras(html) {
-  const parts = html.split(/<li class="node/);
-  const out = [];
-  for (let i = 1; i < parts.length; i++) {
-    if (/heading/.test(parts[i].slice(0, 80))) continue;
-    const end = parts[i].lastIndexOf('</li>');
-    if (end < 0) continue;
-    out.push('<li class="node' + parts[i].slice(0, end + 5).trim());
-  }
-  return out;
+  return [];
 }
 
 const days = [];
@@ -104,22 +110,26 @@ const days = [];
 
     html = await localize(html, tag);
 
-    const extras = extractExtras(html);
+    html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
 
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
       (m, inner) => inner.includes('mrhx-dl') ? m
         : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
 
-    html = html.replace(/<div class="content mm-editor[^"]*"[^>]*><a class="content-link"[^>]*href="([^"]+)"[^>]*><span class="content-link-text">([^<]*)<\/span><\/a><\/div>/g,
-      (m, url, label) => `<div class="content mm-editor" ><a class="mrhx-btn mrhx-btn-nav" href="${esc(url)}" target="_blank" rel="noreferrer">${label}</a></div>`);
-
     html = html.replace(PUBLISH_RE, newPublish);
 
-    const navPills = [`<a href="index.html">首页</a>`, ...extras.map(e => {
-      const href = /href="([^"]+)"/.exec(e);
-      const label = /content-link-text">([^<]*)</.exec(e);
-      return href && label ? `<a href="${href[1]}" target="_blank" rel="noreferrer">${label[1]}</a>` : '';
-    })].filter(Boolean).join('\n    ');
+    const extrasNodes = NAV.map(n => `<li class="node">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a></div>
+  </li>`).join('\n');
+    const lastLi = html.lastIndexOf('</li>');
+    html = html.slice(0, lastLi + 5) + '\n' + extrasNodes + html.slice(lastLi + 5);
+
+    const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
+      `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
   <div class="mnav">${navPills}</div>
@@ -141,13 +151,11 @@ const days = [];
 
   const newest = fs.readFileSync(days[0].file, 'utf8');
   const headEnd = newest.indexOf('>', newest.indexOf('<body')) + 1;
-  const extras = extractExtras(newest);
+  const dayDateM = days[0].file.match(/(\d+)月(\d+)/);
+  const dayDate = dayDateM ? `${dayDateM[1]}月${dayDateM[2]}` : path.parse(days[0].file).name;
 
-  const navLinks = extras.map(e => {
-    const href = /href="([^"]+)"/.exec(e);
-    const label = /content-link-text">([^<]*)</.exec(e);
-    return href && label ? `<a href="${href[1]}" target="_blank" rel="noreferrer">${label[1]}</a>` : '';
-  }).join('');
+  const navLinks = NAV.map(n =>
+    `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('');
 
   const dayLis = days.map((d, di) => {
     const title = path.parse(d.file).name;
@@ -184,13 +192,12 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
 nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-.hero{max-width:900px;margin:0 auto;padding:44px 20px 8px}
-.hero h1{font-size:34px;font-weight:800;letter-spacing:2px;animation:mrhxDrop .6s ease both}
-.hero h1 span{color:#e5484d}
-.hero p{margin-top:10px;color:#888;font-size:14px;animation:mrhxDrop .6s ease .1s both}
-@keyframes mrhxDrop{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-main{max-width:900px;margin:0 auto;padding:24px 20px 44px}
+main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
+.upd b{color:#e5484d}
+.upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
 .sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
 .sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
 .sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
@@ -212,6 +219,21 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 44px}
 .empty{text-align:center;color:#999;padding:40px 0}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
+@media (max-width:720px){
+  .hwrap{padding:12px 14px;gap:10px;flex-wrap:wrap}
+  .site{font-size:18px}
+  nav{gap:6px}
+  nav a{padding:5px 10px;font-size:12px}
+  main{padding:18px 14px 32px}
+  .upd{padding:12px 14px;font-size:13px}
+  .post{flex-wrap:wrap;gap:12px;padding:14px}
+  .date{width:52px;height:52px;border-radius:10px}
+  .date b{font-size:19px}
+  .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
+  .covers{flex:1 1 100%;order:3;overflow-x:auto;padding-bottom:2px}
+  .covers img{width:54px;height:54px}
+  .arrow{display:none}
+}
 </style>
 </head>
 <body>
@@ -221,11 +243,8 @@ footer b{color:#e5484d}
     <nav>${navLinks}</nav>
   </div>
 </header>
-<section class="hero">
-  <h1>今日黄油<span>分享</span></h1>
-  <p>精选单机成人向游戏 · PC + 安卓双平台 · 汉化步兵 · 不限速下载</p>
-</section>
 <main>
+  <div class="upd"><span class="tag">今日更新</span><b>${dayDate}</b> · 共 <b>${days[0].gameCount}</b> 款新作 · PC + 安卓双平台</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
 </main>
