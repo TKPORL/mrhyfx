@@ -117,6 +117,30 @@ const topButton = `<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scro
 })();
 </script>`;
 
+const popupHtml = `<div class="mrhx-popup" id="mrhxPopup">
+  <div class="mrhx-popup-inner">
+    <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
+    <div class="mrhx-popup-content">
+      <h3>📢 公告</h3>
+      <p>本站点8月10刚刚起步！可能还存在一些bug！请见谅！</p>
+      <p>有任何建议或问题，欢迎在评论区留言或联系站长。</p>
+    </div>
+    <button class="mrhx-popup-btn" onclick="document.getElementById('mrhxPopup').style.display='none'">我知道了</button>
+  </div>
+</div>
+<style>
+.mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
+.mrhx-popup-inner{background:#fff;border-radius:16px;padding:30px 28px 22px;max-width:400px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
+.mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
+.mrhx-popup-content h3{font-size:18px;color:#2b2b2b;margin-bottom:12px}
+.mrhx-popup-content p{font-size:14px;color:#666;line-height:1.8;margin-bottom:8px}
+.mrhx-popup-btn{margin-top:14px;padding:10px 28px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
+@keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
+@keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+</style>`;
+
 const viewScript = (sb, key, path) => `<script>
 (function () {
   try {
@@ -223,6 +247,7 @@ footer b{color:#e5484d}
   <p>暂无分享，敬请期待</p>
 </main>
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+${popupHtml}
 ${topButton}
 </body>
 </html>
@@ -244,6 +269,8 @@ const days = [];
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
       (m, inner) => inner.includes('mrhx-dl') ? m
         : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
+
+    html = html.replace(/(<li class="node heading3">[\s\S]*?<div class="content mm-editor" ><span>[\s\S]*?<\/span><\/div>)\s*(<ul class="image-list">[\s\S]*?<\/ul>)\s*(<div class="note mm-editor">[\s\S]*?<\/div>)/g, '$1\n    $3\n    $2');
 
     html = html.replace(PUBLISH_RE, newPublish);
 
@@ -514,6 +541,7 @@ footer b{color:#e5484d}
   ${dayLis || '<div class="empty">暂无分享</div>'}
 </main>
 <footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+${popupHtml}
 ${topButton}
 </body>
 </html>
