@@ -747,7 +747,7 @@ async function putFile(repo, token, path, content, msg, statusEl, step) {
     const err = await res.json().catch(() => null);
     throw new Error((err && err.message) || ('HTTP ' + res.status));
   }
-  show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
+  if (statusEl) show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
 }
 
 async function updateJson(repo, token, file, key, value, statusEl) {
@@ -758,6 +758,15 @@ async function updateJson(repo, token, file, key, value, statusEl) {
   else obj[key] = value;
   await putFile(repo, token, file, btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
     '发布: 更新' + file, statusEl, file);
+}
+
+async function updateTimestamp(repo, token, name) {
+  let obj = {};
+  const raw = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (raw && typeof raw === 'object') obj = raw;
+  obj[name] = new Date().toISOString();
+  await putFile(repo, token, 'timestamps.json', btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
+    '发布: 更新timestamps.json', null, '');
 }
 
 async function publish(statusEl, name, title, count, htmlContent) {
@@ -852,7 +861,7 @@ async function loadPosts() {
               if (note) {
                 const sp = note.querySelector(':scope > span');
                 if (sp) intro = sp.textContent.trim();
-                [...note.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
                   const href = a.getAttribute('href') || '';
                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
                   else linkM = href;
@@ -896,7 +905,7 @@ async function loadPosts() {
               if (note) {
                 const sp = note.querySelector(':scope > span');
                 if (sp) intro = sp.textContent.trim();
-                [...note.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
                   const href = a.getAttribute('href') || '';
                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
                   else linkM = href;
