@@ -1017,12 +1017,15 @@
         </style>
       <link rel="icon" href="favicon.jpg" type="image/jpeg">
 <link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+<link rel="icon" href="favicon.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 </head>
       <body class="narrow">
   <!--mrhx-->
 <style>
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
   .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
+  .mrhx-bar .mlogo img{width:22px;height:22px;border-radius:4px;vertical-align:middle;margin-right:6px}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
@@ -1089,7 +1092,7 @@
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 </style>
 <div class="mrhx-bar">
-  <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <a class="mlogo" href="index.html"><img src="logo.jpg" alt="">Tsinho黄油<span>推荐站</span></a>
   <div class="mnav"><a href="index.html">首页</a>
     <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">更多合集</a>
     <a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a>
@@ -1361,6 +1364,17 @@
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>
+<script>
+(function () {
+  try {
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
+      method: 'POST',
+      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_url: '/8.10.html' })
+    });
+  } catch (e) {}
+})();
+</script>
 <script>
 (function () {
   try {
