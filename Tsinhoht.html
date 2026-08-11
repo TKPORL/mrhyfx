@@ -298,7 +298,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <h2>站点设置</h2>
       <div class="field">
         <label>站点名称（首页/页面顶部 logo）</label>
-        <input type="text" id="siteName" placeholder="黄油分享">
+        <input type="text" id="siteName" placeholder="Tsinho黄油推荐站">
+      </div>
+      <div class="field">
+        <label>Logo 高亮文字（带颜色的部分，如"推荐站"）</label>
+        <input type="text" id="siteLogoEm" placeholder="推荐站">
       </div>
       <div class="field">
         <label>站点副标题</label>
@@ -1071,7 +1075,8 @@ async function loadSite() {
   try {
     const s = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null) || {};
     const site = s.site || {};
-    $('siteName').value = site.name || '黄油分享';
+    $('siteName').value = site.name || 'Tsinho黄油推荐站';
+    $('siteLogoEm').value = site.logoEm || '推荐站';
     $('siteTag').value = site.tag !== undefined ? site.tag : '每日更新 · PC + 安卓双平台';
     $('siteFooter').value = site.footer !== undefined ? site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
     const ann = s.announcement || {};
@@ -1092,7 +1097,8 @@ $('saveSite').onclick = async () => {
     const cur = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
     if (cur && typeof cur === 'object') site = cur;
     site.site = {
-      name: $('siteName').value.trim() || '黄油分享',
+      name: $('siteName').value.trim() || 'Tsinho黄油推荐站',
+      logoEm: $('siteLogoEm').value.trim() || '推荐站',
       tag: $('siteTag').value.trim(),
       footer: $('siteFooter').value.trim()
     };

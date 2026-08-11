@@ -31,6 +31,7 @@ if (fs.existsSync('site.json')) {
 }
 
 const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
+const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
@@ -250,7 +251,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">${SITE_NAME.replace('分享', '<em>分享</em>')}</a>
+    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -587,7 +588,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">${SITE_NAME.replace('分享', '<em>分享</em>')}<small>${esc(SITE_TAG)}</small></a>
+    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}<small>${esc(SITE_TAG)}</small></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
