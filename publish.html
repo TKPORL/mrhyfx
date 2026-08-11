@@ -16,18 +16,27 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 .hnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 h1{font-size:22px;margin-bottom:6px}
-.sub{font-size:13px;color:#999;margin-bottom:24px;line-height:1.8}
-.steps{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
-.step{flex:1 1 200px;background:#fff;border:1px solid #ecebe9;border-radius:12px;padding:14px 16px}
-.step b{display:block;font-size:14px;margin-bottom:6px;color:#e5484d}
-.step p{font-size:12px;color:#888;line-height:1.7}
-.card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.field{margin-bottom:16px}
+.sub{font-size:13px;color:#999;margin-bottom:20px;line-height:1.8}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{padding:8px 18px;border-radius:99px;font-size:13px;font-weight:600;color:#888;background:#fff;border:1px solid #e2e0dc;cursor:pointer;transition:.2s}
+.tab.on{color:#e5484d;border-color:#e5484d;background:#fdf3f3}
+.panel{display:none}
+.panel.on{display:block}
+.card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:16px}
+.card h2{font-size:16px;margin-bottom:14px}
+.field{margin-bottom:14px}
 label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#444}
-input[type=text],input[type=password],textarea{width:100%;border:1px solid #e2e0dc;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:.2s}
+input[type=text],input[type=password],input[type=number],textarea{width:100%;border:1px solid #e2e0dc;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:.2s}
 input:focus,textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
-textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
+textarea{resize:vertical;font-size:13px;line-height:1.6}
 .hint{font-size:12px;color:#aaa;margin-top:5px}
+.game{border:1px solid #ecebe9;border-radius:12px;padding:16px;margin-bottom:12px;background:#fefefe}
+.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.game .gnum{font-size:13px;font-weight:700;color:#e5484d}
+.del{border:none;background:#fdf1f1;color:#c93a3f;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.del:hover{background:#f8dcdc}
+.links{display:flex;gap:10px}
+.links input{flex:1}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 26px;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:.2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
@@ -35,6 +44,8 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
 .btn-p:hover{background:#c93a3f}
 .btn-s{background:#fff;color:#555;border:1px solid #e2e0dc;font-weight:500}
 .btn-s:hover{border-color:#e5484d;color:#e5484d}
+.btn-g{background:#fdf3f3;color:#e5484d;border:1px solid #f0b4b6}
+.btn-g:hover{background:#fbe5e5}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 #status{margin-top:16px;display:none}
 #status.show{display:block;padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
@@ -47,9 +58,9 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
   .site{font-size:17px}
   .hnav a{font-size:12px;padding:5px 10px}
   main{padding:20px 14px 40px}
-  .card{padding:16px}
-  .step{flex:1 1 100%}
-  textarea{height:260px}
+  .card,.game{padding:14px}
+  .links{flex-direction:column}
+  textarea{height:auto}
 }
 </style>
 </head>
@@ -65,117 +76,276 @@ textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
 </header>
 <main>
   <h1>发布中心</h1>
-  <p class="sub">把幕布导出的 HTML 粘贴到下方，点发布即可自动上传到 GitHub，随后 GitHub Actions 会自动生成首页与每日页面，1-2 分钟后全站更新。</p>
+  <p class="sub">填好内容点发布，文件自动提交到 GitHub，Actions 自动生成首页与每日页面，2-3 分钟后全站更新。</p>
 
-  <div class="steps">
-    <div class="step"><b>1. 填写信息</b><p>输入本期标题（如：8.2）和幕布导出的 HTML 内容。</p></div>
-    <div class="step"><b>2. 填入密钥</b><p>使用你的 GitHub Token（需要 repo 权限）。只在你的浏览器中处理，存于本机。</p></div>
-    <div class="step"><b>3. 点击发布</b><p>文件自动提交到仓库，Actions 自动生成首页并部署，等待即可。</p></div>
+  <div class="tabs">
+    <button class="tab on" id="tabForm">表单模式（推荐）</button>
+    <button class="tab" id="tabHtml">HTML 模式</button>
   </div>
 
-  <div class="card">
-    <div class="field">
-      <label>GitHub Token（repo 权限）</label>
-      <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-      <p class="hint">创建地址：<a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" style="color:#e5484d">github.com/settings/tokens</a> → Generate new token → 勾选 repo，过期时间建议 90 天。</p>
+  <div class="panel on" id="panelForm">
+    <div class="card">
+      <h2>基本信息</h2>
+      <div class="field">
+        <label>文件名（英文/数字，用于网址，不要中文）</label>
+        <input type="text" id="fName" placeholder="如：8.11">
+        <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/8.11.html</p>
+      </div>
+      <div class="field">
+        <label>帖子标题（首页和页面顶部显示的名字）</label>
+        <input type="text" id="fTitle" placeholder="如：8.11黄油 95款（PC+安卓）">
+      </div>
+      <div class="field">
+        <label>游戏数量（可选，留空则按下面添加的游戏条数自动统计）</label>
+        <input type="number" id="fCount" placeholder="如：95">
+      </div>
     </div>
-    <div class="field">
-      <label>仓库（默认 TKPORL/mrhyfx）</label>
-      <input type="text" id="repo" value="TKPORL/mrhyfx">
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>游戏内容</h2>
+        <button class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
+      </div>
+      <div id="gameBox"></div>
     </div>
-    <div class="field">
-      <label>本期标题</label>
-      <input type="text" id="title" placeholder="如：8.2（文件名，建议不用中文）">
-      <p class="hint">即保存的文件名，注意与往期不要重名。</p>
+
+    <div class="card">
+      <div class="field">
+        <label>GitHub Token（repo 权限）</label>
+        <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+        <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 页面拉到底点绿色 Generate token → 复制 ghp_ 开头的字符串。</p>
+      </div>
+      <div class="field">
+        <label>仓库（默认 TKPORL/mrhyfx）</label>
+        <input type="text" id="repo" value="TKPORL/mrhyfx">
+      </div>
+      <div class="row">
+        <button class="btn btn-p" id="pubForm">发布</button>
+      </div>
+      <div id="status"></div>
+      <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后刷新如看不到更新请 Ctrl+F5 强刷。</p>
     </div>
-    <div class="field">
-      <label>HTML 内容（幕布导出 → 复制全文粘贴，无需修改）</label>
-      <textarea id="html" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;...&#10;把幕布导出的 HTML 全文粘贴到这里"></textarea>
+  </div>
+
+  <div class="panel" id="panelHtml">
+    <div class="card">
+      <h2>HTML 模式（粘贴幕布导出或已发布页面的 HTML 全文）</h2>
+      <div class="field">
+        <label>文件名（英文/数字，用于网址）</label>
+        <input type="text" id="hName" placeholder="如：8.12">
+      </div>
+      <div class="field">
+        <label>帖子标题</label>
+        <input type="text" id="hTitle" placeholder="如：8.12黄油 95款（PC+安卓）">
+      </div>
+      <div class="field">
+        <label>HTML 内容</label>
+        <textarea id="html" style="height:320px" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;...&#10;把 HTML 全文粘贴到这里"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn btn-p" id="pubHtml">发布</button>
+        <button class="btn btn-s" id="tpl">载入 8.10 模板</button>
+      </div>
+      <div id="statusHtml"></div>
+      <p class="warn">模板载入后可直接改标题和内容，或整体替换为新的幕布导出。</p>
     </div>
-    <div class="row">
-      <button class="btn btn-p" id="publish">发布</button>
-      <button class="btn btn-s" id="tpl">载入 8.1 模板</button>
-    </div>
-    <div id="status"></div>
-    <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后首次访问请强制刷新（Ctrl+F5）以避免浏览器缓存。</p>
   </div>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
-const statusEl = $('status');
+const RAW_BASE = 'https://raw.githubusercontent.com';
 
-function show(msg, type) {
-  statusEl.textContent = msg;
-  statusEl.className = 'show ' + (type || 'info');
+function show(el, msg, type) {
+  el.textContent = msg;
+  el.className = 'show ' + (type || 'info');
 }
+const stF = $('status'), stH = $('statusHtml');
 
 $('token').value = localStorage.getItem(TOKEN_KEY) || '';
 
-$('tpl').addEventListener('click', async () => {
+$('tabForm').onclick = () => { $('tabForm').classList.add('on'); $('tabHtml').classList.remove('on'); $('panelForm').classList.add('on'); $('panelHtml').classList.remove('on'); };
+$('tabHtml').onclick = () => { $('tabHtml').classList.add('on'); $('tabForm').classList.remove('on'); $('panelHtml').classList.add('on'); $('panelForm').classList.remove('on'); };
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function gameHtml(c) {
+  const rows = c.imgs.split('\n').map(u => u.trim()).filter(Boolean)
+    .map(u => `    <li class="image-row">
+    <img
+      src="${esc(u)}"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>`).join('\n');
+  let links = '';
+  if (c.linkM) links += `<a class="content-link" href="${esc(c.linkM)}"><span class="content-link-text">移动（不限速）：</span></a>`;
+  if (c.linkB) links += `<a class="content-link" href="${esc(c.linkB)}"><span class="content-link-text">度盘：</span></a>`;
+  return `<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
+    ${rows ? `<ul class="image-list">
+${rows}
+  </ul>` : ''}
+    ${(c.intro || links) ? `<div class="note mm-editor"><span>${esc(c.intro)}</span>${links}</div>` : ''}
+    
+  </li>`;
+}
+
+function addGameCard() {
+  const box = $('gameBox');
+  const n = box.children.length + 1;
+  const d = document.createElement('div');
+  d.className = 'game';
+  d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span><button class="del">删除</button></div>
+  <div class="field"><label>游戏名称</label><input type="text" class="g-name" placeholder="如：精灵雷亚"></div>
+  <div class="field"><label>游戏介绍</label><textarea class="g-intro" placeholder="如：[神作/亚洲风SLG/动态] 汉化步兵 [PC+安卓 18G]&#10;有作弊码就写：作弊码 158078"></textarea></div>
+  <div class="field"><label>封面图片 URL（每行一个，可多张，发布后自动下载保存）</label><textarea class="g-imgs" placeholder="https://api2.mubu.com/... 每行一个"></textarea></div>
+  <div class="field"><label>下载链接</label>
+    <div class="links">
+      <input type="text" class="g-linkM" placeholder="移动云盘 URL（可选）">
+      <input type="text" class="g-linkB" placeholder="百度网盘 URL（可选）">
+    </div>
+  </div>`;
+  d.querySelector('.del').onclick = () => { d.remove(); renum(); };
+  box.appendChild(d);
+  renum();
+}
+function renum() {
+  [...$('gameBox').children].forEach((el, i) => el.querySelector('.gnum').textContent = '游戏 ' + (i + 1));
+}
+$('addGame').onclick = addGameCard;
+addGameCard();
+
+function collectGames() {
+  return [...$('gameBox').children].map(el => ({
+    name: el.querySelector('.g-name').value.trim(),
+    intro: el.querySelector('.g-intro').value.trim(),
+    imgs: el.querySelector('.g-imgs').value,
+    linkM: el.querySelector('.g-linkM').value.trim(),
+    linkB: el.querySelector('.g-linkB').value.trim(),
+  })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB);
+}
+
+function stripNodeList(html, blocks) {
+  const tag = '<ul class="node-list">';
+  const start = html.indexOf(tag);
+  if (start < 0) throw new Error('模板中没有找到 node-list，请换 HTML 模式或检查模板');
+  let depth = 0, i = start;
+  for (; i < html.length; i++) {
+    if (html.startsWith('<ul', i)) { depth++; i += 2; }
+    else if (html.startsWith('</ul>', i)) { depth--; i += 4; if (depth === 0) break; }
+  }
+  return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 5);
+}
+
+async function buildFormHtml() {
+  const res = await fetch('8.10.html');
+  if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
+  const skeleton = await res.text();
+  const cards = collectGames();
+  if (!cards.length) throw new Error('请至少添加一个游戏');
+  const blocks = cards.map(gameHtml).join('\n');
+  return stripNodeList(skeleton, blocks);
+}
+
+async function putFile(repo, token, path, content, msg, statusEl, step) {
+  const apiPath = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`;
+  let body = { message: msg, content: content };
+  let res = await fetch(apiPath, {
+    method: 'PUT',
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 422) {
+    const exist = await fetch(apiPath, { headers: { 'Authorization': 'token ' + token } });
+    if (exist.ok) {
+      const info = await exist.json();
+      body.sha = info.sha;
+      res = await fetch(apiPath, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error((err && err.message) || ('HTTP ' + res.status));
+  }
+  show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
+}
+
+async function updateJson(repo, token, file, key, value, statusEl) {
+  let obj = {};
+  const raw = await fetch(`${RAW_BASE}/${repo}/main/${file}`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (raw && typeof raw === 'object') obj = raw;
+  if (value === null || value === '') delete obj[key];
+  else obj[key] = value;
+  await putFile(repo, token, file, btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
+    '发布: 更新' + file, statusEl, file);
+}
+
+async function publish(statusEl, name, title, count, htmlContent) {
+  const token = $('token').value.trim();
+  const repo = $('repo').value.trim();
+  if (!token) throw new Error('请先填写 GitHub Token（填写说明见下方提示）');
+  if (!repo || !repo.includes('/')) throw new Error('仓库格式应为 用户名/仓库名');
+  if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
+  if (!title) throw new Error('请填写帖子标题');
+  if (!htmlContent || !/<html/i.test(htmlContent)) throw new Error('HTML 内容生成失败，请检查填写');
+  localStorage.setItem(TOKEN_KEY, token);
+  const fileName = name.endsWith('.html') ? name : name + '.html';
+  const content = btoa(unescape(encodeURIComponent(htmlContent)));
+  show(statusEl, '正在发布 ' + fileName + ' …', 'info');
+  await putFile(repo, token, fileName, content, '发布: ' + title, statusEl, '帖子');
+  await updateJson(repo, token, 'titles.json', name, title, statusEl);
+  if (count) await updateJson(repo, token, 'counts.json', name, String(count), statusEl);
+  show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
+}
+
+$('pubForm').onclick = async () => {
+  const btn = $('pubForm'); btn.disabled = true;
   try {
-    $('tpl').disabled = true;
-    show('正在载入 8.1 模板…', 'info');
-    const res = await fetch('8.1.html');
+    const name = $('fName').value.trim();
+    const title = $('fTitle').value.trim();
+    const count = $('fCount').value.trim();
+    const htmlContent = await buildFormHtml();
+    await publish(stF, name, title, count, htmlContent);
+  } catch (e) {
+    show(stF, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
+  } finally { btn.disabled = false; }
+};
+
+$('pubHtml').onclick = async () => {
+  const btn = $('pubHtml'); btn.disabled = true;
+  try {
+    const name = $('hName').value.trim();
+    const title = $('hTitle').value.trim();
+    const htmlContent = $('html').value;
+    await publish(stH, name, title, '', htmlContent);
+  } catch (e) {
+    show(stH, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
+  } finally { btn.disabled = false; }
+};
+
+$('tpl').onclick = async () => {
+  const btn = $('tpl'); btn.disabled = true;
+  try {
+    show(stH, '正在载入 8.10 模板…', 'info');
+    const res = await fetch('8.10.html');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     $('html').value = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\n/, '');
-    show('模板已载入，请把标题改成新日期后发布（或整体替换内容）。', 'ok');
+    show(stH, '模板已载入，请把标题改成新日期后发布（或整体替换内容）。', 'ok');
   } catch (e) {
-    show('模板载入失败：' + e.message + '\n建议直接打开 8.1.html 另存一份修改。', 'err');
-  } finally {
-    $('tpl').disabled = false;
-  }
-});
-
-$('publish').addEventListener('click', async () => {
-  const token = $('token').value.trim();
-  const repo = $('repo').value.trim();
-  const title = $('title').value.trim();
-  const html = $('html').value;
-
-  if (!token) return show('请填写 GitHub Token', 'err');
-  if (!repo || !repo.includes('/')) return show('仓库格式应为 用户名/仓库名', 'err');
-  if (!title) return show('请填写本期标题', 'err');
-  if (!html.trim() || !/<html/i.test(html)) return show('请粘贴完整的 HTML 内容（建议使用幕布导出）', 'err');
-
-  localStorage.setItem(TOKEN_KEY, token);
-  const fileName = title.endsWith('.html') ? title : title + '.html';
-  const apiPath = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(fileName)}`;
-  const content = btoa(unescape(encodeURIComponent(html)));
-
-  $('publish').disabled = true;
-  show('正在上传 ' + fileName + ' …', 'info');
-  try {
-    let body = { message: '发布: ' + title, content: content };
-    let res = await fetch(apiPath, {
-      method: 'PUT',
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (res.status === 422) {
-      const exist = await fetch(apiPath, { headers: { 'Authorization': 'token ' + token } });
-      if (exist.ok) {
-        const info = await exist.json();
-        body.sha = info.sha;
-        res = await fetch(apiPath, {
-          method: 'PUT',
-          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-      }
-    }
-    if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      throw new Error((err && err.message) || ('HTTP ' + res.status));
-    }
-    show('发布成功！\n文件已提交：https://github.com/' + repo + '/blob/main/' + encodeURIComponent(fileName) + '\nActions 正在自动生成首页与每日页，约 1-2 分钟后刷新即可看到更新。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
-  } catch (e) {
-    show('发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有 repo 权限\n- 仓库名写错', 'err');
-  } finally {
-    $('publish').disabled = false;
-  }
-});
+    show(stH, '模板载入失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
 </script>
 </body>
 </html>

@@ -9,6 +9,9 @@ if (!files.length) { console.error('未找到每日分享导出文件'); process
 let overrides = {};
 if (fs.existsSync('counts.json')) overrides = JSON.parse(fs.readFileSync('counts.json', 'utf8'));
 
+let TITLES = {};
+if (fs.existsSync('titles.json')) TITLES = JSON.parse(fs.readFileSync('titles.json', 'utf8'));
+
 let NAV = [];
 if (fs.existsSync('links.json')) {
   NAV = Object.entries(JSON.parse(fs.readFileSync('links.json', 'utf8')))
@@ -146,8 +149,9 @@ const days = [];
     html = html.replace(/<!--mrhx-stagger--><style>[\s\S]*?<\/style>\n?/, '');
     html = html.replace('</body>', `<!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
     const shortName = path.parse(file).name;
-    html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(shortName)}</div>`);
-    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(shortName)} · 黄油分享</title>`);
+    const dispTitle = TITLES[shortName] || shortName;
+    html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
+    html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · 黄油分享</title>`);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
@@ -170,16 +174,20 @@ const days = [];
 
   const dayLis = days.map((d, di) => {
     const title = path.parse(d.file).name;
+    const disp = TITLES[title] || title;
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
-    const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>` : `<b style="font-size:13px">${esc(title)}</b>`;
+    const dateN = title.match(/(\d+)\.(\d+)/);
+    const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
+      : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
+      : `<b style="font-size:13px">${esc(disp)}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
   <div class="info">
-    <div class="ptitle">${title}</div>
+    <div class="ptitle">${esc(disp)}</div>
     <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
   </div>
   ${covers ? `<div class="covers">${covers}</div>` : ''}
