@@ -79,12 +79,16 @@ const days = [];
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
     const date = dateM ? `${dateM[1]}月${dateM[2]}` : '';
+    const dayHtml = fs.readFileSync(d.file, 'utf8');
+    const covers = [...new Set([...dayHtml.matchAll(/src="(assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
+      .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     return `<a class="post" href="${d.file}">
-  <div class="date">${date}</div>
+  <div class="date"><b>${dateM ? dateM[2] : '·'}</b><span>${dateM ? dateM[1] + '月' : ''}</span></div>
   <div class="info">
     <div class="ptitle">${title}</div>
     <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
   </div>
+  ${covers ? `<div class="covers">${covers}</div>` : ''}
   <div class="arrow">→</div>
 </a>`;
   }).join('\n');
@@ -103,40 +107,52 @@ const days = [];
 <title>黄油分享 · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f6f7fb;color:#333;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #e5e6e8;position:sticky;top:0;z-index:10}
-.hwrap{max-width:860px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:22px;font-weight:800;color:#5856d5}
-.site small{display:block;font-size:11px;font-weight:500;color:#888}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b}
+.site em{font-style:normal;color:#e5484d}
+.site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #e5e6e8;background:#fafafa;transition:.2s}
-nav a:hover{color:#5856d5;border-color:#5856d5}
-main{max-width:860px;margin:0 auto;padding:28px 20px 40px}
-.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
-.sect h2{font-size:20px;color:#333}
-.sect span{font-size:13px;color:#999}
-.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #e5e6e8;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.2s}
-.post:hover{border-color:#5856d5;transform:translateY(-2px);box-shadow:0 6px 20px rgba(88,86,213,.08)}
-.date{flex-shrink:0;width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#5856d5,#8b5cf6);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.2}
-.date b{font-size:22px}
+nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.hero{max-width:900px;margin:0 auto;padding:44px 20px 8px}
+.hero h1{font-size:34px;font-weight:800;letter-spacing:2px}
+.hero h1 span{color:#e5484d}
+.hero p{margin-top:10px;color:#888;font-size:14px}
+main{max-width:900px;margin:0 auto;padding:24px 20px 44px}
+.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
+.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa}
+.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.post:hover{border-color:#f0b4b6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.date{flex-shrink:0;width:62px;height:62px;border-radius:12px;background:#e5484d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.date b{font-size:22px;font-weight:700}
 .date span{font-size:11px;opacity:.85}
 .info{flex:1;min-width:0}
-.ptitle{font-size:17px;font-weight:700;color:#333;margin-bottom:6px}
+.ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
 .pmeta{font-size:13px;color:#999}
-.arrow{flex-shrink:0;color:#ccc;font-size:20px;transition:.2s}
-.post:hover .arrow{color:#5856d5;transform:translateX(4px)}
+.covers{display:flex;gap:8px;flex-shrink:0}
+.covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9}
+.arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
+.post:hover .arrow{color:#e5484d;transform:translateX(4px)}
 .empty{text-align:center;color:#999;padding:40px 0}
-footer{border-top:1px solid #e5e6e8;padding:24px 20px;text-align:center;color:#999;font-size:12px}
-footer b{color:#dc9b04}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer b{color:#e5484d}
 </style>
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <span class="site">黄油分享<small>每日更新 · PC + 安卓双平台</small></span>
+    <span class="site">黄油<em>分享</em><small>每日更新 · PC + 安卓双平台</small></span>
     <nav>${navLinks}</nav>
   </div>
 </header>
+<section class="hero">
+  <h1>今日黄油<span>分享</span></h1>
+  <p>精选单机成人向游戏 · PC + 安卓双平台 · 汉化步兵 · 不限速下载</p>
+</section>
 <main>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
