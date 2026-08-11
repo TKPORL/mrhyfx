@@ -1,0 +1,8 @@
+{
+  "valine": {
+    "enabled": false,
+    "appId": "",
+    "appKey": "",
+    "serverURLs": ""
+  }
+}

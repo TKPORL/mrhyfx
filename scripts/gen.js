@@ -3,19 +3,28 @@ const path = require('path');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+
 const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
-if (fs.existsSync('counts.json')) overrides = JSON.parse(fs.readFileSync('counts.json', 'utf8'));
+if (fs.existsSync('counts.json')) overrides = readJson('counts.json');
 
 let TITLES = {};
-if (fs.existsSync('titles.json')) TITLES = JSON.parse(fs.readFileSync('titles.json', 'utf8'));
+if (fs.existsSync('titles.json')) TITLES = readJson('titles.json');
 
 let NAV = [];
 if (fs.existsSync('links.json')) {
-  NAV = Object.entries(JSON.parse(fs.readFileSync('links.json', 'utf8')))
+  NAV = Object.entries(readJson('links.json'))
     .map(([label, url]) => ({ label, url }));
+}
+
+let SITE = { valine: { enabled: false, appId: '', appKey: '', serverURLs: '' } };
+if (fs.existsSync('site.json')) {
+  const s = readJson('site.json');
+  SITE = Object.assign({}, SITE, s);
+  SITE.valine = Object.assign({}, SITE.valine, s.valine || {});
 }
 
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
@@ -59,6 +68,8 @@ const sharedCss = `<style>
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
   }
+  .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:1px solid #ecebe9}
+  .mrhx-comments h2{font-size:18px;color:#2b2b2b;margin-bottom:14px}
 </style>`;
 
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${i * 0.05}s}`).join('\n');
@@ -201,6 +212,35 @@ const days = [];
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · 黄油分享</title>`);
+
+    const v = SITE.valine;
+    let commentBlock = '';
+    if (v.enabled && v.appId && v.appKey) {
+      const srv = v.serverURLs ? `  serverURLs: '${esc(v.serverURLs)}',\n` : '';
+      commentBlock = `<!--mrhx-comments-->
+<div class="mrhx-comments">
+  <h2>评论区</h2>
+  <div id="vcomments"></div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.css">
+<script src="https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js"></script>
+<script>
+new Valine({
+  el: '#vcomments',
+  appId: '${v.appId}',
+  appKey: '${v.appKey}',
+${srv}  path: '/${esc(shortName)}.html',
+  placeholder: '友善发言，请填写昵称、邮箱和评论内容',
+  requiredFields: ['nick', 'mail'],
+  avatar: 'mm',
+  recordIP: false,
+  visitor: false
+});
+</script>
+<!--mrhx-comments-end-->`;
+    }
+    html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
+    html = html.replace('</body>', `  ${commentBlock}${commentBlock ? '\n  ' : ''}<!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');

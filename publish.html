@@ -35,6 +35,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d}
 .del{border:none;background:#fdf1f1;color:#c93a3f;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer}
 .del:hover{background:#f8dcdc}
+.prow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-top:1px dashed #ecebe9;padding:10px 0}
+.prow .pt{flex:1;min-width:0}
+.prow .pt b{display:block;font-size:13px;color:#333;margin-bottom:3px}
+.prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-all}
 .links{display:flex;gap:10px}
 .links input{flex:1}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -81,6 +85,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   <div class="tabs">
     <button class="tab on" id="tabForm">发布帖子</button>
     <button class="tab" id="tabManage">帖子管理</button>
+    <button class="tab" id="tabComments">评论管理</button>
     <button class="tab" id="tabLinks">链接配置</button>
     <button class="tab" id="tabHtml">HTML 模式</button>
   </div>
@@ -113,9 +118,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 
     <div class="card">
       <div class="field">
-        <label>GitHub Token（repo 权限）</label>
+        <label>GitHub Token（repo 权限，保存一次永久有效）</label>
         <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-        <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 页面拉到底点绿色 Generate token → 复制 ghp_ 开头的字符串。</p>
+        <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 生成 → 复制 ghp_ 开头的字符串。Token 和仓库名只在本浏览器自动保存（localStorage），下次打开无需再填。</p>
       </div>
       <div class="field">
         <label>仓库（默认 TKPORL/mrhyfx）</label>
@@ -138,6 +143,40 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div id="postBox"></div>
       <div id="statusM"></div>
       <p class="warn">删除帖子会同时删除它的全部图片（assets 目录）、标题和游戏数配置，然后自动重新生成首页。</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panelComments">
+    <div class="card">
+      <h2>评论功能配置（LeanCloud）</h2>
+      <p class="hint">访客只需填昵称、邮箱、评论内容即可评论，支持回复。数据存在 LeanCloud 免费版：注册 https://leancloud.app （国际版，免备案）→ 创建应用 → 设置 → 应用凭证，把 AppID / AppKey 填到下面；Master Key 只用于后台删除评论，只保存在你的浏览器，不会写入网站代码。</p>
+      <div class="field">
+        <label>AppID</label>
+        <input type="text" id="lcId" placeholder="LeanCloud 应用 AppID">
+      </div>
+      <div class="field">
+        <label>AppKey</label>
+        <input type="password" id="lcKey" placeholder="LeanCloud 应用 AppKey" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Master Key（删除评论用，只存本浏览器）</label>
+        <input type="password" id="lcMaster" placeholder="LeanCloud Master Key" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>serverURLs（国际版留空即可；大陆版填 https://cn-e1-api.leancloud.cn 或 https://cn-n1-api.leancloud.cn）</label>
+        <input type="text" id="lcServer" placeholder="https://api.leancloud.cn">
+      </div>
+      <div class="row">
+        <button class="btn btn-p" id="saveLC">保存配置并启用评论</button>
+        <button class="btn btn-s" id="disableLC">停用评论</button>
+        <button class="btn btn-s" id="loadComments">加载评论列表</button>
+      </div>
+      <div id="statusC"></div>
+      <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。</p>
+    </div>
+    <div class="card">
+      <h2>评论列表</h2>
+      <div id="commentBox"></div>
     </div>
   </div>
 
@@ -182,6 +221,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 <script>
 const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
+const REPO_KEY = 'mrhx_repo_v1';
 const RAW_BASE = 'https://raw.githubusercontent.com';
 
 function show(el, msg, type) {
@@ -191,14 +231,19 @@ function show(el, msg, type) {
 const stF = $('status'), stH = $('statusHtml'), stM = $('statusM'), stL = $('statusL');
 
 $('token').value = localStorage.getItem(TOKEN_KEY) || '';
+$('repo').value = localStorage.getItem(REPO_KEY) || 'TKPORL/mrhyfx';
+$('token').addEventListener('input', () => { if ($('token').value.trim()) localStorage.setItem(TOKEN_KEY, $('token').value.trim()); });
+$('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
 
-const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabHtml: 'panelHtml' };
+const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabHtml: 'panelHtml' };
+function switchTab(id) {
+  Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
+  if (id === 'tabManage') loadPosts();
+  if (id === 'tabLinks') loadLinks();
+  if (id === 'tabComments') loadComments();
+}
 Object.keys(tabs).forEach(id => {
-  $('tab' + id.slice(3)).onclick = () => {
-    Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
-    if (id === 'tabManage') loadPosts();
-    if (id === 'tabLinks') loadLinks();
-  };
+  $('tab' + id.slice(3)).onclick = () => switchTab(id);
 });
 
 
@@ -410,10 +455,34 @@ async function loadPosts() {
   <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}</span></div>
   <div class="row">
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
+    <button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>
     <button class="del" data-del="${esc(tag)}">删除</button>
   </div>
 </div>`;
       }).join('');
+      [...box.querySelectorAll('[data-edit]')].forEach(b => {
+        b.onclick = async () => {
+          const tag = b.dataset.edit;
+          b.disabled = true;
+          show(stM, '正在载入 ' + tag + '.html 到编辑区…', 'info');
+          try {
+            const res = await fetch(`${RAW_BASE}/${repo}/main/${tag}.html`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            let text = await res.text();
+            text = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\s*/g, '')
+                       .replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '')
+                       .replace(/\s*<!--mrhx-stagger--><style>[\s\S]*?<\/style>\s*/g, '\n');
+            $('hName').value = tag;
+            $('hTitle').value = titles[tag] || tag;
+            $('html').value = text;
+            switchTab('tabHtml');
+            show(stH, '已载入「' + tag + '」，修改后点发布即可覆盖更新（原有评论区、导航会自动保留）。', 'ok');
+            scrollTo(0, 0);
+          } catch (e) {
+            show(stM, '载入失败：' + e.message, 'err');
+          } finally { b.disabled = false; }
+        };
+      });
       [...box.querySelectorAll('[data-del]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.del;
@@ -469,6 +538,140 @@ $('saveLinks').onclick = async () => {
     show(stL, '保存失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
 };
+
+const stC = $('statusC');
+const LC_PREFIX = 'mrhx_lc_';
+const lcGet = k => localStorage.getItem(LC_PREFIX + k) || '';
+const lcSet = (k, v) => localStorage.setItem(LC_PREFIX + k, v);
+$('lcId').value = lcGet('id');
+$('lcKey').value = lcGet('key');
+$('lcMaster').value = lcGet('master');
+$('lcServer').value = lcGet('server');
+['id', 'key', 'master', 'server'].forEach(k => $('lc' + k[0].toUpperCase() + k.slice(1)).addEventListener('input', () => lcSet(k, $('lc' + k[0].toUpperCase() + k.slice(1)).value.trim())));
+
+const lcServer = () => ($('lcServer').value.trim() || 'https://api.leancloud.cn').replace(/\/+$/, '');
+
+async function lcFetch(path, method, withMaster) {
+  const headers = { 'X-LC-Id': $('lcId').value.trim(), 'Content-Type': 'application/json' };
+  headers['X-LC-Key'] = withMaster ? ($('lcMaster').value.trim() + ',master') : $('lcKey').value.trim();
+  const res = await fetch(lcServer() + '/1.1/' + path, { method: method || 'GET', headers: headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error((err && (err.error || ('code ' + err.code))) || ('HTTP ' + res.status));
+  }
+  return method === 'DELETE' ? null : res.json();
+}
+
+let ALL_COMMENTS = [];
+
+async function loadComments() {
+  const box = $('commentBox');
+  if (!$('lcId').value.trim() || !$('lcKey').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 AppID 和 AppKey。</p>'; return; }
+  show(stC, '正在加载评论…', 'info');
+  try {
+    const all = [];
+    let skip = 0;
+    for (;;) {
+      const data = await lcFetch(`classes/Comment?where=${encodeURIComponent('{}')}&order=-createdAt&limit=1000&skip=${skip}`);
+      all.push(...data.results);
+      if (data.results.length < 1000) break;
+      skip += 1000;
+    }
+    ALL_COMMENTS = all;
+    const byUrl = {};
+    all.forEach(c => { const u = c.url || '/'; (byUrl[u] = byUrl[u] || []).push(c); });
+    const entries = Object.entries(byUrl);
+    if (!entries.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
+    else {
+      box.innerHTML = entries.map(([url, list]) => `
+        <div class="game">
+          <div class="ghead"><span class="gnum">${esc(url)}</span><span style="font-size:12px;color:#aaa">${list.length} 条</span></div>
+          ${list.map(c => `
+          <div class="prow">
+            <div class="pt">
+              <b>${esc(c.nick || '匿名')}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
+              <span class="pf">${esc(c.content)}</span>
+              <span class="pf">${new Date(c.createdAt).toLocaleString()}</span>
+            </div>
+            <button class="del" data-dcid="${esc(c.objectId)}">删除</button>
+          </div>`).join('')}
+          <div class="row" style="margin-top:8px">
+            <button class="btn btn-s" data-clear="${esc(url)}">清空该帖全部评论</button>
+          </div>
+        </div>`).join('');
+      [...box.querySelectorAll('[data-dcid]')].forEach(b => { b.onclick = () => delComment(b.dataset.dcid); });
+      [...box.querySelectorAll('[data-clear]')].forEach(b => { b.onclick = () => delComment(null, b.dataset.clear); });
+    }
+    show(stC, '共 ' + all.length + ' 条评论', 'ok');
+  } catch (e) {
+    show(stC, '加载失败：' + e.message + '\n\n请检查 AppID/AppKey 是否正确、serverURLs 是否匹配你的 LeanCloud 区域。', 'err');
+  }
+}
+
+async function delComment(cid, url) {
+  if (!$('lcMaster').value.trim()) { show(stC, '删除评论需要先填写 Master Key', 'err'); return; }
+  const ids = new Set();
+  if (cid) {
+    ids.add(cid);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      ALL_COMMENTS.forEach(c => { if (c.pid && ids.has(c.pid) && !ids.has(c.objectId)) { ids.add(c.objectId); changed = true; } });
+    }
+  } else {
+    ALL_COMMENTS.forEach(c => { if (c.url === url) ids.add(c.objectId); });
+  }
+  if (!ids.size) return;
+  if (!confirm('确定删除 ' + ids.size + ' 条评论' + (cid ? '（含其下回复）' : '（该帖全部评论）') + '吗？')) return;
+  show(stC, '正在删除 ' + ids.size + ' 条评论…', 'info');
+  try {
+    for (const id of ids) await lcFetch('classes/Comment/' + id, 'DELETE', true);
+    show(stC, '已删除 ' + ids.size + ' 条评论。', 'ok');
+    loadComments();
+  } catch (e) {
+    show(stC, '删除失败：' + e.message + '\n\n常见原因：Master Key 填错（用应用凭证里的 Master Key 原值）。', 'err');
+  }
+}
+
+async function saveSiteValine(enabled) {
+  const token = $('token').value.trim();
+  const repo = $('repo').value.trim();
+  if (!token) throw new Error('请先填写 GitHub Token');
+  if (enabled && (!$('lcId').value.trim() || !$('lcKey').value.trim())) throw new Error('请填写 AppID 和 AppKey');
+  let site = {};
+  const raw = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (raw && typeof raw === 'object') site = raw;
+  site.valine = {
+    enabled: enabled,
+    appId: enabled ? $('lcId').value.trim() : (site.valine && site.valine.appId) || '',
+    appKey: enabled ? $('lcKey').value.trim() : (site.valine && site.valine.appKey) || '',
+    serverURLs: enabled ? $('lcServer').value.trim() : (site.valine && site.valine.serverURLs) || ''
+  };
+  await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
+    enabled ? '启用评论功能' : '停用评论功能', stC, 'site.json');
+}
+
+$('saveLC').onclick = async () => {
+  const btn = $('saveLC'); btn.disabled = true;
+  try {
+    await saveSiteValine(true);
+    show(stC, '已保存并启用评论！所有帖子将自动带上评论区，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+  } catch (e) {
+    show(stC, '保存失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
+
+$('disableLC').onclick = async () => {
+  const btn = $('disableLC'); btn.disabled = true;
+  try {
+    await saveSiteValine(false);
+    show(stC, '评论功能已停用，全站评论区将移除（2-3 分钟后生效）。', 'ok');
+  } catch (e) {
+    show(stC, '保存失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
+
+$('loadComments').onclick = loadComments;
 
 $('pubForm').onclick = async () => {
   const btn = $('pubForm'); btn.disabled = true;
