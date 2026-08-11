@@ -4,7 +4,7 @@ const path = require('path');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html');
-if (!files.length) { console.error('未找到每日分享导出文件'); process.exit(1); }
+if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
 if (fs.existsSync('counts.json')) overrides = JSON.parse(fs.readFileSync('counts.json', 'utf8'));
@@ -121,6 +121,45 @@ function extractExtras(html) {
   return [];
 }
 
+function emptyIndex(navLinks) {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>黄油分享 · 每日更新</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9}
+.hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site em{font-style:normal;color:#e5484d}
+nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
+nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+main{max-width:900px;margin:0 auto;padding:60px 20px;text-align:center;color:#999}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer b{color:#e5484d}
+@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="site" href="index.html">黄油<em>分享</em></a>
+    <nav>${navLinks}</nav>
+  </div>
+</header>
+<main>
+  <p>暂无分享，敬请期待</p>
+</main>
+<footer>by <b>Tsinho</b> 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+</body>
+</html>
+`;
+}
+
 const days = [];
 (async () => {
   for (const file of files) {
@@ -174,13 +213,19 @@ const days = [];
     return b.file.localeCompare(a.file);
   });
 
+  const navLinks = NAV.map(n =>
+    `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('');
+
+  if (!days.length) {
+    fs.writeFileSync('index.html', emptyIndex(navLinks));
+    console.log('index.html ok, days: 0');
+    return;
+  }
+
   const newest = fs.readFileSync(days[0].file, 'utf8');
   const headEnd = newest.indexOf('>', newest.indexOf('<body')) + 1;
   const dayDateM = days[0].file.match(/(\d+)月(\d+)/);
   const dayDate = dayDateM ? `${dayDateM[1]}月${dayDateM[2]}` : path.parse(days[0].file).name;
-
-  const navLinks = NAV.map(n =>
-    `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('');
 
   const dayLis = days.map((d, di) => {
     const title = path.parse(d.file).name;

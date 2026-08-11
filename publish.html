@@ -75,11 +75,13 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   </div>
 </header>
 <main>
-  <h1>发布中心</h1>
-  <p class="sub">填好内容点发布，文件自动提交到 GitHub，Actions 自动生成首页与每日页面，2-3 分钟后全站更新。</p>
+  <h1>后台管理</h1>
+  <p class="sub">添加 / 删除帖子、配置链接，全部在这里操作。改动会自动生成首页并部署，2-3 分钟后生效。</p>
 
   <div class="tabs">
-    <button class="tab on" id="tabForm">表单模式（推荐）</button>
+    <button class="tab on" id="tabForm">发布帖子</button>
+    <button class="tab" id="tabManage">帖子管理</button>
+    <button class="tab" id="tabLinks">链接配置</button>
     <button class="tab" id="tabHtml">HTML 模式</button>
   </div>
 
@@ -127,6 +129,32 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     </div>
   </div>
 
+  <div class="panel" id="panelManage">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>帖子管理</h2>
+        <button class="btn btn-s" id="refresh">刷新列表</button>
+      </div>
+      <div id="postBox"></div>
+      <div id="statusM"></div>
+      <p class="warn">删除帖子会同时删除它的全部图片（assets 目录）、标题和游戏数配置，然后自动重新生成首页。</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panelLinks">
+    <div class="card">
+      <h2>链接配置（顶部栏 + 帖子底部按钮 + 首页导航共用）</h2>
+      <div class="field">
+        <label>links.json（JSON 格式：名称 → 链接）</label>
+        <textarea id="linksJson" style="height:220px;font-family:Consolas,monospace"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn btn-p" id="saveLinks">保存</button>
+      </div>
+      <div id="statusL"></div>
+    </div>
+  </div>
+
   <div class="panel" id="panelHtml">
     <div class="card">
       <h2>HTML 模式（粘贴幕布导出或已发布页面的 HTML 全文）</h2>
@@ -160,12 +188,19 @@ function show(el, msg, type) {
   el.textContent = msg;
   el.className = 'show ' + (type || 'info');
 }
-const stF = $('status'), stH = $('statusHtml');
+const stF = $('status'), stH = $('statusHtml'), stM = $('statusM'), stL = $('statusL');
 
 $('token').value = localStorage.getItem(TOKEN_KEY) || '';
 
-$('tabForm').onclick = () => { $('tabForm').classList.add('on'); $('tabHtml').classList.remove('on'); $('panelForm').classList.add('on'); $('panelHtml').classList.remove('on'); };
-$('tabHtml').onclick = () => { $('tabHtml').classList.add('on'); $('tabForm').classList.remove('on'); $('panelHtml').classList.add('on'); $('panelForm').classList.remove('on'); };
+const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabHtml: 'panelHtml' };
+Object.keys(tabs).forEach(id => {
+  $('tab' + id.slice(3)).onclick = () => {
+    Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
+    if (id === 'tabManage') loadPosts();
+    if (id === 'tabLinks') loadLinks();
+  };
+});
+
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -336,6 +371,104 @@ async function publish(statusEl, name, title, count, htmlContent) {
   if (count) await updateJson(repo, token, 'counts.json', name, String(count), statusEl);
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
 }
+
+async function apiGet(repo, token, path) {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`, {
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+  });
+  if (!res.ok) throw new Error('读取 ' + path + ' 失败 HTTP ' + res.status);
+  return res.json();
+}
+
+async function apiDelete(repo, token, path, sha, msg) {
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg, sha: sha })
+  });
+  if (!res.ok) throw new Error('删除 ' + path + ' 失败 HTTP ' + res.status);
+}
+
+async function loadPosts() {
+  const token = $('token').value.trim();
+  const repo = $('repo').value.trim();
+  const box = $('postBox');
+  if (!token || !repo.includes('/')) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「发布帖子」页签填写 Token 和仓库。</p>'; return; }
+  show(stM, '正在读取帖子列表…', 'info');
+  try {
+    const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`,
+      { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
+    const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'publish.html'].includes(t.path));
+    const titles = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    if (!posts.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无帖子</p>'; }
+    else {
+      box.innerHTML = posts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
+        const tag = p.path.replace(/\.html$/, '');
+        const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
+        return `<div class="game">
+  <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}</span></div>
+  <div class="row">
+    <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
+    <button class="del" data-del="${esc(tag)}">删除</button>
+  </div>
+</div>`;
+      }).join('');
+      [...box.querySelectorAll('[data-del]')].forEach(b => {
+        b.onclick = async () => {
+          const tag = b.dataset.del;
+          if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
+          b.disabled = true;
+          show(stM, '正在删除 ' + tag + '.html 及其图片…', 'info');
+          try {
+            const paths = tree.tree.filter(t => t.path === tag + '.html' || t.path.startsWith('assets/' + tag + '/'));
+            for (const t of paths) {
+              const info = await apiGet(repo, token, t.path);
+              await apiDelete(repo, token, t.path, info.sha, '删除帖子: ' + tag);
+            }
+            await updateJson(repo, token, 'titles.json', tag, null, stM);
+            await updateJson(repo, token, 'counts.json', tag, null, stM);
+            show(stM, '删除成功！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+            loadPosts();
+          } catch (e) {
+            show(stM, '删除失败：' + e.message, 'err');
+            b.disabled = false;
+          }
+        };
+      });
+    }
+    show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
+  } catch (e) {
+    show(stM, '读取失败：' + e.message, 'err');
+  }
+}
+$('refresh').onclick = loadPosts;
+
+async function loadLinks() {
+  const repo = $('repo').value.trim();
+  const token = $('token').value.trim();
+  try {
+    const text = await fetch(`${RAW_BASE}/${repo}/main/links.json`).then(r => r.ok ? r.text() : null);
+    $('linksJson').value = text || '{}';
+  } catch (e) {
+    $('linksJson').value = '{}';
+  }
+}
+
+$('saveLinks').onclick = async () => {
+  const btn = $('saveLinks'); btn.disabled = true;
+  try {
+    const token = $('token').value.trim();
+    const repo = $('repo').value.trim();
+    if (!token) throw new Error('请先填写 Token');
+    JSON.parse($('linksJson').value);
+    await putFile(repo, token, 'links.json', btoa(unescape(encodeURIComponent($('linksJson').value.trim() + '\n'))),
+      '更新链接配置', stL, 'links.json');
+    show(stL, '保存成功，全站顶部栏和底部按钮已自动更新。', 'ok');
+  } catch (e) {
+    show(stL, '保存失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
 
 $('pubForm').onclick = async () => {
   const btn = $('pubForm'); btn.disabled = true;
