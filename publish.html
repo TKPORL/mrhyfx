@@ -304,6 +304,7 @@ function addGameCard() {
   d.querySelector('.del').onclick = () => { d.remove(); renum(); };
   box.appendChild(d);
   renum();
+  return d;
 }
 function renum() {
   [...$('gameBox').children].forEach((el, i) => el.querySelector('.gnum').textContent = '游戏 ' + (i + 1));
@@ -460,11 +461,56 @@ async function loadPosts() {
   <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}</span></div>
   <div class="row">
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
+    <button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button>
     <button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>
     <button class="del" data-del="${esc(tag)}">删除</button>
   </div>
 </div>`;
       }).join('');
+      [...box.querySelectorAll('[data-copy]')].forEach(b => {
+        b.onclick = async () => {
+          const tag = b.dataset.copy;
+          b.disabled = true;
+          show(stM, '正在解析「' + tag + '」的数据到发布表单…', 'info');
+          try {
+            const res = await fetch(`${RAW_BASE}/${repo}/main/${tag}.html`);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+            const lis = [...doc.querySelectorAll('li.node.heading3')];
+            if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
+            $('gameBox').innerHTML = '';
+            lis.forEach(li => {
+              const card = addGameCard();
+              const nameEl = li.querySelector('.content.mm-editor span');
+              const note = li.querySelector('.note.mm-editor');
+              let intro = '', linkM = '', linkB = '';
+              if (note) {
+                const sp = note.querySelector(':scope > span');
+                if (sp) intro = sp.textContent.trim();
+                [...note.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                  const href = a.getAttribute('href') || '';
+                  if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
+                  else linkM = href;
+                });
+              }
+              const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+              card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
+              card.querySelector('.g-intro').value = intro;
+              card.querySelector('.g-imgs').value = imgs;
+              card.querySelector('.g-linkM').value = linkM;
+              card.querySelector('.g-linkB').value = linkB;
+            });
+            $('fName').value = tag;
+            $('fTitle').value = titles[tag] || tag;
+            $('fCount').value = '';
+            switchTab('tabForm');
+            show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
+            scrollTo(0, 0);
+          } catch (e) {
+            show(stM, '复制失败：' + e.message, 'err');
+          } finally { b.disabled = false; }
+        };
+      });
       [...box.querySelectorAll('[data-edit]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.edit;
