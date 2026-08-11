@@ -1,0 +1,29 @@
+name: auto-gen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 运行生成脚本
+        run: node scripts/gen.js
+
+      - name: 提交生成结果
+        run: |
+          git config user.name "mrhx-bot"
+          git config user.email "mrhx-bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: 自动生成首页与每日页"
+          git push

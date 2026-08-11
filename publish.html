@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发布中心 · 黄油分享</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+.hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px}
+.site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site em{font-style:normal;color:#e5484d}
+.hnav{margin-left:auto;display:flex;gap:8px}
+.hnav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+.hnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+h1{font-size:22px;margin-bottom:6px}
+.sub{font-size:13px;color:#999;margin-bottom:24px;line-height:1.8}
+.steps{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.step{flex:1 1 200px;background:#fff;border:1px solid #ecebe9;border-radius:12px;padding:14px 16px}
+.step b{display:block;font-size:14px;margin-bottom:6px;color:#e5484d}
+.step p{font-size:12px;color:#888;line-height:1.7}
+.card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.field{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#444}
+input[type=text],input[type=password],textarea{width:100%;border:1px solid #e2e0dc;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:.2s}
+input:focus,textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
+textarea{height:320px;resize:vertical;font-size:13px;line-height:1.6}
+.hint{font-size:12px;color:#aaa;margin-top:5px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 26px;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.btn-p{background:#e5484d;color:#fff}
+.btn-p:hover{background:#c93a3f}
+.btn-s{background:#fff;color:#555;border:1px solid #e2e0dc;font-weight:500}
+.btn-s:hover{border-color:#e5484d;color:#e5484d}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+#status{margin-top:16px;display:none}
+#status.show{display:block;padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+#status.ok{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+#status.err{background:#fdf1f1;color:#c93a3f;border:1px solid #f0b4b6}
+#status.info{background:#eef4fd;color:#1a5fb4;border:1px solid #bcd3f0}
+.warn{margin-top:14px;font-size:12px;color:#999;line-height:1.7;border-top:1px dashed #ecebe9;padding-top:12px}
+@media (max-width:720px){
+  .hwrap{padding:12px 14px}
+  .site{font-size:17px}
+  .hnav a{font-size:12px;padding:5px 10px}
+  main{padding:20px 14px 40px}
+  .card{padding:16px}
+  .step{flex:1 1 100%}
+  textarea{height:260px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="site" href="index.html">黄油<em>分享</em></a>
+    <div class="hnav">
+      <a href="index.html">返回首页</a>
+      <a href="https://github.com/TKPORL/mrhyfx/actions" target="_blank" rel="noreferrer">构建状态</a>
+    </div>
+  </div>
+</header>
+<main>
+  <h1>发布中心</h1>
+  <p class="sub">把幕布导出的 HTML 粘贴到下方，点发布即可自动上传到 GitHub，随后 GitHub Actions 会自动生成首页与每日页面，1-2 分钟后全站更新。</p>
+
+  <div class="steps">
+    <div class="step"><b>1. 填写信息</b><p>输入本期标题（如：8月11黄油（PC+安卓））和幕布导出的 HTML 内容。</p></div>
+    <div class="step"><b>2. 填入密钥</b><p>使用你的 GitHub Token（需要 repo 权限）。只在你的浏览器中处理，存于本机。</p></div>
+    <div class="step"><b>3. 点击发布</b><p>文件自动提交到仓库，Actions 自动生成首页并部署，等待即可。</p></div>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>GitHub Token（repo 权限）</label>
+      <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      <p class="hint">创建地址：<a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer" style="color:#e5484d">github.com/settings/tokens</a> → Generate new token → 勾选 repo，过期时间建议 90 天。</p>
+    </div>
+    <div class="field">
+      <label>仓库（默认 TKPORL/mrhyfx）</label>
+      <input type="text" id="repo" value="TKPORL/mrhyfx">
+    </div>
+    <div class="field">
+      <label>本期标题</label>
+      <input type="text" id="title" placeholder="如：8月11黄油（PC+安卓）">
+      <p class="hint">即保存的文件名，注意与往期不要重名。</p>
+    </div>
+    <div class="field">
+      <label>HTML 内容（幕布导出 → 复制全文粘贴，无需修改）</label>
+      <textarea id="html" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;...&#10;把幕布导出的 HTML 全文粘贴到这里"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn btn-p" id="publish">发布</button>
+      <button class="btn btn-s" id="tpl">载入 8月10 模板</button>
+    </div>
+    <div id="status"></div>
+    <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后首次访问请强制刷新（Ctrl+F5）以避免浏览器缓存。</p>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const TOKEN_KEY = 'mrhx_token_v1';
+const statusEl = $('status');
+
+function show(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = 'show ' + (type || 'info');
+}
+
+$('token').value = localStorage.getItem(TOKEN_KEY) || '';
+
+$('tpl').addEventListener('click', async () => {
+  try {
+    $('tpl').disabled = true;
+    show('正在载入 8月10 模板…', 'info');
+    const res = await fetch('8月10黄油（PC+安卓）.html');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    $('html').value = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\n/, '');
+    show('模板已载入，请把标题改成新日期后发布（或整体替换内容）。', 'ok');
+  } catch (e) {
+    show('模板载入失败：' + e.message + '\n建议直接打开 8月10黄油（PC+安卓）.html 另存一份修改。', 'err');
+  } finally {
+    $('tpl').disabled = false;
+  }
+});
+
+$('publish').addEventListener('click', async () => {
+  const token = $('token').value.trim();
+  const repo = $('repo').value.trim();
+  const title = $('title').value.trim();
+  const html = $('html').value;
+
+  if (!token) return show('请填写 GitHub Token', 'err');
+  if (!repo || !repo.includes('/')) return show('仓库格式应为 用户名/仓库名', 'err');
+  if (!title) return show('请填写本期标题', 'err');
+  if (!html.trim() || !/<html/i.test(html)) return show('请粘贴完整的 HTML 内容（建议使用幕布导出）', 'err');
+
+  localStorage.setItem(TOKEN_KEY, token);
+  const fileName = title.endsWith('.html') ? title : title + '.html';
+  const apiPath = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(fileName)}`;
+  const content = btoa(unescape(encodeURIComponent(html)));
+
+  $('publish').disabled = true;
+  show('正在上传 ' + fileName + ' …', 'info');
+  try {
+    let body = { message: '发布: ' + title, content: content };
+    let res = await fetch(apiPath, {
+      method: 'PUT',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.status === 422) {
+      const exist = await fetch(apiPath, { headers: { 'Authorization': 'token ' + token } });
+      if (exist.ok) {
+        const info = await exist.json();
+        body.sha = info.sha;
+        res = await fetch(apiPath, {
+          method: 'PUT',
+          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      }
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error((err && err.message) || ('HTTP ' + res.status));
+    }
+    show('发布成功！\n文件已提交：https://github.com/' + repo + '/blob/main/' + encodeURIComponent(fileName) + '\nActions 正在自动生成首页与每日页，约 1-2 分钟后刷新即可看到更新。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
+  } catch (e) {
+    show('发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有 repo 权限\n- 仓库名写错', 'err');
+  } finally {
+    $('publish').disabled = false;
+  }
+});
+</script>
+</body>
+</html>

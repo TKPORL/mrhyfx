@@ -3,7 +3,7 @@ const path = require('path');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html');
+const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html');
 if (!files.length) { console.error('未找到每日分享导出文件'); process.exit(1); }
 
 let overrides = {};
@@ -23,12 +23,16 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
       </div>`;
 
 const sharedCss = `<style>
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:18px;max-width:100%;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
   .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:18px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  @media (min-width:721px){
+    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
+  }
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
@@ -44,7 +48,9 @@ const sharedCss = `<style>
     body.narrow{padding-left:12px !important;padding-right:12px !important}
     .mrhx-bar{padding:10px 12px;gap:10px}
     .mrhx-bar .mlogo{font-size:16px}
-    .mrhx-bar .mnav a{padding:5px 10px;font-size:12px}
+    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+    .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
+    .mrhx-bar .mnav::-webkit-scrollbar{display:none}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
   }
@@ -135,8 +141,10 @@ const days = [];
   <div class="mnav">${navPills}</div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
+    html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
     html = html.replace(/(<body[^>]*>)[\s\S]*?(<div class="title">)/, `$1\n  ${injected}\n  $2`);
-    html = html.replace('</body>', `<style>\n${staggered}\n</style>\n  </body>`);
+    html = html.replace(/<!--mrhx-stagger--><style>[\s\S]*?<\/style>\n?/, '');
+    html = html.replace('</body>', `<!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
@@ -220,10 +228,12 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px;flex-wrap:wrap}
-  .site{font-size:18px}
-  nav{gap:6px}
-  nav a{padding:5px 10px;font-size:12px}
+  .hwrap{padding:12px 14px;gap:10px;flex-wrap:nowrap}
+  .site{font-size:17px}
+  .site small{display:none}
+  nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
+  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  nav::-webkit-scrollbar{display:none}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}

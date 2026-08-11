@@ -43,10 +43,12 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px;flex-wrap:wrap}
-  .site{font-size:18px}
-  nav{gap:6px}
-  nav a{padding:5px 10px;font-size:12px}
+  .hwrap{padding:12px 14px;gap:10px;flex-wrap:nowrap}
+  .site{font-size:17px}
+  .site small{display:none}
+  nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
+  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  nav::-webkit-scrollbar{display:none}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}
