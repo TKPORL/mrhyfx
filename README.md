@@ -73,7 +73,7 @@ create index comments_url_idx on comments (url);
 
 帖子页面自动统计访问次数，仅后台管理可见（不在访客页面显示）。
 
-1. 在 Supabase SQL Editor 中运行以下 SQL（请把 `你的管理密钥` 换成你之前设置的同一串）：
+1. 在 Supabase SQL Editor 中运行以下 SQL（管理密钥已填好，直接复制运行即可）：
 
 ```sql
 create table if not exists page_views (
@@ -86,7 +86,7 @@ alter table page_views enable row level security;
 drop policy if exists "page_views_select_admin" on page_views;
 create policy "page_views_select_admin" on page_views
   for select using (
-    coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+    coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = 'MrhxAdmin@2026#Abc'
   );
 
 create or replace function inc_page_view(p_url text)
