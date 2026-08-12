@@ -163,16 +163,6 @@ const viewScript = (sb, key, path) => `<script>
     var h = { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' };
     fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) });
     fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) }).catch(function () {});
-    fetch('https://ip-api.com/json/?fields=country,regionName,city&lang=zh-CN')
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (g) {
-        if (!g || !g.country) return;
-        fetch('${sb}/rest/v1/rpc/inc_geo_view', {
-          method: 'POST',
-          headers: h,
-          body: JSON.stringify({ p_url: '${path}', p_day: day, p_country: g.country || '未知', p_region: g.regionName || '未知', p_city: g.city || '未知' })
-        }).catch(function () {});
-      }).catch(function () {});
   } catch (e) {}
 })();
 </script>`;
