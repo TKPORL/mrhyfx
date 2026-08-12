@@ -5,7 +5,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html');
+const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -49,6 +49,11 @@ const sharedCss = `<style>
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+  .mrhx-search{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:150px;outline:none;transition:.2s}
+  .mrhx-search input:focus{border-color:#e5484d;background:#fff}
+  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+  .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
   .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:18px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   @media (min-width:721px){
@@ -74,6 +79,8 @@ const sharedCss = `<style>
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
+    .mrhx-search{order:3;width:100%;margin-left:0}
+    .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
   }
@@ -112,12 +119,22 @@ const sharedCss = `<style>
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 </style>`;
 
-const topButton = `<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到顶部">↑</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
-  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  var showing = false;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    var show = !nearTop || nearBottom;
+    if (show !== showing) { b.classList.toggle('show', show); showing = show; }
+  }
   window.addEventListener('scroll', t, { passive: true });
   t();
 })();
@@ -245,11 +262,16 @@ header{background:#fff;border-bottom:1px solid #ecebe9}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
+.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
+.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:130px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
 nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 main{max-width:900px;margin:0 auto;padding:60px 20px;text-align:center;color:#999}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
-@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}}
+@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
 </style>
 <link rel="icon" href="favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="favicon.webp">
@@ -258,6 +280,10 @@ footer b{color:#e5484d}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <form class="mrhx-search" action="search.html" method="get">
+    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+    <button type="submit">搜索</button>
+  </form>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -274,6 +300,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 }
 
 const days = [];
+const searchIndex = [];
 (async () => {
   for (const file of files) {
     let html = fs.readFileSync(file, 'utf8');
@@ -308,7 +335,7 @@ html = (function reorderNodes(str) {
       var depth = 0, i = h3 + 27;
       while (i < inner.length) {
         if (inner.indexOf('<li', i) === i) depth++;
-        if (inner.indexOf('</li>', i) === i) { if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } depth--; i += 5; continue; }
+        if (inner.indexOf('</li>', i) === i) { depth--; if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } i += 5; continue; }
         i++;
       }
       if (i >= inner.length) { blocks.push(inner.slice(h3)); break; }
@@ -346,6 +373,10 @@ html = (function reorderNodes(str) {
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <form class="mrhx-search" action="search.html" method="get">
+    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+    <button type="submit">搜索</button>
+  </form>
   <div class="mnav">${navPills}</div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
@@ -476,6 +507,28 @@ html = (function reorderNodes(str) {
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     html = html.replace('</body>', `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
 
+    const searchBlocks = [];
+    let pos = 0;
+    while (pos < html.length) {
+      const h3 = html.indexOf('<li class="node heading3">', pos);
+      if (h3 < 0) break;
+      let depth = 0, i = h3;
+      while (i < html.length) {
+        if (html.indexOf('<li', i) === i) depth++;
+        if (html.indexOf('</li>', i) === i) { depth--; if (depth === 0) { searchBlocks.push(html.slice(h3, i + 5)); pos = i + 5; break; } i += 5; continue; }
+        i++;
+      }
+      if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
+    }
+    const games = searchBlocks.map(b => {
+      const title = (b.match(/<div class="content mm-editor" ><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
+      const intro = (b.match(/<div class="note mm-editor"><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
+      const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2] }));
+      return { title, intro, img, links, source: shortName };
+    }).filter(g => g.title);
+    searchIndex.push(...games);
+
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
     days.push({ file, gameCount, tag });
@@ -549,6 +602,11 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
+.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
 nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -585,6 +643,8 @@ footer b{color:#e5484d}
   nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
   nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
   nav::-webkit-scrollbar{display:none}
+  .mrhx-search{order:3;width:100%;margin-left:0}
+  .mrhx-search input{flex:1;width:auto}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}
@@ -603,6 +663,10 @@ footer b{color:#e5484d}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <form class="mrhx-search" action="search.html" method="get">
+    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+    <button type="submit">搜索</button>
+  </form>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -620,4 +684,96 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 `;
   fs.writeFileSync('index.html', index);
   console.log('index.html ok, days:', days.length);
+
+  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
+  console.log('search_index.json ok, games:', searchIndex.length);
+
+  const searchPage = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>搜索 · ${esc(SITE_NAME)}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site em{font-style:normal;color:#e5484d}
+.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
+.mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:180px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
+main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
+.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa}
+.result{border:1px solid #ecebe9;border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.result .rt b{font-size:16px;color:#2b2b2b}
+.result .rt .src{font-size:11px;color:#fff;background:#e5484d;border-radius:99px;padding:2px 10px}
+.result .intro{font-size:13px;color:#666;line-height:1.8;margin-bottom:10px;word-break:break-word}
+.result .dl{display:flex;gap:8px;flex-wrap:wrap}
+.result .img{margin-top:10px}
+.result .img img{max-width:100%;border-radius:10px;border:1px solid #ecebe9}
+.btn-dl{display:inline-flex;align-items:center;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none}
+.btn-dl-m{background:#e5484d;color:#fff}
+.btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+.empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
+@media (max-width:720px){.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <form class="mrhx-search" action="search.html" method="get">
+      <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+  </div>
+</header>
+<main>
+  <div class="sect"><h2>搜索结果</h2><span id="count"></span></div>
+  <div id="res"></div>
+</main>
+<footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>
+<script>
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+(function () {
+  var q = new URLSearchParams(location.search).get('q') || '';
+  var input = document.getElementById('q');
+  input.value = q;
+  var resBox = document.getElementById('res');
+  var countEl = document.getElementById('count');
+  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; return; }
+  fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
+    var kw = q.toLowerCase();
+    var hits = data.filter(function (g) {
+      return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
+    });
+    countEl.textContent = '（找到 ' + hits.length + ' 个）';
+    if (!hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; return; }
+    resBox.innerHTML = hits.map(function (g) {
+      var dl = (g.links || []).map(function (l) {
+        var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
+        return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
+      }).join('');
+      return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
+        (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
+        (dl ? '<div class="dl">' + dl + '</div>' : '') +
+        (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
+        '</div>';
+    }).join('');
+  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; });
+})();
+</script>
+</body>
+</html>
+`;
+  fs.writeFileSync('search.html', searchPage);
+  console.log('search.html ok');
 })().catch(e => { console.error(e); process.exit(1); });

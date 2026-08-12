@@ -16,6 +16,11 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
+.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
 nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -52,6 +57,8 @@ footer b{color:#e5484d}
   nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
   nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
   nav::-webkit-scrollbar{display:none}
+  .mrhx-search{order:3;width:100%;margin-left:0}
+  .mrhx-search input{flex:1;width:auto}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}
@@ -70,6 +77,10 @@ footer b{color:#e5484d}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <form class="mrhx-search" action="search.html" method="get">
+    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+    <button type="submit">搜索</button>
+  </form>
     <nav><a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">更多合集</a><a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a><a href="http://i8c.cn/45DrJ" target="_blank" rel="noreferrer">备用合集</a><a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">其他资源</a></nav>
   </div>
 </header>
@@ -129,12 +140,22 @@ footer b{color:#e5484d}
 @keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
 @keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
 </style>
-<button class="mrhx-top" id="mrhxTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+<button class="mrhx-top" id="mrhxTopBtn" title="滚动到顶部">↑</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
-  function t() { b.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 400); }
+  var showing = false;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    var show = !nearTop || nearBottom;
+    if (show !== showing) { b.classList.toggle('show', show); showing = show; }
+  }
   window.addEventListener('scroll', t, { passive: true });
   t();
 })();
