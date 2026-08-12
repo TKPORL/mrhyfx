@@ -250,7 +250,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9}
 .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:56px;height:56px;border-radius:8px;vertical-align:middle;display:inline-block}
+.site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
@@ -259,7 +259,7 @@ nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 main{max-width:900px;margin:0 auto;padding:60px 20px;text-align:center;color:#999}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
-@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:40px;height:40px}}
+@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}}
 </style>
 <link rel="icon" href="favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="favicon.webp">
@@ -553,7 +553,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
 .hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:68px;height:68px;border-radius:10px;vertical-align:middle;display:inline-block}
+.site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
@@ -590,7 +590,7 @@ footer b{color:#e5484d}
 @media (max-width:720px){
   .hwrap{padding:12px 14px;gap:10px;flex-wrap:nowrap}
   .site{font-size:17px}
-  .site img.site-logo{width:48px;height:48px}
+  .site img.site-logo{width:100px;height:auto}
   .site small{display:none}
   nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
   nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
