@@ -1269,7 +1269,14 @@ async function loadStats() {
       if (dRes.ok) { todayArr = await dRes.json(); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
     } catch (e) {}
     $('statTodayViews').textContent = todayTotal;
-    if (!arr.length && !todayArr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
+    let geoRows = [];
+    try {
+      const gRes = await fetch(`${sbUrl}/rest/v1/geo_page_views?select=country,region,city,count&order=count.desc&limit=50`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      });
+      if (gRes.ok) geoRows = await gRes.json();
+    } catch (e) {}
+    if (!arr.length && !todayArr.length && !geoRows.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
     else {
       const totalAll = arr.reduce((s, v) => s + v.count, 0);
       const maxAll = arr.length ? Math.max(...arr.map(x => x.count)) : 1;
@@ -1292,6 +1299,41 @@ async function loadStats() {
       };
       let html = '';
       if (todayArr.length) html += '<div style="margin-bottom:18px"><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #e5484d">今日访问（独立访客）</h3>' + renderBars(todayArr, todayTotal, todayMax, '', '#e5484d') + '</div>';
+      if (geoRows.length) {
+        const countryMap = {};
+        const regionMap = {};
+        const cityMap = {};
+        geoRows.forEach(r => {
+          const c = r.country || '未知', rg = r.region || '未知', ct = r.city || '未知';
+          countryMap[c] = (countryMap[c] || 0) + r.count;
+          regionMap[c + '|' + rg] = (regionMap[c + '|' + rg] || 0) + r.count;
+          cityMap[c + '|' + rg + '|' + ct] = (cityMap[c + '|' + rg + '|' + ct] || 0) + r.count;
+        });
+        const countryList = Object.entries(countryMap).map(([k, v]) => ({ name: k, count: v })).sort((a, b) => b.count - a.count);
+        const regionList = Object.entries(regionMap).map(([k, v]) => ({ name: k.split('|')[1], country: k.split('|')[0], count: v })).sort((a, b) => b.count - a.count).slice(0, 20);
+        const cityList = Object.entries(cityMap).map(([k, v]) => ({ name: k.split('|')[2], region: k.split('|')[1], country: k.split('|')[0], count: v })).sort((a, b) => b.count - a.count).slice(0, 20);
+        const geoTotal = geoRows.reduce((s, r) => s + r.count, 0);
+        const renderGeoBars = (rows, labelKey, color) => {
+          if (!rows.length) return '';
+          const max = Math.max(...rows.map(x => x.count));
+          return rows.map(r => {
+            const pct = geoTotal ? (r.count / geoTotal * 100).toFixed(1) : 0;
+            const barW = max ? (r.count / max * 100) : 0;
+            return `<div style="margin-bottom:6px;padding:8px 14px;background:#faf9f7;border-radius:10px;border:1px solid #ecebe9">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:600;color:#333">${esc(r[labelKey])} <span style="font-size:11px;color:#999">${esc(r.country || '')}${r.region && r.region !== r.city ? ' · ' + esc(r.region) : ''}</span></span>
+                <span style="font-size:13px;color:${color};font-weight:700;white-space:nowrap">${r.count} 次 · ${pct}%</span>
+              </div>
+              <div style="height:5px;background:#ecebe9;border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:${barW}%;background:${color};border-radius:99px;transition:width .5s"></div>
+              </div>
+            </div>`;
+          }).join('');
+        };
+        html += '<div style="margin-bottom:18px"><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #9c27b0">访问地区 TOP 国家</h3>' + renderGeoBars(countryList, 'name', '#9c27b0') + '</div>';
+        if (regionList.length) html += '<div style="margin-bottom:18px"><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #7b1fa2">TOP 省/州</h3>' + renderGeoBars(regionList, 'name', '#7b1fa2') + '</div>';
+        if (cityList.length) html += '<div><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #6a1b9a">TOP 城市</h3>' + renderGeoBars(cityList, 'name', '#6a1b9a') + '</div>';
+      }
       html += '<div><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #1a5fb4">累计访问（独立访客）</h3>' + renderBars(arr, totalAll, maxAll, '', '#1a5fb4') + '</div>';
       box.innerHTML = html;
     }

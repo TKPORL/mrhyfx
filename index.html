@@ -148,6 +148,16 @@ footer b{color:#e5484d}
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html' }) });
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html', p_day: day }) }).catch(() => {});
+    fetch('https://ip-api.com/json/?fields=country,regionName,city&lang=zh-CN')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (g) {
+        if (!g || !g.country) return;
+        fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_geo_view', {
+          method: 'POST',
+          headers: h,
+          body: JSON.stringify({ p_url: '/index.html', p_day: day, p_country: g.country || '未知', p_region: g.regionName || '未知', p_city: g.city || '未知' })
+        }).catch(function () {});
+      }).catch(function () {});
   } catch (e) {}
 })();
 </script>

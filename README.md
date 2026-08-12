@@ -142,6 +142,47 @@ grant execute on function inc_daily_view(text, date) to anon;
 
 > 每日统计通过 localStorage 按天去重：同一浏览器同一天访问同一页面只算 1 次，第二天日期变化重新计数（实现真正的"每日独立访客"）。后台「访问统计」面板会同时显示"今日访问"和"累计访问"。
 
+## 访问地区统计（独立访客 + IP 解析地区）
+
+在 Supabase SQL Editor 中运行以下 SQL（基于 daily_page_views 的扩展，加上地区信息）：
+
+```sql
+create table if not exists geo_page_views (
+  url text not null,
+  day date not null,
+  country text not null,
+  region text not null,
+  city text not null,
+  count bigint not null default 0,
+  primary key (url, day, country, region, city)
+);
+
+alter table geo_page_views enable row level security;
+
+drop policy if exists "geo_page_views_select_admin" on geo_page_views;
+create policy "geo_page_views_select_admin" on geo_page_views
+  for select using (
+    coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = 'MrhxAdmin@2026#Abc'
+  );
+
+create or replace function inc_geo_view(p_url text, p_day date, p_country text, p_region text, p_city text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into geo_page_views(url, day, country, region, city, count)
+  values (p_url, p_day, coalesce(nullif(p_country, ''), '未知'), coalesce(nullif(p_region, ''), '未知'), coalesce(nullif(p_city, ''), '未知'), 1)
+  on conflict (url, day, country, region, city)
+  do update set count = geo_page_views.count + 1
+$$;
+
+revoke execute on function inc_geo_view(text, date, text, text, text) from public;
+grant execute on function inc_geo_view(text, date, text, text, text) to anon;
+```
+
+> 地区统计通过免费的 ip-api.com（无需 API key）获取访客国家/省/市，再写入数据库。后台「访问统计」面板新增"地区统计"模块，按独立访客数显示 TOP 国家/省/市。
+
 ## 更新方法（方式二：本地）
 
 1. 将当天幕布导出的 HTML 放入仓库根目录（文件名建议：`X.X.html`，如 `8.2.html`）
