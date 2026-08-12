@@ -1057,6 +1057,8 @@
 <link rel="apple-touch-icon" href="favicon.webp">
 <link rel="icon" href="favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="favicon.webp">
+<link rel="icon" href="favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="favicon.webp">
 </head>
       <body class="narrow">
   <!--mrhx-->
@@ -1879,6 +1881,19 @@
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html' }) });
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html', p_day: day }) }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+<script>
+(function () {
+  try {
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/8.12pcaz.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.12pcaz.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.12pcaz.html', p_day: day }) }).catch(function () {});
   } catch (e) {}
 })();
 </script>
