@@ -263,9 +263,13 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <button class="btn btn-s" id="refreshStats">刷新</button>
       </div>
       <div class="stat-overview" id="statOverview" style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="stat-box" style="flex:1;min-width:120px;background:#fff7e6;border-radius:12px;padding:14px 18px;text-align:center">
+          <div style="font-size:28px;font-weight:800;color:#e5484d" id="statTodayViews">-</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">今日访问</div>
+        </div>
         <div class="stat-box" style="flex:1;min-width:120px;background:#fdf3f3;border-radius:12px;padding:14px 18px;text-align:center">
           <div style="font-size:28px;font-weight:800;color:#e5484d" id="statTotalViews">-</div>
-          <div style="font-size:12px;color:#999;margin-top:4px">总访问量</div>
+          <div style="font-size:12px;color:#999;margin-top:4px">累计访问</div>
         </div>
         <div class="stat-box" style="flex:1;min-width:120px;background:#eef4fd;border-radius:12px;padding:14px 18px;text-align:center">
           <div style="font-size:28px;font-weight:800;color:#1a5fb4" id="statTotalPosts">-</div>
@@ -1241,7 +1245,7 @@ const stS = $('statusS');
 async function loadStats() {
   const box = $('statBox');
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
-  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; return; }
+  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; return; }
   show(stS, '正在加载统计…', 'info');
   try {
     const res = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc`, {
@@ -1255,28 +1259,49 @@ async function loadStats() {
     $('statTotalViews').textContent = total;
     $('statTotalPosts').textContent = postCount;
     $('statAvgViews').textContent = avg;
-    if (!arr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
+    const today = new Date().toISOString().slice(0, 10);
+    let todayTotal = 0;
+    let todayArr = [];
+    try {
+      const dRes = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      });
+      if (dRes.ok) { todayArr = await dRes.json(); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
+    } catch (e) {}
+    $('statTodayViews').textContent = todayTotal;
+    if (!arr.length && !todayArr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
     else {
-      box.innerHTML = arr.map(v => {
-        const pct = total ? (v.count / total * 100).toFixed(1) : 0;
-        const barW = total ? (v.count / Math.max(...arr.map(x => x.count)) * 100) : 0;
-        return `<div style="margin-bottom:10px;padding:10px 14px;background:#faf9f7;border-radius:10px;border:1px solid #ecebe9">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap">
-            <span style="font-size:13px;font-weight:600;color:#333">${esc(v.url)}</span>
-            <span style="font-size:13px;color:#e5484d;font-weight:700;white-space:nowrap">${v.count} 次访问 · ${pct}%</span>
-          </div>
-          <div style="height:6px;background:#ecebe9;border-radius:99px;overflow:hidden">
-            <div style="height:100%;width:${barW}%;background:#e5484d;border-radius:99px;transition:width .5s"></div>
-          </div>
-        </div>`;
-      }).join('');
+      const totalAll = arr.reduce((s, v) => s + v.count, 0);
+      const maxAll = arr.length ? Math.max(...arr.map(x => x.count)) : 1;
+      const todayMax = todayArr.length ? Math.max(...todayArr.map(x => x.count)) : 1;
+      const renderBars = (rows, totalRows, maxVal, labelSuffix, color) => {
+        if (!rows.length) return '';
+        return rows.map(v => {
+          const pct = totalRows ? (v.count / totalRows * 100).toFixed(1) : 0;
+          const barW = maxVal ? (v.count / maxVal * 100) : 0;
+          return `<div style="margin-bottom:8px;padding:9px 14px;background:#faf9f7;border-radius:10px;border:1px solid #ecebe9">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:600;color:#333">${esc(v.url)}</span>
+              <span style="font-size:13px;color:${color};font-weight:700;white-space:nowrap">${v.count} 次${labelSuffix} · ${pct}%</span>
+            </div>
+            <div style="height:6px;background:#ecebe9;border-radius:99px;overflow:hidden">
+              <div style="height:100%;width:${barW}%;background:${color};border-radius:99px;transition:width .5s"></div>
+            </div>
+          </div>`;
+        }).join('');
+      };
+      let html = '';
+      if (todayArr.length) html += '<div style="margin-bottom:18px"><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #e5484d">今日访问（独立访客）</h3>' + renderBars(todayArr, todayTotal, todayMax, '', '#e5484d') + '</div>';
+      html += '<div><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #1a5fb4">累计访问（独立访客）</h3>' + renderBars(arr, totalAll, maxAll, '', '#1a5fb4') + '</div>';
+      box.innerHTML = html;
     }
-    show(stS, arr.length + ' 个页面 · 共 ' + total + ' 次访问', 'ok');
+    show(stS, arr.length + ' 个页面 · 累计 ' + total + ' 次 · 今日 ' + todayTotal + ' 次', 'ok');
   } catch (e) {
     show(stS, '加载失败：' + e.message + '\n\n请确认 Supabase 配置正确且 page_views 表已创建。', 'err');
     $('statTotalViews').textContent = '-';
     $('statTotalPosts').textContent = '-';
     $('statAvgViews').textContent = '-';
+    $('statTodayViews').textContent = '-';
   }
 }
 $('refreshStats').onclick = loadStats;

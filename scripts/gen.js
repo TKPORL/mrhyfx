@@ -156,14 +156,13 @@ const popupHtml = (() => {
 const viewScript = (sb, key, path) => `<script>
 (function () {
   try {
-    var k = 'mrhx_v_' + '${path}'.replace(/[^a-zA-Z0-9]/g, '_');
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '${path}'.replace(/[^a-zA-Z0-9]/g, '_');
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
-    fetch('${sb}/rest/v1/rpc/inc_page_view', {
-      method: 'POST',
-      headers: { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_url: '${path}' })
-    });
+    var h = { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' };
+    fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) });
+    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) }).catch(() => {});
   } catch (e) {}
 })();
 </script>`;

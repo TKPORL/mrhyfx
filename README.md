@@ -106,6 +106,42 @@ grant execute on function inc_page_view(text) to anon;
 2. 运行后，每次有人打开帖子页面自动 +1 访问次数。
 3. 后台管理「帖子管理」列表会显示每个帖子的访问量，仅管理密钥登录后可见。
 
+## 每日统计（独立访客，按天去重）
+
+在 Supabase SQL Editor 中运行以下 SQL（与上面 `page_views` 表同理，独立访客按天去重）：
+
+```sql
+create table if not exists daily_page_views (
+  url text not null,
+  day date not null,
+  count bigint not null default 0,
+  primary key (url, day)
+);
+
+alter table daily_page_views enable row level security;
+
+drop policy if exists "daily_page_views_select_admin" on daily_page_views;
+create policy "daily_page_views_select_admin" on daily_page_views
+  for select using (
+    coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = 'MrhxAdmin@2026#Abc'
+  );
+
+create or replace function inc_daily_view(p_url text, p_day date)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into daily_page_views(url, day, count) values (p_url, p_day, 1)
+  on conflict (url, day) do update set count = daily_page_views.count + 1
+$$;
+
+revoke execute on function inc_daily_view(text, date) from public;
+grant execute on function inc_daily_view(text, date) to anon;
+```
+
+> 每日统计通过 localStorage 按天去重：同一浏览器同一天访问同一页面只算 1 次，第二天日期变化重新计数（实现真正的"每日独立访客"）。后台「访问统计」面板会同时显示"今日访问"和"累计访问"。
+
 ## 更新方法（方式二：本地）
 
 1. 将当天幕布导出的 HTML 放入仓库根目录（文件名建议：`X.X.html`，如 `8.2.html`）

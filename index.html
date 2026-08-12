@@ -141,14 +141,13 @@ footer b{color:#e5484d}
 <script>
 (function () {
   try {
-    var k = 'mrhx_v_' + '/index.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/index.html'.replace(/[^a-zA-Z0-9]/g, '_');
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', {
-      method: 'POST',
-      headers: { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_url: '/index.html' })
-    });
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html', p_day: day }) }).catch(() => {});
   } catch (e) {}
 })();
 </script>
