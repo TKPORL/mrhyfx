@@ -241,6 +241,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9}
 .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site img.site-logo{width:28px;height:28px;border-radius:5px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
@@ -251,13 +252,13 @@ footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#9
 footer b{color:#e5484d}
 @media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}}
 </style>
-<link rel="icon" href="favicon.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+<link rel="icon" href="favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="favicon.webp">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">Tsinho<br><em>黄油推荐站</em></a>
+    <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
@@ -357,8 +358,8 @@ html = (function reorderNodes(str) {
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
-    html = html.replace('</head>', `<link rel="icon" href="favicon.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+    html = html.replace('</head>', `<link rel="icon" href="favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="favicon.webp">
 </head>`);
 
     const v = SITE.comments;
@@ -543,6 +544,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
 .hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
 .site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site img.site-logo{width:34px;height:34px;border-radius:6px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
@@ -594,13 +596,13 @@ footer b{color:#e5484d}
   .arrow{display:none}
 }
 </style>
-<link rel="icon" href="favicon.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="apple-touch-icon.jpg">
+<link rel="icon" href="favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="favicon.webp">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">Tsinho<br><em>黄油推荐站</em></a>
+    <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <nav>${navLinks}</nav>
   </div>
 </header>
