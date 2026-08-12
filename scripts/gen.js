@@ -119,21 +119,20 @@ const sharedCss = `<style>
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 </style>`;
 
-const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到顶部">↑</button>
+const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
-  var showing = false;
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
     var h = document.documentElement.scrollHeight - window.innerHeight;
     var nearTop = y < 100;
     var nearBottom = h - y < 100;
     if (nearTop) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
-    var show = !nearTop || nearBottom;
-    if (show !== showing) { b.classList.toggle('show', show); showing = show; }
+    b.classList.add('show');
   }
   window.addEventListener('scroll', t, { passive: true });
   t();

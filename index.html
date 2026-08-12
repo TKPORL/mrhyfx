@@ -158,21 +158,20 @@ footer b{color:#e5484d}
 @keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
 @keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
 </style>
-<button class="mrhx-top" id="mrhxTopBtn" title="滚动到顶部">↑</button>
+<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
-  var showing = false;
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
     var h = document.documentElement.scrollHeight - window.innerHeight;
     var nearTop = y < 100;
     var nearBottom = h - y < 100;
     if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
-    var show = !nearTop || nearBottom;
-    if (show !== showing) { b.classList.toggle('show', show); showing = show; }
+    b.classList.add('show');
   }
   window.addEventListener('scroll', t, { passive: true });
   t();
