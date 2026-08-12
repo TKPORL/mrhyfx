@@ -309,6 +309,15 @@ const searchIndex = [];
 
     html = await localize(html, tag);
 
+    const iconRe = /(?:<link rel="icon"[^>]*>\s*<link rel="apple-touch-icon"[^>]*>\s*)+/g;
+    html = html.replace(iconRe, (m) => {
+      const first = m.match(/<link rel="icon"[^>]*>/);
+      const second = m.match(/<link rel="apple-touch-icon"[^>]*>/);
+      return first && second ? `${first[0]}\n${second[0]}\n` : m;
+    });
+    const viewRe = /(<script>\s*\(function \(\) \{\s*try \{[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*)(?=[\s\S]*?inc_page_view)/g;
+    html = html.replace(viewRe, '');
+
     html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
 
     const alreadyProcessed = /<div class="mrhx-dl"><a class="mrhx-btn/.test(html);
@@ -331,8 +340,12 @@ html = (function reorderNodes(str) {
       var h3 = inner.indexOf('<li class="node heading3">', pos);
       if (h3 < 0) { blocks.push(inner.slice(pos)); break; }
       if (h3 > pos) blocks.push(inner.slice(pos, h3));
-      var depth = 0, i = h3 + 27;
+      var depth = 1, i = h3 + 27;
       while (i < inner.length) {
+        if (inner.indexOf('<ul class="image-list">', i) === i) {
+          var uEnd = inner.indexOf('</ul>', i + 22);
+          if (uEnd >= 0) { i = uEnd + 5; continue; }
+        }
         if (inner.indexOf('<li', i) === i) depth++;
         if (inner.indexOf('</li>', i) === i) { depth--; if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } i += 5; continue; }
         i++;
@@ -380,14 +393,18 @@ html = (function reorderNodes(str) {
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
-    html = html.replace(/(<body[^>]*>)[\s\S]*?(<div class="title">)/, `$1\n  ${injected}\n  $2`);
+    if (!html.includes('<!--mrhx-->')) {
+      html = html.replace(/(<body[^>]*>)[\s\S]*?(<div class="title">)/, `$1\n  ${injected}\n  $2`);
+    }
     html = html.replace(/\s*<!--mrhx-stagger--><style>[\s\S]*?<\/style>\s*/g, '\n');
-    html = html.replace('</body>', `  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
+    if (!html.includes('<!--mrhx-stagger-->')) {
+      html = html.replace('</body>', `  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
+    }
     const shortName = path.parse(file).name;
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
-    html = html.replace('</head>', `<link rel="icon" href="favicon.webp" type="image/webp">
+    html = html.replace('</head>', (html.includes('rel="icon" href="favicon.webp"')) ? '</head>' : `<link rel="icon" href="favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="favicon.webp">
 </head>`);
 
@@ -504,7 +521,8 @@ html = (function reorderNodes(str) {
     html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
-    html = html.replace('</body>', `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
+    const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
+    html = html.replace('</body>', (html.includes('inc_page_view') || !vb) ? `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${staggerBlock}\n  </body>` : `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}${staggerBlock}\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
