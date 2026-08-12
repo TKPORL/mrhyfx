@@ -780,12 +780,14 @@ function stripNodeList(html, blocks) {
   return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 5);
 }
 
-async function buildFormHtml(cards, imagePaths) {
+async function buildFormHtml(cards, imagePaths, title) {
   const res = await fetch('8.10.html');
   if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
-  const skeleton = await res.text();
+  let skeleton = await res.text();
   const blocks = cards.map((c, i) => gameHtml(c, imagePaths[i])).join('\n');
-  return stripNodeList(skeleton, blocks);
+  skeleton = stripNodeList(skeleton, blocks);
+  if (title) skeleton = skeleton.replace(/<div class="title">[^<]*<\/div>/, `<div class="title">${esc(title)}</div>`).replace(/<title>[^<]*<\/title>/, `<title>${esc(title)} · ${esc($('siteName').value || '黄油分享')}</title>`);
+  return skeleton;
 }
 
 async function putFile(repo, token, path, content, msg, statusEl, step) {
@@ -943,7 +945,7 @@ async function loadPosts() {
             });
             $('fName').value = tag;
             $('fTitle').value = titles[tag] || tag;
-            $('fCount').value = '';
+            $('fCount').value = counts[tag] || '';
             switchTab('tabForm');
             show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
             scrollTo(0, 0);
@@ -1376,7 +1378,7 @@ $('pubForm').onclick = async () => {
     if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
     if (!title) throw new Error('请填写帖子标题');
     const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
-    const htmlContent = await buildFormHtml(cards, imagePaths);
+    const htmlContent = await buildFormHtml(cards, imagePaths, $('fTitle').value.trim());
     await publish(stF, name, title, count, htmlContent);
     await updateTimestamp(repo, token, name).catch(() => {});
     localStorage.removeItem(DRAFT_FORM);
