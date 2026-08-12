@@ -162,7 +162,7 @@ const viewScript = (sb, key, path) => `<script>
     localStorage.setItem(k, '1');
     var h = { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' };
     fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) });
-    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) }).catch(() => {});
+    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) }).catch(function () {});
     fetch('https://ip-api.com/json/?fields=country,regionName,city&lang=zh-CN')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (g) {
