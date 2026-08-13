@@ -765,7 +765,7 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
     const cardPaths = [];
     for (const f of c.files) {
       const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
-      const raw = btoa(f.name).replace(/[+/=]/g, '').slice(0, 8);
+      const raw = btoa(unescape(encodeURIComponent(f.name))).replace(/[+/=]/g, '').slice(0, 8);
       let rawName = raw + '.' + ext;
       while (usedNames.has(rawName)) {
         const dot = rawName.lastIndexOf('.');
