@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
     ].join("\n");
 
     await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】" + adminNick + " 回复了你的评论", text });
-    return json({ ok: true });
+    return json({ ok: true, smtpHost: host, smtpPort: port, smtpUser: user });
   } catch (e) {
     return json({ ok: false, error: String((e && e.message) || e) }, 500);
   }
