@@ -1368,7 +1368,7 @@ async function loadComments() {
             </div>
             <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
             <div class="row">
-              <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(topId)}" data-rurl="${esc(c.url || '')}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
+              <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(c.id)}" data-root="${esc(topId)}" data-rurl="${esc(c.url || '')}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
               <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
             </div>
           </div>
@@ -1435,7 +1435,7 @@ async function loadComments() {
             localStorage.setItem('mrhx_admin_nick', nick);
             localStorage.setItem('mrhx_admin_email', email);
             sendReplyMail(b.dataset.rurl, b.dataset.mail, b.dataset.tonick, content, nick);
-            await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.rtop)}`, {
+            await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.root || b.dataset.rtop)}`, {
               method: 'PATCH',
               headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
               body: JSON.stringify({ replied: true })
