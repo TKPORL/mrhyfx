@@ -758,15 +758,21 @@ function fileToBase64(f) {
 }
 
 async function uploadGameImages(repo, token, name, cards, statusEl) {
-  let n = 0;
   const paths = [];
+  const usedNames = new Set();
   for (const c of cards) {
     const cardPaths = [];
     for (const f of c.files) {
-      const imgName = `img_${String(++n).padStart(2, '0')}.png`;
+      let rawName = f.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'image.png';
+      if (!rawName.includes('.')) rawName += '.png';
+      while (usedNames.has(rawName)) {
+        const dot = rawName.lastIndexOf('.');
+        rawName = rawName.slice(0, dot) + '_' + rawName.slice(dot);
+      }
+      usedNames.add(rawName);
       const b64 = await fileToBase64(f);
-      await putFile(repo, token, `assets/${name}/${imgName}`, b64, '发布: 上传图片 ' + imgName, statusEl, '图片 ' + n);
-      cardPaths.push(`assets/${name}/${imgName}`);
+      await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, statusEl, '图片');
+      cardPaths.push(`assets/${name}/${rawName}`);
     }
     paths.push(cardPaths);
   }
