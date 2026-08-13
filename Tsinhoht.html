@@ -1159,7 +1159,7 @@ async function sendReplyMail(url, to, toNick, content, adminNick) {
     const postTitle = postTitlesCache[(url || '').replace(/^\//, '').replace(/\.html$/, '')] || '';
     const nr = await fetch(`${sbBase()}/functions/v1/notify-reply`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'notify-secret': notifyKey },
+      headers: { 'Content-Type': 'application/json', 'notify-secret': notifyKey, 'Authorization': 'Bearer ' + $('sbAnon').value.trim(), 'apikey': $('sbAnon').value.trim() },
       body: JSON.stringify({ url: url, to: to, toNick: toNick, reply: content, adminNick: adminNick, postTitle: postTitle })
     });
     const d = await nr.json().catch(() => null);
@@ -1208,7 +1208,7 @@ async function loadComments() {
             <div class="rbox" id="rbox-${esc(c.id)}" style="display:none">
               <div class="rrow">
                 <input type="text" id="rn-${esc(c.id)}" placeholder="站长昵称" value="${esc(localStorage.getItem('mrhx_admin_nick') || '站长')}">
-                <input type="email" id="re-${esc(c.id)}" placeholder="站长邮箱" value="${esc(localStorage.getItem('mrhx_admin_email') || 'Tsinhos@qq.com')}">
+                <input type="email" id="re-${esc(c.id)}" placeholder="站长邮箱" value="${esc(((localStorage.getItem('mrhx_admin_email') === 'mrhx@tkporl.github.io') ? '' : (localStorage.getItem('mrhx_admin_email') || '')) || 'Tsinhos@qq.com')}">
               </div>
               <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
               <div class="row">
