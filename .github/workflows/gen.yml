@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: gen-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gen:
     runs-on: ubuntu-latest
@@ -25,6 +29,12 @@ jobs:
           git config user.name "mrhx-bot"
           git config user.email "mrhx-bot@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "chore: 自动生成首页与每日页"
-          git pull --rebase origin main || true
-          git push
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore: 自动生成首页与每日页"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 3
+          done
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/main 2>/dev/null || true
+          exit 0
