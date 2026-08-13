@@ -22,9 +22,9 @@ create table if not exists app_secret (
 );
 
 alter table app_secret enable row level security;
--- 上面启用了 RLS 但没建任何策略 → 前台 anon/authenticated 连读都读不到（默认全部拒绝）
 
 grant usage on schema public to postgres, anon, authenticated, service_role;
+grant usage on schema net to postgres, anon, authenticated, service_role;
 
 create or replace function notify_comment_trigger()
 returns trigger
@@ -34,33 +34,37 @@ set search_path = public
 as $$
 declare
   v_secret text;
-  v_anon text := '你的anon公钥';
+  v_anon text := 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
   v_proj text := 'https://kydmccknlbpczeqppbtc.supabase.co';
 begin
   if new.is_admin then
     return new;
   end if;
 
-  select value into v_secret from app_secret where name = 'notify_secret';
-  if v_secret is null or v_secret = '' then
-    return new;
-  end if;
+  begin
+    select value into v_secret from app_secret where name = 'notify_secret';
+    if v_secret is null or v_secret = '' then
+      return new;
+    end if;
 
-  perform net.http_post(
-    url := v_proj || '/functions/v1/notify-comment',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'notify-secret', v_secret,
-      'apikey', v_anon,
-      'Authorization', 'Bearer ' || v_anon
-    ),
-    body := jsonb_build_object(
-      'nick', new.nick,
-      'email', new.email,
-      'content', new.content,
-      'url', new.url
-    )::text
-  );
+    perform net.http_post(
+      url := v_proj || '/functions/v1/notify-comment',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'notify-secret', v_secret,
+        'apikey', v_anon,
+        'Authorization', 'Bearer ' || v_anon
+      ),
+      body := jsonb_build_object(
+        'nick', new.nick,
+        'email', new.email,
+        'content', new.content,
+        'url', new.url
+      )::text
+    );
+  exception when others then
+    null;
+  end;
 
   return new;
 end;

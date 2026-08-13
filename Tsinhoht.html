@@ -278,7 +278,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <button class="btn btn-s cfbtn" data-f="yes">已回</button>
         </div>
       </div>
-      <p class="hint">未回 = 你还没在这条评论（或其楼层）回复过。新评论排在最上面。点「标已回/标未回」可手动切换；点「回复」并发表后会自动标为已回。</p>
+      <p class="hint">新评论排在最上面。按帖子名筛选可使用上方的筛选栏。点「回复」并发表后该评论会自动标为已回。</p>
       <div id="commentBox"></div>
     </div>
   </div>
@@ -1313,58 +1313,46 @@ async function loadComments() {
     const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.desc&limit=2000`, { headers: sbHeaders() });
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
     const all = await res.json();
-    const byUrl = {};
-    all.forEach(c => { const u = c.url || '/'; (byUrl[u] = byUrl[u] || []).push(c); });
-    const entries = Object.entries(byUrl).sort((a, b) => b[0].localeCompare(a[0]));
-    if (!entries.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
+    if (!all.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
-      box.innerHTML = entries.map(([url, list]) => {
-        const parents = list.filter(c => !c.pid).filter(c => commentFilter === 'all' ? true : (commentFilter === 'no' ? !c.replied : c.replied));
-        const replyMap = {};
-        list.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
-        function renderComment(c, isReply) {
-          const topId = c.pid || c.id;
-          const pinBtn = (!c.pid) ? `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>` : '';
-          const parentNick = (c.pid && list.filter(p => p.id === c.pid)[0]) ? (list.filter(p => p.id === c.pid)[0].nick || '匿名') : '';
-          return `
-          <div class="cwrap${isReply ? ' creply' : ''}">
-            <div class="prow">
-              <div class="pt">
-                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${!c.pid ? (c.replied ? ' <span class="mbadge" style="background:#1a7f37">已回</span>' : ' <span class="mbadge" style="background:#d14618">未回</span>') : ''}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
-                <span class="pf">邮箱：${esc(c.email || '无')}</span>
-                <span class="pf">${esc(c.content)}</span>
-                <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
-              </div>
-              <div class="cactions">
-                ${!c.pid ? `<button class="btn btn-s" data-rep="${esc(c.id)}" data-repval="${c.replied ? 1 : 0}">${c.replied ? '标未回' : '标已回'}</button>` : ''}
-                ${pinBtn}
-                <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
-                <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
-              </div>
-            </div>
-            <div class="rbox" id="rbox-${esc(c.id)}" style="display:none">
-              <div class="rrow">
-                <input type="text" id="rn-${esc(c.id)}" placeholder="站长昵称" value="${esc(localStorage.getItem('mrhx_admin_nick') || '站长')}">
-                <input type="email" id="re-${esc(c.id)}" placeholder="站长邮箱" value="${esc(((localStorage.getItem('mrhx_admin_email') === 'mrhx@tkporl.github.io') ? '' : (localStorage.getItem('mrhx_admin_email') || '')) || 'Tsinhos@qq.com')}">
-              </div>
-              <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
-              <div class="row">
-                <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(topId)}" data-rurl="${esc(url)}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
-                <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
-              </div>
-            </div>
-            ${(isReply || !replyMap[c.id]) ? '' : replyMap[c.id].map(r => renderComment(r, true)).join('')}
-          </div>`;
-        }
+      const replyMap = {};
+      all.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
+      const parents = all.filter(c => !c.pid).filter(c => commentFilter === 'all' ? true : (commentFilter === 'no' ? !c.replied : c.replied));
+      function renderComment(c, isReply) {
+        const topId = c.pid || c.id;
+        const pinBtn = (!c.pid) ? `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>` : '';
+        const parentNick = (c.pid && all.filter(p => p.id === c.pid)[0]) ? (all.filter(p => p.id === c.pid)[0].nick || '匿名') : '';
+        const postLabel = (!c.pid) ? ` <span style="color:#e58d0a;font-size:11px">📄 ${esc(c.url || '')}</span>` : '';
         return `
-        <div class="game">
-          <div class="ghead"><span class="gnum">${esc(url)}</span><span style="font-size:12px;color:#aaa">${list.length} 条</span></div>
-          ${parents.map(p => renderComment(p, false)).join('')}
-          <div class="row" style="margin-top:8px">
-            <button class="btn btn-s" data-clear="${esc(url)}">清空该帖全部评论</button>
+        <div class="cwrap${isReply ? ' creply' : ''}">
+          <div class="prow">
+            <div class="pt">
+              <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${postLabel}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
+              <span class="pf">邮箱：${esc(c.email || '无')}</span>
+              <span class="pf">${esc(c.content)}</span>
+              <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
+            </div>
+            <div class="cactions">
+              ${pinBtn}
+              <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
+              <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
+            </div>
           </div>
+          <div class="rbox" id="rbox-${esc(c.id)}" style="display:none">
+            <div class="rrow">
+              <input type="text" id="rn-${esc(c.id)}" placeholder="站长昵称" value="${esc(localStorage.getItem('mrhx_admin_nick') || '站长')}">
+              <input type="email" id="re-${esc(c.id)}" placeholder="站长邮箱" value="${esc(((localStorage.getItem('mrhx_admin_email') === 'mrhx@tkporl.github.io') ? '' : (localStorage.getItem('mrhx_admin_email') || '')) || 'Tsinhos@qq.com')}">
+            </div>
+            <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
+            <div class="row">
+              <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(topId)}" data-rurl="${esc(c.url || '')}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
+              <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
+            </div>
+          </div>
+          ${(isReply || !replyMap[c.id]) ? '' : replyMap[c.id].map(r => renderComment(r, true)).join('')}
         </div>`;
-      }).join('');
+      }
+      box.innerHTML = parents.map(p => renderComment(p, false)).join('');
       [...box.querySelectorAll('[data-dcid]')].forEach(b => {
         b.onclick = () => {
           if (b.dataset.pid) {
@@ -1393,29 +1381,6 @@ async function loadComments() {
             show(stC, '置顶失败：' + e.message + '\n\n请先在 Supabase 运行 README 里的「升级现有数据库」SQL（comments 表添加 pinned 字段 + 更新策略）。', 'err');
           } finally { b.disabled = false; }
         };
-      });
-      [...box.querySelectorAll('[data-rep]')].forEach(b => {
-        b.onclick = async () => {
-          const admin = $('sbSecret').value.trim();
-          if (!admin) { show(stC, '请先填写管理密钥', 'err'); return; }
-          const want = b.dataset.repval === '0';
-          b.disabled = true;
-          try {
-            const res = await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.rep)}`, {
-              method: 'PATCH',
-              headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
-              body: JSON.stringify({ replied: want })
-            });
-            if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
-            show(stC, want ? '已标为「已回」。' : '已标为「未回」。', 'ok');
-            loadComments();
-          } catch (e) {
-            show(stC, '标记失败：' + e.message + '\n\n请先在 Supabase 运行 upgrade_replied.sql（comments 表添加 replied 字段）。', 'err');
-          } finally { b.disabled = false; }
-        };
-      });
-      [...box.querySelectorAll('[data-clear]')].forEach(b => {
-        b.onclick = () => delComments(`url=eq.${encodeURIComponent(b.dataset.clear)}`, '该帖全部评论');
       });
       [...box.querySelectorAll('[data-rp]')].forEach(b => {
         b.onclick = () => {
