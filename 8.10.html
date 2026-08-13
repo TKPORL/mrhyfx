@@ -1082,8 +1082,13 @@
   .mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px}
   .mrhx-cpin{background:#e58d0a}
   .mrhx-citem-admin{border-left:3px solid #e5484d;padding-left:10px}
-  .mrhx-chint{display:none;font-size:12px;color:#9a6700;background:#fff8e8;border:1px solid #f0d89e;border-radius:8px;padding:8px 12px;margin-top:-2px;margin-bottom:10px;line-height:1.6}
-  .mrhx-chint.show{display:block}
+  .mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
+  .mrhx-cpop.show{display:flex}
+  .mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
+  .mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
+  .mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
+  .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+  .mrhx-cpop-ok:hover{background:#c93a3f}
   .mrhx-cempty{font-size:13px;color:#999;padding:10px 0}
   .mrhx-cform{margin-top:16px;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:14px}
   .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
@@ -1438,15 +1443,21 @@
   <form id="mrhx-cform" class="mrhx-cform">
     <div class="mrhx-crow">
       <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
-      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复 / 求资源用）" required>
+      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
     </div>
-    <p class="mrhx-chint" id="mrhx-mailhint">请填写您常用的邮箱（如 QQ 邮箱）：求资源、站长回复都会发送到这个邮箱，填错会收不到哦～</p>
     <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
     <div class="mrhx-crow mrhx-csub">
       <span id="mrhx-creply" class="mrhx-creply"></span>
       <button type="submit">发表评论</button>
     </div>
   </form>
+</div>
+<div class="mrhx-cpop" id="mrhx-cpop">
+  <div class="mrhx-cpop-box">
+    <h3>邮箱填写提示</h3>
+    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
+    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
+  </div>
 </div>
 <script>
 (function () {
@@ -1457,13 +1468,14 @@
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
   var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
-  var mailHintEl = document.getElementById('mrhx-mailhint');
+  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
-  if (mailHintEl) {
-    mailEl.addEventListener('focus', function () { mailHintEl.classList.add('show'); });
-    mailEl.addEventListener('blur', function () { mailHintEl.classList.remove('show'); });
+  if (pop) {
+    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
+    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
+    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
   function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
   function headers() {
