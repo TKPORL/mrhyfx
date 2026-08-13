@@ -40,6 +40,8 @@ create table comments (
   nick text not null check (char_length(nick) between 1 and 30),
   email text not null,
   content text not null check (char_length(content) between 1 and 2000),
+  is_admin boolean not null default false,
+  pinned boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -60,14 +62,61 @@ using (
   coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
 );
 
+create policy "comments_update_admin" on comments for update
+using (
+  coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+);
+
 create index comments_url_idx on comments (url);
+```
+
+> 已经建过评论表的老项目：不用重跑上面整段，只需在 SQL Editor 里运行下面这段升级 SQL（把 `你的管理密钥` 换成你之前编的那串），即可获得新功能（置顶评论 + 站长回复邮件）：
+
+```sql
+alter table comments add column if not exists is_admin boolean not null default false;
+alter table comments add column if not exists pinned boolean not null default false;
+
+drop policy if exists "comments_update_admin" on comments;
+create policy "comments_update_admin" on comments for update
+using (
+  coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+);
 ```
 
 3. 左侧「Settings → API」：复制 **Project URL**（https://xxx.supabase.co）和 **publishable / anon key**（`sb_publishable_...` 或 `eyJ...` 那行 public 的）
 4. 后台管理 → 「评论管理」→ Project URL、anon 公钥、管理密钥（第 2 步 SQL 里编的那串）→ 「保存配置并启用评论」→ 2-3 分钟后所有帖子底部出现评论区
-5. 访客填昵称 + 邮箱 + 内容即可评论，可回复；删除评论：后台「评论管理」页签，或帖子页面评论下方直接出现删除按钮（管理员浏览器填了管理密钥后）
+5. 访客填昵称 + 邮箱 + 内容即可评论，可回复；删除/置顶评论：后台「评论管理」页签，或帖子页面评论下方直接出现删除/置顶按钮（管理员浏览器填了管理密钥后）。置顶的评论会固定在评论区最前面。邮箱输入框聚焦时会提示填常用邮箱（求资源、收站长回复都用它）。
 
 > 安全说明：Supabase 浏览器端禁止使用 secret 私钥，所以本项目不碰 secret key。公开的 anon/publishable 公钥只允许评论和读取（数据库 RLS 规则控制）；删除评论靠 SQL 里的自编管理密钥验证请求头，密钥只存在你自己的浏览器里，绝不写入网站代码。
+
+## 站长回复邮件通知（可选，站长回复评论后自动发邮件给用户）
+
+用户在帖子里回复/评论后是看不到站长的回复的，配置下面两步后：你在「评论管理」里回复某条评论，系统会自动往**评论者的邮箱**发一封「站长回复了你」的邮件。
+
+### 1. 部署邮件发送函数（Supabase Edge Function）
+
+Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-reply`，**删掉**编辑器里自动生成的代码，粘贴本仓库 `supabase/functions/notify-reply/index.ts` 里的完整代码 → **Deploy**。
+
+然后给该函数配置密钥（Edge Functions → 点开函数 → **Settings → Secrets**，或 **Project Settings → Edge Functions → Manage secrets**）：
+
+| 密钥名 | 示例值 | 说明 |
+|---|---|---|
+| `NOTIFY_SECRET` | `你随便编的一串字符` | 跟后台「邮件通知密钥」填同一个，防止别人乱用你的发信额度 |
+| `SMTP_HOST` | `smtp.qq.com` | 邮箱的 SMTP 服务器地址 |
+| `SMTP_PORT` | `465` | 一般 465（SSL） |
+| `SMTP_USER` | `123456789@qq.com` | 发件邮箱账号 |
+| `SMTP_PASS` | `16 位授权码` | **SMTP 授权码，不是登录密码**（QQ 邮箱：设置 → 账户 → 开启 POP3/SMTP 服务 → 短信验证后生成） |
+| `SMTP_FROM` | `123456789@qq.com` | 发件人邮箱（不填默认用 SMTP_USER） |
+| `SMTP_FROM_NAME` | `黄油站站长` | 邮件里的发件人显示名（可选） |
+| `SITE_NAME` | `Tsinho黄油站` | 邮件标题里的站点名（可选） |
+
+163/Gmail 等其他邮箱同理：填各自服务器的 SMTP 地址，密码处填对应邮箱的授权码（Gmail 是应用专用密码）。
+
+### 2. 后台填通知密钥
+
+后台管理 → 「评论管理」→ 把 `NOTIFY_SECRET` 填到「邮件通知密钥」这一栏。之后后台发布回复时自动发邮件通知对方；不填则回复照常发布、只是不发邮件（状态区会提醒）。
+
+> 免费额度：Supabase Edge Functions 免费版每月 500K 次调用；邮件数量由你的 SMTP 服务商决定（QQ 邮箱个人 SMTP 支持免费收发，注意发送频率限制）。邮件仅用于通知，访客邮箱只存在 Supabase 数据库里，不会出现在页面代码中。
 
 ## 访问统计（可选，需额外运行 SQL）
 

@@ -101,7 +101,10 @@ const sharedCss = `<style>
   .mrhx-cdel{color:#c93a3f}
   .mrhx-cav-admin{background:#e5484d;color:#fff}
   .mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px}
+  .mrhx-cpin{background:#e58d0a}
   .mrhx-citem-admin{border-left:3px solid #e5484d;padding-left:10px}
+  .mrhx-chint{display:none;font-size:12px;color:#9a6700;background:#fff8e8;border:1px solid #f0d89e;border-radius:8px;padding:8px 12px;margin-top:-2px;margin-bottom:10px;line-height:1.6}
+  .mrhx-chint.show{display:block}
   .mrhx-cempty{font-size:13px;color:#999;padding:10px 0}
   .mrhx-cform{margin-top:16px;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:14px}
   .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
@@ -420,8 +423,9 @@ html = (function reorderNodes(str) {
   <form id="mrhx-cform" class="mrhx-cform">
     <div class="mrhx-crow">
       <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
-      <input type="email" id="mrhx-mail" placeholder="邮箱（仅后台可见）" required>
+      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复 / 求资源用）" required>
     </div>
+    <p class="mrhx-chint" id="mrhx-mailhint">请填写您常用的邮箱（如 QQ 邮箱）：求资源、站长回复都会发送到这个邮箱，填错会收不到哦～</p>
     <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
     <div class="mrhx-crow mrhx-csub">
       <span id="mrhx-creply" class="mrhx-creply"></span>
@@ -438,9 +442,14 @@ html = (function reorderNodes(str) {
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
   var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var mailHintEl = document.getElementById('mrhx-mailhint');
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
+  if (mailHintEl) {
+    mailEl.addEventListener('focus', function () { mailHintEl.classList.add('show'); });
+    mailEl.addEventListener('blur', function () { mailHintEl.classList.remove('show'); });
+  }
   function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
   function headers() {
     return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
@@ -455,6 +464,7 @@ html = (function reorderNodes(str) {
       var meta = h('div', 'mrhx-cmeta');
       meta.appendChild(h('b', '', c.nick || '匿名'));
       if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
       meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
       head.appendChild(meta);
       row.appendChild(head);
@@ -476,20 +486,32 @@ html = (function reorderNodes(str) {
             .catch(function (e) { alert('删除失败：' + e.message); });
         };
         bar.appendChild(dl);
+        if (!c.pid) {
+          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
+          pin.onclick = function () {
+            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+          };
+          bar.appendChild(pin);
+        }
       }
       row.appendChild(bar);
       list.appendChild(row);
     }
     function addTree(pid) {
       all.filter(function (c) { return (c.pid || null) === pid; })
-        .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
+          return a.created_at.localeCompare(b.created_at);
+        })
         .forEach(function (c) { addRow(c); addTree(c.id); });
     }
     addTree(null);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,content,created_at&order=created_at.asc', { headers: headers() })
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
       .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
       .then(function (d) { all = d || []; render(); })
       .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
