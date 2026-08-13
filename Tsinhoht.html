@@ -140,7 +140,6 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .stat-box:hover{box-shadow:0 2px 8px rgba(0,0,0,.05);transform:translateY(-1px)}
 .stat-box .stat-num{font-size:28px;font-weight:800;line-height:1.2}
 .stat-box .stat-label{font-size:11px;color:#999;margin-top:4px;font-weight:500}
-.cfbtn.on{background:#e5484d!important;color:#fff!important;border-color:#e5484d!important}
 @media (max-width:720px){
   .hwrap{padding:10px 14px}
   .site{font-size:16px}
@@ -295,13 +294,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <div class="card">
       <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h2>评论列表</h2>
-        <div id="commentFilterBar" style="display:flex;gap:6px">
-          <button class="btn btn-s cfbtn on" data-f="all">全部</button>
-          <button class="btn btn-s cfbtn" data-f="no">未回</button>
-          <button class="btn btn-s cfbtn" data-f="yes">已回</button>
-        </div>
       </div>
-      <p class="hint">新评论排在最上面。按帖子名筛选可使用上方的筛选栏。点「回复」并发表后该评论会自动标为已回。</p>
       <div id="commentBox"></div>
     </div>
   </div>
@@ -313,9 +306,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <button class="btn btn-s" id="refreshStats">刷新</button>
       </div>
       <div class="stat-overview" id="statOverview">
-        <div class="stat-box" style="background:#fff7e6">
-          <div class="stat-num" style="color:#e58d0a" id="statTodayViews">-</div>
-          <div class="stat-label">今日访问</div>
+        <div class="stat-box" style="background:#fff7e6;cursor:pointer" id="statTodayComments" title="点击查看今日评论">
+          <div class="stat-num" style="color:#e58d0a" id="statTodayCommentCount">-</div>
+          <div class="stat-label">今日新增评论</div>
         </div>
         <div class="stat-box" style="background:#fdf3f3">
           <div class="stat-num" style="color:#e5484d" id="statTotalViews">-</div>
@@ -1266,18 +1259,6 @@ document.addEventListener('click', function (e) {
   btn.textContent = show ? '🙈' : '👁';
 });
 
-let commentFilter = 'all';
-const cfBar = $('commentFilterBar');
-if (cfBar) {
-  [...cfBar.querySelectorAll('.cfbtn')].forEach(btn => {
-    btn.addEventListener('click', () => {
-      commentFilter = btn.dataset.f;
-      [...cfBar.querySelectorAll('.cfbtn')].forEach(x => x.classList.toggle('on', x === btn));
-      loadComments();
-    });
-  });
-}
-
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
 const sbHeaders = () => {
   const key = $('sbAnon').value.trim();
@@ -1340,7 +1321,7 @@ async function loadComments() {
     else {
       const replyMap = {};
       all.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
-      const parents = all.filter(c => !c.pid).filter(c => commentFilter === 'all' ? true : (commentFilter === 'no' ? !c.replied : c.replied));
+      const parents = all.filter(c => !c.pid);
       function renderComment(c, isReply) {
         const topId = c.pid || c.id;
         const pinBtn = (!c.pid) ? `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>` : '';
@@ -1368,7 +1349,7 @@ async function loadComments() {
             </div>
             <textarea id="rc-${esc(c.id)}" placeholder="回复内容…" style="min-height:60px"></textarea>
             <div class="row">
-              <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(c.id)}" data-root="${esc(topId)}" data-rurl="${esc(c.url || '')}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
+              <button class="btn btn-p" data-send="${esc(c.id)}" data-rtop="${esc(c.id)}" data-rurl="${esc(c.url || '')}" data-mail="${esc(c.email)}" data-tonick="${esc(c.nick || '匿名')}">发表回复</button>
               <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
             </div>
           </div>
@@ -1435,13 +1416,8 @@ async function loadComments() {
             localStorage.setItem('mrhx_admin_nick', nick);
             localStorage.setItem('mrhx_admin_email', email);
             sendReplyMail(b.dataset.rurl, b.dataset.mail, b.dataset.tonick, content, nick);
-            await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.root || b.dataset.rtop)}`, {
-              method: 'PATCH',
-              headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
-              body: JSON.stringify({ replied: true })
-            }).catch(() => {});
             $('rbox-' + id).style.display = 'none';
-            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。该评论已自动标为「已回」。', 'ok');
+            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。', 'ok');
             loadComments();
           } catch (e) {
             show(stC, '回复失败：' + e.message, 'err');
@@ -1459,7 +1435,7 @@ const stS = $('statusS');
 async function loadStats() {
   const box = $('statBox');
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
-  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; return; }
+  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return; }
   show(stS, '正在加载统计…', 'info');
   try {
     const res = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc`, {
@@ -1482,7 +1458,12 @@ async function loadStats() {
       });
       if (dRes.ok) { todayArr = await dRes.json(); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
     } catch (e) {}
-    $('statTodayViews').textContent = todayTotal;
+    let todayCommentCount = 0;
+    try {
+      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id&created_at=gte.${today}&limit=1000`, { headers: sbHeaders() });
+      if (cRes.ok) { const cc = await cRes.json(); todayCommentCount = cc.length; }
+    } catch (e) {}
+    $('statTodayCommentCount').textContent = todayCommentCount;
     let geoRows = [];
     if (!arr.length && !todayArr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
     else {
@@ -1516,10 +1497,11 @@ async function loadStats() {
     $('statTotalViews').textContent = '-';
     $('statTotalPosts').textContent = '-';
     $('statAvgViews').textContent = '-';
-    $('statTodayViews').textContent = '-';
+    $('statTodayCommentCount').textContent = '-';
   }
 }
 $('refreshStats').onclick = loadStats;
+$('statTodayComments').onclick = () => switchTab('tabComments');
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
