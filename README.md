@@ -96,6 +96,12 @@ using (
 4. 后台管理 → 「评论管理」→ Project URL、anon 公钥、管理密钥（第 2 步 SQL 里编的那串）→ 「保存配置并启用评论」→ 2-3 分钟后所有帖子底部出现评论区
 5. 访客填昵称 + 邮箱 + 内容即可评论，可回复；删除/置顶评论：后台「评论管理」页签，或帖子页面评论下方直接出现删除/置顶按钮（管理员浏览器填了管理密钥后）。置顶的评论会固定在评论区最前面。点击邮箱输入框会弹出使用提示：建议填写日常使用的邮箱，站长回复会发送到该邮箱。
 
+### 评论已回/未回管理（可选）
+
+后台「评论管理」页签的评论列表支持筛选 **全部 / 未回 / 已回**，新评论排在最上面。你在后台「回复」某条评论后，系统会自动把该楼层标记为「已回」；也可点评论上的「标已回 / 标未回」手动切换。
+
+在 Supabase **SQL Editor** 里运行本仓库 `supabase/upgrade_replied.sql` 的内容即可（comments 表添加 `replied` 字段）。不运行也能用后台（只是所有评论都显示为未回，且不能筛选已回）。
+
 > 安全说明：Supabase 浏览器端禁止使用 secret 私钥，所以本项目不碰 secret key。公开的 anon/publishable 公钥只允许评论和读取（数据库 RLS 规则控制）；删除评论靠 SQL 里的自编管理密钥验证请求头，密钥只存在你自己的浏览器里，绝不写入网站代码。
 
 ### 评论防刷（可选，建议开启）
@@ -145,6 +151,25 @@ drop policy if exists "comments_insert" on comments;
 | `SITE_NAME` | `Tsinho黄油站` | 邮件标题里的站点名（可选） |
 
 3. 后台管理 → 「评论管理」→ 把 `NOTIFY_SECRET` 填到「邮件通知密钥」这一栏。之后后台发布回复时自动发邮件通知对方（GitHub Actions 通道优先，旧版兜底）；不填则回复照常发布、只是不发邮件（状态区会提醒）。
+
+## 新评论自动通知站长（可选，有人评论后发邮件告诉你）
+
+有人在你站点发了新评论，系统自动发一封邮件到你的邮箱：包含**有人评论了 + 评论内容 + 帖子链接**。实现方式：数据库触发器自动调用 Edge Function（服务端触发，不暴露任何密钥给浏览器，也不会漏通知）。
+
+1. Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-comment`，粘入本仓库 `supabase/functions/notify-comment/index.ts` 的完整代码 → **Deploy**。
+
+2. 给该函数配置密钥（同 notify-reply 一套即可参考上表）：`NOTIFY_SECRET`、`SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASS`；可选 `ADMIN_EMAIL`（不填则通知发到 `SMTP_USER` 发件邮箱，即复用现有收发邮箱）。
+
+3. 打开 Supabase **SQL Editor**，把本仓库 `supabase/upgrade_notify_comment.sql` 的代码贴入：
+   - 先按文件顶部注释把 SQL 里的 `你的anon公钥` 替换成 site.json 里的 anonKey 值；
+   - 单独运行这一行把 `你的NOTIFY_SECRET` 换成你在第 2 步配置的 `NOTIFY_SECRET`：
+     ```sql
+     insert into app_secret(name, value) values ('notify_secret', '你的NOTIFY_SECRET')
+     on conflict (name) do update set value = excluded.value;
+     ```
+   - 再运行整段 SQL 创建触发器即可（一次性配置，永久有效）。密钥存在数据库服务端配置表中（RLS 锁死，浏览器读不到），不进入代码仓库。
+
+> 运行后每有人评论一条，你的邮箱会收到一封「【站点名】收到一条新评论」的邮件。
 
 ## 访问统计（可选，需额外运行 SQL）
 

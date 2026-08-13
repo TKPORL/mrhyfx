@@ -257,7 +257,15 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。管理密钥填好后：本页签可批量删除；打开任意帖子，评论下方也会出现删除按钮。</p>
     </div>
     <div class="card">
-      <h2>评论列表</h2>
+      <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h2>评论列表</h2>
+        <div id="commentFilterBar" style="display:flex;gap:6px">
+          <button class="btn btn-s cfbtn on" data-f="all">全部</button>
+          <button class="btn btn-s cfbtn" data-f="no">未回</button>
+          <button class="btn btn-s cfbtn" data-f="yes">已回</button>
+        </div>
+      </div>
+      <p class="hint">未回 = 你还没在这条评论（或其楼层）回复过。新评论排在最上面。点「标已回/标未回」可手动切换；点「回复」并发表后会自动标为已回。</p>
       <div id="commentBox"></div>
     </div>
   </div>
@@ -1212,6 +1220,18 @@ $('sbAnon').addEventListener('input', () => sbSet('anon', $('sbAnon').value.trim
 $('sbSecret').addEventListener('input', () => { sbSet('secret', $('sbSecret').value.trim()); localStorage.setItem('mrhx_comments_admin', $('sbSecret').value.trim()); });
 $('sbNotify').addEventListener('input', () => sbSet('notify', $('sbNotify').value.trim()));
 
+let commentFilter = 'all';
+const cfBar = $('commentFilterBar');
+if (cfBar) {
+  [...cfBar.querySelectorAll('.cfbtn')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      commentFilter = btn.dataset.f;
+      [...cfBar.querySelectorAll('.cfbtn')].forEach(x => x.classList.toggle('on', x === btn));
+      loadComments();
+    });
+  });
+}
+
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
 const sbHeaders = () => {
   const key = $('sbAnon').value.trim();
@@ -1267,7 +1287,7 @@ async function loadComments() {
   show(stC, '正在加载评论…', 'info');
   try {
     if ($('repo').value.trim()) postTitlesCache = await fetch(`${RAW_BASE}/${$('repo').value.trim()}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.asc&limit=1000`, { headers: sbHeaders() });
+    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.desc&limit=2000`, { headers: sbHeaders() });
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
     const all = await res.json();
     const byUrl = {};
@@ -1276,7 +1296,7 @@ async function loadComments() {
     if (!entries.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
       box.innerHTML = entries.map(([url, list]) => {
-        const parents = list.filter(c => !c.pid);
+        const parents = list.filter(c => !c.pid).filter(c => commentFilter === 'all' ? true : (commentFilter === 'no' ? !c.replied : c.replied));
         const replyMap = {};
         list.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
         function renderComment(c, isReply) {
@@ -1287,12 +1307,13 @@ async function loadComments() {
           <div class="cwrap${isReply ? ' creply' : ''}">
             <div class="prow">
               <div class="pt">
-                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
+                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${!c.pid ? (c.replied ? ' <span class="mbadge" style="background:#1a7f37">已回</span>' : ' <span class="mbadge" style="background:#d14618">未回</span>') : ''}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
                 <span class="pf">邮箱：${esc(c.email || '无')}</span>
                 <span class="pf">${esc(c.content)}</span>
                 <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
               </div>
               <div class="cactions">
+                ${!c.pid ? `<button class="btn btn-s" data-rep="${esc(c.id)}" data-repval="${c.replied ? 1 : 0}">${c.replied ? '标未回' : '标已回'}</button>` : ''}
                 ${pinBtn}
                 <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
                 <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
@@ -1350,6 +1371,26 @@ async function loadComments() {
           } finally { b.disabled = false; }
         };
       });
+      [...box.querySelectorAll('[data-rep]')].forEach(b => {
+        b.onclick = async () => {
+          const admin = $('sbSecret').value.trim();
+          if (!admin) { show(stC, '请先填写管理密钥', 'err'); return; }
+          const want = b.dataset.repval === '0';
+          b.disabled = true;
+          try {
+            const res = await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.rep)}`, {
+              method: 'PATCH',
+              headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
+              body: JSON.stringify({ replied: want })
+            });
+            if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+            show(stC, want ? '已标为「已回」。' : '已标为「未回」。', 'ok');
+            loadComments();
+          } catch (e) {
+            show(stC, '标记失败：' + e.message + '\n\n请先在 Supabase 运行 upgrade_replied.sql（comments 表添加 replied 字段）。', 'err');
+          } finally { b.disabled = false; }
+        };
+      });
       [...box.querySelectorAll('[data-clear]')].forEach(b => {
         b.onclick = () => delComments(`url=eq.${encodeURIComponent(b.dataset.clear)}`, '该帖全部评论');
       });
@@ -1383,8 +1424,13 @@ async function loadComments() {
             localStorage.setItem('mrhx_admin_nick', nick);
             localStorage.setItem('mrhx_admin_email', email);
             sendReplyMail(b.dataset.rurl, b.dataset.mail, b.dataset.tonick, content, nick);
+            await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.rtop)}`, {
+              method: 'PATCH',
+              headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
+              body: JSON.stringify({ replied: true })
+            }).catch(() => {});
             $('rbox-' + id).style.display = 'none';
-            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。', 'ok');
+            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。该评论已自动标为「已回」。', 'ok');
             loadComments();
           } catch (e) {
             show(stC, '回复失败：' + e.message, 'err');
