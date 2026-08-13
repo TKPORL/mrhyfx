@@ -1225,7 +1225,7 @@ async function loadComments() {
       [...box.querySelectorAll('[data-dcid]')].forEach(b => {
         b.onclick = () => {
           if (b.dataset.pid) {
-            show(stC, '回复会自动随楼层一起删除，直接删除其所在楼层即可。', 'warn');
+            delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该条回复（不影响其所在楼层）');
             return;
           }
           delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该评论及其全部回复');
