@@ -204,6 +204,11 @@ function dayTag(file) {
   return m ? `${m[1]}月${m[2]}` : path.parse(file).name;
 }
 
+function iconTitle(d) {
+  const cut = d.split(/[（(]/)[0].trim();
+  return cut || d;
+}
+
 async function localize(html, tag) {
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))];
   if (urls.length) {
@@ -631,7 +636,7 @@ html = (function reorderNodes(str) {
     const dateN = title.match(/(\d+)\.(\d+)/);
     const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
-      : `<b style="font-size:13px">${esc(disp)}</b>`;
+      : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
