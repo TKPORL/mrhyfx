@@ -81,6 +81,12 @@ create policy "comments_update_admin" on comments for update
 using (
   coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
 );
+
+drop policy if exists "comments_delete_admin" on comments;
+create policy "comments_delete_admin" on comments for delete
+using (
+  coalesce(current_setting('request.headers', true)::jsonb->>'x-admin-key', '') = '你的管理密钥'
+);
 ```
 
 3. 左侧「Settings → API」：复制 **Project URL**（https://xxx.supabase.co）和 **publishable / anon key**（`sb_publishable_...` 或 `eyJ...` 那行 public 的）
