@@ -458,8 +458,9 @@ html = (function reorderNodes(str) {
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
+  var popShown = false;
   if (pop) {
-    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
