@@ -23,6 +23,12 @@ if (fs.existsSync('links.json')) {
 let TIMESTAMPS = {};
 if (fs.existsSync('timestamps.json')) TIMESTAMPS = readJson('timestamps.json');
 
+let PINS = [];
+if (fs.existsSync('pins.json')) {
+  const p = readJson('pins.json');
+  if (Array.isArray(p)) PINS = p;
+}
+
 let SITE = { comments: { enabled: false, apiBase: '' } };
 if (fs.existsSync('site.json')) {
   const s = readJson('site.json');
@@ -589,6 +595,10 @@ html = (function reorderNodes(str) {
 
   days.sort((a, b) => {
     const ka = path.parse(a.file).name, kb = path.parse(b.file).name;
+    const pa = PINS.indexOf(ka), pb = PINS.indexOf(kb);
+    if (pa !== -1 && pb !== -1) return pa - pb;
+    if (pa !== -1) return -1;
+    if (pb !== -1) return 1;
     const ta = TIMESTAMPS[ka], tb = TIMESTAMPS[kb];
     if (ta && tb) return (new Date(tb) - new Date(ta));
     if (ta) return -1;
@@ -615,6 +625,7 @@ html = (function reorderNodes(str) {
   const dayLis = days.map((d, di) => {
     const title = path.parse(d.file).name;
     const disp = TITLES[title] || title;
+    const pinned = PINS.indexOf(title) !== -1;
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
     const dateN = title.match(/(\d+)\.(\d+)/);
@@ -627,7 +638,7 @@ html = (function reorderNodes(str) {
     return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
   <div class="info">
-    <div class="ptitle">${esc(disp)}</div>
+    <div class="ptitle">${esc(disp)}${pinned ? ` <span class="pinb">置顶</span>` : ''}</div>
     <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
   </div>
   ${covers ? `<div class="covers">${covers}</div>` : ''}
@@ -680,6 +691,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .info{flex:1;min-width:0}
 .ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
 .pmeta{font-size:13px;color:#999}
+.pinb{display:inline-block;background:#e58d0a;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
 .covers{display:flex;gap:8px;flex-shrink:0}
 .covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9;transition:.25s}
 .post:hover .covers img{transform:translateY(-2px)}

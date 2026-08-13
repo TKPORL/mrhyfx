@@ -12,16 +12,19 @@
 - `links.json` — 顶部导航 / 底部合集按钮链接配置
 - `counts.json` — 每日游戏数覆盖（如 `{"8.10": 92}`）
 - `titles.json` — 帖子标题覆盖（文件名 → 显示标题，如 `{"8.10": "8.10黄油 92款（PC+安卓）"}`）
+- `pins.json` — 置顶帖子列表（数组，如 `["8.10", "8.11"]`，排在前面的显示越靠前；后台「帖子管理」可一键置顶/取消）
 - `site.json` — 评论功能配置（Supabase：开关 + 项目地址 + anon 公钥）
 - `scripts/gen.js` — 生成器（本地化图片、注入页头/按钮/动效/评论区、生成首页）
 - `scripts/parse.js` — 解析幕布 HTML 生成 games.json
+- `scripts/send_mail.js` — 邮件发送脚本（GitHub Actions 里用 QQ SMTP 发「站长回复」通知，零依赖）
 - `.github/workflows/gen.yml` — 每次推送自动运行 gen.js 并提交生成结果
+- `.github/workflows/send-mail.yml` — 后台回复评论时被 GitHub Actions 触发，走 QQ SMTP 发邮件通知
 
 ## 更新方法（方式一：后台管理，推荐）
 
 1. 打开 `https://tkporl.github.io/mrhyfx/Tsinhoht.html`
 2. 「发布帖子」：填文件名（如 8.11）、帖子标题（如 8.11黄油 95款（PC+安卓）），点「＋ 添加一个游戏」逐条填游戏名称/介绍/图片/下载链接
-3. 「帖子管理」：刷新列表可编辑/删除已发布帖子（删除会连带清理图片）
+3. 「帖子管理」：刷新列表可编辑/删除已发布帖子（删除会连带清理图片）；点「置顶」可把某个帖子固定到首页最前面（再点取消），刚置顶的排最上
 4. 「链接配置」：网页里直接改全站按钮链接
 5. GitHub Token（repo 权限）只需填一次，自动保存在本浏览器；点发布 → Actions 自动生成首页并部署，2-3 分钟后刷新生效（Ctrl+F5）
 
@@ -99,11 +102,26 @@ using (
 
 用户在帖子里回复/评论后是看不到站长的回复的，配置下面两步后：你在「评论管理」里回复某条评论，系统会自动往**评论者的邮箱**发一封「站长回复了你」的邮件。
 
-### 1. 部署邮件发送函数（Supabase Edge Function）
+### 推荐方式（GitHub Actions + QQ SMTP，无需 Supabase 函数）
 
-Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-reply`，**删掉**编辑器里自动生成的代码，粘贴本仓库 `supabase/functions/notify-reply/index.ts` 里的完整代码 → **Deploy**。
+后台的 GitHub Token 在回复评论时触发仓库的 `send-mail` 工作流，由 GitHub Actions 用你的 **QQ 邮箱**发邮件。QQ→QQ 投递最稳（不会被吞，老项目已验证 GitHub Actions 海外 IP 直连 smtp.qq.com 可用）。
 
-然后给该函数配置密钥（Edge Functions → 点开函数 → **Settings → Secrets**，或 **Project Settings → Edge Functions → Manage secrets**）：
+1. 在你的仓库 **Settings → Secrets and variables → Actions** 添加三个 secret：
+   - `QQ_SMTP_USER`：你的 QQ 邮箱账号（如 `123456789@qq.com`）
+   - `QQ_SMTP_PASS`：**SMTP 授权码，不是登录密码**（QQ 邮箱：设置 → 账户 → 开启 POP3/SMTP 服务 → 短信验证后生成 16 位授权码）
+   - `SITE_NAME`（可选）：邮件标题里的站点名，如 `Tsinho黄油站`
+2. 后台「评论管理」→ 确定「发布帖子」页签里已填 GitHub Token（勾选 **repo + workflow** 权限）与仓库名。
+3. 之后你在后台回复评论，约 1 分钟内对方的邮箱就能收到通知。
+
+> 免费额度：GitHub Actions 公共仓库每月免费 2000 分钟，完全够用；QQ 邮箱个人 SMTP 支持免费收发。邮件仅用于通知，访客邮箱只存在 Supabase 数据库里，不会出现在页面代码中。
+
+### 旧版方式（Supabase Edge Function）
+
+直接在函数里连 SMTP。适合已配置且实测可用的供应商；QQ 邮箱从海外数据中心（如 Supabase 新加坡）发信会被 QQ 静默吞掉，Gmail 新账号从数据中心发信也可能被丢，请以实测为准。
+
+1. Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-reply`，**删掉**编辑器里自动生成的代码，粘贴本仓库 `supabase/functions/notify-reply/index.ts` 里的完整代码 → **Deploy**。
+
+2. 然后给该函数配置密钥（Edge Functions → 点开函数 → **Settings → Secrets**，或 **Project Settings → Edge Functions → Manage secrets**）：
 
 | 密钥名 | 示例值 | 说明 |
 |---|---|---|
@@ -111,18 +129,12 @@ Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**�
 | `SMTP_HOST` | `smtp.qq.com` | 邮箱的 SMTP 服务器地址 |
 | `SMTP_PORT` | `465` | 一般 465（SSL） |
 | `SMTP_USER` | `123456789@qq.com` | 发件邮箱账号 |
-| `SMTP_PASS` | `16 位授权码` | **SMTP 授权码，不是登录密码**（QQ 邮箱：设置 → 账户 → 开启 POP3/SMTP 服务 → 短信验证后生成） |
+| `SMTP_PASS` | `16 位授权码` | **SMTP 授权码，不是登录密码** |
 | `SMTP_FROM` | `123456789@qq.com` | 发件人邮箱（不填默认用 SMTP_USER） |
 | `SMTP_FROM_NAME` | `黄油站站长` | 邮件里的发件人显示名（可选） |
 | `SITE_NAME` | `Tsinho黄油站` | 邮件标题里的站点名（可选） |
 
-163/Gmail 等其他邮箱同理：填各自服务器的 SMTP 地址，密码处填对应邮箱的授权码（Gmail 是应用专用密码）。
-
-### 2. 后台填通知密钥
-
-后台管理 → 「评论管理」→ 把 `NOTIFY_SECRET` 填到「邮件通知密钥」这一栏。之后后台发布回复时自动发邮件通知对方；不填则回复照常发布、只是不发邮件（状态区会提醒）。
-
-> 免费额度：Supabase Edge Functions 免费版每月 500K 次调用；邮件数量由你的 SMTP 服务商决定（QQ 邮箱个人 SMTP 支持免费收发，注意发送频率限制）。邮件仅用于通知，访客邮箱只存在 Supabase 数据库里，不会出现在页面代码中。
+3. 后台管理 → 「评论管理」→ 把 `NOTIFY_SECRET` 填到「邮件通知密钥」这一栏。之后后台发布回复时自动发邮件通知对方（GitHub Actions 通道优先，旧版兜底）；不填则回复照常发布、只是不发邮件（状态区会提醒）。
 
 ## 访问统计（可选，需额外运行 SQL）
 

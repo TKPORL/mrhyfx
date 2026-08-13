@@ -1,0 +1,56 @@
+name: send-mail
+
+on:
+  push:
+    branches: [main]
+    paths: ['MAIL_TEST.txt']
+  repository_dispatch:
+    types: [notify-reply]
+
+concurrency:
+  group: send-mail-${{ github.event_name }}-${{ github.event.client_payload.to }}
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 组装通知参数
+        shell: bash
+        env:
+          EV: ${{ github.event_name }}
+          PT_TO: ${{ github.event.client_payload.to }}
+          PT_TO_NICK: ${{ github.event.client_payload.toNick }}
+          PT_REPLY: ${{ github.event.client_payload.reply }}
+          PT_ADMIN: ${{ github.event.client_payload.adminNick }}
+          PT_TITLE: ${{ github.event.client_payload.postTitle }}
+          PT_URL: ${{ github.event.client_payload.url }}
+        run: |
+          if [ "$EV" = "repository_dispatch" ]; then
+            echo "MAIL_TO=$PT_TO" >> "$GITHUB_ENV"
+            echo "MAIL_TO_NICK=${PT_TO_NICK:-朋友}" >> "$GITHUB_ENV"
+            echo "MAIL_REPLY=$PT_REPLY" >> "$GITHUB_ENV"
+            echo "MAIL_ADMIN=${PT_ADMIN:-站长}" >> "$GITHUB_ENV"
+            echo "MAIL_TITLE=$PT_TITLE" >> "$GITHUB_ENV"
+            echo "MAIL_URL=$PT_URL" >> "$GITHUB_ENV"
+          else
+            echo "MAIL_TO=tsinhos@qq.com" >> "$GITHUB_ENV"
+            echo "MAIL_TO_NICK=站长" >> "$GITHUB_ENV"
+            echo "MAIL_REPLY=（GitHub Actions → QQ SMTP 链路验证）这条是自动测试，收到即证明通知链路已通。" >> "$GITHUB_ENV"
+            echo "MAIL_ADMIN=站长" >> "$GITHUB_ENV"
+            echo "MAIL_TITLE=链路验证" >> "$GITHUB_ENV"
+            echo "MAIL_URL=/index.html" >> "$GITHUB_ENV"
+          fi
+
+      - name: 发送邮件
+        env:
+          QQ_SMTP_USER: ${{ secrets.QQ_SMTP_USER }}
+          QQ_SMTP_PASS: ${{ secrets.QQ_SMTP_PASS }}
+          SITE_NAME: ${{ secrets.SITE_NAME }}
+        run: node scripts/send_mail.js
