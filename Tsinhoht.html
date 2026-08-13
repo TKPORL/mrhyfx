@@ -825,6 +825,7 @@ async function putFile(repo, token, path, content, msg, statusEl, step) {
 async function updateJson(repo, token, file, key, value, statusEl) {
   let obj = {};
   const raw = await fetch(`${RAW_BASE}/${repo}/main/${file}`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (raw === null) throw new Error('读取线上 ' + file + ' 失败，已取消保存（避免覆盖掉现有内容），请重试');
   if (raw && typeof raw === 'object') obj = raw;
   if (value === null || value === '') delete obj[key];
   else obj[key] = value;
@@ -835,6 +836,7 @@ async function updateJson(repo, token, file, key, value, statusEl) {
 async function updateTimestamp(repo, token, name) {
   let obj = {};
   const raw = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (raw === null) throw new Error('读取线上 timestamps.json 失败，已取消保存，请重试');
   if (raw && typeof raw === 'object') obj = raw;
   obj[name] = new Date().toISOString();
   await putFile(repo, token, 'timestamps.json', btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
