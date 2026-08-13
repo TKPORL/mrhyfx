@@ -1,5 +1,3 @@
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, notify-secret",
@@ -11,6 +9,88 @@ const json = (data, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+
+const b64 = (s: string) => {
+  const bytes = new TextEncoder().encode(s);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
+};
+const mimeWord = (s: string) => "=?UTF-8?B?" + b64(s) + "?=";
+
+interface SmtpOpts {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  from: string;
+  fromName: string;
+  to: string;
+  subject: string;
+  text: string;
+}
+
+async function smtpSend(o: SmtpOpts) {
+  const net = await Deno.connectTls({ hostname: o.host, port: o.port });
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+  let buf = "";
+  const write = async (s: string) => {
+    const data = enc.encode(s);
+    let i = 0;
+    while (i < data.length) i += await net.write(data.subarray(i));
+  };
+  const readReply = async (): Promise<string> => {
+    while (!buf.includes("\n")) {
+      const chunk = new Uint8Array(4096);
+      const n = await net.read(chunk);
+      if (n === null) throw new Error("SMTP 连接被对方关闭");
+      buf += dec.decode(chunk.subarray(0, n));
+    }
+    const i = buf.indexOf("\n");
+    const line = buf.slice(0, i).trim();
+    buf = buf.slice(i + 1);
+    return line;
+  };
+  const cmd = async (line: string, expectOk = true): Promise<string> => {
+    await write(line + "\r\n");
+    const r = await readReply();
+    if (expectOk && !/^[23]/.test(r)) throw new Error("SMTP 服务器拒绝：" + r);
+    return r;
+  };
+  try {
+    await readReply();
+    await cmd("EHLO mrhyfx.local");
+    await cmd("AUTH LOGIN");
+    await cmd(b64(o.user));
+    await cmd(b64(o.pass));
+    await cmd("MAIL FROM:<" + o.from + ">");
+    await cmd("RCPT TO:<" + o.to + ">");
+    await cmd("DATA");
+    const bodyB64 = b64(o.text).replace(/(.{76})/g, "$1\r\n").replace(/\r\n$/, "");
+    const msg = [
+      "From: " + mimeWord(o.fromName) + " <" + o.from + ">",
+      "To: <" + o.to + ">",
+      "Subject: " + mimeWord(o.subject),
+      "Date: " + new Date().toUTCString(),
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=UTF-8",
+      "Content-Transfer-Encoding: base64",
+      "",
+      bodyB64,
+      "",
+      ".",
+    ].join("\r\n");
+    await write(msg + "\r\n");
+    const r = await readReply();
+    if (!/^250/.test(r)) throw new Error("SMTP 发送失败：" + r);
+    await cmd("QUIT", false);
+  } finally {
+    try {
+      net.close();
+    } catch (_) {}
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -49,36 +129,21 @@ Deno.serve(async (req) => {
     const pageUrl = String(body.url || "").replace(/^\//, "");
     const siteUrl = (Deno.env.get("SITE_URL") || "https://tkporl.github.io/mrhyfx/").replace(/\/+$/, "/");
 
-    const client = new SmtpClient();
-    try {
-      await client.connectTLS({
-        hostname: host,
-        port: port,
-        username: user,
-        password: pass,
-      });
-      await client.send({
-        from: `${fromName} <${from}>`,
-        to: to,
-        subject: `【${siteName}】${adminNick} 回复了你的评论`,
-        content: [
-          `Hi ${toNick}：`,
-          ``,
-          `你在「${postTitle}」的评论收到了站长（${adminNick}）的回复：`,
-          ``,
-          `----------------------------------------`,
-          reply,
-          `----------------------------------------`,
-          ``,
-          `去查看：${siteUrl}${pageUrl}`,
-          ``,
-          `（这是一封系统自动发送的通知邮件，请勿直接回复）`,
-        ].join("\n"),
-      });
-    } finally {
-      try { await client.close(); } catch (_) {}
-    }
+    const text = [
+      "Hi " + toNick + "：",
+      "",
+      "你在「" + postTitle + "」的评论收到了站长（" + adminNick + "）的回复：",
+      "",
+      "----------------------------------------",
+      reply,
+      "----------------------------------------",
+      "",
+      "去查看：" + siteUrl + pageUrl,
+      "",
+      "（这是一封系统自动发送的通知邮件，请勿直接回复）",
+    ].join("\n");
 
+    await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】" + adminNick + " 回复了你的评论", text });
     return json({ ok: true });
   } catch (e) {
     return json({ ok: false, error: String((e && e.message) || e) }, 500);
