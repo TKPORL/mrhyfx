@@ -63,6 +63,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .draftbar b{color:#1a5fb4}
 .draftbar .btn{padding:6px 14px;font-size:12px;border-radius:8px}
 .hint{font-size:12px;color:#aaa;margin-top:5px}
+.pwwrap{position:relative;display:flex;align-items:center}
+.pwwrap input{width:100%;padding-right:40px}
+.pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;font-size:16px;padding:6px;color:#999;line-height:1}
+.pw-eye:hover{color:#e5484d}
 .game{border:1px solid #ecebe9;border-radius:12px;padding:16px;margin-bottom:12px;background:#fefefe;position:relative}
 .game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:6px}
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d;white-space:nowrap}
@@ -199,7 +203,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <div class="card">
       <div class="field">
         <label>GitHub Token（repo 权限，保存一次永久有效）</label>
-        <input type="password" id="token" autocomplete="off">
+        <div class="pwwrap">
+          <input type="password" id="token" autocomplete="off">
+          <button type="button" class="pw-eye" data-eye="token" title="显示/隐藏">👁</button>
+        </div>
         <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 生成 → 复制 ghp_ 开头的字符串。Token 和仓库名只在本浏览器自动保存（localStorage），下次打开无需再填。</p>
       </div>
       <div class="field">
@@ -240,12 +247,18 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       </div>
       <div class="field">
         <label>管理密钥（自己在 SQL 里设置的那串自定义密钥，只存本浏览器）</label>
-        <input type="password" id="sbSecret" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
+        <div class="pwwrap">
+          <input type="password" id="sbSecret" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
+          <button type="button" class="pw-eye" data-eye="sbSecret" title="显示/隐藏">👁</button>
+        </div>
         <p class="hint">Supabase 浏览器端禁止使用 secret 私钥，所以删除评论改用自编密钥：SQL 里设置一个，这里填同一个，即可删除评论。只存你浏览器，绝不写入网站。</p>
       </div>
       <div class="field">
         <label>邮件通知方式（站长回复评论时自动发邮件给用户）</label>
-        <input type="password" id="sbNotify" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px" placeholder="旧版 Supabase 通道的 Notify-Secret（选填）">
+        <div class="pwwrap">
+          <input type="password" id="sbNotify" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px" placeholder="旧版 Supabase 通道的 Notify-Secret（选填）">
+          <button type="button" class="pw-eye" data-eye="sbNotify" title="显示/隐藏">👁</button>
+        </div>
         <p class="hint">推荐：上面「发布帖子」页签填好 GitHub Token（勾选 repo + workflow 权限）后，本站长回复会自动触发仓库 Actions 用你的 QQ 邮箱发邮件给用户（见 README「站长回复邮件通知」）。此框仅供旧版 Supabase 通道使用：部署 notify-reply 函数并配好 SMTP 后，把 Notify-Secret 填这里（只存本浏览器）。两种方式都不填则回复照常发布、只是不发邮件。</p>
       </div>
       <div class="row">
@@ -1219,6 +1232,16 @@ $('sbUrl').addEventListener('input', () => sbSet('url', $('sbUrl').value.trim())
 $('sbAnon').addEventListener('input', () => sbSet('anon', $('sbAnon').value.trim()));
 $('sbSecret').addEventListener('input', () => { sbSet('secret', $('sbSecret').value.trim()); localStorage.setItem('mrhx_comments_admin', $('sbSecret').value.trim()); });
 $('sbNotify').addEventListener('input', () => sbSet('notify', $('sbNotify').value.trim()));
+
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.pw-eye');
+  if (!btn) return;
+  const input = document.getElementById(btn.dataset.eye);
+  if (!input) return;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+});
 
 let commentFilter = 'all';
 const cfBar = $('commentFilterBar');
