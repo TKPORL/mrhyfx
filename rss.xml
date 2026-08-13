@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tsinho黄油站</title>
+    <link>https://tkporl.github.io/mrhyfx/index.html</link>
+    <description>每日更新 · PC + 安卓双平台</description>
+    <atom:link href="https://tkporl.github.io/mrhyfx/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>求助资源贴（求助后资源都发在这贴 也可在这个贴求资源）</title>
+      <link>https://tkporl.github.io/mrhyfx/qzt.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/qzt.html</guid>
+      <pubDate>Thu, 13 Aug 2026 03:35:49 GMT</pubDate>
+      <description>共 6 款游戏，点击查看详情。</description>
+    </item>
+    <item>
+      <title>8月12号黄油（PC+安卓）</title>
+      <link>https://tkporl.github.io/mrhyfx/8.12pcaz.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/8.12pcaz.html</guid>
+      <pubDate>Wed, 12 Aug 2026 06:22:08 GMT</pubDate>
+      <description>共 12 款游戏，点击查看详情。</description>
+    </item>
+    <item>
+      <title>8月12号黄油（PC）</title>
+      <link>https://tkporl.github.io/mrhyfx/8.12PC.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/8.12PC.html</guid>
+      <pubDate>Wed, 12 Aug 2026 04:08:02 GMT</pubDate>
+      <description>共 8 款游戏，点击查看详情。</description>
+    </item>
+    <item>
+      <title>8月11号黄油 43款（PC+安卓）下载链接已恢复</title>
+      <link>https://tkporl.github.io/mrhyfx/8.1.1.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/8.1.1.html</guid>
+      <pubDate>Tue, 11 Aug 2026 09:22:40 GMT</pubDate>
+      <description>共 43 款游戏，点击查看详情。</description>
+    </item>
+    <item>
+      <title>8月11号黄油 41款（PC）下载链接已恢复</title>
+      <link>https://tkporl.github.io/mrhyfx/8.11.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/8.11.html</guid>
+      <pubDate>Tue, 11 Aug 2026 06:06:36 GMT</pubDate>
+      <description>共 41 款游戏，点击查看详情。</description>
+    </item>
+    <item>
+      <title>8月10号黄油 92款（PC+安卓）下载链接已恢复</title>
+      <link>https://tkporl.github.io/mrhyfx/8.10.html</link>
+      <guid isPermaLink="true">https://tkporl.github.io/mrhyfx/8.10.html</guid>
+      <pubDate>Tue, 11 Aug 2026 01:31:16 GMT</pubDate>
+      <description>共 92 款游戏，点击查看详情。</description>
+    </item>
+  </channel>
+</rss>

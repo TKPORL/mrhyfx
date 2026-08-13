@@ -59,26 +59,43 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   input.value = q;
   var resBox = document.getElementById('res');
   var countEl = document.getElementById('count');
-  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; return; }
+  var ALL = 30;
+  var _hits = [];
+  var _page = 0;
+  function rowHtml(g) {
+    var dl = (g.links || []).map(function (l) {
+      var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
+      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
+    }).join('');
+    return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
+      (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
+      (dl ? '<div class="dl">' + dl + '</div>' : '') +
+      (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
+      '</div>';
+  }
+  function renderMore() {
+    var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
+    resBox.insertAdjacentHTML('beforeend', slice.map(rowHtml).join(''));
+    _page++;
+    var moreBtn = document.getElementById('mrhx-more');
+    if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
+  }
+  var moreBtn = document.createElement('div');
+  moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
+  moreBtn.style.textAlign = 'center';
+  moreBtn.style.marginTop = '6px';
+  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
+  document.getElementById('mrhx-more').onclick = renderMore;
+  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     var kw = q.toLowerCase();
-    var hits = data.filter(function (g) {
+    _hits = data.filter(function (g) {
       return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
     });
-    countEl.textContent = '（找到 ' + hits.length + ' 个）';
-    if (!hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; return; }
-    resBox.innerHTML = hits.map(function (g) {
-      var dl = (g.links || []).map(function (l) {
-        var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
-        return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
-      }).join('');
-      return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
-        (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
-        (dl ? '<div class="dl">' + dl + '</div>' : '') +
-        (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
-        '</div>';
-    }).join('');
-  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; });
+    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+    if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+    renderMore();
+  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
 })();
 </script>
 </body>

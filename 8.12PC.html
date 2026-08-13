@@ -1346,6 +1346,9 @@
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
   <div id="mrhx-clist"></div>
   <form id="mrhx-cform" class="mrhx-cform">
+    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
     <div class="mrhx-crow">
       <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
       <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
@@ -1373,6 +1376,7 @@
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
   var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var hpEl = document.getElementById('mrhx-hp');
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
@@ -1451,17 +1455,28 @@
   }
   form.onsubmit = function (e) {
     e.preventDefault();
+    if (hpEl && hpEl.value) { form.reset(); return; }
     var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    fetch(SB + '/rest/v1/comments', {
+    function postDirect() {
+      return fetch(SB + '/rest/v1/comments', {
+        method: 'POST',
+        headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      });
+    }
+    fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-      body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 400) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || '内容未通过检查'); });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (r.status === 404) return postDirect();
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+      return r.json();
+    }).then(function (d) {
+      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
