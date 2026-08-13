@@ -310,10 +310,23 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <div class="stat-num" style="color:#e58d0a" id="statTodayCommentCount">-</div>
           <div class="stat-label">今日新增评论</div>
         </div>
+        <div class="stat-box" style="background:#fff7e6">
+          <div class="stat-num" style="color:#e58d0a" id="statTodayViews">-</div>
+          <div class="stat-label">今日访问</div>
+        </div>
         <div class="stat-box" style="background:#fdf3f3">
           <div class="stat-num" style="color:#e5484d" id="statTotalViews">-</div>
           <div class="stat-label">累计访问</div>
         </div>
+        <div class="stat-box" style="background:#eef4fd">
+          <div class="stat-num" style="color:#1a5fb4" id="statTotalPosts">-</div>
+          <div class="stat-label">帖子总数</div>
+        </div>
+        <div class="stat-box" style="background:#e6f4ea">
+          <div class="stat-num" style="color:#1a7f37" id="statAvgViews">-</div>
+          <div class="stat-label">平均访问</div>
+        </div>
+      </div>
         <div class="stat-box" style="background:#eef4fd">
           <div class="stat-num" style="color:#1a5fb4" id="statTotalPosts">-</div>
           <div class="stat-label">帖子总数</div>
@@ -991,7 +1004,7 @@ async function loadPosts() {
         const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
         const isPinned = pins.indexOf(tag) !== -1;
         return `<div class="game">
-  <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'}${views['/' + encodeURIComponent(tag + '.html')] != null ? ' · 访问 ' + views['/' + encodeURIComponent(tag + '.html')] + ' 次' : ''}</span></div>
+  <div class="ghead"><span class="gnum">${esc(titles[tag] || p.path)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views['/' + encodeURIComponent(tag + '.html')] || 0} 次</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || '')}" placeholder="${esc(p.path)}" style="flex:1;min-width:180px;font-size:13px">
     <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
@@ -1228,6 +1241,7 @@ $('saveSite').onclick = async () => {
     } else {
       site.announcement = { enabled: false, title: '📢 公告', lines: [] };
     }
+    site.comments = site.comments || { enabled: false, url: '', anonKey: '' };
     await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
       '更新站点设置', stSITE, 'site.json');
     show(stSITE, '保存成功！全站公告/站点名称已更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
@@ -1331,7 +1345,7 @@ async function loadComments() {
         <div class="cwrap${isReply ? ' creply' : ''}">
           <div class="prow">
             <div class="pt">
-              <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${postLabel}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
+              <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${postLabel}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">回复 @' + esc(parentNick) + '</span>' : ''}</b>
               <span class="pf">邮箱：${esc(c.email || '无')}</span>
               <span class="pf">${esc(c.content)}</span>
               <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
@@ -1435,7 +1449,7 @@ const stS = $('statusS');
 async function loadStats() {
   const box = $('statBox');
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
-  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return; }
+  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return; }
   show(stS, '正在加载统计…', 'info');
   try {
     const res = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc`, {
@@ -1458,45 +1472,20 @@ async function loadStats() {
       });
       if (dRes.ok) { todayArr = await dRes.json(); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
     } catch (e) {}
+    $('statTodayViews').textContent = todayTotal;
     let todayCommentCount = 0;
     try {
       const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id&created_at=gte.${today}&limit=1000`, { headers: sbHeaders() });
       if (cRes.ok) { const cc = await cRes.json(); todayCommentCount = cc.length; }
     } catch (e) {}
     $('statTodayCommentCount').textContent = todayCommentCount;
-    let geoRows = [];
-    if (!arr.length && !todayArr.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无访问数据</p>'; }
-    else {
-      const totalAll = arr.reduce((s, v) => s + v.count, 0);
-      const maxAll = arr.length ? Math.max(...arr.map(x => x.count)) : 1;
-      const todayMax = todayArr.length ? Math.max(...todayArr.map(x => x.count)) : 1;
-      const renderBars = (rows, totalRows, maxVal, labelSuffix, color) => {
-        if (!rows.length) return '';
-        return rows.map(v => {
-          const pct = totalRows ? (v.count / totalRows * 100).toFixed(1) : 0;
-          const barW = maxVal ? (v.count / maxVal * 100) : 0;
-          return `<div style="margin-bottom:8px;padding:9px 14px;background:#faf9f7;border-radius:10px;border:1px solid #ecebe9">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;flex-wrap:wrap">
-              <span style="font-size:13px;font-weight:600;color:#333">${esc(v.url)}</span>
-              <span style="font-size:13px;color:${color};font-weight:700;white-space:nowrap">${v.count} 次${labelSuffix} · ${pct}%</span>
-            </div>
-            <div style="height:6px;background:#ecebe9;border-radius:99px;overflow:hidden">
-              <div style="height:100%;width:${barW}%;background:${color};border-radius:99px;transition:width .5s"></div>
-            </div>
-          </div>`;
-        }).join('');
-      };
-      let html = '';
-      if (todayArr.length) html += '<div style="margin-bottom:18px"><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #e5484d">今日访问（独立访客）</h3>' + renderBars(todayArr, todayTotal, todayMax, '', '#e5484d') + '</div>';
-      html += '<div><h3 style="font-size:15px;color:#2b2b2b;margin-bottom:10px;padding-left:10px;border-left:3px solid #1a5fb4">累计访问（独立访客）</h3>' + renderBars(arr, totalAll, maxAll, '', '#1a5fb4') + '</div>';
-      box.innerHTML = html;
-    }
-    show(stS, arr.length + ' 个页面 · 累计 ' + total + ' 次 · 今日 ' + todayTotal + ' 次', 'ok');
+    box.innerHTML = '';
   } catch (e) {
     show(stS, '加载失败：' + e.message + '\n\n请确认 Supabase 配置正确且 page_views 表已创建。', 'err');
     $('statTotalViews').textContent = '-';
     $('statTotalPosts').textContent = '-';
     $('statAvgViews').textContent = '-';
+    $('statTodayViews').textContent = '-';
     $('statTodayCommentCount').textContent = '-';
   }
 }
@@ -1533,6 +1522,8 @@ async function saveSiteComments(enabled) {
     url: enabled ? sbBase() : (site.comments && site.comments.url) || '',
     anonKey: enabled ? $('sbAnon').value.trim() : (site.comments && site.comments.anonKey) || ''
   };
+  site.site = site.site || { name: 'Tsinho黄油站', logoEm: '黄油站', tag: '每日更新 · PC + 安卓双平台', footer: 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版' };
+  site.announcement = site.announcement || { enabled: false, title: '📢 公告', lines: [] };
   await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
     enabled ? '启用评论功能' : '停用评论功能', stC, 'site.json');
 }
