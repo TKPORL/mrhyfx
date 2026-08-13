@@ -12,9 +12,9 @@ jobs:
   send:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
 
@@ -28,12 +28,24 @@ jobs:
           PT_TITLE: ${{ github.event.client_payload.postTitle }}
           PT_URL: ${{ github.event.client_payload.url }}
         run: |
-          echo "MAIL_TO=$PT_TO" >> "$GITHUB_ENV"
-          echo "MAIL_TO_NICK=${PT_TO_NICK:-朋友}" >> "$GITHUB_ENV"
-          echo "MAIL_REPLY=$PT_REPLY" >> "$GITHUB_ENV"
-          echo "MAIL_ADMIN=${PT_ADMIN:-站长}" >> "$GITHUB_ENV"
-          echo "MAIL_TITLE=$PT_TITLE" >> "$GITHUB_ENV"
-          echo "MAIL_URL=$PT_URL" >> "$GITHUB_ENV"
+          echo "MAIL_TO<<EOF" >> "$GITHUB_ENV"
+          echo "$PT_TO" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "MAIL_TO_NICK<<EOF" >> "$GITHUB_ENV"
+          echo "${PT_TO_NICK:-朋友}" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "MAIL_REPLY<<EOF" >> "$GITHUB_ENV"
+          echo "$PT_REPLY" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "MAIL_ADMIN<<EOF" >> "$GITHUB_ENV"
+          echo "${PT_ADMIN:-站长}" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "MAIL_TITLE<<EOF" >> "$GITHUB_ENV"
+          echo "$PT_TITLE" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+          echo "MAIL_URL<<EOF" >> "$GITHUB_ENV"
+          echo "$PT_URL" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
       - name: 发送邮件
         env:
