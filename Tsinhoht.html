@@ -97,6 +97,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-all}
 .mbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
 .cwrap{border-top:1px dashed #ecebe9}
+  .creply{margin-left:32px;border-left:3px solid #f0b4b6;padding-left:14px;background:#fefcfb;border-radius:0 8px 8px 0;margin-top:6px;margin-bottom:6px}
 .cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0}
 .rbox{margin:0 0 12px 22px;background:#faf9f7;border:1px solid #ecebe9;border-radius:10px;padding:10px}
 .rrow{display:flex;gap:8px;margin-bottom:8px}
@@ -1273,17 +1274,19 @@ async function loadComments() {
     const entries = Object.entries(byUrl).sort((a, b) => b[0].localeCompare(a[0]));
     if (!entries.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
-      box.innerHTML = entries.map(([url, list]) => `
-        <div class="game">
-          <div class="ghead"><span class="gnum">${esc(url)}</span><span style="font-size:12px;color:#aaa">${list.length} 条</span></div>
-          ${list.map(c => {
-            const topId = c.pid || c.id;
-            const pinBtn = c.pid ? '' : `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>`;
-            return `
-          <div class="cwrap">
+      box.innerHTML = entries.map(([url, list]) => {
+        const parents = list.filter(c => !c.pid);
+        const replyMap = {};
+        list.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
+        function renderComment(c, isReply) {
+          const topId = c.pid || c.id;
+          const pinBtn = (!c.pid) ? `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>` : '';
+          const parentNick = (c.pid && list.filter(p => p.id === c.pid)[0]) ? (list.filter(p => p.id === c.pid)[0].nick || '匿名') : '';
+          return `
+          <div class="cwrap${isReply ? ' creply' : ''}">
             <div class="prow">
               <div class="pt">
-                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${c.pid ? ' <span style="color:#e5484d;font-size:11px">↳ 回复</span>' : ''}</b>
+                <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">↳ 回复 @' + esc(parentNick) + '</span>' : ''}</b>
                 <span class="pf">邮箱：${esc(c.email || '无')}</span>
                 <span class="pf">${esc(c.content)}</span>
                 <span class="pf">${new Date(c.created_at).toLocaleString()}</span>
@@ -1305,12 +1308,18 @@ async function loadComments() {
                 <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
               </div>
             </div>
+            ${(isReply || !replyMap[c.id]) ? '' : replyMap[c.id].map(r => renderComment(r, true)).join('')}
           </div>`;
-          }).join('')}
+        }
+        return `
+        <div class="game">
+          <div class="ghead"><span class="gnum">${esc(url)}</span><span style="font-size:12px;color:#aaa">${list.length} 条</span></div>
+          ${parents.map(p => renderComment(p, false)).join('')}
           <div class="row" style="margin-top:8px">
             <button class="btn btn-s" data-clear="${esc(url)}">清空该帖全部评论</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       [...box.querySelectorAll('[data-dcid]')].forEach(b => {
         b.onclick = () => {
           if (b.dataset.pid) {
