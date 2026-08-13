@@ -1798,11 +1798,10 @@
       row.appendChild(head);
       row.appendChild(h('div', 'mrhx-ccontent', c.content));
       var bar = h('div', 'mrhx-cbar');
-      var topId = c.pid || c.id;
       var rp = h('button', 'mrhx-cbtn', '回复');
       rp.onclick = function () {
-        if (replyPid === topId) { replyPid = null; replyEl.textContent = ''; }
-        else { replyPid = topId; replyEl.textContent = '回复楼层：' + (c.nick || '匿名') + '（再次点击取消）'; }
+        if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
+        else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
       };
       bar.appendChild(rp);
       if (ADMIN) {
