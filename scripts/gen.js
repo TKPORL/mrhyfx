@@ -317,6 +317,32 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 `;
 }
 
+function verify(days, index) {
+  const errors = [];
+  for (const d of days) {
+    const ref = `href="${esc(d.file)}"`;
+    if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
+    const h = fs.readFileSync(d.file, 'utf8');
+    if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
+    if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
+    const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
+    const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
+    const h1Ok = h.includes(`>${esc(disp)}</div>`);
+    if (!titleOk && !h1Ok) errors.push(`帖子标题未同步: ${d.file} (期望 ${disp})`);
+    if (SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
+    if (SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
+  }
+  if (errors.length) {
+    console.error('❌ 发布自检未通过:');
+    errors.forEach(e => console.error('  - ' + e));
+    try {
+      fs.writeFileSync('gen_report.txt', errors.join('\n'));
+    } catch (e) {}
+    process.exit(1);
+  }
+  console.log('✅ 发布自检通过:', days.length, '个帖子');
+}
+
 const days = [];
 const searchIndex = [];
 (async () => {
@@ -438,6 +464,9 @@ html = (function reorderNodes(str) {
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
   <div id="mrhx-clist"></div>
   <form id="mrhx-cform" class="mrhx-cform">
+    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
     <div class="mrhx-crow">
       <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
       <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
@@ -465,6 +494,7 @@ html = (function reorderNodes(str) {
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
   var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var hpEl = document.getElementById('mrhx-hp');
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
@@ -543,17 +573,28 @@ html = (function reorderNodes(str) {
   }
   form.onsubmit = function (e) {
     e.preventDefault();
+    if (hpEl && hpEl.value) { form.reset(); return; }
     var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    fetch(SB + '/rest/v1/comments', {
+    function postDirect() {
+      return fetch(SB + '/rest/v1/comments', {
+        method: 'POST',
+        headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      });
+    }
+    fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-      body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 400) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || '内容未通过检查'); });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (r.status === 404) return postDirect();
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+      return r.json();
+    }).then(function (d) {
+      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
@@ -758,6 +799,8 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
   fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
   console.log('search_index.json ok, games:', searchIndex.length);
 
+  verify(days, index, searchIndex);
+
   const searchPage = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -819,26 +862,43 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   input.value = q;
   var resBox = document.getElementById('res');
   var countEl = document.getElementById('count');
-  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; return; }
+  var ALL = 30;
+  var _hits = [];
+  var _page = 0;
+  function rowHtml(g) {
+    var dl = (g.links || []).map(function (l) {
+      var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
+      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
+    }).join('');
+    return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
+      (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
+      (dl ? '<div class="dl">' + dl + '</div>' : '') +
+      (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
+      '</div>';
+  }
+  function renderMore() {
+    var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
+    resBox.insertAdjacentHTML('beforeend', slice.map(rowHtml).join(''));
+    _page++;
+    var moreBtn = document.getElementById('mrhx-more');
+    if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
+  }
+  var moreBtn = document.createElement('div');
+  moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
+  moreBtn.style.textAlign = 'center';
+  moreBtn.style.marginTop = '6px';
+  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
+  document.getElementById('mrhx-more').onclick = renderMore;
+  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     var kw = q.toLowerCase();
-    var hits = data.filter(function (g) {
+    _hits = data.filter(function (g) {
       return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
     });
-    countEl.textContent = '（找到 ' + hits.length + ' 个）';
-    if (!hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; return; }
-    resBox.innerHTML = hits.map(function (g) {
-      var dl = (g.links || []).map(function (l) {
-        var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
-        return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
-      }).join('');
-      return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
-        (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
-        (dl ? '<div class="dl">' + dl + '</div>' : '') +
-        (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
-        '</div>';
-    }).join('');
-  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; });
+    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+    if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+    renderMore();
+  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
 })();
 </script>
 </body>
@@ -846,4 +906,46 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 `;
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
+
+  const baseUrl = (SITE.site && SITE.site.url || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '');
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${baseUrl}/index.html</loc><priority>1.0</priority></url>
+${days.map(d => {
+    const t = TIMESTAMPS[path.parse(d.file).name] || new Date().toISOString();
+    return `  <url><loc>${baseUrl}/${d.file}</loc><lastmod>${String(t).slice(0, 10)}</lastmod><priority>0.8</priority></url>`;
+  }).join('\n')}
+  <url><loc>${baseUrl}/search.html</loc><priority>0.4</priority></url>
+</urlset>
+`;
+  fs.writeFileSync('sitemap.xml', sitemap);
+  console.log('sitemap.xml ok');
+
+  const rssItems = days.map(d => {
+    const title = path.parse(d.file).name;
+    const disp = TITLES[title] || title;
+    const t = TIMESTAMPS[title] || new Date().toISOString();
+    const desc = `共 ${d.gameCount} 款游戏，点击查看详情。`;
+    return `    <item>
+      <title>${esc(disp)}</title>
+      <link>${baseUrl}/${d.file}</link>
+      <guid isPermaLink="true">${baseUrl}/${d.file}</guid>
+      <pubDate>${new Date(t).toUTCString()}</pubDate>
+      <description>${esc(desc)}</description>
+    </item>`;
+  }).join('\n');
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${esc(SITE_NAME)}</title>
+    <link>${baseUrl}/index.html</link>
+    <description>${esc(SITE_TAG)}</description>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+  </channel>
+</rss>
+`;
+  fs.writeFileSync('rss.xml', rss);
+  console.log('rss.xml ok');
 })().catch(e => { console.error(e); process.exit(1); });

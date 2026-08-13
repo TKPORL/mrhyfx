@@ -1,0 +1,58 @@
+name: daily-ops
+
+on:
+  schedule:
+    - cron: '40 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: daily-ops
+  cancel-in-progress: false
+
+jobs:
+  ops:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 备份与健康检查
+        id: health
+        env:
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+          SITE_URL: 'https://tkporl.github.io/mrhyfx/'
+        run: |
+          node scripts/ops_backup.js
+          echo "report=$(cat backup/health.json)" >> "$GITHUB_OUTPUT"
+
+      - name: 提交备份
+        run: |
+          git config user.name "mrhx-bot"
+          git config user.email "mrhx-bot@users.noreply.github.com"
+          git add backup
+          if git diff --cached --quiet; then echo "本次无新备份"; exit 0; fi
+          git commit -m "例行备份: $(date -u +%Y-%m-%d) 评论与访问统计"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 3
+          done
+          git rebase --abort 2>/dev/null || true
+          git reset --hard origin/main 2>/dev/null || true
+          echo "批量备份推送重试仍失败"
+          exit 1
+
+      - name: 异常告警邮件
+        if: steps.health.outputs.report != ''
+        env:
+          QQ_SMTP_USER: ${{ secrets.QQ_SMTP_USER }}
+          QQ_SMTP_PASS: ${{ secrets.QQ_SMTP_PASS }}
+          SITE_NAME: ${{ secrets.SITE_NAME }}
+          MAIL_TO: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          if [ -z "$MAIL_TO" ]; then echo "ADMIN_EMAIL 未配置，改用发件邮箱"; export MAIL_TO="$QQ_SMTP_USER"; fi
+          node scripts/send_mail_alert.js "${{ steps.health.outputs.report }}"

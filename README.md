@@ -98,6 +98,16 @@ using (
 
 > 安全说明：Supabase 浏览器端禁止使用 secret 私钥，所以本项目不碰 secret key。公开的 anon/publishable 公钥只允许评论和读取（数据库 RLS 规则控制）；删除评论靠 SQL 里的自编管理密钥验证请求头，密钥只存在你自己的浏览器里，绝不写入网站代码。
 
+### 评论防刷（可选，建议开启）
+
+页面表单默认走 `guard_comment` 函数，带三重防刷：**蜜罐陷阱**（隐藏字段，机器人乱填会被静默丢弃）、**频率限制**（同一邮箱 30 秒内只能发 1 条、5 分钟内最多 3 条）、**重复内容拦截**（同一邮箱 10 分钟内重复提交相同内容会拒绝）。未运行下面 SQL 前前端会自动回退到直接插入，功能不受影响。
+
+在 Supabase **SQL Editor** 里运行本仓库 `supabase/upgrade_comment_guard.sql` 的内容即可（一次配置永久有效）。运行后想彻底封死直插（只允许走防刷函数），可再运行：
+
+```sql
+drop policy if exists "comments_insert" on comments;
+```
+
 ## 站长回复邮件通知（可选，站长回复评论后自动发邮件给用户）
 
 用户在帖子里回复/评论后是看不到站长的回复的，配置下面两步后：你在「评论管理」里回复某条评论，系统会自动往**评论者的邮箱**发一封「站长回复了你」的邮件。
@@ -217,5 +227,25 @@ grant execute on function inc_daily_view(text, date) to anon;
    - 改写页脚为 `by Tsinho 发布`
    - 自动加入首页列表（新日期排最前）
 3. 提交推送（Actions 会自动再跑一次，结果一致则不会重复提交）
+
+## 发布自检（自动防护）
+
+`scripts/gen.js` 每次都自动校验：首页包含每个帖子的链接、正文节点存在、游戏数与首页一致、标题同步、评论区与统计脚本注入成功。任一失败会生成 `gen_report.txt` 并让 Actions 工作流显红，**不会静默发布半成品**；推送失败也会标记失败。
+
+## 每日自动备份与健康巡检（可选）
+
+`.github/workflows/ops.yml` 每天自动：备份 Supabase 的评论与访问统计数据到 `backup/<日期>/`（保留最近 30 份）、检查首页可用性与 Supabase 连通性，任一异常向管理员发告警邮件（走 QQ SMTP）。
+
+- 添加 Actions secret `ADMIN_KEY`（= 你在评论 SQL 里编的管理密钥，用于读取统计表）。不配置则只备份评论，跳过统计表备份。
+- 添加 Actions secret `ADMIN_EMAIL`（可选，告警收件邮箱；不填则用 `QQ_SMTP_USER`）。
+- 首次可手动在 Actions 页面 Run workflow 触发一次测试。
+
+## 发帖原子化
+
+后台「发布帖子」现在把 **正文 + titles.json + counts.json 合并成一次提交**，避免"正文已上线但标题/数量还没跟上"的中间状态。
+
+## RSS 与站点地图
+
+每次生成自动输出 `rss.xml`（每日 RSS 订阅）与 `sitemap.xml`（搜索引擎提交用），站点 URL 可在 `site.json` 里加 `"url": "https://你的域名/"` 自定义（默认 `https://tkporl.github.io/mrhyfx/`）。
 
 > 本站内容仅供学习交流，请于下载后 24 小时内删除，支持正版。

@@ -72,7 +72,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text })
   const pageUrl = String(process.env.MAIL_URL || '').replace(/^\//, '');
   const siteUrl = (process.env.SITE_URL || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '/');
   const reply = String(process.env.MAIL_REPLY || '').trim();
-  const subject = '【' + siteName + '】' + adminNick + ' 回复了你的评论';
+  const subject = process.env.MAIL_SUBJECT || ('【' + siteName + '】' + adminNick + ' 回复了你的评论');
   const text = [
     'Hi ' + toNick + '：',
     '',

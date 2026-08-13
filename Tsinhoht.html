@@ -843,6 +843,33 @@ async function updateTimestamp(repo, token, name) {
     '发布: 更新timestamps.json', null, '');
 }
 
+async function atomicCommit(repo, token, files, msg, statusEl, step) {
+  const api = `https://api.github.com/repos/${repo}`;
+  const auth = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  const head = await fetch(`${api}/git/ref/heads/main`, { headers: auth });
+  if (!head.ok) throw new Error('读取分支失败 HTTP ' + head.status);
+  const headSha = (await head.json()).object.sha;
+  const commitInfo = await fetch(`${api}/git/commits/${headSha}`, { headers: auth });
+  if (!commitInfo.ok) throw new Error('读取提交失败 HTTP ' + commitInfo.status);
+  const baseTree = (await commitInfo.json()).tree.sha;
+  const blobs = [];
+  for (const f of files) {
+    const b = await fetch(`${api}/git/blobs`, { method: 'POST', headers: auth, body: JSON.stringify({ content: f.content, encoding: 'base64' }) });
+    if (!b.ok) throw new Error('创建 blob 失败 ' + f.path + ' HTTP ' + b.status);
+    blobs.push({ path: f.path, mode: '100644', type: 'blob', sha: (await b.json()).sha });
+  }
+  const tree = await fetch(`${api}/git/trees`, { method: 'POST', headers: auth, body: JSON.stringify({ base_tree: baseTree, tree: blobs }) });
+  if (!tree.ok) throw new Error('创建 tree 失败 HTTP ' + tree.status);
+  const treeSha = (await tree.json()).sha;
+  const commit = await fetch(`${api}/git/commits`, { method: 'POST', headers: auth, body: JSON.stringify({ message: msg, tree: treeSha, parents: [headSha] }) });
+  if (!commit.ok) throw new Error('创建 commit 失败 HTTP ' + commit.status);
+  const commitSha = (await commit.json()).sha;
+  const ref = await fetch(`${api}/git/refs/heads/main`, { method: 'PATCH', headers: auth, body: JSON.stringify({ sha: commitSha, force: false }) });
+  if (!ref.ok) throw new Error('更新分支失败 HTTP ' + ref.status);
+  if (statusEl) show(statusEl, `[${step}] ${files.map(f => f.path).join(' + ')} 已合并为一次提交 ✓`, 'ok');
+  return commitSha;
+}
+
 async function publish(statusEl, name, title, count, htmlContent) {
   const token = $('token').value.trim();
   const repo = $('repo').value.trim();
@@ -854,10 +881,21 @@ async function publish(statusEl, name, title, count, htmlContent) {
   localStorage.setItem(TOKEN_KEY, token);
   const fileName = name.endsWith('.html') ? name : name + '.html';
   const content = btoa(unescape(encodeURIComponent(htmlContent)));
-  show(statusEl, '正在发布 ' + fileName + ' …', 'info');
-  await putFile(repo, token, fileName, content, '发布: ' + title, statusEl, '帖子');
-  await updateJson(repo, token, 'titles.json', name, title, statusEl);
-  if (count) await updateJson(repo, token, 'counts.json', name, String(count), statusEl);
+  show(statusEl, '正在原子发布 ' + fileName + '（正文+标题+数量一次提交）…', 'info');
+  const files = [{ path: fileName, content: content }];
+  const tRaw = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (tRaw === null) throw new Error('读取线上 titles.json 失败，已取消发布（避免覆盖），请重试');
+  let titles = (tRaw && typeof tRaw === 'object') ? tRaw : {};
+  titles[name] = title;
+  files.push({ path: 'titles.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(titles, null, 2) + '\n'))) });
+  if (count) {
+    const cRaw = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (cRaw === null) throw new Error('读取线上 counts.json 失败，已取消发布（避免覆盖），请重试');
+    let counts = (cRaw && typeof cRaw === 'object') ? cRaw : {};
+    counts[name] = String(count);
+    files.push({ path: 'counts.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(counts, null, 2) + '\n'))) });
+  }
+  await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
 }
 

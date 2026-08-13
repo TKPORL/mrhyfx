@@ -37,4 +37,5 @@ jobs:
           done
           git rebase --abort 2>/dev/null || true
           git reset --hard origin/main 2>/dev/null || true
-          exit 0
+          echo "❌ 自动生成提交推送上限重试仍未成功"
+          exit 1
