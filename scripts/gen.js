@@ -771,6 +771,7 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
+.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
 nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
 .mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
