@@ -58,17 +58,18 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
 
 const sharedCss = `<style>
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-  .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
+  .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
   .mrhx-bar .bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
   .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:flex-end}
-  .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-  .mrhx-search{display:flex;align-items:center;gap:6px}
-  .mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:150px;outline:none;transition:.2s}
+  .mrhx-bar .mnav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+  .mrhx-search{display:flex;align-items:center;gap:5px}
+  .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
   .mrhx-search input:focus{border-color:#e5484d;background:#fff}
-  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
   @media (min-width:721px){
@@ -91,8 +92,9 @@ const sharedCss = `<style>
   .node{animation:mrhxFade .5s ease both}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important}
-    .mrhx-bar{padding:10px 12px;gap:10px}
-    .mrhx-bar .mlogo{font-size:16px}
+    .mrhx-bar{padding:12px 14px;gap:10px}
+    .mrhx-bar .mlogo{font-size:17px}
+    .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
     .mrhx-bar .bar-right{gap:8px}
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
@@ -449,7 +451,7 @@ html = (function reorderNodes(str) {
     const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <a class="mlogo" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
