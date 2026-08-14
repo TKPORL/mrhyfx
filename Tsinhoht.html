@@ -496,7 +496,7 @@ function collectDraft() {
       name: $('fName').value, title: $('fTitle').value, count: $('fCount').value,
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
-        return { name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, files: c.files };
+        return { name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       })
     },
     html: { name: $('hName').value, title: $('hTitle').value, content: $('html').value }
@@ -595,8 +595,9 @@ function gameHtml(c, imgPaths) {
     />
   </li>`).join('\n');
   let links = '';
-  if (c.linkM) links += `<a class="content-link" href="${esc(c.linkM)}"><span class="content-link-text">移动（不限速）：</span></a>`;
-  if (c.linkB) links += `<a class="content-link" href="${esc(c.linkB)}"><span class="content-link-text">度盘：</span></a>`;
+   if (c.linkM) links += `<a class="content-link" href="${esc(c.linkM)}"><span class="content-link-text">移动（不限速）：</span></a>`;
+   if (c.linkB) links += `<a class="content-link" href="${esc(c.linkB)}"><span class="content-link-text">度盘：</span></a>`;
+   if (c.customName && c.customUrl) links += `<a class="content-link" href="${esc(c.customUrl)}"><span class="content-link-text">${esc(c.customName)}：</span></a>`;
   return `<li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
@@ -633,8 +634,10 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-      <input type="text" class="g-linkM">
-      <input type="text" class="g-linkB">
+      <input type="text" class="g-linkM" placeholder="移动云盘链接">
+      <input type="text" class="g-linkB" placeholder="百度网盘链接">
+      <input type="text" class="g-customName" placeholder="自定义按钮名称">
+      <input type="text" class="g-customUrl" placeholder="自定义跳转链接">
     </div>
   </div>
   <div class="move-box"></div>`;
@@ -692,6 +695,8 @@ function readCard(el) {
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
+    customName: el.querySelector('.g-customName').value.trim(),
+    customUrl: el.querySelector('.g-customUrl').value.trim(),
     files: [...el.querySelector('.g-files').files].map(f => f.name)
   };
 }
@@ -764,6 +769,8 @@ function fillCard(card, data) {
   if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
+  if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
+  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
 }
 
 let dragEl = null;
@@ -816,8 +823,10 @@ function collectGames() {
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
+    customName: el.querySelector('.g-customName').value.trim(),
+    customUrl: el.querySelector('.g-customUrl').value.trim(),
     files: [...el.querySelector('.g-files').files],
-  })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB || c.files.length);
+  })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB || c.customName || c.customUrl || c.files.length);
 }
 
 function fileToBase64(f) {
@@ -1114,32 +1123,38 @@ async function loadPosts() {
             const lis = [...doc.querySelectorAll('li.node.heading3')];
             if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
             $('gameBox').innerHTML = '';
-            lis.forEach(li => {
-              const card = addGameCard();
-              const nameEl = li.querySelector('.content.mm-editor span');
-              const note = li.querySelector('.note.mm-editor');
-              let intro = '', linkM = '', linkB = '';
-              if (note) {
-                const sp = note.querySelector(':scope > span');
-                if (sp) intro = sp.textContent.trim();
-                [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
-                  const href = a.getAttribute('href') || '';
-                  if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
-                  else linkM = href;
-                });
-              }
-              const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
-              card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
-              card.querySelector('.g-intro').value = intro;
-              card.querySelector('.g-imgs').value = imgs;
-              card.querySelector('.g-linkM').value = linkM;
-              card.querySelector('.g-linkB').value = linkB;
-            });
-            $('fName').value = tag;
-            $('fTitle').value = titles[tag] || tag;
-            $('fCount').value = counts[tag] || '';
-            switchTab('tabForm');
-            show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
+             lis.forEach(li => {
+               const card = addGameCard();
+               const nameEl = li.querySelector('.content.mm-editor span');
+               const note = li.querySelector('.note.mm-editor');
+               let intro = '', linkM = '', linkB = '', customName = '', customUrl = '';
+               if (note) {
+                 const sp = note.querySelector(':scope > span');
+                 if (sp) intro = sp.textContent.trim();
+                 [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                   const href = a.getAttribute('href') || '';
+                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
+                   else if (/yun\.139\.com/.test(href) || /移动/.test(a.textContent)) linkM = href;
+                   else {
+                     customName = a.textContent.replace(/[：:]\s*$/, '').trim();
+                     customUrl = href;
+                   }
+                 });
+               }
+               const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+               card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
+               card.querySelector('.g-intro').value = intro;
+               card.querySelector('.g-imgs').value = imgs;
+               card.querySelector('.g-linkM').value = linkM;
+               card.querySelector('.g-linkB').value = linkB;
+               card.querySelector('.g-customName').value = customName;
+               card.querySelector('.g-customUrl').value = customUrl;
+             });
+             $('fName').value = tag;
+             $('fTitle').value = titles[tag] || tag;
+             $('fCount').value = counts[tag] || '';
+             switchTab('tabForm');
+             show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
             scrollTo(0, 0);
           } catch (e) {
             show(stM, '复制失败：' + e.message, 'err');
@@ -1159,30 +1174,36 @@ async function loadPosts() {
             if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
             $('gameBox').innerHTML = '';
             lis.forEach(li => {
-              const card = addGameCard();
-              const nameEl = li.querySelector('.content.mm-editor span');
-              const note = li.querySelector('.note.mm-editor');
-              let intro = '', linkM = '', linkB = '';
-              if (note) {
-                const sp = note.querySelector(':scope > span');
-                if (sp) intro = sp.textContent.trim();
-                [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
-                  const href = a.getAttribute('href') || '';
-                  if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
-                  else linkM = href;
-                });
-              }
-              const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
-              card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
-              card.querySelector('.g-intro').value = intro;
-              card.querySelector('.g-imgs').value = imgs;
-              card.querySelector('.g-linkM').value = linkM;
-              card.querySelector('.g-linkB').value = linkB;
-            });
-            $('fName').value = tag;
-            $('fTitle').value = titles[tag] || tag;
-            $('fCount').value = counts[tag] || '';
-            $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
+               const card = addGameCard();
+               const nameEl = li.querySelector('.content.mm-editor span');
+               const note = li.querySelector('.note.mm-editor');
+               let intro = '', linkM = '', linkB = '', customName = '', customUrl = '';
+               if (note) {
+                 const sp = note.querySelector(':scope > span');
+                 if (sp) intro = sp.textContent.trim();
+                 [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+                   const href = a.getAttribute('href') || '';
+                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
+                   else if (/yun\.139\.com/.test(href) || /移动/.test(a.textContent)) linkM = href;
+                   else {
+                     customName = a.textContent.replace(/[：:]\s*$/, '').trim();
+                     customUrl = href;
+                   }
+                 });
+               }
+               const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+               card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
+               card.querySelector('.g-intro').value = intro;
+               card.querySelector('.g-imgs').value = imgs;
+               card.querySelector('.g-linkM').value = linkM;
+               card.querySelector('.g-linkB').value = linkB;
+               card.querySelector('.g-customName').value = customName;
+               card.querySelector('.g-customUrl').value = customUrl;
+             });
+             $('fName').value = tag;
+             $('fTitle').value = titles[tag] || tag;
+             $('fCount').value = counts[tag] || '';
+             $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
             $('editBar').classList.add('show');
             switchTab('tabForm');
             show(stF, '已载入「' + tag + '」，修改后点发布即可覆盖更新。', 'ok');
@@ -1714,8 +1735,9 @@ function openPreview(cards, title) {
     const imgs = (c.imgs || '').split('\n').map(u => u.trim()).filter(Boolean);
     const imgRows = imgs.map(u => `<li class="image-row" style="list-style:none;margin:6px 0"><img src="${esc(u)}" style="max-width:100%;border-radius:8px" class="image"></li>`).join('\n');
     let links = '';
-    if (c.linkM) links += `<a href="${esc(c.linkM)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;margin:4px">移动云盘</a>`;
-    if (c.linkB) links += `<a href="${esc(c.linkB)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e6f4ea;color:#1a7f37;font-size:13px;font-weight:600;text-decoration:none;margin:4px">百度网盘</a>`;
+     if (c.linkM) links += `<a href="${esc(c.linkM)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;margin:4px">移动云盘</a>`;
+     if (c.linkB) links += `<a href="${esc(c.linkB)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#e6f4ea;color:#1a7f37;font-size:13px;font-weight:600;text-decoration:none;margin:4px">百度网盘</a>`;
+     if (c.customName && c.customUrl) links += `<a href="${esc(c.customUrl)}" style="display:inline-block;padding:7px 14px;border-radius:8px;background:#6366f1;color:#fff;font-size:13px;font-weight:600;text-decoration:none;margin:4px">${esc(c.customName)}</a>`;
     const prevImgs = [...(c._prev || [])].map(u => `<img src="${esc(u)}" style="width:70px;height:50px;object-fit:cover;border-radius:6px;margin:2px;border:1px solid #ecebe9">`).join('');
     html += `<li style="padding:12px 0;border-bottom:1px dashed #ecebe9">
       <div style="font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:6px;display:flex;align-items:center;gap:8px"><span style="color:#e5484d;font-size:12px">${i + 1}</span>${esc(c.name || '游戏 ' + (i + 1))}${prevImgs ? `<span style="display:flex;gap:2px">${prevImgs}</span>` : ''}</div>

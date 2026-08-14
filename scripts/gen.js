@@ -268,9 +268,9 @@ function rebuildNote(noteHtml) {
   plain = plain.replace(/下载链接/g, '').replace(/移动（不限速）：/g, '').replace(/度盘：/g, '');
   plain = plain.replace(/[\s\u200b\u200c]+/g, ' ').trim();
   const btns = links.map(l => {
-    let matched = DOWNLOAD_BUTTONS.find(b => l.url.includes(b.pattern));
+    let matched = DOWNLOAD_BUTTONS.find(b => b.pattern && l.url.includes(b.pattern));
     const name = matched ? matched.name : l.label;
-    const cls = matched ? matched.cls : 'mrhx-btn mrhx-btn-m';
+    const cls = matched ? matched.cls : 'mrhx-btn mrhx-btn-qk';
     return `<a class="${cls}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${name}</a>`;
   }).join('');
   return `<span>${esc(plain)}</span><div class="mrhx-dl">${btns}</div>`;
