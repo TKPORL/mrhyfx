@@ -97,18 +97,18 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .move-box .btn-s{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer}
 
 /* 评论列表 */
-.cwrap{padding:12px 0;transition:background .2s}
+.cwrap{width:100%;min-width:0;padding:12px 0;transition:background .2s}
 .cwrap:not(:last-child){border-bottom:1px solid #f0eee8}
 .cwrap:first-child{padding-top:0}
-.creply{margin-left:36px;border-left:3px solid #e0c0c1;padding-left:14px;background:#fcfaf8;border-radius:0 8px 8px 0;margin-top:8px;margin-bottom:8px;padding:10px 14px}
-.prow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.creply{width:calc(100% - 24px);min-width:0;margin:8px 0 8px 24px;border-left:3px solid #e0c0c1;background:#fcfaf8;border-radius:0 8px 8px 0;padding:10px 14px}
+.prow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;min-width:0}
 .prow .pt{flex:1;min-width:0}
 .prow .pt b{display:block;font-size:13px;color:#2b2b2b;margin-bottom:4px;font-weight:600}
 .prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-word}
 .pf + .pf{margin-top:4px}
 .mbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
 .cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;padding-left:12px}
-.rbox{margin:10px 0 0 36px;background:#faf9f7;border:1px solid #e8e6e0;border-radius:8px;padding:10px 12px}
+.rbox{width:calc(100% - 24px);min-width:0;margin:10px 0 0 24px;background:#faf9f7;border:1px solid #e8e6e0;border-radius:8px;padding:10px 12px}
 .rrow{display:flex;gap:8px;margin-bottom:8px}
 .rrow input{flex:1;border:1px solid #dedcd6;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit}
 .rbox textarea{width:100%;border:1px solid #dedcd6;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:8px}
@@ -154,8 +154,8 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   textarea{height:auto}
   .prow{flex-direction:column;gap:6px}
   .cactions{flex-direction:row;padding-left:0;margin-top:6px;flex-wrap:wrap}
-  .creply{margin-left:16px;padding-left:10px}
-  .rbox{margin-left:16px}
+  .creply{width:calc(100% - 10px);margin-left:10px;padding-left:10px}
+  .rbox{width:calc(100% - 10px);margin-left:10px}
   .stat-box{min-width:calc(50% - 6px)}
 }
 </style>
@@ -991,17 +991,73 @@ async function apiGet(repo, token, path) {
   const res = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`, {
     headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
   });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error('读取 ' + path + ' 失败 HTTP ' + res.status);
   return res.json();
 }
 
 async function apiDelete(repo, token, path, sha, msg) {
+  if (!sha) return { path: path, skipped: true };
   const res = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`, {
     method: 'DELETE',
     headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: msg, sha: sha })
   });
+  if (res.status === 404) return { path: path, skipped: true };
   if (!res.ok) throw new Error('删除 ' + path + ' 失败 HTTP ' + res.status);
+  return { path: path, skipped: false };
+}
+
+function jsonItemBelongsToPost(item, tag) {
+  if (!item || typeof item !== 'object') return false;
+  const html = tag + '.html';
+  return ['tag', 'source', 'file', 'path', 'url', 'href', 'post', 'postUrl'].some(function (key) {
+    const value = String(item[key] || '').replace(/^\//, '');
+    return value === tag || value === html || value.endsWith('/' + html);
+  });
+}
+
+async function buildPostCleanupFiles(repo, tag) {
+  const names = ['titles.json', 'counts.json', 'timestamps.json', 'pins.json', 'games.json', 'search_index.json'];
+  const files = [];
+  for (const name of names) {
+    const raw = await fetch(`${RAW_BASE}/${repo}/main/${name}`).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (raw === null) throw new Error('读取线上 ' + name + ' 失败，未删除帖子文件，请重试');
+    let value = raw;
+    if (name === 'pins.json' && Array.isArray(raw)) value = raw.filter(v => v !== tag && v !== tag + '.html');
+    else if (Array.isArray(raw)) value = raw.filter(item => !jsonItemBelongsToPost(item, tag));
+    else if (raw && typeof raw === 'object') {
+      value = Object.assign({}, raw);
+      delete value[tag];
+      delete value[tag + '.html'];
+      Object.keys(value).forEach(key => {
+        if (jsonItemBelongsToPost(value[key], tag)) delete value[key];
+      });
+    }
+    files.push({ path: name, content: btoa(unescape(encodeURIComponent(JSON.stringify(value, null, 2) + '\n'))) });
+  }
+  return files;
+}
+
+async function deletePostComments(tag) {
+  const base = sbBase();
+  const anon = $('sbAnon').value.trim();
+  const admin = $('sbSecret').value.trim();
+  if (!base || !anon || !admin) throw new Error('Supabase 未配置，GitHub 数据已清理；请填写评论管理配置后重试评论清理');
+  const url = '/' + tag + '.html';
+  const headers = Object.assign(sbHeaders(), { 'x-admin-key': admin });
+  const list = await fetch(`${base}/rest/v1/comments?url=eq.${encodeURIComponent(url)}&select=id,pid`, { headers: headers });
+  if (!list.ok) throw new Error('读取评论失败 HTTP ' + list.status);
+  const comments = await list.json();
+  const children = comments.filter(c => c.pid);
+  const parents = comments.filter(c => !c.pid);
+  for (const comment of children.concat(parents)) {
+    const res = await fetch(`${base}/rest/v1/comments?id=eq.${encodeURIComponent(comment.id)}`, {
+      method: 'DELETE', headers: headers
+    });
+    if (!res.ok) throw new Error('删除评论 ' + comment.id + ' 失败 HTTP ' + res.status);
+  }
+  return comments.length;
 }
 
 async function loadPosts() {
@@ -1141,17 +1197,32 @@ async function loadPosts() {
           const tag = b.dataset.del;
           if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
           b.disabled = true;
-          show(stM, '正在删除 ' + tag + '.html 及其图片…', 'info');
+          show(stM, '正在准备清理 ' + tag + ' 的索引与配置…', 'info');
           try {
+            const steps = [];
             const paths = tree.tree.filter(t => t.path === tag + '.html' || t.path.startsWith('assets/' + tag + '/'));
-            for (const t of paths) {
+            const dataFiles = await buildPostCleanupFiles(repo, tag);
+            await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
+            steps.push('配置与索引已清理');
+            const assets = paths.filter(t => t.path !== tag + '.html');
+            for (const t of assets) {
               const info = await apiGet(repo, token, t.path);
-              await apiDelete(repo, token, t.path, info.sha, '删除帖子: ' + tag);
+              const result = await apiDelete(repo, token, t.path, info && info.sha, '删除帖子资源: ' + tag);
+              steps.push(result.skipped ? t.path + ' 不存在，已跳过' : t.path + ' 已删除');
             }
-            await updateJson(repo, token, 'titles.json', tag, null, stM);
-            await updateJson(repo, token, 'counts.json', tag, null, stM);
-            await updateJson(repo, token, 'timestamps.json', tag, null, stM).catch(() => {});
-            show(stM, '删除成功！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+            const htmlInfo = await apiGet(repo, token, tag + '.html');
+            const htmlResult = await apiDelete(repo, token, tag + '.html', htmlInfo && htmlInfo.sha, '删除帖子: ' + tag);
+            steps.push(htmlResult.skipped ? tag + '.html 不存在，已视为删除成功' : tag + '.html 已删除');
+            let commentMessage = '';
+            try {
+              const count = await deletePostComments(tag);
+              commentMessage = '评论已删除 ' + count + ' 条';
+              steps.push(commentMessage);
+            } catch (commentError) {
+              commentMessage = '评论清理未完成：' + commentError.message + '。GitHub 侧已完成，可修正配置后重试。';
+              steps.push(commentMessage);
+            }
+            show(stM, 'GitHub 侧删除完成，生成工作流将重建首页、搜索、RSS 和 sitemap。\n' + steps.join('\n'), commentMessage.indexOf('未完成') === -1 ? 'ok' : 'warn');
             loadPosts();
           } catch (e) {
             show(stM, '删除失败：' + e.message, 'err');

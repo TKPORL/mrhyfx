@@ -93,11 +93,11 @@ const sharedCss = `<style>
   .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
   .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
   .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
-  .mrhx-citem{background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
+  .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
+  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
-  .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+  .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
   .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
   .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
   .mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
@@ -133,7 +133,7 @@ const sharedCss = `<style>
   .mrhx-csub button:hover{background:#c93a3f}
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{margin-left:10px}.mrhx-ccontent{padding-left:0}.mrhx-cbar{padding-left:0}}
+  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
@@ -246,7 +246,7 @@ function extractLinks(noteHtml) {
   const links = [];
   const re = /<a class="content-link"[^>]*href="([^"]+)"[^>]*><span class="content-link-text">([^<]*)<\/span><\/a>/g;
   let m;
-  while ((m = re.exec(noteHtml)) !== null) links.push({ url: m[1], label: m[2] });
+  while ((m = re.exec(noteHtml)) !== null) links.push({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') });
   return links;
 }
 
@@ -632,8 +632,8 @@ html = (function reorderNodes(str) {
       const title = (b.match(/<div class="content mm-editor" ><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
       const intro = (b.match(/<div class="note mm-editor"><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
-      const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2] }));
-      return { title, intro, img, links, source: shortName };
+      const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
+      return { title, intro, img, links, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
     searchIndex.push(...games);
 
