@@ -36,6 +36,13 @@ if (fs.existsSync('site.json')) {
   SITE.comments = Object.assign({}, SITE.comments, s.comments || {});
 }
 
+const DOWNLOAD_BUTTONS = (SITE.downloadButtons && Array.isArray(SITE.downloadButtons))
+  ? SITE.downloadButtons
+  : [
+      { name: '百度网盘', pattern: 'pan.baidu.com', cls: 'mrhx-btn-b' },
+      { name: '移动云盘（不限速）', pattern: 'yun.139.com', cls: 'mrhx-btn-m' }
+    ];
+
 const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
 const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
@@ -53,15 +60,16 @@ const sharedCss = `<style>
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
   .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
   .mrhx-bar .mlogo span{color:#e5484d}
-  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
+  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-  .mrhx-search{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .mrhx-search{display:flex;align-items:center;gap:6px}
   .mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:150px;outline:none;transition:.2s}
   .mrhx-search input:focus{border-color:#e5484d;background:#fff}
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:18px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   @media (min-width:721px){
     .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
   }
@@ -72,6 +80,8 @@ const sharedCss = `<style>
   .mrhx-btn-m:hover{background:#c93a3f}
   .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
   .mrhx-btn-b:hover{background:#d8edde}
+  .mrhx-btn-qk{background:#6366f1;color:#fff}
+  .mrhx-btn-qk:hover{background:#4f46e5}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
@@ -85,7 +95,8 @@ const sharedCss = `<style>
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .mrhx-search{order:3;width:100%;margin-left:0}
+    .mrhx-bar .search-row{width:100%;justify-content:flex-end}
+    .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
@@ -97,6 +108,7 @@ const sharedCss = `<style>
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
   .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
+  .mrhx-thread{margin-top:8px;padding-left:0}
   .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
   .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
   .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
@@ -256,9 +268,9 @@ function rebuildNote(noteHtml) {
   plain = plain.replace(/下载链接/g, '').replace(/移动（不限速）：/g, '').replace(/度盘：/g, '');
   plain = plain.replace(/[\s\u200b\u200c]+/g, ' ').trim();
   const btns = links.map(l => {
-    const name = l.url.includes('pan.baidu.com') ? '百度网盘'
-      : l.url.includes('yun.139.com') ? '移动云盘（不限速）' : l.label;
-    const cls = l.url.includes('pan.baidu.com') ? 'mrhx-btn mrhx-btn-b' : 'mrhx-btn mrhx-btn-m';
+    let matched = DOWNLOAD_BUTTONS.find(b => l.url.includes(b.pattern));
+    const name = matched ? matched.name : l.label;
+    const cls = matched ? matched.cls : 'mrhx-btn mrhx-btn-m';
     return `<a class="${cls}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${name}</a>`;
   }).join('');
   return `<span>${esc(plain)}</span><div class="mrhx-dl">${btns}</div>`;
@@ -279,23 +291,20 @@ function emptyIndex(navLinks) {
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #ecebe9}
-.hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
-.site em{font-style:normal;color:#e5484d}
-.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
-nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
-.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
-.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:130px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
-nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-main{max-width:900px;margin:0 auto;padding:60px 20px;text-align:center;color:#999}
-footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
-footer b{color:#e5484d}
-@media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
+  .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;width:100%}
+  .site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
+  .site em{font-style:normal;color:#e5484d}
+  .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
+  nav{width:100%;display:flex;gap:8px;flex-wrap:wrap}
+  nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
+  .mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
+  .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:130px;outline:none;transition:.2s}
+  .mrhx-search input:focus{border-color:#e5484d;background:#fff}
+  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+  .mrhx-search button:hover{background:#c93a3f}
+  nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+  @media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
 </style>
 <link rel="icon" href="favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="favicon.webp">
@@ -436,10 +445,12 @@ html = (function reorderNodes(str) {
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
     <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
     <button type="submit">搜索</button>
   </form>
+  </div>
   <div class="mnav">${navPills}</div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
@@ -520,7 +531,7 @@ html = (function reorderNodes(str) {
     list.textContent = '';
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
     function addRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.pid ? ' mrhx-creply-item' : '') + (c.is_admin ? ' mrhx-citem-admin' : ''));
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : ''));
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -570,7 +581,47 @@ html = (function reorderNodes(str) {
           if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
           return a.created_at.localeCompare(b.created_at);
         })
-        .forEach(function (c) { addRow(c); addTree(c.id); });
+        .forEach(function (c) {
+          addRow(c);
+          c._el = list.lastChild;
+          var children = all.filter(function (x) { return x.pid === c.id; })
+            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
+          if (!children.length) return;
+          var threadBox = h('div', 'mrhx-thread');
+          c._el.appendChild(threadBox);
+          children.forEach(function (child) {
+            var childRow = h('div', 'mrhx-citem mrhx-creply-item');
+            var childHead = h('div', 'mrhx-chead');
+            childHead.appendChild(h('span', 'mrhx-cav', String(child.nick || '匿')[0].toUpperCase()));
+            var childMeta = h('div', 'mrhx-cmeta');
+            childMeta.appendChild(h('b', '', child.nick || '匿名'));
+            if (child.is_admin) childMeta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+            childMeta.appendChild(h('span', 'mrhx-ctime', new Date(child.created_at).toLocaleString()));
+            childHead.appendChild(childMeta);
+            childRow.appendChild(childHead);
+            childRow.appendChild(h('div', 'mrhx-ccontent', child.content));
+            var childBar = h('div', 'mrhx-cbar');
+            var childRp = h('button', 'mrhx-cbtn', '回复');
+            childRp.onclick = function () {
+              if (replyPid === child.id) { replyPid = null; replyEl.textContent = ''; }
+              else { replyPid = child.id; replyEl.textContent = '回复 @' + (child.nick || '匿名') + '（再次点击取消）'; }
+            };
+            childBar.appendChild(childRp);
+            if (ADMIN) {
+              var childDl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+              childDl.onclick = function () {
+                if (!confirm('删除这条评论及其回复？')) return;
+                fetch(SB + '/rest/v1/comments?id=eq.' + child.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
+                  .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+                  .catch(function (e) { alert('删除失败：' + e.message); });
+              };
+              childBar.appendChild(childDl);
+            }
+            childRow.appendChild(childBar);
+            threadBox.appendChild(childRow);
+            addTree(child.id);
+          });
+        });
     }
     addTree(null);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
@@ -707,15 +758,15 @@ html = (function reorderNodes(str) {
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;width:100%}
 .site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
 .site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
-nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+nav{width:100%;display:flex;gap:8px;flex-wrap:wrap}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
+.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
 .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
 .mrhx-search input:focus{border-color:#e5484d;background:#fff}
 .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
@@ -750,14 +801,14 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px;flex-wrap:nowrap}
+  .hwrap{padding:12px 14px;gap:10px}
   .site{font-size:17px}
   .site img.site-logo{width:100px;height:auto}
   .site small{display:none}
-  nav{margin-left:auto;gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
+  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
   nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
   nav::-webkit-scrollbar{display:none}
-  .mrhx-search{order:3;width:100%;margin-left:0}
+  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
   .mrhx-search input{flex:1;width:auto}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}

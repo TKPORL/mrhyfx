@@ -22,5 +22,10 @@
       "所以说评论时填的邮箱一定要是自己常用的",
       "注：求助的游戏都将发布在置顶帖子！请牢记！"
     ]
-  }
+  },
+  "downloadButtons": [
+    { "name": "百度网盘", "pattern": "pan.baidu.com", "cls": "mrhx-btn-b" },
+    { "name": "移动云盘（不限速）", "pattern": "yun.139.com", "cls": "mrhx-btn-m" },
+    { "name": "夸克网盘", "pattern": "quark.cn", "cls": "mrhx-btn-qk" }
+  ]
 }

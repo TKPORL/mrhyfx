@@ -1026,15 +1026,16 @@
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
   .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
   .mrhx-bar .mlogo span{color:#e5484d}
-  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
+  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-  .mrhx-search{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .mrhx-search{display:flex;align-items:center;gap:6px}
   .mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:150px;outline:none;transition:.2s}
   .mrhx-search input:focus{border-color:#e5484d;background:#fff}
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:18px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   @media (min-width:721px){
     .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
   }
@@ -1045,6 +1046,8 @@
   .mrhx-btn-m:hover{background:#c93a3f}
   .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
   .mrhx-btn-b:hover{background:#d8edde}
+  .mrhx-btn-qk{background:#6366f1;color:#fff}
+  .mrhx-btn-qk:hover{background:#4f46e5}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
@@ -1058,7 +1061,8 @@
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .mrhx-search{order:3;width:100%;margin-left:0}
+    .mrhx-bar .search-row{width:100%;justify-content:flex-end}
+    .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
@@ -1070,6 +1074,7 @@
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
   .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
+  .mrhx-thread{margin-top:8px;padding-left:0}
   .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
   .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
   .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
@@ -1113,15 +1118,16 @@
 </style>
 <div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
     <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
     <button type="submit">搜索</button>
   </form>
+  </div>
   <div class="mnav"><a href="index.html">首页</a>
-    <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">更多合集</a>
-    <a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a>
-    <a href="http://i8c.cn/45DrJ" target="_blank" rel="noreferrer">备用合集</a>
-    <a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">其他资源</a></div>
+    <a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
+    <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油合集</a>
+    <a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></div>
 </div>
 <!--mrhx-end-->
   <div class="title">求助资源贴（求助后资源都发在这贴 也可在这个贴求资源）</div>
@@ -1338,10 +1344,9 @@
   </li>
 <li class="node">
     <div class="content mm-editor" ><div class="mrhx-grid">
-    <a class="mrhx-btn mrhx-btn-nav" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">更多合集</a>
+    <a class="mrhx-btn mrhx-btn-nav" href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
+    <a class="mrhx-btn mrhx-btn-nav" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油合集</a>
     <a class="mrhx-btn mrhx-btn-nav" href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a>
-    <a class="mrhx-btn mrhx-btn-nav" href="http://i8c.cn/45DrJ" target="_blank" rel="noreferrer">备用合集</a>
-    <a class="mrhx-btn mrhx-btn-nav" href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">其他资源</a>
   </div></div>
   </li>
   
@@ -1459,7 +1464,7 @@
     list.textContent = '';
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
     function addRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.pid ? ' mrhx-creply-item' : '') + (c.is_admin ? ' mrhx-citem-admin' : ''));
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : ''));
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -1509,7 +1514,47 @@
           if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
           return a.created_at.localeCompare(b.created_at);
         })
-        .forEach(function (c) { addRow(c); addTree(c.id); });
+        .forEach(function (c) {
+          addRow(c);
+          c._el = list.lastChild;
+          var children = all.filter(function (x) { return x.pid === c.id; })
+            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
+          if (!children.length) return;
+          var threadBox = h('div', 'mrhx-thread');
+          c._el.appendChild(threadBox);
+          children.forEach(function (child) {
+            var childRow = h('div', 'mrhx-citem mrhx-creply-item');
+            var childHead = h('div', 'mrhx-chead');
+            childHead.appendChild(h('span', 'mrhx-cav', String(child.nick || '匿')[0].toUpperCase()));
+            var childMeta = h('div', 'mrhx-cmeta');
+            childMeta.appendChild(h('b', '', child.nick || '匿名'));
+            if (child.is_admin) childMeta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+            childMeta.appendChild(h('span', 'mrhx-ctime', new Date(child.created_at).toLocaleString()));
+            childHead.appendChild(childMeta);
+            childRow.appendChild(childHead);
+            childRow.appendChild(h('div', 'mrhx-ccontent', child.content));
+            var childBar = h('div', 'mrhx-cbar');
+            var childRp = h('button', 'mrhx-cbtn', '回复');
+            childRp.onclick = function () {
+              if (replyPid === child.id) { replyPid = null; replyEl.textContent = ''; }
+              else { replyPid = child.id; replyEl.textContent = '回复 @' + (child.nick || '匿名') + '（再次点击取消）'; }
+            };
+            childBar.appendChild(childRp);
+            if (ADMIN) {
+              var childDl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+              childDl.onclick = function () {
+                if (!confirm('删除这条评论及其回复？')) return;
+                fetch(SB + '/rest/v1/comments?id=eq.' + child.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
+                  .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+                  .catch(function (e) { alert('删除失败：' + e.message); });
+              };
+              childBar.appendChild(childDl);
+            }
+            childRow.appendChild(childBar);
+            threadBox.appendChild(childRow);
+            addTree(child.id);
+          });
+        });
     }
     addTree(null);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
