@@ -588,19 +588,12 @@ html = (function reorderNodes(str) {
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    function postDirect() {
-      return fetch(SB + '/rest/v1/comments', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
-      });
-    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) return postDirect();
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
       if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
       return r.json();
     }).then(function (d) {
@@ -860,7 +853,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
   </div>
 </header>
 <main>
-  <div class="sect"><h2>搜索结果</h2><span id="count"></span></div>
+  <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res"></div>
 </main>
 <footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>

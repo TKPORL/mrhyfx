@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-    <html>
+    <html lang="zh-CN">
       <head>
         <meta charset="utf-8" />
         <meta content="IE=edge" http-equiv="X-UA-Compatible" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport" />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
         <title>8月11号黄油 43款（PC+安卓）下载链接已恢复 · Tsinho黄油站</title>
 
         <style>
@@ -1850,19 +1850,12 @@
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    function postDirect() {
-      return fetch(SB + '/rest/v1/comments', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
-      });
-    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) return postDirect();
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
       if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
       return r.json();
     }).then(function (d) {

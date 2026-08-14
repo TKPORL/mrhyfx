@@ -3,7 +3,7 @@
 -- 作用：
 --   1. 新建 comment_guard 表记录提交日志（邮箱+时间）
 --   2. 新建 guard_comment 函数：蜜罐/频率/重复 三重校验后插入评论
---   3. 页面表单已改为走该函数；函数不存在时前端自动回退直插（兼容未升级环境）
+--   3. 页面表单仅通过该函数提交，防护服务不可用时拒绝写入
 
 create table if not exists comment_guard (
   id bigint generated always as identity primary key,
@@ -38,6 +38,15 @@ begin
   end if;
   if p_content is null or char_length(p_content) < 1 or char_length(p_content) > 2000 then
     return json_build_object('ok', false, 'error', '内容需 1-2000 个字');
+  end if;
+
+  -- Serialize submissions for the same email so concurrent requests cannot bypass rate limits.
+  perform pg_advisory_xact_lock(hashtextextended(v_email, 0));
+
+  if p_pid is not null and not exists (
+    select 1 from comments where id = p_pid and url = p_url
+  ) then
+    return json_build_object('ok', false, 'error', '回复的评论不存在或不属于当前页面');
   end if;
 
   select count(*) into v_last from comment_guard where email = v_email and created_at > now() - interval '30 seconds';

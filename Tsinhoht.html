@@ -224,12 +224,16 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 
     <div class="card">
       <div class="field">
-        <label>GitHub Token（repo 权限，保存一次永久有效）</label>
+        <label for="token">GitHub Token（repo 权限）</label>
         <div class="pwwrap">
           <input type="password" id="token" autocomplete="off">
           <button type="button" class="pw-eye" data-eye="token" title="显示/隐藏">👁</button>
         </div>
-        <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 生成 → 复制 ghp_ 开头的字符串。Token 和仓库名只在本浏览器自动保存（localStorage），下次打开无需再填。</p>
+        <div class="row">
+          <label for="rememberToken"><input type="checkbox" id="rememberToken"> 记住 Token</label>
+          <button type="button" class="btn btn-s" id="clearToken">清除 Token</button>
+        </div>
+        <p class="hint">Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic) → 勾选 repo → 生成 → 复制 ghp_ 开头的字符串。默认仅在当前浏览器会话保存；勾选后会长期明文保存在本机浏览器中，共用或不受信任设备请勿勾选。</p>
       </div>
       <div class="field">
         <label>仓库（默认 TKPORL/mrhyfx）</label>
@@ -327,15 +331,6 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <div class="stat-label">平均访问</div>
         </div>
       </div>
-        <div class="stat-box" style="background:#eef4fd">
-          <div class="stat-num" style="color:#1a5fb4" id="statTotalPosts">-</div>
-          <div class="stat-label">帖子总数</div>
-        </div>
-        <div class="stat-box" style="background:#e6f4ea">
-          <div class="stat-num" style="color:#1a7f37" id="statAvgViews">-</div>
-          <div class="stat-label">平均访问</div>
-        </div>
-      </div>
       <div id="statBox"></div>
       <div id="statusS"></div>
     </div>
@@ -405,7 +400,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       </div>
       <div class="row">
         <button class="btn btn-p" id="pubHtml">发布</button>
-        <button class="btn btn-s" id="tpl">载入 8.10 模板</button>
+        <button type="button" class="btn btn-s" id="tpl">载入现有页面模板</button>
       </div>
       <div id="statusHtml"></div>
       <p class="warn">模板载入后可直接改标题和内容，或整体替换为新的幕布导出。</p>
@@ -414,12 +409,12 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 </main>
 <div class="overlay" id="overlay"></div>
 <div class="modal" id="previewModal">
-  <div class="mhead"><h2>实时预览</h2><button class="modal-close" id="previewClose">×</button></div>
+  <div class="mhead"><h2>实时预览</h2><button type="button" class="modal-close" id="previewClose">×</button></div>
   <div class="mbody" id="previewBody"></div>
 </div>
 <div class="del-list" id="delList"></div>
 <div class="mrhx-toast" id="toast"></div>
-<button class="mrhx-top" id="topBtn" title="回到顶部">↑</button>
+<button type="button" class="mrhx-top" id="topBtn" title="回到顶部">↑</button>
 <script>
 const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
@@ -432,9 +427,27 @@ function show(el, msg, type) {
 }
 const stF = $('status'), stH = $('statusHtml'), stM = $('statusM'), stL = $('statusL');
 
-$('token').value = localStorage.getItem(TOKEN_KEY) || '';
+const savedToken = localStorage.getItem(TOKEN_KEY);
+$('rememberToken').checked = savedToken !== null;
+$('token').value = savedToken || sessionStorage.getItem(TOKEN_KEY) || '';
 $('repo').value = localStorage.getItem(REPO_KEY) || 'TKPORL/mrhyfx';
-$('token').addEventListener('input', () => { if ($('token').value.trim()) localStorage.setItem(TOKEN_KEY, $('token').value.trim()); });
+function storeToken() {
+  const token = $('token').value.trim();
+  const primary = $('rememberToken').checked ? localStorage : sessionStorage;
+  const secondary = $('rememberToken').checked ? sessionStorage : localStorage;
+  secondary.removeItem(TOKEN_KEY);
+  if (token) primary.setItem(TOKEN_KEY, token);
+  else primary.removeItem(TOKEN_KEY);
+}
+$('token').addEventListener('input', storeToken);
+$('rememberToken').addEventListener('change', storeToken);
+$('clearToken').addEventListener('click', () => {
+  $('token').value = '';
+  $('rememberToken').checked = false;
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  toast('Token 已从输入框和浏览器存储中清除');
+});
 $('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
 
 const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
@@ -570,7 +583,8 @@ $('importFile').addEventListener('change', e => {
 });
 
 function gameHtml(c, imgPaths) {
-  const imgs = (imgPaths && imgPaths.length) ? imgPaths : c.imgs.split('\n').map(u => u.trim()).filter(Boolean);
+  const selected = (imgPaths && imgPaths.length) ? imgPaths : c.imgs.split('\n');
+  const imgs = [...new Set(selected.map(u => u.trim()).filter(Boolean))];
   const rows = imgs
     .map(u => `    <li class="image-row">
     <img
@@ -711,6 +725,13 @@ function doMove(d, val) {
 }
 
 function previewFiles(input) {
+  const unique = new DataTransfer();
+  const seen = new Set();
+  [...input.files].forEach(f => {
+    const key = [f.name, f.size, f.lastModified, f.type].join('\u0000');
+    if (!seen.has(key)) { seen.add(key); unique.items.add(f); }
+  });
+  input.files = unique.files;
   const prev = input.parentElement.querySelector('.g-prev');
   prev.innerHTML = '';
   [...input.files].forEach((f, i) => {
@@ -813,7 +834,11 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
   const usedNames = new Set();
   for (const c of cards) {
     const cardPaths = [];
+    const seenFiles = new Set();
     for (const f of c.files) {
+      const fileKey = [f.name, f.size, f.lastModified, f.type].join('\u0000');
+      if (seenFiles.has(fileKey)) continue;
+      seenFiles.add(fileKey);
       const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
       const raw = btoa(unescape(encodeURIComponent(f.name))).replace(/[+/=]/g, '').slice(0, 8);
       let rawName = raw + '.' + ext;
@@ -847,7 +872,11 @@ async function buildFormHtml(cards, imagePaths, title) {
   const res = await fetch('8.10.html');
   if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
   let skeleton = await res.text();
-  const blocks = cards.map((c, i) => gameHtml(c, imagePaths[i])).join('\n');
+  const finalImagePaths = cards.map((c, i) => {
+    const selected = imagePaths[i] && imagePaths[i].length ? imagePaths[i] : (c.imgs || '').split('\n');
+    return [...new Set(selected.map(path => path.trim()).filter(Boolean))];
+  });
+  const blocks = cards.map((c, i) => gameHtml(c, finalImagePaths[i])).join('\n');
   skeleton = stripNodeList(skeleton, blocks);
   if (title) skeleton = skeleton.replace(/<div class="title">[^<]*<\/div>/, `<div class="title">${esc(title)}</div>`).replace(/<title>[^<]*<\/title>/, `<title>${esc(title)} · ${esc($('siteName').value || '黄油分享')}</title>`);
   return skeleton;
@@ -936,21 +965,22 @@ async function publish(statusEl, name, title, count, htmlContent) {
   if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
   if (!title) throw new Error('请填写帖子标题');
   if (!htmlContent || !/<html/i.test(htmlContent)) throw new Error('HTML 内容生成失败，请检查填写');
-  localStorage.setItem(TOKEN_KEY, token);
-  const fileName = name.endsWith('.html') ? name : name + '.html';
+  storeToken();
+  const htmlName = name.replace(/\.html$/i, '');
+  const fileName = htmlName + '.html';
   const content = btoa(unescape(encodeURIComponent(htmlContent)));
   show(statusEl, '正在原子发布 ' + fileName + '（正文+标题+数量一次提交）…', 'info');
   const files = [{ path: fileName, content: content }];
   const tRaw = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : null).catch(() => null);
   if (tRaw === null) throw new Error('读取线上 titles.json 失败，已取消发布（避免覆盖），请重试');
   let titles = (tRaw && typeof tRaw === 'object') ? tRaw : {};
-  titles[name] = title;
+  titles[htmlName] = title;
   files.push({ path: 'titles.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(titles, null, 2) + '\n'))) });
   if (count) {
     const cRaw = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : null).catch(() => null);
     if (cRaw === null) throw new Error('读取线上 counts.json 失败，已取消发布（避免覆盖），请重试');
     let counts = (cRaw && typeof cRaw === 'object') ? cRaw : {};
-    counts[name] = String(count);
+    counts[htmlName] = String(count);
     files.push({ path: 'counts.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(counts, null, 2) + '\n'))) });
   }
   await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
@@ -1589,7 +1619,7 @@ $('pubHtml').onclick = async () => {
 $('tpl').onclick = async () => {
   const btn = $('tpl'); btn.disabled = true;
   try {
-    show(stH, '正在载入 8.10 模板…', 'info');
+    show(stH, '正在载入现有页面模板…', 'info');
     const res = await fetch('8.10.html');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
