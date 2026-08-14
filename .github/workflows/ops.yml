@@ -34,6 +34,7 @@ jobs:
         run: |
           git config user.name "mrhx-bot"
           git config user.email "mrhx-bot@users.noreply.github.com"
+          if [ ! -d backup ]; then echo "本次未生成备份目录"; exit 0; fi
           git add backup
           if git diff --cached --quiet; then echo "本次无新备份"; exit 0; fi
           git commit -m "例行备份: $(date -u +%Y-%m-%d) 评论与访问统计"
