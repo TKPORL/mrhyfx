@@ -58,9 +58,10 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
 
 const sharedCss = `<style>
   body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-  .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .mlogo{font-size:19px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:12px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
   .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
   .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:flex-end}
   .mrhx-bar .mnav a{padding:6px 13px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
@@ -92,6 +93,7 @@ const sharedCss = `<style>
     body.narrow{padding-left:12px !important;padding-right:12px !important}
     .mrhx-bar{padding:10px 12px;gap:10px}
     .mrhx-bar .mlogo{font-size:16px}
+    .mrhx-bar .bar-right{gap:8px}
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
@@ -291,11 +293,12 @@ function emptyIndex(navLinks) {
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #ecebe9}
-  .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-  .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;width:100%}
+  .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
+  .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
   .site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
   .site em{font-style:normal;color:#e5484d}
   .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
+  .site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
   nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
   nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
   .mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
@@ -313,11 +316,13 @@ header{background:#fff;border-bottom:1px solid #ecebe9}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
-    <form class="mrhx-search" action="search.html" method="get">
-    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-    <button type="submit">搜索</button>
-  </form>
-    <nav>${navLinks}</nav>
+    <div class="site-header-right">
+      <form class="mrhx-search" action="search.html" method="get">
+      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+      <nav>${navLinks}</nav>
+    </div>
   </div>
 </header>
 <main>
@@ -445,6 +450,7 @@ html = (function reorderNodes(str) {
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
   <a class="mlogo" href="index.html">黄油<span>分享</span></a>
+  <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
     <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
@@ -452,6 +458,7 @@ html = (function reorderNodes(str) {
   </form>
   </div>
   <div class="mnav">${navPills}</div>
+  </div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -758,8 +765,8 @@ html = (function reorderNodes(str) {
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;width:100%}
+.header{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
 .site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
@@ -828,11 +835,13 @@ footer b{color:#e5484d}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
-    <form class="mrhx-search" action="search.html" method="get">
-    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-    <button type="submit">搜索</button>
-  </form>
-    <nav>${navLinks}</nav>
+    <div class="site-header-right">
+      <form class="mrhx-search" action="search.html" method="get">
+      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+      <nav>${navLinks}</nav>
+    </div>
   </div>
 </header>
 <main>
