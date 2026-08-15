@@ -3,14 +3,14 @@ const tls = require('tls');
 const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
-function buildHtml({ siteName, adminNick, toNick, postTitle, reply, url }) {
+function buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo }) {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f2f2f7;-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif;color:#1d1d1f;">
 <div style="max-width:500px;margin:0 auto;padding:28px 16px 40px;">
   <div style="text-align:center;padding:8px 0 20px;">
-    <div style="display:inline-block;width:58px;height:58px;border-radius:15px;background:linear-gradient(135deg,#ff5a5f,#e5484d);box-shadow:0 6px 18px rgba(229,72,77,.35);line-height:58px;font-size:26px;font-weight:700;color:#fff;">黄</div>
+    <img src="${esc(logo)}" alt="${esc(siteName)}" width="120" style="display:block;margin:0 auto;width:120px;height:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.12);">
     <div style="margin-top:10px;font-size:15px;font-weight:600;color:#1d1d1f;">${esc(siteName)}</div>
     <div style="margin-top:2px;font-size:12px;color:#86868b;">站长回复了你的评论</div>
   </div>
@@ -136,7 +136,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
     '（这是一封系统自动发送的通知邮件，请勿直接回复）'
   ].join('\n');
   const url = siteUrl + pageUrl;
-  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url });
+  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo: siteUrl + 'logo.webp' });
   await smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html });
   console.log('邮件发送成功 -> ' + to);
 })().catch((e) => { console.error('邮件发送失败：' + (e && e.message || e)); process.exit(1); });
