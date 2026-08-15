@@ -943,28 +943,40 @@ async function updateTimestamp(repo, token, name) {
 async function atomicCommit(repo, token, files, msg, statusEl, step) {
   const api = `https://api.github.com/repos/${repo}`;
   const auth = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
-  const head = await fetch(`${api}/git/ref/heads/main`, { headers: auth });
-  if (!head.ok) throw new Error('读取分支失败 HTTP ' + head.status);
-  const headSha = (await head.json()).object.sha;
-  const commitInfo = await fetch(`${api}/git/commits/${headSha}`, { headers: auth });
-  if (!commitInfo.ok) throw new Error('读取提交失败 HTTP ' + commitInfo.status);
-  const baseTree = (await commitInfo.json()).tree.sha;
-  const blobs = [];
-  for (const f of files) {
-    const b = await fetch(`${api}/git/blobs`, { method: 'POST', headers: auth, body: JSON.stringify({ content: f.content, encoding: 'base64' }) });
-    if (!b.ok) throw new Error('创建 blob 失败 ' + f.path + ' HTTP ' + b.status);
-    blobs.push({ path: f.path, mode: '100644', type: 'blob', sha: (await b.json()).sha });
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    if (attempt > 1) {
+      if (statusEl) show(statusEl, `[${step}] 检测到分支被并发更新（Actions 自动生成可能刚推送），第 ${attempt} 次重试…`, 'warn');
+      await new Promise(r => setTimeout(r, 3000 * attempt));
+    }
+    const head = await fetch(`${api}/git/ref/heads/main`, { headers: auth });
+    if (!head.ok) throw new Error('读取分支失败 HTTP ' + head.status);
+    const headSha = (await head.json()).object.sha;
+    const commitInfo = await fetch(`${api}/git/commits/${headSha}`, { headers: auth });
+    if (!commitInfo.ok) throw new Error('读取提交失败 HTTP ' + commitInfo.status);
+    const baseTree = (await commitInfo.json()).tree.sha;
+    const blobs = [];
+    for (const f of files) {
+      const b = await fetch(`${api}/git/blobs`, { method: 'POST', headers: auth, body: JSON.stringify({ content: f.content, encoding: 'base64' }) });
+      if (!b.ok) throw new Error('创建 blob 失败 ' + f.path + ' HTTP ' + b.status);
+      blobs.push({ path: f.path, mode: '100644', type: 'blob', sha: (await b.json()).sha });
+    }
+    const tree = await fetch(`${api}/git/trees`, { method: 'POST', headers: auth, body: JSON.stringify({ base_tree: baseTree, tree: blobs }) });
+    if (!tree.ok) throw new Error('创建 tree 失败 HTTP ' + tree.status);
+    const treeSha = (await tree.json()).sha;
+    const commit = await fetch(`${api}/git/commits`, { method: 'POST', headers: auth, body: JSON.stringify({ message: msg, tree: treeSha, parents: [headSha] }) });
+    if (!commit.ok) throw new Error('创建 commit 失败 HTTP ' + commit.status);
+    const commitSha = (await commit.json()).sha;
+    const ref = await fetch(`${api}/git/refs/heads/main`, { method: 'PATCH', headers: auth, body: JSON.stringify({ sha: commitSha, force: false }) });
+    if (ref.ok) {
+      if (statusEl) show(statusEl, `[${step}] ${files.map(f => f.path).join(' + ')} 已合并为一次提交 ✓`, 'ok');
+      return commitSha;
+    }
+    if (ref.status === 422) {
+      if (attempt === 6) throw new Error('更新分支失败 HTTP 422（重试 6 次仍被并发更新，请稍后再试）');
+      continue;
+    }
+    throw new Error('更新分支失败 HTTP ' + ref.status);
   }
-  const tree = await fetch(`${api}/git/trees`, { method: 'POST', headers: auth, body: JSON.stringify({ base_tree: baseTree, tree: blobs }) });
-  if (!tree.ok) throw new Error('创建 tree 失败 HTTP ' + tree.status);
-  const treeSha = (await tree.json()).sha;
-  const commit = await fetch(`${api}/git/commits`, { method: 'POST', headers: auth, body: JSON.stringify({ message: msg, tree: treeSha, parents: [headSha] }) });
-  if (!commit.ok) throw new Error('创建 commit 失败 HTTP ' + commit.status);
-  const commitSha = (await commit.json()).sha;
-  const ref = await fetch(`${api}/git/refs/heads/main`, { method: 'PATCH', headers: auth, body: JSON.stringify({ sha: commitSha, force: false }) });
-  if (!ref.ok) throw new Error('更新分支失败 HTTP ' + ref.status);
-  if (statusEl) show(statusEl, `[${step}] ${files.map(f => f.path).join(' + ')} 已合并为一次提交 ✓`, 'ok');
-  return commitSha;
 }
 
 async function publish(statusEl, name, title, count, htmlContent) {
