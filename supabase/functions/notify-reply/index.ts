@@ -18,6 +18,41 @@ const b64 = (s: string) => {
 };
 const mimeWord = (s: string) => "=?UTF-8?B?" + b64(s) + "?=";
 
+const esc = (s: unknown): string =>
+  String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+const nl2br = (s: unknown): string => esc(s).replace(/\n/g, "<br>");
+
+function buildHtml(o: { siteName: string; adminNick: string; toNick: string; postTitle: string; reply: string; url: string }): string {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f2f2f7;-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif;color:#1d1d1f;">
+<div style="max-width:500px;margin:0 auto;padding:28px 16px 40px;">
+  <div style="text-align:center;padding:8px 0 20px;">
+    <div style="display:inline-block;width:58px;height:58px;border-radius:15px;background:linear-gradient(135deg,#ff5a5f,#e5484d);box-shadow:0 6px 18px rgba(229,72,77,.35);line-height:58px;font-size:26px;font-weight:700;color:#fff;">黄</div>
+    <div style="margin-top:10px;font-size:15px;font-weight:600;color:#1d1d1f;">${esc(o.siteName)}</div>
+    <div style="margin-top:2px;font-size:12px;color:#86868b;">站长回复了你的评论</div>
+  </div>
+  <div style="background:#ffffff;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.06);overflow:hidden;">
+    <div style="padding:24px 22px 0;">
+      <div style="font-size:17px;font-weight:700;color:#1d1d1f;">Hi，${esc(o.toNick)} 👋</div>
+      <div style="margin-top:10px;font-size:14px;line-height:1.7;color:#48484a;">你在「<span style="font-weight:600;color:#1d1d1f;">${esc(o.postTitle)}</span>」的评论收到了站长 <span style="font-weight:600;color:#e5484d;">${esc(o.adminNick)}</span> 的回复：</div>
+    </div>
+    <div style="margin:16px 16px 0;padding:14px 16px;background:#fdf0f0;border-left:4px solid #e5484d;border-radius:12px;font-size:14px;line-height:1.7;color:#3a3a3c;">“${nl2br(o.reply)}”</div>
+    <div style="padding:20px 16px 26px;text-align:center;">
+      <a href="${esc(o.url)}" style="display:inline-block;padding:13px 34px;background:#e5484d;border-radius:13px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;box-shadow:0 4px 12px rgba(229,72,77,.35);">查看评论</a>
+      <div style="margin-top:12px;font-size:12px;color:#86868b;">去帖子页查看完整的评论内容</div>
+    </div>
+  </div>
+  <div style="padding:22px 12px 0;text-align:center;">
+    <div style="font-size:12px;line-height:1.8;color:#a1a1a6;">这是一封由「${esc(o.siteName)}」自动发送的通知邮件</div>
+    <div style="font-size:12px;line-height:1.8;color:#a1a1a6;">请勿直接回复，如需帮助请回到帖子评论区留言</div>
+  </div>
+</div>
+</body>
+</html>`;
+}
+
 interface SmtpOpts {
   host: string;
   port: number;
@@ -28,6 +63,7 @@ interface SmtpOpts {
   to: string;
   subject: string;
   text: string;
+  html?: string;
 }
 
 async function smtpSend(o: SmtpOpts) {
@@ -67,17 +103,31 @@ async function smtpSend(o: SmtpOpts) {
     await cmd("MAIL FROM:<" + o.from + ">");
     await cmd("RCPT TO:<" + o.to + ">");
     await cmd("DATA");
-    const bodyB64 = b64(o.text).replace(/(.{76})/g, "$1\r\n").replace(/\r\n$/, "");
+    const bodyB64 = (s: string) => b64(s).replace(/(.{76})/g, "$1\r\n").replace(/\r\n$/, "");
+    const boundary = "mrhx_alt_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    const parts: string[] = [];
+    if (o.html) {
+      parts.push("--" + boundary);
+      parts.push("Content-Type: text/plain; charset=UTF-8");
+      parts.push("Content-Transfer-Encoding: base64");
+      parts.push("");
+      parts.push(bodyB64(o.text));
+    }
+    parts.push("--" + boundary);
+    parts.push("Content-Type: text/html; charset=UTF-8");
+    parts.push("Content-Transfer-Encoding: base64");
+    parts.push("");
+    parts.push(bodyB64(o.html || o.text));
+    parts.push("--" + boundary + "--");
     const msg = [
       "From: " + mimeWord(o.fromName) + " <" + o.from + ">",
       "To: <" + o.to + ">",
       "Subject: " + mimeWord(o.subject),
       "Date: " + new Date().toUTCString(),
       "MIME-Version: 1.0",
-      "Content-Type: text/plain; charset=UTF-8",
-      "Content-Transfer-Encoding: base64",
+      'Content-Type: multipart/alternative; boundary="' + boundary + '"',
       "",
-      bodyB64,
+      parts.join("\r\n"),
       "",
       ".",
     ].join("\r\n");
@@ -122,7 +172,7 @@ Deno.serve(async (req) => {
 
     const from = Deno.env.get("SMTP_FROM") || user;
     const fromName = Deno.env.get("SMTP_FROM_NAME") || "站长";
-    const siteName = Deno.env.get("SITE_NAME") || "黄油分享";
+    const siteName = Deno.env.get("SITE_NAME") || "Tsinho黄油站";
     const adminNick = String(body.adminNick || "站长");
     const toNick = String(body.toNick || "朋友");
     const postTitle = String(body.postTitle || body.url || "");
@@ -143,7 +193,9 @@ Deno.serve(async (req) => {
       "（这是一封系统自动发送的通知邮件，请勿直接回复）",
     ].join("\n");
 
-    await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】" + adminNick + " 回复了你的评论", text });
+    const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url: siteUrl + pageUrl });
+
+    await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】" + adminNick + " 回复了你的评论", text, html });
     return json({ ok: true, smtpHost: host, smtpPort: port, smtpUser: user });
   } catch (e) {
     return json({ ok: false, error: String((e && e.message) || e) }, 500);

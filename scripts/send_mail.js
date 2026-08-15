@@ -1,6 +1,40 @@
 const tls = require('tls');
 
-function smtpSend({ host, port, user, pass, from, fromName, to, subject, text }) {
+const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
+
+function buildHtml({ siteName, adminNick, toNick, postTitle, reply, url }) {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f2f2f7;-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif;color:#1d1d1f;">
+<div style="max-width:500px;margin:0 auto;padding:28px 16px 40px;">
+  <div style="text-align:center;padding:8px 0 20px;">
+    <div style="display:inline-block;width:58px;height:58px;border-radius:15px;background:linear-gradient(135deg,#ff5a5f,#e5484d);box-shadow:0 6px 18px rgba(229,72,77,.35);line-height:58px;font-size:26px;font-weight:700;color:#fff;">黄</div>
+    <div style="margin-top:10px;font-size:15px;font-weight:600;color:#1d1d1f;">${esc(siteName)}</div>
+    <div style="margin-top:2px;font-size:12px;color:#86868b;">站长回复了你的评论</div>
+  </div>
+  <div style="background:#ffffff;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.06);overflow:hidden;">
+    <div style="padding:24px 22px 0;">
+      <div style="font-size:17px;font-weight:700;color:#1d1d1f;">Hi，${esc(toNick)} 👋</div>
+      <div style="margin-top:10px;font-size:14px;line-height:1.7;color:#48484a;">你在「<span style="font-weight:600;color:#1d1d1f;">${esc(postTitle)}</span>」的评论收到了站长 <span style="font-weight:600;color:#e5484d;">${esc(adminNick)}</span> 的回复：</div>
+    </div>
+    <div style="margin:16px 16px 0;padding:14px 16px;background:#fdf0f0;border-left:4px solid #e5484d;border-radius:12px;font-size:14px;line-height:1.7;color:#3a3a3c;">“${nl2br(reply)}”</div>
+    <div style="padding:20px 16px 26px;text-align:center;">
+      <a href="${esc(url)}" style="display:inline-block;padding:13px 34px;background:#e5484d;border-radius:13px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;box-shadow:0 4px 12px rgba(229,72,77,.35);">查看评论</a>
+      <div style="margin-top:12px;font-size:12px;color:#86868b;">去帖子页查看完整的评论内容</div>
+    </div>
+  </div>
+  <div style="padding:22px 12px 0;text-align:center;">
+    <div style="font-size:12px;line-height:1.8;color:#a1a1a6;">这是一封由「${esc(siteName)}」自动发送的通知邮件</div>
+    <div style="font-size:12px;line-height:1.8;color:#a1a1a6;">请勿直接回复，如需帮助请回到帖子评论区留言</div>
+  </div>
+</div>
+</body>
+</html>`;
+}
+
+function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html }) {
   return new Promise((resolve, reject) => {
     const sock = tls.connect(port, host, { servername: host });
     let buf = '';
@@ -28,17 +62,32 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text })
           if (step === 6 && code === 250) { step = 7; send('DATA'); return; }
           if (step === 7 && code === 354) {
             step = 8;
-            const bodyB64 = b64(text).replace(/(.{76})/g, '$1\r\n').replace(/\r\n$/, '');
+            const b64w = (s) => Buffer.from(s, 'utf8').toString('base64').replace(/(.{76})/g, '$1\r\n').replace(/\r\n$/, '');
+            const boundary = 'mrhx_alt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+            const parts = [];
+            if (html) {
+              parts.push('--' + boundary);
+              parts.push('Content-Type: text/plain; charset=UTF-8');
+              parts.push('Content-Transfer-Encoding: base64');
+              parts.push('');
+              parts.push(b64w(text));
+            }
+            parts.push('--' + boundary);
+            parts.push('Content-Type: text/html; charset=UTF-8');
+            parts.push('Content-Transfer-Encoding: base64');
+            parts.push('');
+            parts.push(b64w(html || text));
+            parts.push('--' + boundary + '--');
+            const body = parts.join('\r\n');
             const msg = [
               'From: ' + mimeWord(fromName) + ' <' + from + '>',
               'To: <' + to + '>',
               'Subject: ' + mimeWord(subject),
               'Date: ' + new Date().toUTCString(),
               'MIME-Version: 1.0',
-              'Content-Type: text/plain; charset=UTF-8',
-              'Content-Transfer-Encoding: base64',
+              'Content-Type: multipart/alternative; boundary="' + boundary + '"',
               '',
-              bodyB64,
+              body,
               '',
               '.'
             ].join('\r\n');
@@ -65,7 +114,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text })
   const fromName = process.env.QQ_SMTP_FROM_NAME || '黄油站站长';
   const to = process.env.MAIL_TO || '';
   if (!user || !pass || !to) throw new Error('缺少配置：QQ_SMTP_USER / QQ_SMTP_PASS / MAIL_TO');
-  const siteName = process.env.SITE_NAME || '黄油分享';
+  const siteName = process.env.SITE_NAME || 'Tsinho黄油站';
   const adminNick = process.env.MAIL_ADMIN || '站长';
   const toNick = process.env.MAIL_TO_NICK || '朋友';
   const postTitle = process.env.MAIL_TITLE || '';
@@ -86,6 +135,8 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text })
     '',
     '（这是一封系统自动发送的通知邮件，请勿直接回复）'
   ].join('\n');
-  await smtpSend({ host, port, user, pass, from, fromName, to, subject, text });
+  const url = siteUrl + pageUrl;
+  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url });
+  await smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html });
   console.log('邮件发送成功 -> ' + to);
 })().catch((e) => { console.error('邮件发送失败：' + (e && e.message || e)); process.exit(1); });
