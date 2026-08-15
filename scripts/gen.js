@@ -193,7 +193,7 @@ const popupHtml = (() => {
 </div>
 <style>
 .mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
-.mrhx-popup-inner{background:#fff;border-radius:16px;padding:30px 28px 22px;max-width:400px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
+.mrhx-popup-inner{background:#fff;border-radius:16px;padding:30px 28px 22px;max-width:600px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
 .mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
 .mrhx-popup-content h3{font-size:18px;color:#2b2b2b;margin-bottom:12px}
