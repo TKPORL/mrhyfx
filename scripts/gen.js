@@ -260,9 +260,13 @@ async function localize(html, tag) {
 
 function extractLinks(noteHtml) {
   const links = [];
-  const re = /<a class="[^"]*\bcontent-link\b[^"]*"[^>]*href="([^"]+)"[^>]*><span class="content-link-text">([^<]*)<\/span><\/a>/g;
+  const re = /<a class="([^"]*)"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
   let m;
-  while ((m = re.exec(noteHtml)) !== null) links.push({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') });
+  while ((m = re.exec(noteHtml)) !== null) {
+    if (!/content-link|mrhx-btn/.test(m[1])) continue;
+    const label = m[3].replace(/<[^>]+>/g, '').replace(/[：:]\s*$/, '').trim();
+    links.push({ url: m[2], label });
+  }
   return links;
 }
 
@@ -274,7 +278,7 @@ function rebuildNote(noteHtml) {
   const btns = links.map(l => {
     let matched = DOWNLOAD_BUTTONS.find(b => b.pattern && l.url.includes(b.pattern));
     const name = matched ? matched.name : l.label;
-    const cls = matched ? matched.cls : 'mrhx-btn mrhx-btn-qk';
+    const cls = 'mrhx-btn ' + (matched ? matched.cls : 'mrhx-btn-qk');
     return `<a class="${cls}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${name}</a>`;
   }).join('');
   return `<span>${esc(plain)}</span><div class="mrhx-dl">${btns}</div>`;
@@ -387,12 +391,14 @@ const searchIndex = [];
 
     html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
 
-    const alreadyProcessed = /<div class="mrhx-dl"><a class="mrhx-btn /.test(html);
-
-    if (!alreadyProcessed) {
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
-      (m, inner) => (inner.includes('mrhx-dl') && /<a class="mrhx-btn /m.test(inner)) ? m
-        : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
+      (m, inner) => {
+        if (/<a class="mrhx-btn mrhx-btn-[a-z-]+"/.test(inner)) return m;
+        if (/content-link/.test(inner) || inner.includes('mrhx-dl')) return '<div class="note mm-editor">' + rebuildNote(inner) + '</div>';
+        return m;
+      });
+
+    html = html.replace(/<a class="mrhx-btn-([a-z-]+)"/g, '<a class="mrhx-btn mrhx-btn-$1"');
 
 html = (function reorderNodes(str) {
     var start = str.indexOf('<ul class="node-list">');
@@ -436,7 +442,6 @@ html = (function reorderNodes(str) {
     });
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
   })(html);
-    }
 
     html = html.replace(PUBLISH_RE, newPublish);
 
