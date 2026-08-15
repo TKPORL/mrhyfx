@@ -19,7 +19,7 @@
 
     <!-- 顶部图标 + 站点名 -->
     <div style="text-align:center;padding:8px 0 20px;">
-      <img src="https://tkporl.github.io/mrhyfx/logo.webp" alt="Tsinho黄油站" width="120" style="display:block;margin:0 auto;width:120px;height:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.12);">
+      <img src="assets/email-preview/img_01.png" alt="Tsinho黄油站" width="120" style="display:block;margin:0 auto;width:120px;height:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.12);">
       <div style="margin-top:10px;font-size:15px;font-weight:600;color:#1d1d1f;">Tsinho黄油站</div>
       <div style="margin-top:2px;font-size:12px;color:#86868b;">站长回复了你的评论</div>
     </div>
@@ -56,7 +56,20 @@
     </div>
 
   </div>
-  <!--mrhx-stagger--><style>
+<script>
+(function () {
+  try {
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/email-preview.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/email-preview.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/email-preview.html', p_day: day }) }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+    <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
 .node:nth-child(3){animation-delay:0.1s}
@@ -248,18 +261,5 @@
 })();
 </script>
 <!--mrhx-comments-end-->
-  <script>
-(function () {
-  try {
-    var day = new Date().toISOString().slice(0, 10);
-    var k = 'mrhx_v_' + day + '_' + '/email-preview.html'.replace(/[^a-zA-Z0-9]/g, '_');
-    if (localStorage.getItem(k)) return;
-    localStorage.setItem(k, '1');
-    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/email-preview.html' }) });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/email-preview.html', p_day: day }) }).catch(function () {});
-  } catch (e) {}
-})();
-</script>
   </body>
 </html>
