@@ -260,7 +260,7 @@ async function localize(html, tag) {
 
 function extractLinks(noteHtml) {
   const links = [];
-  const re = /<a class="content-link"[^>]*href="([^"]+)"[^>]*><span class="content-link-text">([^<]*)<\/span><\/a>/g;
+  const re = /<a class="[^"]*\bcontent-link\b[^"]*"[^>]*href="([^"]+)"[^>]*><span class="content-link-text">([^<]*)<\/span><\/a>/g;
   let m;
   while ((m = re.exec(noteHtml)) !== null) links.push({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') });
   return links;
@@ -387,11 +387,11 @@ const searchIndex = [];
 
     html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
 
-    const alreadyProcessed = /<div class="mrhx-dl"><a class="mrhx-btn/.test(html);
+    const alreadyProcessed = /<div class="mrhx-dl"><a class="mrhx-btn /.test(html);
 
     if (!alreadyProcessed) {
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
-      (m, inner) => (inner.includes('mrhx-dl') || extractLinks(inner).length === 0) ? m
+      (m, inner) => (inner.includes('mrhx-dl') && /<a class="mrhx-btn /m.test(inner)) ? m
         : '<div class="note mm-editor">' + rebuildNote(inner) + '</div>');
 
 html = (function reorderNodes(str) {
