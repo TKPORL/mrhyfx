@@ -1502,7 +1502,7 @@ async function loadComments() {
               <button class="btn btn-s" data-cancel="${esc(c.id)}">取消</button>
             </div>
           </div>
-          ${(isReply || !replyMap[c.id]) ? '' : replyMap[c.id].map(r => renderComment(r, true)).join('')}
+          ${!replyMap[c.id] ? '' : replyMap[c.id].map(r => renderComment(r, true)).join('')}
         </div>`;
       }
       box.innerHTML = parents.map(p => renderComment(p, false)).join('');

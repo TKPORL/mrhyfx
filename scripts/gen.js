@@ -544,8 +544,8 @@ html = (function reorderNodes(str) {
   function render() {
     list.textContent = '';
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    function addRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : ''));
+    function buildRow(c) {
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -587,57 +587,26 @@ html = (function reorderNodes(str) {
         }
       }
       row.appendChild(bar);
-      list.appendChild(row);
+      return row;
     }
-    function addTree(pid) {
+    function addTree(pid, box) {
       all.filter(function (c) { return (c.pid || null) === pid; })
         .sort(function (a, b) {
           if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
           return a.created_at.localeCompare(b.created_at);
         })
         .forEach(function (c) {
-          addRow(c);
-          c._el = list.lastChild;
+          var row = buildRow(c);
+          box.appendChild(row);
           var children = all.filter(function (x) { return x.pid === c.id; })
             .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
           if (!children.length) return;
           var threadBox = h('div', 'mrhx-thread');
-          c._el.appendChild(threadBox);
-          children.forEach(function (child) {
-            var childRow = h('div', 'mrhx-citem mrhx-creply-item');
-            var childHead = h('div', 'mrhx-chead');
-            childHead.appendChild(h('span', 'mrhx-cav', String(child.nick || '匿')[0].toUpperCase()));
-            var childMeta = h('div', 'mrhx-cmeta');
-            childMeta.appendChild(h('b', '', child.nick || '匿名'));
-            if (child.is_admin) childMeta.appendChild(h('span', 'mrhx-cbadge', '站长'));
-            childMeta.appendChild(h('span', 'mrhx-ctime', new Date(child.created_at).toLocaleString()));
-            childHead.appendChild(childMeta);
-            childRow.appendChild(childHead);
-            childRow.appendChild(h('div', 'mrhx-ccontent', child.content));
-            var childBar = h('div', 'mrhx-cbar');
-            var childRp = h('button', 'mrhx-cbtn', '回复');
-            childRp.onclick = function () {
-              if (replyPid === child.id) { replyPid = null; replyEl.textContent = ''; }
-              else { replyPid = child.id; replyEl.textContent = '回复 @' + (child.nick || '匿名') + '（再次点击取消）'; }
-            };
-            childBar.appendChild(childRp);
-            if (ADMIN) {
-              var childDl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
-              childDl.onclick = function () {
-                if (!confirm('删除这条评论及其回复？')) return;
-                fetch(SB + '/rest/v1/comments?id=eq.' + child.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
-                  .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-                  .catch(function (e) { alert('删除失败：' + e.message); });
-              };
-              childBar.appendChild(childDl);
-            }
-            childRow.appendChild(childBar);
-            threadBox.appendChild(childRow);
-            addTree(child.id);
-          });
+          row.appendChild(threadBox);
+          addTree(c.id, threadBox);
         });
     }
-    addTree(null);
+    addTree(null, list);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
