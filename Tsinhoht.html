@@ -594,11 +594,12 @@ function gameHtml(c, imgPaths) {
       class="image"
     />
   </li>`).join('\n');
-  let links = '';
-   if (c.linkM) links += `<a class="content-link" href="${esc(c.linkM)}"><span class="content-link-text">移动（不限速）：</span></a>`;
-   if (c.linkB) links += `<a class="content-link" href="${esc(c.linkB)}"><span class="content-link-text">度盘：</span></a>`;
-   if (c.customName && c.customUrl) links += `<a class="content-link" href="${esc(c.customUrl)}"><span class="content-link-text">${esc(c.customName)}：</span></a>`;
-  return `<li class="node heading3">
+  const buttons = [];
+   if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-m" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">移动云盘（不限速）</a>`);
+   if (c.linkB) buttons.push(`<a class="mrhx-btn mrhx-btn-b" href="${esc(c.linkB)}" target="_blank" rel="noreferrer">百度网盘</a>`);
+   if (c.customName && c.customUrl) buttons.push(`<a class="mrhx-btn mrhx-btn-qk" href="${esc(c.customUrl)}" target="_blank" rel="noreferrer">${esc(c.customName)}</a>`);
+   const links = buttons.length ? `<div class="mrhx-dl">${buttons.join('')}</div>` : '';
+   return `<li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
