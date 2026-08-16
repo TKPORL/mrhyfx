@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>足下勇者 · Tsinho黄油站</title>
+<title>小镇的牧场生活 · Tsinho黄油站</title>
 <link rel="canonical" href="">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -129,10 +129,10 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 </header>
 <main>
   <a class="gp-back-top" href="../">← 返回首页</a>
-  <div class="gp-cover"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/6Laz5LiL.jpg" alt="足下勇者" loading="lazy"></div>
-  <h1 class="gp-title">足下勇者<span class="gp-plat">PC</span></h1>
-  <div class="gp-intro">新作[日式RPG] 官中版 [1.0G PC]</div>
-  <div class="gp-dls"><a class="gp-dl" href="https://pan.baidu.com/s/1IM9f0hTNV1gc_Tj-2lp_3A?pwd=txch" target="_blank" rel="noreferrer">百度网盘</a></div>
+  <div class="gp-cover"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/cGhvdG9f.jpg" alt="小镇的牧场生活" loading="lazy"></div>
+  <h1 class="gp-title">小镇的牧场生活<span class="gp-plat">PC+安卓</span></h1>
+  <div class="gp-intro">增添AZ[爆款SLG/姐姐×正太/纯爱] 内嵌AI汉化版+DLC+存档 [PC+安卓 2.80G]</div>
+  <div class="gp-dls"><a class="gp-dl" href="https://yun.139.com/shareweb/#/w/i/2wFGxNHVoeSnm" target="_blank" rel="noreferrer">移动云盘（不限速）</a></div>
   <!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
@@ -165,7 +165,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 (function () {
   var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
   var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
-  var PATH = '/games/82.html';
+  var PATH = '/games/97.html';
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
@@ -242,7 +242,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + _nl + '请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
