@@ -1064,12 +1064,12 @@ async function buildPostCleanupFiles(repo, tag) {
   return files;
 }
 
-async function deletePostComments(tag) {
+async function deletePostComments(tag, isGame) {
   const base = sbBase();
   const anon = $('sbAnon').value.trim();
   const admin = $('sbSecret').value.trim();
   if (!base || !anon || !admin) throw new Error('Supabase 未配置，GitHub 数据已清理；请填写评论管理配置后重试评论清理');
-  const url = '/' + tag + '.html';
+  const url = isGame ? '/' + tag + '.html' : '/' + tag + '.html';
   const headers = Object.assign(sbHeaders(), { 'x-admin-key': admin });
   const list = await fetch(`${base}/rest/v1/comments?url=eq.${encodeURIComponent(url)}&select=id,pid`, { headers: headers });
   if (!list.ok) throw new Error('读取评论失败 HTTP ' + list.status);
@@ -1083,6 +1083,65 @@ async function deletePostComments(tag) {
     if (!res.ok) throw new Error('删除评论 ' + comment.id + ' 失败 HTTP ' + res.status);
   }
   return comments.length;
+}
+
+
+// 从合集帖（8.1.1.html 等）解析出多个游戏卡片数据（返回 [card,...]）
+function parseCollectionDoc(doc) {
+  const lis = [...doc.querySelectorAll('li.node.heading3')];
+  if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
+  return lis.map(li => {
+    const nameEl = li.querySelector('.content.mm-editor span');
+    const note = li.querySelector('.note.mm-editor');
+    let intro = '', linkM = '', linkB = '', customName = '', customUrl = '';
+    if (note) {
+      const sp = note.querySelector(':scope > span');
+      if (sp) intro = sp.textContent.trim();
+      [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
+        const href = a.getAttribute('href') || '';
+        if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
+        else if (/yun\.139\.com/.test(href) || /移动/.test(a.textContent)) linkM = href;
+        else {
+          customName = a.textContent.replace(/[：:]\s*$/, '').trim();
+          customUrl = href;
+        }
+      });
+    }
+    const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+    return {
+      name: nameEl ? nameEl.textContent.trim() : '',
+      intro, imgs, linkM, linkB, customName, customUrl
+    };
+  });
+}
+// 从单游戏帖（games/N.html）解析出 1 个卡片数据
+function parseGameDoc(doc) {
+  const titleEl = doc.querySelector('h1.gp-title');
+  let name = '';
+  if (titleEl) {
+    // 移除平台标签 span.gp-plat
+    const clone = titleEl.cloneNode(true);
+    (clone.querySelectorAll('.gp-plat') || []).forEach(s => s.remove());
+    name = clone.textContent.trim();
+  }
+  const coverImg = doc.querySelector('.gp-cover img');
+  const imgs = coverImg ? (coverImg.getAttribute('src') || '') : '';
+  const introEl = doc.querySelector('.gp-intro');
+  const intro = introEl ? introEl.textContent.trim() : '';
+  let linkM = '', linkB = '', customName = '', customUrl = '';
+  doc.querySelectorAll('.gp-dls .gp-dl').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    const txt = a.textContent.trim();
+    if (/pan\.baidu\.com/.test(href) || /度盘/.test(txt)) linkB = href;
+    else if (/yun\.139\.com/.test(href) || /移动/.test(txt)) linkM = href;
+    else { customName = txt.replace(/[：:]\s*$/, '').trim(); customUrl = href; }
+  });
+  return [{ name, intro, imgs, linkM, linkB, customName, customUrl }];
+}
+// 判断 tag 是否为 games/ 单游戏帖，返回其实际在仓库中的路径 {N}.html
+function postRepoPath(tag) {
+  // 单游戏帖 tag 形如 "games/1"，合集帖 tag 形如 "8.1.1"
+  return tag.startsWith('games/') ? tag + '.html' : tag + '.html';
 }
 
 async function loadPosts() {
@@ -1140,56 +1199,42 @@ async function loadPosts() {
   <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
-    <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
+    <button class="btn btn-s" data-tsave="${esc(tag)}" data-isgame="${isGame}">保存标题</button>
     ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
-    ${isGame ? '' : `<button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button><button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>`}
-    <button class="del" data-del="${esc(tag)}">删除</button>
+    <button class="btn btn-s" data-copy="${esc(tag)}" data-isgame="${isGame}">复制到表单</button>
+    <button class="btn btn-s" data-edit="${esc(tag)}" data-isgame="${isGame}">编辑</button>
+    <button class="del" data-del="${esc(tag)}" data-isgame="${isGame}">删除</button>
   </div>
 </div>`;
       }).join('');
       [...box.querySelectorAll('[data-copy]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.copy;
+          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
           b.disabled = true;
           show(stM, '正在解析「' + tag + '」的数据到发布表单…', 'info');
           try {
-            const res = await fetch(`${RAW_BASE}/${repo}/main/${tag}.html`);
+            const filePath = postRepoPath(tag);
+            const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-            const lis = [...doc.querySelectorAll('li.node.heading3')];
-            if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
+            const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+            if (!cards.length) throw new Error('没有解析到条目');
             $('gameBox').innerHTML = '';
-             lis.forEach(li => {
+            cards.forEach(c => {
                const card = addGameCard();
-               const nameEl = li.querySelector('.content.mm-editor span');
-               const note = li.querySelector('.note.mm-editor');
-               let intro = '', linkM = '', linkB = '', customName = '', customUrl = '';
-               if (note) {
-                 const sp = note.querySelector(':scope > span');
-                 if (sp) intro = sp.textContent.trim();
-                 [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
-                   const href = a.getAttribute('href') || '';
-                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
-                   else if (/yun\.139\.com/.test(href) || /移动/.test(a.textContent)) linkM = href;
-                   else {
-                     customName = a.textContent.replace(/[：:]\s*$/, '').trim();
-                     customUrl = href;
-                   }
-                 });
-               }
-               const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
-               card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
-               card.querySelector('.g-intro').value = intro;
-               card.querySelector('.g-imgs').value = imgs;
-               card.querySelector('.g-linkM').value = linkM;
-               card.querySelector('.g-linkB').value = linkB;
-               card.querySelector('.g-customName').value = customName;
-               card.querySelector('.g-customUrl').value = customUrl;
+               card.querySelector('.g-name').value = c.name || '';
+               card.querySelector('.g-intro').value = c.intro || '';
+               card.querySelector('.g-imgs').value = c.imgs || '';
+               card.querySelector('.g-linkM').value = c.linkM || '';
+               card.querySelector('.g-linkB').value = c.linkB || '';
+               card.querySelector('.g-customName').value = c.customName || '';
+               card.querySelector('.g-customUrl').value = c.customUrl || '';
              });
-             $('fName').value = tag;
-             $('fTitle').value = titles[tag] || tag;
-             $('fCount').value = counts[tag] || '';
+             $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
+             $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
+             $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
              switchTab('tabForm');
              show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
             scrollTo(0, 0);
@@ -1201,45 +1246,30 @@ async function loadPosts() {
       [...box.querySelectorAll('[data-edit]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.edit;
+          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
           b.disabled = true;
           show(stM, '正在载入「' + tag + '」到表单编辑区…', 'info');
           try {
-            const res = await fetch(`${RAW_BASE}/${repo}/main/${tag}.html`);
+            const filePath = postRepoPath(tag);
+            const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-            const lis = [...doc.querySelectorAll('li.node.heading3')];
-            if (!lis.length) throw new Error('没有解析到游戏条目（该帖不是表单模式发布的？）');
+            const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+            if (!cards.length) throw new Error('没有解析到条目');
             $('gameBox').innerHTML = '';
-            lis.forEach(li => {
+            cards.forEach(c => {
                const card = addGameCard();
-               const nameEl = li.querySelector('.content.mm-editor span');
-               const note = li.querySelector('.note.mm-editor');
-               let intro = '', linkM = '', linkB = '', customName = '', customUrl = '';
-               if (note) {
-                 const sp = note.querySelector(':scope > span');
-                 if (sp) intro = sp.textContent.trim();
-                 [...li.querySelectorAll('.mrhx-dl a, a.content-link')].forEach(a => {
-                   const href = a.getAttribute('href') || '';
-                   if (/pan\.baidu\.com/.test(href) || /度盘/.test(a.textContent)) linkB = href;
-                   else if (/yun\.139\.com/.test(href) || /移动/.test(a.textContent)) linkM = href;
-                   else {
-                     customName = a.textContent.replace(/[：:]\s*$/, '').trim();
-                     customUrl = href;
-                   }
-                 });
-               }
-               const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
-               card.querySelector('.g-name').value = nameEl ? nameEl.textContent.trim() : '';
-               card.querySelector('.g-intro').value = intro;
-               card.querySelector('.g-imgs').value = imgs;
-               card.querySelector('.g-linkM').value = linkM;
-               card.querySelector('.g-linkB').value = linkB;
-               card.querySelector('.g-customName').value = customName;
-               card.querySelector('.g-customUrl').value = customUrl;
+               card.querySelector('.g-name').value = c.name || '';
+               card.querySelector('.g-intro').value = c.intro || '';
+               card.querySelector('.g-imgs').value = c.imgs || '';
+               card.querySelector('.g-linkM').value = c.linkM || '';
+               card.querySelector('.g-linkB').value = c.linkB || '';
+               card.querySelector('.g-customName').value = c.customName || '';
+               card.querySelector('.g-customUrl').value = c.customUrl || '';
              });
-             $('fName').value = tag;
-             $('fTitle').value = titles[tag] || tag;
-             $('fCount').value = counts[tag] || '';
+             $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
+             $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
+             $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
              $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
             $('editBar').classList.add('show');
             switchTab('tabForm');
@@ -1253,27 +1283,30 @@ async function loadPosts() {
       [...box.querySelectorAll('[data-del]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.del;
+          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
           if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
           b.disabled = true;
           show(stM, '正在准备清理 ' + tag + ' 的索引与配置…', 'info');
           try {
             const steps = [];
-            const paths = tree.tree.filter(t => t.path === tag + '.html' || t.path.startsWith('assets/' + tag + '/'));
+            const filePath = postRepoPath(tag);
+            const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
+            const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + assetTag + '/'));
             const dataFiles = await buildPostCleanupFiles(repo, tag);
             await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
             steps.push('配置与索引已清理');
-            const assets = paths.filter(t => t.path !== tag + '.html');
+            const assets = paths.filter(t => t.path !== filePath);
             for (const t of assets) {
               const info = await apiGet(repo, token, t.path);
               const result = await apiDelete(repo, token, t.path, info && info.sha, '删除帖子资源: ' + tag);
               steps.push(result.skipped ? t.path + ' 不存在，已跳过' : t.path + ' 已删除');
             }
-            const htmlInfo = await apiGet(repo, token, tag + '.html');
-            const htmlResult = await apiDelete(repo, token, tag + '.html', htmlInfo && htmlInfo.sha, '删除帖子: ' + tag);
-            steps.push(htmlResult.skipped ? tag + '.html 不存在，已视为删除成功' : tag + '.html 已删除');
+            const htmlInfo = await apiGet(repo, token, filePath);
+            const htmlResult = await apiDelete(repo, token, filePath, htmlInfo && htmlInfo.sha, '删除帖子: ' + tag);
+            steps.push(htmlResult.skipped ? filePath + ' 不存在，已视为删除成功' : filePath + ' 已删除');
             let commentMessage = '';
             try {
-              const count = await deletePostComments(tag);
+              const count = await deletePostComments(tag, isGame);
               commentMessage = '评论已删除 ' + count + ' 条';
               steps.push(commentMessage);
             } catch (commentError) {
@@ -1291,13 +1324,31 @@ async function loadPosts() {
       [...box.querySelectorAll('[data-tsave]')].forEach(b => {
         b.onclick = async () => {
           const tag = b.dataset.tsave;
+          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
           const input = box.querySelector('.t-edit[data-tag="' + tag + '"]');
           const val = input ? input.value.trim() : '';
           if (!val) { show(stM, '标题不能为空', 'err'); return; }
           b.disabled = true;
           show(stM, '正在保存标题…', 'info');
           try {
-            await updateJson(repo, token, 'titles.json', tag, val, stM);
+            if (isGame) {
+              // 单游戏帖：更新 search_index.json 对应条目的 title
+              const giRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
+              // games/N.html 在 search_index 中的位置 = N-1（按生成顺序）
+              const numStr = tag.replace(/^games\//, '');
+              const idx = Number(numStr) - 1;
+              if (!Number.isFinite(idx) || idx < 0 || idx >= giRaw.length) throw new Error('未在 search_index.json 中找到条目 index=' + (idx + 1));
+              giRaw[idx].title = val;
+              // 也更新对应 titles.json 里旧集合标题（如果存在）
+              const titlesRaw = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+              const srcTitle = giRaw[idx].source;
+              const commits = [];
+              commits.push(putFilePromise(repo, token, 'search_index.json', btoa(unescape(encodeURIComponent(JSON.stringify(giRaw, null, 2) + '\n'))), '更新搜索索引标题: ' + tag, 'search_index.json'));
+              // 同时更新 titles.json 中若有对应条目（按合集名）也更新，但通常不影响
+              await atomicCommit(repo, token, commits, '更新游戏标题: ' + tag, stM, 'search_index.json');
+            } else {
+              await updateJson(repo, token, 'titles.json', tag, val, stM);
+            }
             const titleEl = b.closest('.game').querySelector('.gnum');
             if (titleEl) titleEl.textContent = val;
             show(stM, '标题已保存！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');

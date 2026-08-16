@@ -140,60 +140,125 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 </div>
 <script>
 (function () {
-  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co', KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', PATH = '/games/10.html';
-  var mailEl = document.getElementById('mrhx-mail');
-  var popShown = false;
-  function headers() { return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }; }
-  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function load() {
-    fetch(SB + '/rest/v1/rpc/get_comment?path=' + encodeURIComponent(PATH) + '&limit=200', { headers: headers() })
-      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function(d) {
-        if (!d || d.ok === false) throw new Error((d && d.error) || '加载失败');
-        var list = document.getElementById('mrhx-clist');
-        var num = document.getElementById('mrhx-cnum');
-        num.textContent = d.data ? ' ' + d.data.length + ' 条评论' : '';
-        list.textContent = '';
-        if (!d.data || !d.data.length) { list.innerHTML = '<div class="mrhx-cempty">暂无评论，来抢沙发吧</div>'; return; }
-        d.data.sort(function(a,b){ return a.p_time - b.p_time; }).forEach(function(c) {
-          var time = new Date(c.p_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-          var replyHtml = (c.p_replies && c.p_replies.length) ? c.p_replies.map(function(r){
-            var rt = new Date(r.p_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-            return '<div class="mrhx-creply-item"><div class="mrhx-chead"><div class="mrhx-cav">' + esc((r.p_nick||'?')[0]) + '</div><div class="mrhx-cmeta"><b>' + esc(r.p_nick||'?') + '</b><span class="mrhx-ctime">' + rt + '</span></div></div><div class="mrhx-ccontent">' + esc(r.p_content) + '</div></div>';
-          }).join('') : '';
-          var el = document.createElement('div'); el.className = 'mrhx-citem';
-          el.innerHTML = '<div class="mrhx-chead"><div class="mrhx-cav">' + esc((c.p_nick||'?')[0]) + '</div><div class="mrhx-cmeta"><b>' + esc(c.p_nick||'?') + '</b><span class="mrhx-ctime">' + time + '</span></div></div><div class="mrhx-ccontent">' + esc(c.p_content) + '</div>' + replyHtml;
-          list.appendChild(el);
-        });
-      }).catch(function(e) {
-        document.getElementById('mrhx-clist').innerHTML = '<div style="color:#e5484d;padding:20px 0">评论区加载失败: ' + esc(e.message) + '</div>';
-      });
-  }
-  document.getElementById('mrhx-cform').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var form = e.target, nick = form.querySelector('#mrhx-nick').value.trim();
-    var mail = form.querySelector('#mrhx-mail').value.trim(), content = form.querySelector('#mrhx-ctext').value.trim();
-    if (!nick || !mail || !content) { alert('请填写完整信息'); return; }
-    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    fetch(SB + '/rest/v1/rpc/guard_comment', {
-      method: 'POST', headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: null })
-    }).then(function(r) {
-      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
-      if (!r.ok) return r.json().then(function(d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      return r.json();
-    }).then(function(d) {
-      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-      form.reset(); alert('评论发表成功！'); load();
-    }).catch(function(e) { alert('发送失败：' + e.message); }).finally(function() { btn.disabled = false; btn.textContent = '发表评论'; });
-  });
-  load();
+  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
+  var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  var PATH = '/games/10.html';
+  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
+  var list = document.getElementById('mrhx-clist');
+  var form = document.getElementById('mrhx-cform');
+  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var hpEl = document.getElementById('mrhx-hp');
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
-  if (pop && mailEl) {
+  var replyEl = document.getElementById('mrhx-creply');
+  var replyPid = null;
+  var all = [];
+  var popShown = false;
+  if (pop) {
     mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
+  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
+  function headers() {
+    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+  }
+  function render() {
+    list.textContent = '';
+    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
+    function buildRow(c) {
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
+      var head = h('div', 'mrhx-chead');
+      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
+      var meta = h('div', 'mrhx-cmeta');
+      meta.appendChild(h('b', '', c.nick || '匿名'));
+      if (c.pid) {
+        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
+        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
+      }
+      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
+      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
+      head.appendChild(meta);
+      row.appendChild(head);
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));
+      var bar = h('div', 'mrhx-cbar');
+      var rp = h('button', 'mrhx-cbtn', '回复');
+      rp.onclick = function () {
+        if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
+        else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
+      };
+      bar.appendChild(rp);
+      if (ADMIN) {
+        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+        dl.onclick = function () {
+          if (!confirm('删除这条评论及其回复？')) return;
+          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+            .catch(function (e) { alert('删除失败：' + e.message); });
+        };
+        bar.appendChild(dl);
+        if (!c.pid) {
+          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
+          pin.onclick = function () {
+            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+          };
+          bar.appendChild(pin);
+        }
+      }
+      row.appendChild(bar);
+      return row;
+    }
+    function addTree(pid, box) {
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
+          return a.created_at.localeCompare(b.created_at);
+        })
+        .forEach(function (c) {
+          var row = buildRow(c);
+          box.appendChild(row);
+          var children = all.filter(function (x) { return x.pid === c.id; })
+            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
+          if (!children.length) return;
+          var threadBox = h('div', 'mrhx-thread');
+          row.appendChild(threadBox);
+          addTree(c.id, threadBox);
+        });
+    }
+    addTree(null, list);
+    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
+  }
+  function load() {
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
+      .then(function (d) { all = d || []; render(); })
+      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+  }
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    if (hpEl && hpEl.value) { form.reset(); return; }
+    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
+    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    fetch(SB + '/rest/v1/rpc/guard_comment', {
+      method: 'POST',
+      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
+    }).then(function (r) {
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+      return r.json();
+    }).then(function (d) {
+      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
+      replyPid = null; replyEl.textContent = '';
+      form.reset();
+      load();
+    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+  };
+  load();
 })();
 </script>
 <!--mrhx-comments-end-->
