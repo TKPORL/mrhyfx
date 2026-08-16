@@ -1364,7 +1364,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (title === before) break;
       }
       const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
-      const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      // 跳过 logo.webp 和 favicon，取第一个 assets 目录下的图片作为封面
+      const imgMatch = b.match(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/);
+      const img = imgMatch ? imgMatch[1] : '';
       const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
       return { title, intro, img, links, plat, source: TITLES[shortName] || shortName, isPinned: PINS.indexOf(shortName) !== -1, pageUrl: shortName + '.html' };
