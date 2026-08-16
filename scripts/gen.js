@@ -5,6 +5,12 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
+const slugify = s => String(s).trim().toLowerCase()
+  .replace(/[【】\[\]()（）【】]/g, '')
+  .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .substring(0, 80);
+
 const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
@@ -292,6 +298,73 @@ function extractExtras(html) {
   return [];
 }
 
+function renderGamePage(g, sourceFile) {
+  const sourceName = path.parse(sourceFile).name;
+  const sourceDisp = TITLES[sourceName] || sourceName;
+  const cover = g.img ? `<div class="gp-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
+  const platTag = g.plat ? `<span class="gp-plat">${g.plat}</span>` : '';
+  const dlBtns = g.links.slice(0, 3).map(l => `<a class="gp-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
+  const intro = g.intro ? `<div class="gp-intro">${esc(g.intro)}</div>` : '';
+  const backLink = `<a class="gp-back" href="${sourceFile}">← 返回 ${esc(sourceDisp)}</a>`;
+  const canonical = `${CDN_URL}/games/${g.slug}.html`;
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(g.title)} · ${SITE_NAME}</title>
+<link rel="canonical" href="${canonical}">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+.hwrap{max-width:800px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.site{font-size:20px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.site em{font-style:normal;color:#e5484d}
+main{max-width:800px;margin:0 auto;padding:24px 20px 40px}
+.gp-head{margin-bottom:20px}
+.gp-title{font-size:26px;font-weight:800;color:#2b2b2b;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.gp-plat{display:inline-block;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:#e5484d}
+.gp-cover{width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#f4f2ef;margin-bottom:20px}
+.gp-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.gp-intro{font-size:15px;color:#555;line-height:1.8;margin-bottom:20px;padding:16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
+.gp-dls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.gp-dl{display:inline-flex;align-items:center;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
+.gp-dl:hover{background:#c93a3f}
+.gp-back{display:inline-block;margin-top:16px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
+.gp-back:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
+@media (max-width:720px){
+  .hwrap{padding:12px 14px}
+  .site{font-size:17px}
+  main{padding:16px 14px 32px}
+  .gp-title{font-size:22px}
+  .gp-cover{aspect-ratio:4/3}
+}
+</style>
+<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+  </div>
+</header>
+<main>
+  ${backLink}
+  <div class="gp-head">
+    <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
+  </div>
+  ${cover}
+  ${intro}
+  ${dlBtns ? `<div class="gp-dls">${dlBtns}</div>` : ''}
+  ${backLink}
+</main>
+<footer style="border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px">${SITE_FOOTER}</footer>
+</body>
+</html>`;
+}
+
 function emptyIndex(navLinks) {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -347,14 +420,11 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 `;
 }
 
-function verify(days, index) {
+function verify(days, index, gridGames) {
   const errors = [];
   for (const d of days) {
-    const ref = `href="${esc(d.file)}"`;
-    if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
     if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
-    if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
     const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
     const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
     const h1Ok = h.includes(`>${esc(disp)}</div>`);
@@ -362,6 +432,7 @@ function verify(days, index) {
     if (SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
     if (SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
   }
+  if (gridGames.length && !index.includes('class="ggrid"')) errors.push('首页缺少游戏网格');
   if (errors.length) {
     console.error('❌ 发布自检未通过:');
     errors.forEach(e => console.error('  - ' + e));
@@ -376,6 +447,7 @@ function verify(days, index) {
 const days = [];
 const searchIndex = [];
 const allGames = [];
+let gameCounter = 0;
 (async () => {
   for (const file of files) {
     let html = fs.readFileSync(file, 'utf8');
@@ -689,11 +761,26 @@ html = (function reorderNodes(str) {
       return { title, intro, img, links, plat, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
     searchIndex.push(...games);
-    allGames.push(...games.map(g => ({ ...g, file })));
+    const gamesWithPages = games.map(g => {
+      const slug = String(++gameCounter);
+      const gameUrl = `games/${slug}.html`;
+      return { ...g, slug, gameUrl, file };
+    });
+    allGames.push(...gamesWithPages);
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
     days.push({ file, gameCount, tag });
+
+    const pinnedNames = PINS.map(p => p + '.html');
+
+    for (const g of gamesWithPages) {
+      if (pinnedNames.indexOf(g.file) !== -1) continue; // skip pinned posts
+      const gameHtml = renderGamePage(g, file);
+      const gameDir = path.join('games');
+      fs.mkdirSync(gameDir, { recursive: true });
+      fs.writeFileSync(path.join(gameDir, g.slug + '.html'), gameHtml);
+    }
   }
 
   days.sort((a, b) => {
@@ -757,15 +844,10 @@ html = (function reorderNodes(str) {
   const gameGrid = gridGames.map((g, gi) => {
     const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
     const platTag = g.plat ? `<span class="g-plat">${g.plat}</span>` : '';
-    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
-    const srcName = path.parse(g.file).name;
-    const srcDisp = TITLES[srcName] || srcName;
-    return `<a class="gcard" href="${esc(g.file)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
+    return `<a class="gcard" href="${esc(g.gameUrl)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
   ${cover}
   <div class="g-body">
     <div class="g-title">${esc(g.title)}${platTag}</div>
-    <div class="g-src">来源 · ${esc(srcDisp)}</div>
-    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
   </div>
 </a>`;
   }).join('\n');
@@ -877,13 +959,11 @@ footer b{color:#e5484d}
   </div>
 </header>
 <main>
-  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
-  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
-  ${dayLis || '<div class="empty">暂无分享</div>'}
-  ${gridGames.length ? `<div class="sect gsect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
+  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${gridGames.length}</b> 款游戏</div>
+  <div class="sect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
   <div class="ggrid">
   ${gameGrid}
-  </div>` : ''}
+  </div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
@@ -898,7 +978,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
   fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
   console.log('search_index.json ok, games:', searchIndex.length);
 
-  verify(days, index, searchIndex);
+  verify(days, index, gridGames);
 
   const searchPage = `<!DOCTYPE html>
 <html lang="zh-CN">
