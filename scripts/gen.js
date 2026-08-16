@@ -233,7 +233,8 @@ function iconTitle(d) {
 }
 
 async function localize(html, tag) {
-  const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))];
+  const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
+    .filter(url => !url.includes(CDN_URL));
   if (urls.length) {
     const dir = path.join('assets', tag);
     fs.mkdirSync(dir, { recursive: true });
