@@ -1725,10 +1725,24 @@ MP4改为7z就可以解压了。7-zip解压缩软件用7z解压会有额外数�
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
-      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
-      .then(function (d) { all = d || []; render(); })
-      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+    // 兼容两种 url 存储格式：带前斜杠 /qzt.html 和不带 qzt.html（历史版本不一致），查两份再按 id 去重
+    var paths = [PATH];
+    if (PATH.charAt(0) === '/') paths.push(PATH.slice(1));
+    else paths.push('/' + PATH);
+    var baseQ = SB + '/rest/v1/comments?select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc';
+    Promise.all(paths.map(function (p) {
+      return fetch(baseQ + '&url=eq.' + encodeURIComponent(p), { headers: headers() }).then(function (r) {
+        if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });
+        return r.json();
+      }).catch(function () { return []; });
+    })).then(function (results) {
+      var seen = {}, merged = [];
+      (results[0] || []).concat(results[1] || []).forEach(function (c) {
+        if (!seen[c.id]) { seen[c.id] = true; merged.push(c); }
+      });
+      all = merged;
+      render();
+    }).catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
   }
   form.onsubmit = function (e) {
     e.preventDefault();
