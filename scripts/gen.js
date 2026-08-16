@@ -651,6 +651,7 @@ function renderGamePage(g, sourceFile) {
   loadLikes();
   load();
 })();
+});
 </script>
 <!--mrhx-comments-end-->`;
   }
@@ -1338,6 +1339,7 @@ document.addEventListener('DOMContentLoaded', function () {
   loadLikes();
   load();
 })();
+});
 </script>
 <!--mrhx-comments-end-->`;
     }
