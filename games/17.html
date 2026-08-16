@@ -4,32 +4,73 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>退魔师玲奈2 · Tsinho黄油站</title>
-<link rel="canonical" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/games/17.html">
+<link rel="canonical" href="">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:800px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
-.site{font-size:20px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
+.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
 .site em{font-style:normal;color:#e5484d}
-main{max-width:800px;margin:0 auto;padding:24px 20px 40px}
-.gp-head{margin-bottom:20px}
-.gp-title{font-size:26px;font-weight:800;color:#2b2b2b;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-.gp-plat{display:inline-block;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:#e5484d}
+.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
+nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
+.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
+nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 .gp-cover{width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#f4f2ef;margin-bottom:20px}
 .gp-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.gp-title{font-size:26px;font-weight:800;color:#2b2b2b;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.gp-plat{display:inline-block;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:#e5484d}
 .gp-intro{font-size:15px;color:#555;line-height:1.8;margin-bottom:20px;padding:16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
 .gp-dls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
 .gp-dl{display:inline-flex;align-items:center;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
 .gp-dl:hover{background:#c93a3f}
-.gp-back{display:inline-block;margin-top:16px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
-.gp-back:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
+.gp-back-top{display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
+.gp-back-top:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
+.gp-back-bot{display:inline-block;margin-top:16px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
+.gp-back-bot:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
+.mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
+.mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:700}
+.mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
+.mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
+.mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+.mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none;padding:12px 14px;margin-bottom:8px}
+.mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
+.mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
+.mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
+.mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+.mrhx-cmeta b{font-size:14px;font-weight:600;color:#2b2b2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrhx-ctime{font-size:12px;color:#aaa}
+.mrhx-ccontent{font-size:14px;color:#444;line-height:1.7;word-break:break-word}
+.mrhx-cform{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:20px;margin-top:8px}
+.mrhx-cform-title{font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:14px}
+.mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
+.mrhx-crow input,.mrhx-crow textarea{flex:1;padding:10px 14px;border:1px solid #e2e0dc;border-radius:10px;font-size:14px;font-family:inherit;background:#faf9f7;color:#333;outline:none;transition:.2s}
+.mrhx-crow input:focus,.mrhx-crow textarea:focus{border-color:#e5484d;background:#fff}
+.mrhx-crow textarea{min-height:90px;resize:vertical}
+.mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
+.mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-csub button:hover{background:#c93a3f}
+.mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
+.mrhx-top.show{opacity:1;pointer-events:auto}
+.mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px}
+  .hwrap{padding:12px 14px;gap:10px}
   .site{font-size:17px}
+  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
+  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  nav::-webkit-scrollbar{display:none}
+  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
+  .mrhx-search input{flex:1;width:auto}
   main{padding:16px 14px 32px}
   .gp-title{font-size:22px}
   .gp-cover{aspect-ratio:4/3}
+  .mrhx-crow{flex-direction:column}
 }
 </style>
 <link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" type="image/webp">
@@ -38,19 +79,114 @@ main{max-width:800px;margin:0 auto;padding:24px 20px 40px}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html">Tsinho<em>黄油站</em></a>
+    <a class="site" href="/index.html">Tsinho<em>黄油站</em></a>
+    <div class="site-header-right">
+      <form class="mrhx-search" action="/search.html" method="get">
+      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+      <nav><a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a><a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油合集</a><a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></nav>
+    </div>
   </div>
 </header>
 <main>
-  <a class="gp-back" href="8.1.1.html">← 返回 8月11号黄油 43款（PC+安卓）下载链接已恢复</a>
-  <div class="gp-head">
-    <h1 class="gp-title">退魔师玲奈2<span class="gp-plat">PC+安卓</span></h1>
-  </div>
-  <div class="gp-cover"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_17.png" alt="退魔师玲奈2" loading="lazy"></div>
+  <a class="gp-back-top" href="/index.html">← 返回首页</a>
+  <div class="gp-cover"><div class="gp-cover"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_17.png" alt="退魔师玲奈2" loading="lazy"></div></div>
+  <h1 class="gp-title">退魔师玲奈2<span class="gp-plat">PC+安卓</span></h1>
   <div class="gp-intro">[日式RPG/战斗H/巨乳羞耻] 内嵌AI汉化版+作弊码 [PC+安卓 800M] 作弊码904632</div>
   <div class="gp-dls"><a class="gp-dl" href="https://pan.baidu.com/s/1MY6LdiOEvkByJjfsFfsdSw?pwd=txch" target="_blank" rel="noreferrer">百度网盘</a></div>
-  <a class="gp-back" href="8.1.1.html">← 返回 8月11号黄油 43款（PC+安卓）下载链接已恢复</a>
+  <a class="gp-back" href="/8.1.1.html">← 返回 8月11号黄油 43款（PC+安卓）下载链接已恢复</a>
+  <!--mrhx-comments-->
+<div class="mrhx-comments" id="mrhx-comments">
+  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
+  <div id="mrhx-clist"></div>
+  <form id="mrhx-cform" class="mrhx-cform">
+    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+    <div class="mrhx-cform-title">💬 发表评论</div>
+    <div class="mrhx-crow">
+      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
+      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
+    </div>
+    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
+    <div class="mrhx-crow mrhx-csub">
+      <span id="mrhx-creply" class="mrhx-creply"></span>
+      <button type="submit">发表评论</button>
+    </div>
+  </form>
+</div>
+<script>
+(function () {
+  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co', KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', PATH = '/games/17.html';
+  var loaded = false;
+  function headers() { return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }; }
+  function load() {
+    if (loaded) return; loaded = true;
+    fetch(SB + '/rest/v1/rpc/get_comment?path=' + encodeURIComponent(PATH) + '&limit=200', { headers: headers() })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(d) {
+        if (!d || d.ok === false) throw new Error((d && d.error) || '加载失败');
+        var list = document.getElementById('mrhx-clist');
+        var num = document.getElementById('mrhx-cnum');
+        num.textContent = d.data ? ' ' + d.data.length + ' 条评论' : '';
+        if (!d.data || !d.data.length) { list.innerHTML = '<div style="color:#aaa;padding:20px 0;text-align:center">暂无评论，来抢沙发吧</div>'; return; }
+        d.data.sort(function(a,b){ return a.p_time - b.p_time; }).forEach(function(c) {
+          var time = new Date(c.p_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+          var replyHtml = (c.p_replies && c.p_replies.length) ? c.p_replies.map(function(r){
+            var rt = new Date(r.p_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+            return '<div class="mrhx-creply-item"><div class="mrhx-chead"><div class="mrhx-cav">' + esc((r.p_nick||'?')[0]) + '</div><div class="mrhx-cmeta"><b>' + esc(r.p_nick||'?') + '</b><span class="mrhx-ctime">' + rt + '</span></div></div><div class="mrhx-ccontent">' + esc(r.p_content) + '</div></div>';
+          }).join('') : '';
+          var el = document.createElement('div'); el.className = 'mrhx-citem';
+          el.innerHTML = '<div class="mrhx-chead"><div class="mrhx-cav">' + esc((c.p_nick||'?')[0]) + '</div><div class="mrhx-cmeta"><b>' + esc(c.p_nick||'?') + '</b><span class="mrhx-ctime">' + time + '</span></div></div><div class="mrhx-ccontent">' + esc(c.p_content) + '</div>' + replyHtml;
+          list.appendChild(el);
+        });
+      }).catch(function(e) {
+        document.getElementById('mrhx-clist').innerHTML = '<div style="color:#e5484d;padding:20px 0">评论区加载失败: ' + esc(e.message) + '</div>';
+      });
+  }
+  document.getElementById('mrhx-cform').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target, nick = form.querySelector('#mrhx-nick').value.trim();
+    var mail = form.querySelector('#mrhx-mail').value.trim(), content = form.querySelector('#mrhx-ctext').value.trim();
+    if (!nick || !mail || !content) { alert('请填写完整信息'); return; }
+    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    fetch(SB + '/rest/v1/rpc/guard_comment', {
+      method: 'POST', headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: null })
+    }).then(function(r) {
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (!r.ok) return r.json().then(function(d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+      return r.json();
+    }).then(function(d) {
+      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
+      form.reset(); alert('评论发表成功！'); load();
+    }).catch(function(e) { alert('发送失败：' + e.message); }).finally(function() { btn.disabled = false; btn.textContent = '发表评论'; });
+  });
+  load();
+})();
+</script>
+<!--mrhx-comments-end-->
 </main>
+<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100, nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+
 <footer style="border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px">by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 </body>
 </html>
