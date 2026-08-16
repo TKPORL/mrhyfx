@@ -5,12 +5,6 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const slugify = s => String(s).trim().toLowerCase()
-  .replace(/[【】\[\]()（）【】]/g, '')
-  .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  .replace(/^-+|-+$/g, '')
-  .substring(0, 80);
-
 const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
@@ -55,7 +49,6 @@ const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '�
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
 const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
-const SITE_URL = 'https://tkporl.github.io/mrhyfx/';
 
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
@@ -65,8 +58,8 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
       </div>`;
 
 const sharedCss = `<style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;margin-top:88px !important}
-  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
@@ -80,6 +73,9 @@ const sharedCss = `<style>
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+  @media (min-width:721px){
+    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
+  }
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
@@ -95,15 +91,6 @@ const sharedCss = `<style>
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
-  .node-list{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;list-style:none;margin:0 !important;padding:0 !important}
-  .node-list .node{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.25s;display:flex;flex-direction:column}
-  .node-list .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-  .node-list .node .bullet{display:none}
-  .node-list .node .image-list{margin:0;padding:0}
-  .node-list .node .image{width:100% !important;height:auto;max-height:220px;object-fit:cover;display:block}
-  .node-list .node .content{font-size:15px;font-weight:700;color:#2b2b2b;padding:12px 14px 4px;line-height:1.4;margin:0}
-  .node-list .node .note{font-size:12px;color:#888;padding:4px 14px 8px;white-space:normal;line-height:1.5;margin:0}
-  .node-list .node .mrhx-dl{padding:0 14px 14px;margin:0}
   .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important}
@@ -119,17 +106,15 @@ const sharedCss = `<style>
     .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
-    .node-list{grid-template-columns:1fr;gap:10px}
-    .node-list .node .image{max-height:180px}
   }
   .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
   .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
   .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
   .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{width:100%;min-width:0;margin-left:0;border-left:3px solid #f0b4b6;padding-left:12px;box-sizing:border-box;border-radius:10px;background:#fdf9f7;box-shadow:none}
+  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
-  .mrhx-thread{margin-top:8px;padding-left:0;width:100%;margin-left:0}
+  .mrhx-thread{margin-top:8px;padding-left:0}
   .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
   .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
   .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
@@ -166,18 +151,7 @@ const sharedCss = `<style>
   .mrhx-csub button:hover{background:#c93a3f}
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  .mrhx-ctools{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-  .mrhx-csort{padding:4px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;background:#faf9f7;color:#555;outline:none;cursor:pointer;font-family:inherit}
-  .mrhx-csort:focus{border-color:#e5484d}
-  .mrhx-clist-toggle{display:block;width:100%;text-align:center;padding:10px;border:1px dashed #d5d2cc;border-radius:10px;background:#faf9f7;color:#888;font-size:13px;cursor:pointer;transition:.2s;margin-top:8px}
-  .mrhx-clist-toggle:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
-  .mrhx-like-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
-  .mrhx-like-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:2px solid #e5484d;border-radius:99px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-like-btn:hover{background:#fdf3f3}
-  .mrhx-like-btn.liked{background:#e5484d;color:#fff}
-  .mrhx-like-btn:disabled{opacity:.6;cursor:not-allowed}
-  .mrhx-like-count{font-size:13px;color:#888}
-  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:100%;margin-left:0;padding-left:8px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}.mrhx-cform{padding:14px 12px}.mrhx-crow input{font-size:16px}.mrhx-cform textarea{font-size:16px;min-height:90px}.mrhx-citem{padding:12px 14px}.mrhx-csub{flex-direction:row}.mrhx-csub button{width:100%;padding:12px 0}.mrhx-cpop-box{margin:0 12px;padding:18px 16px}.mrhx-clist-toggle{font-size:13px;padding:10px}}
+  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
@@ -185,7 +159,6 @@ const sharedCss = `<style>
 
 const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
-var _nl = String.fromCharCode(10);
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
@@ -319,495 +292,6 @@ function extractExtras(html) {
   return [];
 }
 
-function renderGamePage(g, sourceFile) {
-  const sourceName = path.parse(sourceFile).name;
-  const sourceDisp = TITLES[sourceName] || sourceName;
-  const navLinksStr = NAV.map(n => `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`).join('');
-  const cover = g.img ? `<img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy">` : '';
-  const SITE_BASE = '..'; // game pages are in games/ subdirectory
-  const platTag = g.plat ? `<span class="gp-plat">${g.plat}</span>` : '';
-  const dlBtns = g.links.slice(0, 3).map(l => `<a class="gp-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
-  const intro = g.intro ? `<div class="gp-intro">${esc(g.intro)}</div>` : '';
-  const backLink = `<a class="gp-back" href="/${sourceFile}">← 返回 ${esc(sourceDisp)}</a>`;
-  const canonical = ''; // no canonical on sub-pages to avoid confusion
-  const vb = (SITE.views && SITE.views.enabled && SITE.views.url && SITE.views.anonKey)
-    ? viewScript(SITE.views.url.replace(/\/+$/, ''), SITE.views.anonKey, '/games/' + g.slug + '.html') : '';
-  const v = SITE.comments;
-  let commentBlock = '';
-  if (v.enabled && v.url && v.anonKey) {
-    const sb = esc(v.url.replace(/\/+$/, ''));
-    const key = esc(v.anonKey);
-    commentBlock = `<!--mrhx-comments-->
-<div class="mrhx-comments" id="mrhx-comments">
-  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div class="mrhx-like-bar" id="mrhx-like-bar" style="display:none"><button class="mrhx-like-btn" id="mrhx-like-btn" type="button">👍 点赞</button><span class="mrhx-like-count" id="mrhx-like-count"></span></div>
-  <div id="mrhx-clist"></div>
-  <form id="mrhx-cform" class="mrhx-cform">
-    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
-      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
-    </div>
-    <div class="mrhx-cform-title">💬 发表评论</div>
-    <div class="mrhx-crow">
-      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
-      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
-    </div>
-    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
-    <div class="mrhx-crow mrhx-csub">
-      <span id="mrhx-creply" class="mrhx-creply"></span>
-      <button type="submit">发表评论</button>
-    </div>
-  </form>
-</div>
-<div class="mrhx-cpop" id="mrhx-cpop">
-  <div class="mrhx-cpop-box">
-    <h3>邮箱填写提示</h3>
-    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
-    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
-  </div>
-</div>
-<script>
-(function () {
-  var SB = '${sb}';
-  var KEY = '${key}';
-  var PATH = '/games/${g.slug}.html';
-  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
-  var list = document.getElementById('mrhx-clist');
-  var form = document.getElementById('mrhx-cform');
-  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
-  var hpEl = document.getElementById('mrhx-hp');
-  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
-  var replyEl = document.getElementById('mrhx-creply');
-  var replyPid = null;
-  var all = [];
-  if (pop) {
-    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
-    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
-    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
-    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
-    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
-  }
-  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
-  function headers() {
-    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
-  }
-  var _sortMode = 'latest'; // latest | hot
-  var _expanded = false;
-  var SHOW_DEFAULT = 3;
-  function render() {
-    list.textContent = '';
-    var topCount = all.filter(function(c) { return !c.pid; }).length;
-    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    // 排序工具栏
-    var tools = h('div', 'mrhx-ctools');
-    var sortSel = h('select', 'mrhx-csort');
-    sortSel.innerHTML = '<option value="latest">最新排序</option><option value="hot">热门排序</option>';
-    sortSel.value = _sortMode;
-    sortSel.onchange = function() { _sortMode = sortSel.value; _expanded = false; render(); };
-    tools.appendChild(sortSel);
-    list.appendChild(tools);
-    function replyCount(cid) {
-      return all.filter(function(x) { return x.pid === cid; }).length;
-    }
-    function buildRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
-      row.dataset.cid = c.id;
-      var head = h('div', 'mrhx-chead');
-      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
-      var meta = h('div', 'mrhx-cmeta');
-      meta.appendChild(h('b', '', c.nick || '匿名'));
-      if (c.pid) {
-        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
-        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
-      }
-      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
-      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
-      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
-      head.appendChild(meta);
-      row.appendChild(head);
-      row.appendChild(h('div', 'mrhx-ccontent', c.content));
-      var bar = h('div', 'mrhx-cbar');
-      var rp = h('button', 'mrhx-cbtn', '回复');
-      rp.onclick = function () {
-        if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
-        else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
-      };
-      bar.appendChild(rp);
-      if (ADMIN) {
-        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
-        dl.onclick = function () {
-          if (!confirm('删除这条评论及其回复？')) return;
-          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
-            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-            .catch(function (e) { alert('删除失败：' + e.message); });
-        };
-        bar.appendChild(dl);
-        if (!c.pid) {
-          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
-          pin.onclick = function () {
-            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
-              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + _nl + '请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
-          };
-          bar.appendChild(pin);
-        }
-      }
-      row.appendChild(bar);
-      return row;
-    }
-    function addTree(pid, box) {
-      var items = all.filter(function (c) { return (c.pid || null) === pid; });
-      if (pid === null) {
-        // 顶层评论排序
-        items.sort(function (a, b) {
-          if (_sortMode === 'hot') {
-            var ra = replyCount(a.id), rb = replyCount(b.id);
-            if (rb !== ra) return rb - ra;
-          }
-          return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
-        });
-      } else {
-        items.sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-      }
-      items.forEach(function (c) {
-        var row = buildRow(c);
-        box.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
-    }
-    // 展开收起逻辑
-    if (!_expanded && topCount > SHOW_DEFAULT) {
-      // 先只渲染前 SHOW_DEFAULT 条顶层评论（+置顶的）
-      var pinnedTop = all.filter(function(c) { return !c.pid && c.pinned; });
-      var unpinnedTop = all.filter(function(c) { return !c.pid && !c.pinned; });
-      if (_sortMode === 'hot') {
-        unpinnedTop.sort(function (a, b) {
-          var ra = replyCount(a.id), rb = replyCount(b.id);
-          if (rb !== ra) return rb - ra;
-          return b.created_at.localeCompare(a.created_at);
-        });
-      } else {
-        unpinnedTop.sort(function (a, b) { return b.created_at.localeCompare(a.created_at); });
-      }
-      var shown = pinnedTop.concat(unpinnedTop.slice(0, SHOW_DEFAULT));
-      shown.forEach(function (c) {
-        var row = buildRow(c);
-        list.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
-      // 展开按钮
-      var toggle = h('button', 'mrhx-clist-toggle', '展开全部 ' + topCount + ' 条评论');
-      toggle.onclick = function () { _expanded = true; render(); };
-      list.appendChild(toggle);
-    } else {
-      addTree(null, list);
-      if (_expanded && topCount > SHOW_DEFAULT) {
-        var toggle2 = h('button', 'mrhx-clist-toggle', '收起评论');
-        toggle2.onclick = function () { _expanded = false; render(); };
-        list.appendChild(toggle2);
-      }
-    }
-    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
-  }
-  function load() {
-    // 兼容两种 url 存储格式：带前斜杠 /qzt.html 和不带 qzt.html（历史版本不一致），查两份再按 id 去重
-    var paths = [PATH];
-    if (PATH.charAt(0) === '/') paths.push(PATH.slice(1));
-    else paths.push('/' + PATH);
-    var baseQ = SB + '/rest/v1/comments?select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc';
-    Promise.all(paths.map(function (p) {
-      return fetch(baseQ + '&url=eq.' + encodeURIComponent(p), { headers: headers() }).then(function (r) {
-        if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });
-        return r.json();
-      }).catch(function () { return []; });
-    })).then(function (results) {
-      var seen = {}, merged = [];
-      (results[0] || []).concat(results[1] || []).forEach(function (c) {
-        if (!seen[c.id]) { seen[c.id] = true; merged.push(c); }
-      });
-      all = merged;
-      render();
-    }).catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
-  }
-  form.onsubmit = function (e) {
-    e.preventDefault();
-    if (hpEl && hpEl.value) { form.reset(); return; }
-    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
-    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
-    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    function doSubmit() {
-      return fetch(SB + '/rest/v1/comments', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
-        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
-      }).then(function (r) {
-        if (!r.ok) {
-          return r.text().then(function (t) {
-            var msg = 'HTTP ' + r.status;
-            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-            throw new Error(msg);
-          });
-        }
-        return r.json();
-      });
-    }
-    fetch(SB + '/rest/v1/rpc/guard_comment', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
-    }).then(function (r) {
-      if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) {
-        return r.text().then(function (t) {
-          var msg = 'HTTP ' + r.status;
-          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-          throw new Error(msg);
-        });
-      }
-      return r.json();
-    }).then(function (d) {
-      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-      replyPid = null; replyEl.textContent = '';
-      form.reset();
-      load();
-    }).catch(function (e) { alert('发送失败：' + e.message + '\n\n如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
-  };
-  // 点赞功能
-  var likeBar = document.getElementById('mrhx-like-bar');
-  var likeBtn = document.getElementById('mrhx-like-btn');
-  var likeCountEl = document.getElementById('mrhx-like-count');
-  var likedKey = 'mrhx_liked_' + PATH;
-  function loadLikes() {
-    fetch(SB + '/rest/v1/rpc/get_like_count', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_url: PATH })
-    }).then(function (r) { if (!r.ok) return null; return r.json(); }).then(function (d) {
-      var count = (typeof d === 'number') ? d : (d && d[0] && d[0].count) || 0;
-      if (likeBar) likeBar.style.display = 'flex';
-      if (likeCountEl) likeCountEl.textContent = count > 0 ? count + ' 人点赞' : '还没有人点赞';
-      if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-    }).catch(function () {
-      // RPC 不存在时用 REST 表查
-      fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH) + '&select=count', { headers: headers() })
-        .then(function (r) { return r.ok ? r.json() : []; }).then(function (d) {
-          var c = (d && d[0] && d[0].count) || 0;
-          if (likeBar) likeBar.style.display = 'flex';
-          if (likeCountEl) likeCountEl.textContent = c > 0 ? c + ' 人点赞' : '还没有人点赞';
-          if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-        }).catch(function () {});
-    });
-  }
-  if (likeBtn) {
-    likeBtn.onclick = function () {
-      if (localStorage.getItem(likedKey)) { toast('您已经点过赞了'); return; }
-      likeBtn.disabled = true;
-      fetch(SB + '/rest/v1/rpc/inc_like', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ p_url: PATH })
-      }).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        localStorage.setItem(likedKey, '1');
-        likeBtn.classList.add('liked');
-        loadLikes();
-      }).catch(function (e) {
-        // fallback: 直接用 REST upsert
-        fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), { headers: headers() })
-          .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (d) {
-            var c = (d && d[0] && d[0].count) || 0;
-            return fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), {
-              method: 'POST',
-              headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' }),
-              body: JSON.stringify({ url: PATH, count: c + 1 })
-            });
-          }).then(function () {
-            localStorage.setItem(likedKey, '1');
-            likeBtn.classList.add('liked');
-            loadLikes();
-          }).catch(function (e2) { alert('点赞失败：' + e2.message); });
-      }).finally(function () { likeBtn.disabled = false; });
-    };
-  }
-  function toast(msg) { var t = document.createElement('div'); t.textContent = msg; t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(40,40,40,.92);color:#fff;padding:10px 22px;border-radius:10px;z-index:99999;font-size:13px'; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2000); }
-  loadLikes();
-  load();
-})();
-</script>
-<!--mrhx-comments-end-->`;
-  }
-  return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(g.title)} · ${SITE_NAME}</title>
-<link rel="canonical" href="${canonical}">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
-.site em{font-style:normal;color:#e5484d}
-.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
-.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
-nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
-.gp-cover{width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#f4f2ef;margin-bottom:20px}
-.gp-cover img{width:100%;height:100%;object-fit:cover;display:block}
-.gp-title{font-size:26px;font-weight:800;color:#2b2b2b;line-height:1.3;margin-bottom:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
-.gp-plat{display:inline-block;padding:3px 12px;border-radius:99px;font-size:12px;font-weight:700;color:#fff;background:#e5484d}
-.gp-intro{font-size:15px;color:#555;line-height:1.8;margin-bottom:20px;padding:16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
-.gp-dls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
-.gp-dl{display:inline-flex;align-items:center;padding:10px 20px;border-radius:99px;font-size:14px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
-.gp-dl:hover{background:#c93a3f}
-.gp-back-top{display:inline-flex;align-items:center;gap:6px;margin-bottom:20px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
-.gp-back-top:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
-.gp-back-bot{display:inline-block;margin-top:16px;padding:8px 16px;border:1px solid #ecebe9;border-radius:99px;font-size:13px;color:#666;text-decoration:none;transition:.2s}
-.gp-back-bot:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
-.mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
-.mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:700}
-.mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
-.mrhx-comments .mrhx-citem{margin-bottom:10px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxFade .35s ease both}
-.mrhx-comments .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-.mrhx-creply-item{width:100%;min-width:0;margin-left:0;border-left:3px solid #f0b4b6;padding-left:12px;box-sizing:border-box;border-radius:10px;background:#fdf9f7;box-shadow:none}
-.mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
-.mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
-.mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
-.mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
-.mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
-.mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
-.mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
-.mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;padding-left:45px;margin-top:-4px}
-.mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
-.mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
-.mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-.mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
-.mrhx-cpop.show{display:flex}
-.mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
-.mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
-.mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
-.mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-.mrhx-cpop-ok:hover{background:#c93a3f}
-.mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
-.mrhx-cform{margin-top:18px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
-.mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
-.mrhx-crow input{flex:1;border:1px solid #e2e0dc;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-width:0;transition:.2s}
-.mrhx-cform textarea{width:100%;border:1px solid #e2e0dc;border-radius:9px;padding:11px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-height:82px;resize:vertical;box-sizing:border-box;transition:.2s}
-.mrhx-cform textarea:focus,.mrhx-crow input:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
-.mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
-.mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-csub button:hover{background:#c93a3f}
-.mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
-.mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  .mrhx-ctools{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-  .mrhx-csort{padding:4px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;background:#faf9f7;color:#555;outline:none;cursor:pointer;font-family:inherit}
-  .mrhx-csort:focus{border-color:#e5484d}
-  .mrhx-clist-toggle{display:block;width:100%;text-align:center;padding:10px;border:1px dashed #d5d2cc;border-radius:10px;background:#faf9f7;color:#888;font-size:13px;cursor:pointer;transition:.2s;margin-top:8px}
-  .mrhx-clist-toggle:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
-  .mrhx-like-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
-  .mrhx-like-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:2px solid #e5484d;border-radius:99px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-like-btn:hover{background:#fdf3f3}
-  .mrhx-like-btn.liked{background:#e5484d;color:#fff}
-  .mrhx-like-btn:disabled{opacity:.6;cursor:not-allowed}
-  .mrhx-like-count{font-size:13px;color:#888}
-@keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
-.mrhx-top.show{opacity:1;pointer-events:auto}
-.mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
-@media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px}
-  .site{font-size:17px}
-  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
-  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
-  nav::-webkit-scrollbar{display:none}
-  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
-  .mrhx-search input{flex:1;width:auto}
-  main{padding:16px 14px 32px}
-  .gp-title{font-size:22px}
-  .gp-cover{aspect-ratio:4/3}
-  .mrhx-crow{flex-direction:column}
-  .mrhx-cform{padding:14px 12px}
-  .mrhx-crow input{font-size:16px}
-  .mrhx-cform textarea{font-size:16px;min-height:90px}
-  .mrhx-citem{padding:12px 14px}
-  .mrhx-csub{flex-direction:row}
-  .mrhx-csub button{width:100%;padding:12px 0}
-  .mrhx-ccontent{padding-left:0}
-  .mrhx-cbar{padding-left:0}
-  .mrhx-creply-item{padding-left:8px}
-  .mrhx-cpop-box{margin:0 12px;padding:18px 16px}
-  .mrhx-clist-toggle{font-size:13px;padding:10px}
-}
-</style>
-<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
-</head>
-<body>
-<header>
-  <div class="hwrap">
-    <a class="site" href="${SITE_BASE}/">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
-    <div class="site-header-right">
-      <form class="mrhx-search" action="${SITE_BASE}/search.html" method="get">
-      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-      <button type="submit">搜索</button>
-    </form>
-      <nav>${navLinksStr}</nav>
-    </div>
-  </div>
-</header>
-<main>
-  <a class="gp-back-top" href="${SITE_BASE}/">← 返回首页</a>
-  <div class="gp-cover">${cover}</div>
-  <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
-  ${intro}
-  ${dlBtns ? `<div class="gp-dls">${dlBtns}</div>` : ''}
-  ${commentBlock}
-</main>
-<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
-<script>
-(function () {
-  var b = document.getElementById('mrhxTopBtn');
-  if (!b) return;
-  function t() {
-    var y = window.scrollY || document.documentElement.scrollTop;
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    var nearTop = y < 100, nearBottom = h - y < 100;
-    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
-    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
-    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
-    b.classList.add('show');
-  }
-  window.addEventListener('scroll', t, { passive: true });
-  t();
-})();
-</script>
-${vb}
-<footer style="border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px">${SITE_FOOTER}</footer>
-</body>
-</html>`;
-}
-
 function emptyIndex(navLinks) {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -863,11 +347,14 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 `;
 }
 
-function verify(days, index, gridGames) {
+function verify(days, index) {
   const errors = [];
   for (const d of days) {
+    const ref = `href="${esc(d.file)}"`;
+    if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
     if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
+    if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
     const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
     const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
     const h1Ok = h.includes(`>${esc(disp)}</div>`);
@@ -875,7 +362,6 @@ function verify(days, index, gridGames) {
     if (SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
     if (SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
   }
-  if (gridGames.length && !index.includes('class="ggrid"')) errors.push('首页缺少游戏网格');
   if (errors.length) {
     console.error('❌ 发布自检未通过:');
     errors.forEach(e => console.error('  - ' + e));
@@ -890,7 +376,6 @@ function verify(days, index, gridGames) {
 const days = [];
 const searchIndex = [];
 const allGames = [];
-let gameCounter = 0;
 (async () => {
   for (const file of files) {
     let html = fs.readFileSync(file, 'utf8');
@@ -1026,7 +511,6 @@ html = (function reorderNodes(str) {
       commentBlock = `<!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div class="mrhx-like-bar" id="mrhx-like-bar" style="display:none"><button class="mrhx-like-btn" id="mrhx-like-btn" type="button">👍 点赞</button><span class="mrhx-like-count" id="mrhx-like-count"></span></div>
   <div id="mrhx-clist"></div>
   <form id="mrhx-cform" class="mrhx-cform">
     <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
@@ -1065,10 +549,9 @@ html = (function reorderNodes(str) {
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
+  var popShown = false;
   if (pop) {
-    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
-    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
-    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
@@ -1076,27 +559,11 @@ html = (function reorderNodes(str) {
   function headers() {
     return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
   }
-  var _sortMode = 'latest'; // latest | hot
-  var _expanded = false;
-  var SHOW_DEFAULT = 3;
   function render() {
     list.textContent = '';
-    var topCount = all.filter(function(c) { return !c.pid; }).length;
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    // 排序工具栏
-    var tools = h('div', 'mrhx-ctools');
-    var sortSel = h('select', 'mrhx-csort');
-    sortSel.innerHTML = '<option value="latest">最新排序</option><option value="hot">热门排序</option>';
-    sortSel.value = _sortMode;
-    sortSel.onchange = function() { _sortMode = sortSel.value; _expanded = false; render(); };
-    tools.appendChild(sortSel);
-    list.appendChild(tools);
-    function replyCount(cid) {
-      return all.filter(function(x) { return x.pid === cid; }).length;
-    }
     function buildRow(c) {
       var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
-      row.dataset.cid = c.id;
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -1132,7 +599,7 @@ html = (function reorderNodes(str) {
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + _nl + '请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { alert('置顶失败：' + e.message + '\\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
@@ -1141,88 +608,30 @@ html = (function reorderNodes(str) {
       return row;
     }
     function addTree(pid, box) {
-      var items = all.filter(function (c) { return (c.pid || null) === pid; });
-      if (pid === null) {
-        // 顶层评论排序
-        items.sort(function (a, b) {
-          if (_sortMode === 'hot') {
-            var ra = replyCount(a.id), rb = replyCount(b.id);
-            if (rb !== ra) return rb - ra;
-          }
-          return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
+          return a.created_at.localeCompare(b.created_at);
+        })
+        .forEach(function (c) {
+          var row = buildRow(c);
+          box.appendChild(row);
+          var children = all.filter(function (x) { return x.pid === c.id; })
+            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
+          if (!children.length) return;
+          var threadBox = h('div', 'mrhx-thread');
+          row.appendChild(threadBox);
+          addTree(c.id, threadBox);
         });
-      } else {
-        items.sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-      }
-      items.forEach(function (c) {
-        var row = buildRow(c);
-        box.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
     }
-    // 展开收起逻辑
-    if (!_expanded && topCount > SHOW_DEFAULT) {
-      // 先只渲染前 SHOW_DEFAULT 条顶层评论（+置顶的）
-      var pinnedTop = all.filter(function(c) { return !c.pid && c.pinned; });
-      var unpinnedTop = all.filter(function(c) { return !c.pid && !c.pinned; });
-      if (_sortMode === 'hot') {
-        unpinnedTop.sort(function (a, b) {
-          var ra = replyCount(a.id), rb = replyCount(b.id);
-          if (rb !== ra) return rb - ra;
-          return b.created_at.localeCompare(a.created_at);
-        });
-      } else {
-        unpinnedTop.sort(function (a, b) { return b.created_at.localeCompare(a.created_at); });
-      }
-      var shown = pinnedTop.concat(unpinnedTop.slice(0, SHOW_DEFAULT));
-      shown.forEach(function (c) {
-        var row = buildRow(c);
-        list.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
-      // 展开按钮
-      var toggle = h('button', 'mrhx-clist-toggle', '展开全部 ' + topCount + ' 条评论');
-      toggle.onclick = function () { _expanded = true; render(); };
-      list.appendChild(toggle);
-    } else {
-      addTree(null, list);
-      if (_expanded && topCount > SHOW_DEFAULT) {
-        var toggle2 = h('button', 'mrhx-clist-toggle', '收起评论');
-        toggle2.onclick = function () { _expanded = false; render(); };
-        list.appendChild(toggle2);
-      }
-    }
+    addTree(null, list);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    // 兼容两种 url 存储格式：带前斜杠 /qzt.html 和不带 qzt.html（历史版本不一致），查两份再按 id 去重
-    var paths = [PATH];
-    if (PATH.charAt(0) === '/') paths.push(PATH.slice(1));
-    else paths.push('/' + PATH);
-    var baseQ = SB + '/rest/v1/comments?select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc';
-    Promise.all(paths.map(function (p) {
-      return fetch(baseQ + '&url=eq.' + encodeURIComponent(p), { headers: headers() }).then(function (r) {
-        if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });
-        return r.json();
-      }).catch(function () { return []; });
-    })).then(function (results) {
-      var seen = {}, merged = [];
-      (results[0] || []).concat(results[1] || []).forEach(function (c) {
-        if (!seen[c.id]) { seen[c.id] = true; merged.push(c); }
-      });
-      all = merged;
-      render();
-    }).catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
+      .then(function (d) { all = d || []; render(); })
+      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
   }
   form.onsubmit = function (e) {
     e.preventDefault();
@@ -1231,103 +640,21 @@ html = (function reorderNodes(str) {
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    function doSubmit() {
-      return fetch(SB + '/rest/v1/comments', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
-        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
-      }).then(function (r) {
-        if (!r.ok) {
-          return r.text().then(function (t) {
-            var msg = 'HTTP ' + r.status;
-            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-            throw new Error(msg);
-          });
-        }
-        return r.json();
-      });
-    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) {
-        return r.text().then(function (t) {
-          var msg = 'HTTP ' + r.status;
-          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-          throw new Error(msg);
-        });
-      }
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
       return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
-    }).catch(function (e) { alert('发送失败：' + e.message + '\n\n如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
-  // 点赞功能
-  var likeBar = document.getElementById('mrhx-like-bar');
-  var likeBtn = document.getElementById('mrhx-like-btn');
-  var likeCountEl = document.getElementById('mrhx-like-count');
-  var likedKey = 'mrhx_liked_' + PATH;
-  function loadLikes() {
-    fetch(SB + '/rest/v1/rpc/get_like_count', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_url: PATH })
-    }).then(function (r) { if (!r.ok) return null; return r.json(); }).then(function (d) {
-      var count = (typeof d === 'number') ? d : (d && d[0] && d[0].count) || 0;
-      if (likeBar) likeBar.style.display = 'flex';
-      if (likeCountEl) likeCountEl.textContent = count > 0 ? count + ' 人点赞' : '还没有人点赞';
-      if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-    }).catch(function () {
-      // RPC 不存在时用 REST 表查
-      fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH) + '&select=count', { headers: headers() })
-        .then(function (r) { return r.ok ? r.json() : []; }).then(function (d) {
-          var c = (d && d[0] && d[0].count) || 0;
-          if (likeBar) likeBar.style.display = 'flex';
-          if (likeCountEl) likeCountEl.textContent = c > 0 ? c + ' 人点赞' : '还没有人点赞';
-          if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-        }).catch(function () {});
-    });
-  }
-  if (likeBtn) {
-    likeBtn.onclick = function () {
-      if (localStorage.getItem(likedKey)) { toast('您已经点过赞了'); return; }
-      likeBtn.disabled = true;
-      fetch(SB + '/rest/v1/rpc/inc_like', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ p_url: PATH })
-      }).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        localStorage.setItem(likedKey, '1');
-        likeBtn.classList.add('liked');
-        loadLikes();
-      }).catch(function (e) {
-        // fallback: 直接用 REST upsert
-        fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), { headers: headers() })
-          .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (d) {
-            var c = (d && d[0] && d[0].count) || 0;
-            return fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), {
-              method: 'POST',
-              headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' }),
-              body: JSON.stringify({ url: PATH, count: c + 1 })
-            });
-          }).then(function () {
-            localStorage.setItem(likedKey, '1');
-            likeBtn.classList.add('liked');
-            loadLikes();
-          }).catch(function (e2) { alert('点赞失败：' + e2.message); });
-      }).finally(function () { likeBtn.disabled = false; });
-    };
-  }
-  function toast(msg) { var t = document.createElement('div'); t.textContent = msg; t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(40,40,40,.92);color:#fff;padding:10px 22px;border-radius:10px;z-index:99999;font-size:13px'; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2000); }
-  loadLikes();
   load();
 })();
 </script>
@@ -1354,42 +681,19 @@ html = (function reorderNodes(str) {
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      let title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
-      // 去掉标题末尾已包含的（1）[PC]/[PC+安卓]/[安卓] 等括号版 或（2）裸的 PC+安卓/PC/安卓/PC端/安卓端 文字后缀
-      // 可能重复出现多次（如"特工17PC+安卓PC+安卓"），循环剥直到没变化（最多5次防死循环）
-      for (let _i = 0; _i < 5; _i++) {
-        const before = title;
-        title = title.replace(/\s*[\[【(（]\s*(PC\s*\+\s*安卓|PC\+安卓|PC|安卓|安卓端|PC端)\s*[\]】)）]\s*$/i, '').trim();
-        title = title.replace(/\s*(PC\s*\+\s*安卓|PC\+安卓|安卓端|PC端|PC|安卓)\s*$/i, '').trim();
-        if (title === before) break;
-      }
+      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
       const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
-      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName, isPinned: PINS.indexOf(shortName) !== -1, pageUrl: shortName + '.html' };
+      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
     searchIndex.push(...games);
-    const gamesWithPages = games.map(g => {
-      const slug = String(++gameCounter);
-      const gameUrl = `games/${slug}.html`;
-      return { ...g, slug, gameUrl, file };
-    });
-    allGames.push(...gamesWithPages);
+    allGames.push(...games.map(g => ({ ...g, file })));
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
     days.push({ file, gameCount, tag });
-
-    const pinnedNames = PINS.map(p => p + '.html');
-
-    for (const g of gamesWithPages) {
-      // 所有游戏（含置顶帖内的）都生成单独 games/N.html 页，首页网格才能点进去不 404
-      const gameHtml = renderGamePage(g, file);
-      const gameDir = path.join('games');
-      fs.mkdirSync(gameDir, { recursive: true });
-      fs.writeFileSync(path.join(gameDir, g.slug + '.html'), gameHtml);
-    }
   }
 
   days.sort((a, b) => {
@@ -1448,42 +752,20 @@ html = (function reorderNodes(str) {
   const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
 
   const pinnedNames = PINS.map(p => p + '.html');
-  // 包含所有游戏（含置顶帖游戏），全部同步到首页网格
-  // 排序：按母帖 days 数组的先后（置顶帖→最新日期→最旧日期），同一母帖按原解析顺序
-  const fileRank = new Map(days.map((d, i) => [d.file, i]));
-  let _seq = 0;
-  const gridGames = allGames
-    .map(g => [g, fileRank.get(g.file) ?? 9999, ++_seq])
-    .sort((a, b) => (a[1] - b[1]) || (a[2] - b[2]))
-    .map(x => x[0]);
-
-  // pinned post summary card (links to the day page, not individual games)
-  const pinnedDays = days.filter(d => pinnedNames.indexOf(d.file) !== -1);
-  const pinnedSection = pinnedDays.length ? `<div class="sect gsect"><h2>置顶求助</h2><span>${pinnedDays.reduce((s,d)=>s+d.gameCount,0)} 款</span></div>
-  ${pinnedDays.map((d, di) => {
-    const title = path.parse(d.file).name;
-    const disp = TITLES[title] || title;
-    const dayHtml = fs.readFileSync(d.file, 'utf8');
-    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
-      .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
-    return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
-  <div class="date"><b style="font-size:12px">置顶</b></div>
-  <div class="info">
-    <div class="ptitle">${esc(disp)} <span class="pinb">置顶</span></div>
-    <div class="pmeta">共 ${d.gameCount} 款游戏</div>
-  </div>
-  ${covers ? `<div class="covers">${covers}</div>` : ''}
-  <div class="arrow">→</div>
-</a>`;
-  }).join('\n')}` : '';
+  const gridGames = allGames.filter(g => pinnedNames.indexOf(g.file) === -1);
 
   const gameGrid = gridGames.map((g, gi) => {
     const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
     const platTag = g.plat ? `<span class="g-plat">${g.plat}</span>` : '';
-    return `<a class="gcard" href="${esc(g.gameUrl)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
+    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
+    const srcName = path.parse(g.file).name;
+    const srcDisp = TITLES[srcName] || srcName;
+    return `<a class="gcard" href="${esc(g.file)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
   ${cover}
   <div class="g-body">
     <div class="g-title">${esc(g.title)}${platTag}</div>
+    <div class="g-src">来源 · ${esc(srcDisp)}</div>
+    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
   </div>
 </a>`;
   }).join('\n');
@@ -1595,12 +877,13 @@ footer b{color:#e5484d}
   </div>
 </header>
 <main>
-  ${pinnedSection}
-  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${gridGames.length}</b> 款游戏</div>
-  <div class="sect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
+  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
+  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
+  ${dayLis || '<div class="empty">暂无分享</div>'}
+  ${gridGames.length ? `<div class="sect gsect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
   <div class="ggrid">
   ${gameGrid}
-  </div>
+  </div>` : ''}
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
@@ -1612,24 +895,10 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
   fs.writeFileSync('index.html', index);
   console.log('index.html ok, days:', days.length);
 
-  // 构造带 slug / gameUrl / source / isPinned 的完整搜索索引
-  const finalSearchIndex = allGames.map(function (g) {
-    return {
-      title: g.title,
-      intro: g.intro,
-      img: g.img,
-      links: g.links,
-      plat: g.plat || '',
-      source: g.source,
-      pageUrl: g.file,               // 原帖路径，如 "8.10.html"
-      gameUrl: g.gameUrl,            // 单游戏页，如 "games/1.html"
-      isPinned: PINS.indexOf(path.parse(g.file).name) !== -1
-    };
-  });
-  fs.writeFileSync('search_index.json', JSON.stringify(finalSearchIndex, null, 2));
+  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
   console.log('search_index.json ok, games:', searchIndex.length);
 
-  verify(days, index, gridGames);
+  verify(days, index, searchIndex);
 
   const searchPage = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -1666,26 +935,15 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .btn-dl-m{background:#e5484d;color:#fff}
 .btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
-.plat-select{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;background:#faf9f7;color:#333;outline:none;font-family:inherit;cursor:pointer}
-.plat-select:focus{border-color:#e5484d;background:#fff}
-.result .rt a:hover{text-decoration:underline}
-.result .src{margin-right:4px}
-.result{position:relative}
-@media (max-width:720px){.hwrap{padding:12px 14px;flex-wrap:wrap}.mrhx-search{width:100%}.plat-select{flex-shrink:0}.mrhx-search input{width:auto;flex:1;min-width:0}main{padding:18px 14px 32px}}
+@media (max-width:720px){.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
 </style>
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="./">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
     <form class="mrhx-search" action="search.html" method="get">
-      <select id="plat" name="plat" class="plat-select" title="按平台筛选">
-        <option value="all">全部平台</option>
-        <option value="pc">仅 PC</option>
-        <option value="android">仅 安卓</option>
-        <option value="pcandroid">PC+安卓</option>
-      </select>
-      <input type="text" name="q" id="q" placeholder="搜索游戏名 / 介绍…" autocomplete="off">
+      <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
   </div>
@@ -1698,110 +956,48 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 (function () {
-  var params = new URLSearchParams(location.search);
-  var q = params.get('q') || '';
-  var plat = params.get('plat') || 'all';
-  var qInput = document.getElementById('q');
-  qInput.value = q;
-  var platSel = document.getElementById('plat');
-  if (platSel) platSel.value = plat;
+  var q = new URLSearchParams(location.search).get('q') || '';
+  var input = document.getElementById('q');
+  input.value = q;
   var resBox = document.getElementById('res');
   var countEl = document.getElementById('count');
   var ALL = 30;
   var _hits = [];
   var _page = 0;
-  function platBadge(platText) {
-    if (!platText) return '';
-    var color = (platText.indexOf('安卓') > -1 || platText.indexOf('PC+安卓') === 0) ? 'background:#e5484d'
-      : (platText === 'PC' ? 'background:#1a5fb4' : 'background:#888');
-    return '<span class="src" style="' + color + ';margin-left:0">' + esc(platText) + '</span>';
-  }
-  function rowHtml(g, rank) {
+  function rowHtml(g) {
     var dl = (g.links || []).map(function (l) {
       var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
     }).join('');
-    var goto = g.gameUrl || (g.pageUrl ? g.pageUrl : '');
-    var srcPin = (g.isPinned ? ' <span class="src" style="background:#e58d0a">置顶</span>' : '');
-    var srcLink = g.pageUrl ? '<a class="src" style="background:#666;text-decoration:none" href="' + esc(g.pageUrl) + '" target="_blank" rel="noreferrer">原帖 ' + esc(g.source || '') + '</a>'
-      : '<span class="src">' + esc(g.source || '') + '</span>';
-    var titleLink = goto ? '<a href="' + esc(goto) + '" style="color:#2b2b2b;text-decoration:none">' + esc(g.title) + '</a>' : '<b>' + esc(g.title) + '</b>';
-    return '<div class="result" style="order:' + (rank || 0) + '">' +
-      '<div class="rt">' + titleLink + platBadge(g.plat || '') + srcPin + srcLink + '</div>' +
+    return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><a href="' + esc(goto || (g.pageUrl || '#')) + '"><img src="' + esc(g.img) + '" alt="" loading="lazy"></a></div>' : '') +
+      (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
       '</div>';
   }
   function renderMore() {
     var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
-    resBox.insertAdjacentHTML('beforeend', slice.map(function (g, i) { return rowHtml(g, _page * ALL + i); }).join(''));
+    resBox.insertAdjacentHTML('beforeend', slice.map(rowHtml).join(''));
     _page++;
     var moreBtn = document.getElementById('mrhx-more');
     if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
   }
-  var moreWrap = document.createElement('div');
-  moreWrap.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
-  moreWrap.style.textAlign = 'center';
-  moreWrap.style.marginTop = '6px';
-  resBox.parentNode.insertBefore(moreWrap, resBox.nextSibling);
+  var moreBtn = document.createElement('div');
+  moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
+  moreBtn.style.textAlign = 'center';
+  moreBtn.style.marginTop = '6px';
+  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
   document.getElementById('mrhx-more').onclick = renderMore;
-  function doSearch() {
-    _hits = []; _page = 0; resBox.innerHTML = '';
-    var kw = (document.getElementById('q').value || '').trim();
-    var pSel = document.getElementById('plat');
-    var curPlat = pSel ? pSel.value : 'all';
-    // 更新浏览器 URL（可后退）
-    var p = new URLSearchParams();
-    if (kw) p.set('q', kw);
-    if (curPlat && curPlat !== 'all') p.set('plat', curPlat);
-    var newUrl = location.pathname + (p.toString() ? ('?' + p.toString()) : '');
-    if (newUrl !== (location.pathname + location.search)) history.replaceState(null, '', newUrl);
-    if (!kw && curPlat === 'all') { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
-    fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
-      var kwLow = kw ? kw.toLowerCase() : '';
-      var results = [];
-      data.forEach(function (g) {
-        var gPlat = (g.plat || '').toLowerCase();
-        var platPass = true;
-        if (curPlat === 'pc') platPass = (gPlat === 'pc');
-        else if (curPlat === 'android') platPass = (gPlat.indexOf('安卓') > -1);
-        else if (curPlat === 'pcandroid') platPass = (gPlat.indexOf('pc+安卓') === 0 || gPlat.indexOf('pc + 安卓') === 0 || gPlat.indexOf('安卓') > -1 && gPlat.indexOf('pc') > -1);
-        if (!platPass) return;
-        var titleLow = (g.title || '').toLowerCase();
-        var introLow = (g.intro || '').toLowerCase();
-        var sourceLow = (g.source || '').toLowerCase();
-        var titleHit = kwLow && titleLow.indexOf(kwLow) > -1;
-        var introHit = kwLow && introLow.indexOf(kwLow) > -1;
-        var sourceHit = kwLow && sourceLow.indexOf(kwLow) > -1;
-        var kwPass = !kwLow || titleHit || introHit || sourceHit;
-        if (!kwPass) return;
-        var score = 0;
-        if (kwLow) {
-          if (titleLow === kwLow) score += 100;
-          else if (titleLow.indexOf(kwLow) === 0) score += 80;
-          else if (titleHit) score += 60;
-          if (introHit) score += 30;
-          if (sourceHit) score += 10;
-        }
-        results.push({ g: g, score: score });
-      });
-      results.sort(function (a, b) { return b.score - a.score; });
-      _hits = results.map(function (x) { return x.g; });
-      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (kw ? '「' + esc(kw) + '」' : '') + '）';
-      if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到匹配的游戏' + (kw ? '（「' + esc(kw) + '」）' : '') + '，换个关键词或平台试试～</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
-      renderMore();
-    }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败，请检查网络或刷新页面</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
-  }
-  // 搜索框回车 / 按钮 submit 时实时触发
-  var searchForm = document.querySelector('form.mrhx-search');
-  if (searchForm) {
-    searchForm.addEventListener('submit', function (e) { e.preventDefault(); doSearch(); });
-  }
-  var platEl = document.getElementById('plat');
-  if (platEl) platEl.addEventListener('change', function () { doSearch(); });
-  if (q || plat && plat !== 'all') doSearch();
-  else { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; }
+  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+  fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
+    var kw = q.toLowerCase();
+    _hits = data.filter(function (g) {
+      return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
+    });
+    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+    if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+    renderMore();
+  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
 })();
 </script>
 </body>

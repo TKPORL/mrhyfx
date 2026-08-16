@@ -1023,8 +1023,8 @@
       <body class="narrow">
   <!--mrhx-->
 <style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;margin-top:88px !important}
-  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
+  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
@@ -1038,6 +1038,9 @@
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+  @media (min-width:721px){
+    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
+  }
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
@@ -1053,15 +1056,6 @@
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
-  .node-list{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;list-style:none;margin:0 !important;padding:0 !important}
-  .node-list .node{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.25s;display:flex;flex-direction:column}
-  .node-list .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-  .node-list .node .bullet{display:none}
-  .node-list .node .image-list{margin:0;padding:0}
-  .node-list .node .image{width:100% !important;height:auto;max-height:220px;object-fit:cover;display:block}
-  .node-list .node .content{font-size:15px;font-weight:700;color:#2b2b2b;padding:12px 14px 4px;line-height:1.4;margin:0}
-  .node-list .node .note{font-size:12px;color:#888;padding:4px 14px 8px;white-space:normal;line-height:1.5;margin:0}
-  .node-list .node .mrhx-dl{padding:0 14px 14px;margin:0}
   .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important}
@@ -1077,17 +1071,15 @@
     .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
-    .node-list{grid-template-columns:1fr;gap:10px}
-    .node-list .node .image{max-height:180px}
   }
   .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
   .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
   .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
   .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{width:100%;min-width:0;margin-left:0;border-left:3px solid #f0b4b6;padding-left:12px;box-sizing:border-box;border-radius:10px;background:#fdf9f7;box-shadow:none}
+  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
-  .mrhx-thread{margin-top:8px;padding-left:0;width:100%;margin-left:0}
+  .mrhx-thread{margin-top:8px;padding-left:0}
   .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
   .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
   .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
@@ -1124,18 +1116,7 @@
   .mrhx-csub button:hover{background:#c93a3f}
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  .mrhx-ctools{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-  .mrhx-csort{padding:4px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;background:#faf9f7;color:#555;outline:none;cursor:pointer;font-family:inherit}
-  .mrhx-csort:focus{border-color:#e5484d}
-  .mrhx-clist-toggle{display:block;width:100%;text-align:center;padding:10px;border:1px dashed #d5d2cc;border-radius:10px;background:#faf9f7;color:#888;font-size:13px;cursor:pointer;transition:.2s;margin-top:8px}
-  .mrhx-clist-toggle:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
-  .mrhx-like-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:12px 16px;background:#fff;border:1px solid #ecebe9;border-radius:12px}
-  .mrhx-like-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:2px solid #e5484d;border-radius:99px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-like-btn:hover{background:#fdf3f3}
-  .mrhx-like-btn.liked{background:#e5484d;color:#fff}
-  .mrhx-like-btn:disabled{opacity:.6;cursor:not-allowed}
-  .mrhx-like-count{font-size:13px;color:#888}
-  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:100%;margin-left:0;padding-left:8px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}.mrhx-cform{padding:14px 12px}.mrhx-crow input{font-size:16px}.mrhx-cform textarea{font-size:16px;min-height:90px}.mrhx-citem{padding:12px 14px}.mrhx-csub{flex-direction:row}.mrhx-csub button{width:100%;padding:12px 0}.mrhx-cpop-box{margin:0 12px;padding:18px 16px}.mrhx-clist-toggle{font-size:13px;padding:10px}}
+  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
@@ -1214,7 +1195,6 @@
 </style>
     <button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
-var _nl = String.fromCharCode(10);
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
@@ -1235,7 +1215,6 @@ var _nl = String.fromCharCode(10);
   <!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div class="mrhx-like-bar" id="mrhx-like-bar" style="display:none"><button class="mrhx-like-btn" id="mrhx-like-btn" type="button">👍 点赞</button><span class="mrhx-like-count" id="mrhx-like-count"></span></div>
   <div id="mrhx-clist"></div>
   <form id="mrhx-cform" class="mrhx-cform">
     <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
@@ -1274,10 +1253,9 @@ var _nl = String.fromCharCode(10);
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
+  var popShown = false;
   if (pop) {
-    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
-    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
-    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
@@ -1285,27 +1263,11 @@ var _nl = String.fromCharCode(10);
   function headers() {
     return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
   }
-  var _sortMode = 'latest'; // latest | hot
-  var _expanded = false;
-  var SHOW_DEFAULT = 3;
   function render() {
     list.textContent = '';
-    var topCount = all.filter(function(c) { return !c.pid; }).length;
     document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    // 排序工具栏
-    var tools = h('div', 'mrhx-ctools');
-    var sortSel = h('select', 'mrhx-csort');
-    sortSel.innerHTML = '<option value="latest">最新排序</option><option value="hot">热门排序</option>';
-    sortSel.value = _sortMode;
-    sortSel.onchange = function() { _sortMode = sortSel.value; _expanded = false; render(); };
-    tools.appendChild(sortSel);
-    list.appendChild(tools);
-    function replyCount(cid) {
-      return all.filter(function(x) { return x.pid === cid; }).length;
-    }
     function buildRow(c) {
       var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
-      row.dataset.cid = c.id;
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -1341,7 +1303,7 @@ var _nl = String.fromCharCode(10);
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + _nl + '请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
@@ -1350,88 +1312,30 @@ var _nl = String.fromCharCode(10);
       return row;
     }
     function addTree(pid, box) {
-      var items = all.filter(function (c) { return (c.pid || null) === pid; });
-      if (pid === null) {
-        // 顶层评论排序
-        items.sort(function (a, b) {
-          if (_sortMode === 'hot') {
-            var ra = replyCount(a.id), rb = replyCount(b.id);
-            if (rb !== ra) return rb - ra;
-          }
-          return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
+          return a.created_at.localeCompare(b.created_at);
+        })
+        .forEach(function (c) {
+          var row = buildRow(c);
+          box.appendChild(row);
+          var children = all.filter(function (x) { return x.pid === c.id; })
+            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
+          if (!children.length) return;
+          var threadBox = h('div', 'mrhx-thread');
+          row.appendChild(threadBox);
+          addTree(c.id, threadBox);
         });
-      } else {
-        items.sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-      }
-      items.forEach(function (c) {
-        var row = buildRow(c);
-        box.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
     }
-    // 展开收起逻辑
-    if (!_expanded && topCount > SHOW_DEFAULT) {
-      // 先只渲染前 SHOW_DEFAULT 条顶层评论（+置顶的）
-      var pinnedTop = all.filter(function(c) { return !c.pid && c.pinned; });
-      var unpinnedTop = all.filter(function(c) { return !c.pid && !c.pinned; });
-      if (_sortMode === 'hot') {
-        unpinnedTop.sort(function (a, b) {
-          var ra = replyCount(a.id), rb = replyCount(b.id);
-          if (rb !== ra) return rb - ra;
-          return b.created_at.localeCompare(a.created_at);
-        });
-      } else {
-        unpinnedTop.sort(function (a, b) { return b.created_at.localeCompare(a.created_at); });
-      }
-      var shown = pinnedTop.concat(unpinnedTop.slice(0, SHOW_DEFAULT));
-      shown.forEach(function (c) {
-        var row = buildRow(c);
-        list.appendChild(row);
-        var children = all.filter(function (x) { return x.pid === c.id; })
-          .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-        if (!children.length) return;
-        var threadBox = h('div', 'mrhx-thread');
-        row.appendChild(threadBox);
-        addTree(c.id, threadBox);
-      });
-      // 展开按钮
-      var toggle = h('button', 'mrhx-clist-toggle', '展开全部 ' + topCount + ' 条评论');
-      toggle.onclick = function () { _expanded = true; render(); };
-      list.appendChild(toggle);
-    } else {
-      addTree(null, list);
-      if (_expanded && topCount > SHOW_DEFAULT) {
-        var toggle2 = h('button', 'mrhx-clist-toggle', '收起评论');
-        toggle2.onclick = function () { _expanded = false; render(); };
-        list.appendChild(toggle2);
-      }
-    }
+    addTree(null, list);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
   }
   function load() {
-    // 兼容两种 url 存储格式：带前斜杠 /qzt.html 和不带 qzt.html（历史版本不一致），查两份再按 id 去重
-    var paths = [PATH];
-    if (PATH.charAt(0) === '/') paths.push(PATH.slice(1));
-    else paths.push('/' + PATH);
-    var baseQ = SB + '/rest/v1/comments?select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc';
-    Promise.all(paths.map(function (p) {
-      return fetch(baseQ + '&url=eq.' + encodeURIComponent(p), { headers: headers() }).then(function (r) {
-        if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });
-        return r.json();
-      }).catch(function () { return []; });
-    })).then(function (results) {
-      var seen = {}, merged = [];
-      (results[0] || []).concat(results[1] || []).forEach(function (c) {
-        if (!seen[c.id]) { seen[c.id] = true; merged.push(c); }
-      });
-      all = merged;
-      render();
-    }).catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
+      .then(function (d) { all = d || []; render(); })
+      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
   }
   form.onsubmit = function (e) {
     e.preventDefault();
@@ -1440,105 +1344,21 @@ var _nl = String.fromCharCode(10);
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    function doSubmit() {
-      return fetch(SB + '/rest/v1/comments', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
-        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
-      }).then(function (r) {
-        if (!r.ok) {
-          return r.text().then(function (t) {
-            var msg = 'HTTP ' + r.status;
-            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-            throw new Error(msg);
-          });
-        }
-        return r.json();
-      });
-    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) {
-        return r.text().then(function (t) {
-          var msg = 'HTTP ' + r.status;
-          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
-          throw new Error(msg);
-        });
-      }
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
       return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
-    }).catch(function (e) { alert('发送失败：' + e.message + '
-
-如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
-  // 点赞功能
-  var likeBar = document.getElementById('mrhx-like-bar');
-  var likeBtn = document.getElementById('mrhx-like-btn');
-  var likeCountEl = document.getElementById('mrhx-like-count');
-  var likedKey = 'mrhx_liked_' + PATH;
-  function loadLikes() {
-    fetch(SB + '/rest/v1/rpc/get_like_count', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-      body: JSON.stringify({ p_url: PATH })
-    }).then(function (r) { if (!r.ok) return null; return r.json(); }).then(function (d) {
-      var count = (typeof d === 'number') ? d : (d && d[0] && d[0].count) || 0;
-      if (likeBar) likeBar.style.display = 'flex';
-      if (likeCountEl) likeCountEl.textContent = count > 0 ? count + ' 人点赞' : '还没有人点赞';
-      if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-    }).catch(function () {
-      // RPC 不存在时用 REST 表查
-      fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH) + '&select=count', { headers: headers() })
-        .then(function (r) { return r.ok ? r.json() : []; }).then(function (d) {
-          var c = (d && d[0] && d[0].count) || 0;
-          if (likeBar) likeBar.style.display = 'flex';
-          if (likeCountEl) likeCountEl.textContent = c > 0 ? c + ' 人点赞' : '还没有人点赞';
-          if (likeBtn && localStorage.getItem(likedKey)) likeBtn.classList.add('liked');
-        }).catch(function () {});
-    });
-  }
-  if (likeBtn) {
-    likeBtn.onclick = function () {
-      if (localStorage.getItem(likedKey)) { toast('您已经点过赞了'); return; }
-      likeBtn.disabled = true;
-      fetch(SB + '/rest/v1/rpc/inc_like', {
-        method: 'POST',
-        headers: Object.assign(headers(), { 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ p_url: PATH })
-      }).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        localStorage.setItem(likedKey, '1');
-        likeBtn.classList.add('liked');
-        loadLikes();
-      }).catch(function (e) {
-        // fallback: 直接用 REST upsert
-        fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), { headers: headers() })
-          .then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (d) {
-            var c = (d && d[0] && d[0].count) || 0;
-            return fetch(SB + '/rest/v1/post_likes?url=eq.' + encodeURIComponent(PATH), {
-              method: 'POST',
-              headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' }),
-              body: JSON.stringify({ url: PATH, count: c + 1 })
-            });
-          }).then(function () {
-            localStorage.setItem(likedKey, '1');
-            likeBtn.classList.add('liked');
-            loadLikes();
-          }).catch(function (e2) { alert('点赞失败：' + e2.message); });
-      }).finally(function () { likeBtn.disabled = false; });
-    };
-  }
-  function toast(msg) { var t = document.createElement('div'); t.textContent = msg; t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(40,40,40,.92);color:#fff;padding:10px 22px;border-radius:10px;z-index:99999;font-size:13px'; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2000); }
-  loadLikes();
   load();
 })();
 </script>
