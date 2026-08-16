@@ -1051,6 +1051,7 @@ html = (function reorderNodes(str) {
   </div>
 </div>
 <script>
+document.addEventListener('DOMContentLoaded', function () {
 (function () {
   var SB = '${sb}';
   var KEY = '${key}';
