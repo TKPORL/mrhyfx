@@ -221,298 +221,7 @@ const viewScript = (sb, key, path) => `<script>
 })();
 </script>`;
 
-const commentBlockHtml = (sb, key, path) => `<!--mrhx-comments-->
-<div class="mrhx-comments" id="mrhx-comments">
-  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div id="mrhx-clist"></div>
-  <form id="mrhx-cform" class="mrhx-cform">
-    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
-      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
-    </div>
-    <div class="mrhx-cform-title">💬 发表评论</div>
-    <div class="mrhx-crow">
-      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
-      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
-    </div>
-    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
-    <div class="mrhx-crow mrhx-csub">
-      <span id="mrhx-creply" class="mrhx-creply"></span>
-      <button type="submit">发表评论</button>
-    </div>
-  </form>
-</div>
-<div class="mrhx-cpop" id="mrhx-cpop">
-  <div class="mrhx-cpop-box">
-    <h3>邮箱填写提示</h3>
-    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
-    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
-  </div>
-</div>
-<script>
-(function () {
-  var SB = '${sb}';
-  var KEY = '${key}';
-  var PATH = '${path}';
-  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
-  var list = document.getElementById('mrhx-clist');
-  var form = document.getElementById('mrhx-cform');
-  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
-  var hpEl = document.getElementById('mrhx-hp');
-  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
-  var replyEl = document.getElementById('mrhx-creply');
-  var replyPid = null;
-  var all = [];
-  var popShown = false;
-  if (pop) {
-    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
-    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
-    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
-  }
-  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
-  function headers() {
-    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
-  }
-  function render() {
-    list.textContent = '';
-    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    function buildRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
-      var head = h('div', 'mrhx-chead');
-      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
-      var meta = h('div', 'mrhx-cmeta');
-      meta.appendChild(h('b', '', c.nick || '匿名'));
-      if (c.pid) {
-        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
-        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
-      }
-      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
-      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
-      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
-      head.appendChild(meta);
-      row.appendChild(head);
-      row.appendChild(h('div', 'mrhx-ccontent', c.content));
-      var bar = h('div', 'mrhx-cbar');
-      var rp = h('button', 'mrhx-cbtn', '回复');
-      rp.onclick = function () {
-        if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
-        else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
-      };
-      bar.appendChild(rp);
-      if (ADMIN) {
-        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
-        dl.onclick = function () {
-          if (!confirm('删除这条评论及其回复？')) return;
-          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
-            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-            .catch(function (e) { alert('删除失败：' + e.message); });
-        };
-        bar.appendChild(dl);
-        if (!c.pid) {
-          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
-          pin.onclick = function () {
-            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
-              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + '\\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
-          };
-          bar.appendChild(pin);
-        }
-      }
-      row.appendChild(bar);
-      return row;
-    }
-    function addTree(pid, box) {
-      all.filter(function (c) { return (c.pid || null) === pid; })
-        .sort(function (a, b) {
-          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
-          return a.created_at.localeCompare(b.created_at);
-        })
-        .forEach(function (c) {
-          var row = buildRow(c);
-          box.appendChild(row);
-          var children = all.filter(function (x) { return x.pid === c.id; })
-            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-          if (!children.length) return;
-          var threadBox = h('div', 'mrhx-thread');
-          row.appendChild(threadBox);
-          addTree(c.id, threadBox);
-        });
-    }
-    addTree(null, list);
-    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
-  }
-  function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
-      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
-      .then(function (d) { all = d || []; render(); })
-      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
-  }
-  form.onsubmit = function (e) {
-    e.preventDefault();
-    if (hpEl && hpEl.value) { form.reset(); return; }
-    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
-    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
-    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    fetch(SB + '/rest/v1/rpc/guard_comment', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
-    }).then(function (r) {
-      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
-      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      return r.json();
-    }).then(function (d) {
-      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-      replyPid = null; replyEl.textContent = '';
-      form.reset();
-      load();
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
-  };
-  load();
-})();
-</script>
-<!--mrhx-comments-end-->`;
-
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${i * 0.05}s}`).join('\n');
-
-const gamePageCss = `<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-.mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-.mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
-.mrhx-bar .mlogo span{color:#e5484d}
-.mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
-.mrhx-bar .bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-.mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
-.mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:flex-end}
-.mrhx-bar .mnav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-.mrhx-search{display:flex;align-items:center;gap:5px}
-.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
-.mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-@media (min-width:721px){
-  .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
-}
-.gp-main{max-width:900px;margin:24px auto;padding:0 20px}
-.gp-back{display:inline-block;margin-bottom:18px;padding:7px 16px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#fff;transition:.2s}
-.gp-back:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-.gp-head{display:flex;gap:24px;background:#fff;border:1px solid #ecebe9;border-radius:16px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-.gp-cover{flex-shrink:0;width:200px}
-.gp-cover img{width:100%;border-radius:12px;display:block;object-fit:cover}
-.gp-info{flex:1;min-width:0}
-.gp-title{font-size:22px;font-weight:800;color:#2b2b2b;line-height:1.4;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.gp-plat{font-size:12px;font-weight:600;color:#e5484d;background:#fdf3f3;border:1px solid #f0b4b6;padding:2px 10px;border-radius:99px}
-.gp-intro{margin-top:12px;font-size:14px;color:#666;line-height:1.9;white-space:pre-wrap;word-break:break-word}
-.gp-dls{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.gp-dl{display:inline-flex;align-items:center;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;color:#fff;background:#e5484d;transition:transform .2s,box-shadow .2s}
-.gp-dl:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
-.mrhx-comments{max-width:900px;margin:28px auto;padding:0 20px}
-.mrhx-comments h2{font-size:18px;color:#2b2b2b;margin-bottom:16px}
-.mrhx-cnum{font-size:13px;color:#aaa;font-weight:400}
-.mrhx-citem{border:1px solid #ecebe9;background:#fff;border-radius:12px;padding:14px;margin-bottom:10px}
-.mrhx-chead{display:flex;align-items:center;gap:10px}
-.mrhx-cav{width:34px;height:34px;border-radius:50%;background:#e8e4de;color:#8a8377;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
-.mrhx-cav-admin{background:linear-gradient(135deg,#ff6b3d,#e5484d);color:#fff}
-.mrhx-cmeta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px}
-.mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
-.mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
-.mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
-.mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;padding-left:44px;margin-top:-4px}
-.mrhx-cbar{margin-top:10px;padding-left:44px;display:flex;gap:6px}
-.mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
-.mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-.mrhx-cdel{color:#c93a3f}
-.mrhx-cdel:hover{color:#fff;background:#e5484d;border-color:#e5484d}
-.mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:4px;letter-spacing:.5px}
-.mrhx-cpin{background:#e58d0a}
-.mrhx-citem-admin{border-color:#f0b4b6;background:linear-gradient(180deg,#fff,#fff8f7)}
-.mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
-.mrhx-cpop.show{display:flex}
-.mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
-.mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
-.mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
-.mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-.mrhx-cpop-ok:hover{background:#c93a3f}
-.mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
-.mrhx-cform{margin-top:18px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
-.mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
-.mrhx-crow input{flex:1;border:1px solid #e2e0dc;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-width:0;transition:.2s}
-.mrhx-cform textarea{width:100%;border:1px solid #e2e0dc;border-radius:9px;padding:11px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-height:82px;resize:vertical;box-sizing:border-box;transition:.2s}
-.mrhx-cform textarea:focus,.mrhx-crow input:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
-.mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
-.mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-csub button:hover{background:#c93a3f}
-.mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
-.mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-@media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}.gp-head{flex-direction:column}.gp-cover{width:100%}}
-.mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
-.mrhx-top.show{opacity:1;pointer-events:auto}
-.mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
-</style>`;
-
-function renderGamePage(g, n, sourceFile) {
-  const sourceName = path.parse(sourceFile).name;
-  const sourceDisp = TITLES[sourceName] || sourceName;
-  const cover = g.img ? `<div class="gp-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
-  const platTag = g.plat ? `<span class="gp-plat">${esc(g.plat)}</span>` : '';
-  const dlBtns = g.links.slice(0, 3).map(l => `<a class="gp-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
-  const intro = g.intro ? `<div class="gp-intro">${esc(g.intro)}</div>` : '';
-  const backLink = `<a class="gp-back" href="/${sourceFile}">← 返回 ${esc(sourceDisp)}</a>`;
-  const navPills = [`<a href="../index.html">首页</a>`, ...NAV.map(n =>
-    `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`)].join('\n    ');
-  const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="../index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
-  <div class="bar-right">
-  <div class="search-row">
-  <form class="mrhx-search" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-    <button type="submit">搜索</button>
-  </form>
-  </div>
-  <div class="mnav">${navPills}</div>
-  </div>
-</div>`;
-  const vb = (SITE.views && SITE.views.enabled && SITE.views.url && SITE.views.anonKey)
-    ? viewScript(SITE.views.url.replace(/\/+$/, ''), SITE.views.anonKey, '/games/' + n + '.html') : '';
-  const v = SITE.comments;
-  let commentBlock = '';
-  if (v.enabled && v.url && v.anonKey) {
-    const sb = esc(v.url.replace(/\/+$/, ''));
-    const key = esc(v.anonKey);
-    commentBlock = commentBlockHtml(sb, key, '/' + sourceName + '.html');
-  }
-  return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(g.title)} · ${esc(SITE_NAME)}</title>
-${gamePageCss}
-</head>
-<body class="narrow">
-${bar}
-<main class="gp-main">
-  ${backLink}
-  <div class="gp-head">
-    ${cover}
-    <div class="gp-info">
-      <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
-      ${intro}
-      <div class="gp-dls">${dlBtns}</div>
-    </div>
-  </div>
-</main>
-${commentBlock}
-${topButton}
-${vb}
-</body>
-</html>`;
-}
 
 function dayTag(file) {
   const m = file.match(/(\d+)月(\d+)/);
@@ -1002,22 +711,6 @@ html = (function reorderNodes(str) {
     return b.file.localeCompare(a.file);
   });
 
-  // 提取单游戏独立页：每个游戏一个 games/N.html，与来源合集帖共享评论区
-  const gameDir = 'games';
-  if (!fs.existsSync(gameDir)) fs.mkdirSync(gameDir);
-  const seenTitles = new Set();
-  const gamePages = [];
-  let gameCounter = 0;
-  for (const g of allGames) {
-    if (seenTitles.has(g.title)) continue;
-    seenTitles.add(g.title);
-    gameCounter++;
-    const gameHtml = renderGamePage(g, gameCounter, g.file);
-    fs.writeFileSync(path.join(gameDir, gameCounter + '.html'), gameHtml);
-    gamePages.push({ ...g, n: gameCounter, gameUrl: 'games/' + gameCounter + '.html' });
-  }
-  console.log('games pages ok:', gameCounter);
-
   const navLinks = NAV.map(n =>
     `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('');
 
@@ -1077,22 +770,6 @@ html = (function reorderNodes(str) {
 </a>`;
   }).join('\n');
 
-  const singleGrid = gamePages.map((g, gi) => {
-    const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
-    const platTag = g.plat ? `<span class="g-plat">${esc(g.plat)}</span>` : '';
-    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
-    const srcName = path.parse(g.file).name;
-    const srcDisp = TITLES[srcName] || srcName;
-    return `<a class="gcard" href="${esc(g.gameUrl)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
-  ${cover}
-  <div class="g-body">
-    <div class="g-title">${esc(g.title)}${platTag}</div>
-    <div class="g-src">合集 · ${esc(srcDisp)}</div>
-    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
-  </div>
-</a>`;
-  }).join('\n');
-
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1121,12 +798,6 @@ nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:tran
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
-.mode-switch{display:flex;gap:8px;margin-bottom:24px;background:#fff;border:1px solid #ecebe9;border-radius:99px;padding:5px;width:fit-content;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.mode-btn{border:none;background:transparent;padding:9px 22px;border-radius:99px;font-size:14px;font-weight:600;color:#888;cursor:pointer;transition:.2s}
-.mode-btn:hover{color:#e5484d}
-.mode-btn.active{background:#e5484d;color:#fff}
-.mode-panel{display:none}
-.mode-panel.active{display:block}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
@@ -1206,11 +877,6 @@ footer b{color:#e5484d}
   </div>
 </header>
 <main>
-  <div class="mode-switch" role="tablist">
-    <button type="button" class="mode-btn" data-mode="collection" role="tab">合集模式</button>
-    <button type="button" class="mode-btn" data-mode="single" role="tab">单游戏模式</button>
-  </div>
-  <div class="mode-panel" id="panel-collection">
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
@@ -1218,38 +884,10 @@ footer b{color:#e5484d}
   <div class="ggrid">
   ${gameGrid}
   </div>` : ''}
-  </div>
-  <div class="mode-panel" id="panel-single">
-  <div class="upd"><span class="tag">单游戏模式</span>共 <b>${gamePages.length}</b> 款独立游戏，全部来自合集帖子拆分，评论互通</div>
-  <div class="sect"><h2>全部游戏</h2><span>${gamePages.length} 款</span></div>
-  <div class="ggrid">
-  ${singleGrid}
-  </div>
-  </div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
-<script>
-(function () {
-  var btn = document.querySelectorAll('.mode-btn');
-  if (!btn.length) return;
-  function show(m) {
-    var cur = localStorage.getItem('mrhx_mode');
-    if (m !== 'collection' && m !== 'single') m = cur === 'single' ? 'single' : 'collection';
-    btn.forEach(function (b) { b.classList.toggle('active', b.dataset.mode === m); });
-    var col = document.getElementById('panel-collection');
-    var sin = document.getElementById('panel-single');
-    if (col) col.classList.toggle('active', m === 'collection');
-    if (sin) sin.classList.toggle('active', m === 'single');
-    try { localStorage.setItem('mrhx_mode', m); } catch (e) {}
-  }
-  btn.forEach(function (b) {
-    b.addEventListener('click', function () { show(b.dataset.mode); });
-  });
-  show('collection');
-})();
-</script>
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 </body>
 </html>
