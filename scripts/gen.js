@@ -375,6 +375,7 @@ function verify(days, index) {
 
 const days = [];
 const searchIndex = [];
+const allGames = [];
 (async () => {
   for (const file of files) {
     let html = fs.readFileSync(file, 'utf8');
@@ -412,7 +413,7 @@ html = (function reorderNodes(str) {
     var end = str.lastIndexOf('</ul>');
     if (end < start) return str;
     var prefix = str.slice(0, start);
-    var inner = str.slice(start + 21, end);
+    var inner = str.slice(start + 21, end).replace(/^[ \t]*>[ \t]*\r?\n/gm, '');
     var suffix = str.slice(end + 5);
     var blocks = [], pos = 0;
     while (pos < inner.length) {
@@ -433,6 +434,7 @@ html = (function reorderNodes(str) {
     }
     blocks = blocks.map(function(block) {
       if (block.indexOf('node heading3') < 0) return block;
+      block = block.replace(/^[ \t]*>[ \t]*\r?\n/gm, '');
       var dlm = block.match(/<div class="mrhx-dl">[\s\S]*?<\/div>/);
       var dlBlock = dlm ? dlm[0] : '';
       var clean = dlBlock ? block.replace(dlBlock, '') : block;
@@ -451,10 +453,11 @@ html = (function reorderNodes(str) {
       if (plat && contentBlock) {
         contentBlock = contentBlock.replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
       }
-      var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>\s*/);
-      var open = openTag ? openTag[0] : '<li class="node heading3">';
+      var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
+      var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
       return open + contentBlock + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
     });
+    blocks = blocks.filter(b => b.trim().length > 0);
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
   })(html);
 
@@ -678,13 +681,15 @@ html = (function reorderNodes(str) {
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<[^>]+>/g, '').trim();
+      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
-      return { title, intro, img, links, source: TITLES[shortName] || shortName };
+      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
     searchIndex.push(...games);
+    allGames.push(...games.map(g => ({ ...g, file })));
 
     fs.writeFileSync(file, html);
     console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
@@ -746,6 +751,25 @@ html = (function reorderNodes(str) {
 
   const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
 
+  const pinnedNames = PINS.map(p => p + '.html');
+  const gridGames = allGames.filter(g => pinnedNames.indexOf(g.file) === -1);
+
+  const gameGrid = gridGames.map((g, gi) => {
+    const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
+    const platTag = g.plat ? `<span class="g-plat">${g.plat}</span>` : '';
+    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
+    const srcName = path.parse(g.file).name;
+    const srcDisp = TITLES[srcName] || srcName;
+    return `<a class="gcard" href="${esc(g.file)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
+  ${cover}
+  <div class="g-body">
+    <div class="g-title">${esc(g.title)}${platTag}</div>
+    <div class="g-src">来源 · ${esc(srcDisp)}</div>
+    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
+  </div>
+</a>`;
+  }).join('\n');
+
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -797,6 +821,20 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
 .post:hover .arrow{color:#e5484d;transform:translateX(5px)}
 .empty{text-align:center;color:#999;padding:40px 0}
+.gsect{margin-top:34px}
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px}
+.gcard{display:flex;flex-direction:column;background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.gcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.g-cover{width:100%;aspect-ratio:4/3;overflow:hidden;background:#f4f2ef}
+.g-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:.3s}
+.gcard:hover .g-cover img{transform:scale(1.04)}
+.g-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}
+.g-title{font-size:14px;font-weight:700;color:#2b2b2b;line-height:1.45;display:flex;align-items:flex-start;flex-wrap:wrap;gap:5px}
+.g-plat{display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:#fff;background:#e5484d;white-space:nowrap;vertical-align:2px}
+.g-src{font-size:11px;color:#aaa}
+.g-dls{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.g-dl{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
+.g-dl:hover{background:#c93a3f}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
@@ -818,6 +856,8 @@ footer b{color:#e5484d}
   .covers{flex:1 1 100%;order:3;overflow-x:auto;padding-bottom:2px}
   .covers img{width:54px;height:54px}
   .arrow{display:none}
+  .ggrid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .g-title{font-size:13px}
 }
 </style>
 <link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
@@ -840,6 +880,10 @@ footer b{color:#e5484d}
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
+  ${gridGames.length ? `<div class="sect gsect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
+  <div class="ggrid">
+  ${gameGrid}
+  </div>` : ''}
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
