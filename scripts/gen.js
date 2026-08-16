@@ -484,7 +484,7 @@ function renderGamePage(g, n, sourceFile) {
   if (v.enabled && v.url && v.anonKey) {
     const sb = esc(v.url.replace(/\/+$/, ''));
     const key = esc(v.anonKey);
-    commentBlock = commentBlockHtml(sb, key, '/games/' + n + '.html');
+    commentBlock = commentBlockHtml(sb, key, '/' + sourceName + '.html');
   }
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -1002,10 +1002,11 @@ html = (function reorderNodes(str) {
     return b.file.localeCompare(a.file);
   });
 
-  // 提取单游戏独立页：每个游戏一个 games/N.html，独立评论
+  // 提取单游戏独立页：每个游戏一个 games/N.html，与来源合集帖共享评论区
   const gameDir = 'games';
   if (!fs.existsSync(gameDir)) fs.mkdirSync(gameDir);
   const seenTitles = new Set();
+  const gamePages = [];
   let gameCounter = 0;
   for (const g of allGames) {
     if (seenTitles.has(g.title)) continue;
@@ -1013,6 +1014,7 @@ html = (function reorderNodes(str) {
     gameCounter++;
     const gameHtml = renderGamePage(g, gameCounter, g.file);
     fs.writeFileSync(path.join(gameDir, gameCounter + '.html'), gameHtml);
+    gamePages.push({ ...g, n: gameCounter, gameUrl: 'games/' + gameCounter + '.html' });
   }
   console.log('games pages ok:', gameCounter);
 
@@ -1075,6 +1077,22 @@ html = (function reorderNodes(str) {
 </a>`;
   }).join('\n');
 
+  const singleGrid = gamePages.map((g, gi) => {
+    const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
+    const platTag = g.plat ? `<span class="g-plat">${esc(g.plat)}</span>` : '';
+    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
+    const srcName = path.parse(g.file).name;
+    const srcDisp = TITLES[srcName] || srcName;
+    return `<a class="gcard" href="${esc(g.gameUrl)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
+  ${cover}
+  <div class="g-body">
+    <div class="g-title">${esc(g.title)}${platTag}</div>
+    <div class="g-src">合集 · ${esc(srcDisp)}</div>
+    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
+  </div>
+</a>`;
+  }).join('\n');
+
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1103,6 +1121,12 @@ nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:tran
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+.mode-switch{display:flex;gap:8px;margin-bottom:24px;background:#fff;border:1px solid #ecebe9;border-radius:99px;padding:5px;width:fit-content;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.mode-btn{border:none;background:transparent;padding:9px 22px;border-radius:99px;font-size:14px;font-weight:600;color:#888;cursor:pointer;transition:.2s}
+.mode-btn:hover{color:#e5484d}
+.mode-btn.active{background:#e5484d;color:#fff}
+.mode-panel{display:none}
+.mode-panel.active{display:block}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
@@ -1182,6 +1206,11 @@ footer b{color:#e5484d}
   </div>
 </header>
 <main>
+  <div class="mode-switch" role="tablist">
+    <button type="button" class="mode-btn" data-mode="collection" role="tab">合集模式</button>
+    <button type="button" class="mode-btn" data-mode="single" role="tab">单游戏模式</button>
+  </div>
+  <div class="mode-panel" id="panel-collection">
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
@@ -1189,10 +1218,38 @@ footer b{color:#e5484d}
   <div class="ggrid">
   ${gameGrid}
   </div>` : ''}
+  </div>
+  <div class="mode-panel" id="panel-single">
+  <div class="upd"><span class="tag">单游戏模式</span>共 <b>${gamePages.length}</b> 款独立游戏，全部来自合集帖子拆分，评论互通</div>
+  <div class="sect"><h2>全部游戏</h2><span>${gamePages.length} 款</span></div>
+  <div class="ggrid">
+  ${singleGrid}
+  </div>
+  </div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
+<script>
+(function () {
+  var btn = document.querySelectorAll('.mode-btn');
+  if (!btn.length) return;
+  function show(m) {
+    var cur = localStorage.getItem('mrhx_mode');
+    if (m !== 'collection' && m !== 'single') m = cur === 'single' ? 'single' : 'collection';
+    btn.forEach(function (b) { b.classList.toggle('active', b.dataset.mode === m); });
+    var col = document.getElementById('panel-collection');
+    var sin = document.getElementById('panel-single');
+    if (col) col.classList.toggle('active', m === 'collection');
+    if (sin) sin.classList.toggle('active', m === 'single');
+    try { localStorage.setItem('mrhx_mode', m); } catch (e) {}
+  }
+  btn.forEach(function (b) {
+    b.addEventListener('click', function () { show(b.dataset.mode); });
+  });
+  show('collection');
+})();
+</script>
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 </body>
 </html>
