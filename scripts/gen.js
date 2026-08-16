@@ -1009,7 +1009,7 @@ html = (function reorderNodes(str) {
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
       const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
-      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName };
+      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName, isPinned: PINS.indexOf(shortName) !== -1, pageUrl: shortName + '.html' };
     }).filter(g => g.title);
     searchIndex.push(...games);
     const gamesWithPages = games.map(g => {
@@ -1247,7 +1247,21 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
   fs.writeFileSync('index.html', index);
   console.log('index.html ok, days:', days.length);
 
-  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
+  // 构造带 slug / gameUrl / source / isPinned 的完整搜索索引
+  const finalSearchIndex = allGames.map(function (g) {
+    return {
+      title: g.title,
+      intro: g.intro,
+      img: g.img,
+      links: g.links,
+      plat: g.plat || '',
+      source: g.source,
+      pageUrl: g.file,               // 原帖路径，如 "8.10.html"
+      gameUrl: g.gameUrl,            // 单游戏页，如 "games/1.html"
+      isPinned: PINS.indexOf(path.parse(g.file).name) !== -1
+    };
+  });
+  fs.writeFileSync('search_index.json', JSON.stringify(finalSearchIndex, null, 2));
   console.log('search_index.json ok, games:', searchIndex.length);
 
   verify(days, index, gridGames);
@@ -1287,7 +1301,12 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .btn-dl-m{background:#e5484d;color:#fff}
 .btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
-@media (max-width:720px){.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
+.plat-select{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;background:#faf9f7;color:#333;outline:none;font-family:inherit;cursor:pointer}
+.plat-select:focus{border-color:#e5484d;background:#fff}
+.result .rt a:hover{text-decoration:underline}
+.result .src{margin-right:4px}
+.result{position:relative}
+@media (max-width:720px){.hwrap{padding:12px 14px;flex-wrap:wrap}.mrhx-search{width:100%}.plat-select{flex-shrink:0}.mrhx-search input{width:auto;flex:1;min-width:0}main{padding:18px 14px 32px}}
 </style>
 </head>
 <body>
@@ -1295,7 +1314,13 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
   <div class="hwrap">
     <a class="site" href="./">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
     <form class="mrhx-search" action="search.html" method="get">
-      <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
+      <select id="plat" name="plat" class="plat-select" title="按平台筛选">
+        <option value="all">全部平台</option>
+        <option value="pc">仅 PC</option>
+        <option value="android">仅 安卓</option>
+        <option value="pcandroid">PC+安卓</option>
+      </select>
+      <input type="text" name="q" id="q" placeholder="搜索游戏名 / 介绍…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
   </div>
@@ -1308,48 +1333,105 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 (function () {
-  var q = new URLSearchParams(location.search).get('q') || '';
-  var input = document.getElementById('q');
-  input.value = q;
+  var params = new URLSearchParams(location.search);
+  var q = params.get('q') || '';
+  var plat = params.get('plat') || 'all';
+  var qInput = document.getElementById('q');
+  qInput.value = q;
+  var platSel = document.getElementById('plat');
+  if (platSel) platSel.value = plat;
   var resBox = document.getElementById('res');
   var countEl = document.getElementById('count');
   var ALL = 30;
   var _hits = [];
   var _page = 0;
-  function rowHtml(g) {
+  function platBadge(platText) {
+    if (!platText) return '';
+    var color = (platText.indexOf('安卓') > -1 || platText.indexOf('PC+安卓') === 0) ? 'background:#e5484d'
+      : (platText === 'PC' ? 'background:#1a5fb4' : 'background:#888');
+    return '<span class="src" style="' + color + ';margin-left:0">' + esc(platText) + '</span>';
+  }
+  function rowHtml(g, rank) {
     var dl = (g.links || []).map(function (l) {
       var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
+    var goto = g.gameUrl || (g.pageUrl ? g.pageUrl : '');
+    var srcPin = (g.isPinned ? ' <span class="src" style="background:#e58d0a">置顶</span>' : '');
+    var srcLink = g.pageUrl ? '<a class="src" style="background:#666;text-decoration:none" href="' + esc(g.pageUrl) + '" target="_blank" rel="noreferrer">原帖 ' + esc(g.source || '') + '</a>'
+      : '<span class="src">' + esc(g.source || '') + '</span>';
+    var titleLink = goto ? '<a href="' + esc(goto) + '" style="color:#2b2b2b;text-decoration:none">' + esc(g.title) + '</a>' : '<b>' + esc(g.title) + '</b>';
+    return '<div class="result" style="order:' + (rank || 0) + '">' +
+      '<div class="rt">' + titleLink + platBadge(g.plat || '') + srcPin + srcLink + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
+      (g.img ? '<div class="img"><a href="' + esc(goto || (g.pageUrl || '#')) + '"><img src="' + esc(g.img) + '" alt="" loading="lazy"></a></div>' : '') +
       '</div>';
   }
   function renderMore() {
     var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
-    resBox.insertAdjacentHTML('beforeend', slice.map(rowHtml).join(''));
+    resBox.insertAdjacentHTML('beforeend', slice.map(function (g, i) { return rowHtml(g, _page * ALL + i); }).join(''));
     _page++;
     var moreBtn = document.getElementById('mrhx-more');
     if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
   }
-  var moreBtn = document.createElement('div');
-  moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
-  moreBtn.style.textAlign = 'center';
-  moreBtn.style.marginTop = '6px';
-  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
+  var moreWrap = document.createElement('div');
+  moreWrap.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
+  moreWrap.style.textAlign = 'center';
+  moreWrap.style.marginTop = '6px';
+  resBox.parentNode.insertBefore(moreWrap, resBox.nextSibling);
   document.getElementById('mrhx-more').onclick = renderMore;
-  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
-  fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
-    var kw = q.toLowerCase();
-    _hits = data.filter(function (g) {
-      return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
-    });
-    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
-    if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
-    renderMore();
-  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
+  function doSearch() {
+    _hits = []; _page = 0; resBox.innerHTML = '';
+    var kw = (document.getElementById('q').value || '').trim();
+    var pSel = document.getElementById('plat');
+    var curPlat = pSel ? pSel.value : 'all';
+    // 更新浏览器 URL（可后退）
+    var p = new URLSearchParams();
+    if (kw) p.set('q', kw);
+    if (curPlat && curPlat !== 'all') p.set('plat', curPlat);
+    var newUrl = location.pathname + (p.toString() ? ('?' + p.toString()) : '');
+    if (newUrl !== (location.pathname + location.search)) history.replaceState(null, '', newUrl);
+    if (!kw && curPlat === 'all') { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+    fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
+      var kwLow = kw ? kw.toLowerCase() : '';
+      var pinnedAlways = [];
+      var normal = [];
+      data.forEach(function (g) {
+        var gPlat = (g.plat || '').toLowerCase();
+        var platPass = true;
+        if (curPlat === 'pc') platPass = (gPlat === 'pc');
+        else if (curPlat === 'android') platPass = (gPlat.indexOf('安卓') > -1);
+        else if (curPlat === 'pcandroid') platPass = (gPlat.indexOf('pc+安卓') === 0 || gPlat.indexOf('pc + 安卓') === 0 || gPlat.indexOf('安卓') > -1 && gPlat.indexOf('pc') > -1);
+        var titleLow = (g.title || '').toLowerCase();
+        var introLow = (g.intro || '').toLowerCase();
+        var sourceLow = (g.source || '').toLowerCase();
+        var kwPass = !kwLow || titleLow.indexOf(kwLow) > -1 || introLow.indexOf(kwLow) > -1 || sourceLow.indexOf(kwLow) > -1;
+        var hit = platPass && kwPass;
+        // 置顶帖：只要 platPass 通过就强制保留，kw 不通过也保留（仅置顶）
+        if (g.isPinned && platPass) {
+          pinnedAlways.push({ g: g, score: (kwPass ? 1 : 0) });
+        } else if (hit) {
+          normal.push({ g: g, score: 0 });
+        }
+      });
+      // 置顶帖按 kwPass（命中优先） > 原顺序
+      pinnedAlways.sort(function (a, b) { return (b.score - a.score); });
+      _hits = pinnedAlways.map(function (x) { return x.g; }).concat(normal.map(function (x) { return x.g; }));
+      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (pinnedAlways.length ? '，置顶 ' + pinnedAlways.length + ' 个优先显示' : '') + '）';
+      if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到匹配的游戏' + (kw ? '（「' + esc(kw) + '」）' : '') + '，换个关键词或平台试试～</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+      renderMore();
+    }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败，请检查网络或刷新页面</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
+  }
+  // 搜索框回车 / 按钮 submit 时实时触发
+  var searchForm = document.querySelector('form.mrhx-search');
+  if (searchForm) {
+    searchForm.addEventListener('submit', function (e) { e.preventDefault(); doSearch(); });
+  }
+  var platEl = document.getElementById('plat');
+  if (platEl) platEl.addEventListener('change', function () { doSearch(); });
+  if (q || plat && plat !== 'all') doSearch();
+  else { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; }
 })();
 </script>
 </body>

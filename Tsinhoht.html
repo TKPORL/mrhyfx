@@ -488,9 +488,46 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-const topBtn = $('topBtn');
-window.addEventListener('scroll', () => topBtn.classList.toggle('show', window.scrollY > 400), { passive: true });
-topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+// 平滑滚动辅助（400ms 缓动），避免浏览器 behavior:'smooth' 时长不可控
+function mrhxSmoothScrollTo(targetY, duration) {
+  duration = duration || 400;
+  var startY = window.pageYOffset || document.documentElement.scrollTop;
+  var diff = targetY - startY;
+  if (!diff) return;
+  var startTime = null;
+  function ease(t, b, c, d) {
+    t /= d / 2;
+    if (t < 1) return c / 2 * t * t + b;
+    t--;
+    return -c / 2 * (t * (t - 2) - 1) + b;
+  }
+  function step(now) {
+    if (!startTime) startTime = now;
+    var time = now - startTime;
+    window.scrollTo(0, ease(time, startY, diff, duration));
+    if (time < duration) requestAnimationFrame(step);
+    else window.scrollTo(0, targetY);
+  }
+  requestAnimationFrame(step);
+}
+var topBtn = $('topBtn');
+function _updateTopBtn() {
+  var y = window.scrollY || document.documentElement.scrollTop;
+  var h = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  var nearTop = y < 100, nearBottom = h - y < 100;
+  topBtn.classList.toggle('show', y > 10);
+  if (nearTop) {
+    topBtn.textContent = '\u2193';
+    topBtn.title = '滚动到底部';
+    topBtn.onclick = function () { mrhxSmoothScrollTo(h + 20, 400); };
+  } else {
+    topBtn.textContent = '\u2191';
+    topBtn.title = '滚动到顶部';
+    topBtn.onclick = function () { mrhxSmoothScrollTo(0, 400); };
+  }
+}
+window.addEventListener('scroll', _updateTopBtn, { passive: true });
+_updateTopBtn();
 
 document.addEventListener('focusin', e => {
   const f = e.target.closest('.field');
@@ -1241,7 +1278,7 @@ function bindPostButtons(box, token, repo) {
          $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
          switchTab('tabForm');
          show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
-        scrollTo(0, 0);
+        mrhxSmoothScrollTo(0, 400);
       } catch (e) {
         show(stM, '复制失败：' + e.message, 'err');
       } finally { b.disabled = false; }
@@ -1278,7 +1315,7 @@ function bindPostButtons(box, token, repo) {
         $('editBar').classList.add('show');
         switchTab('tabForm');
         show(stF, '已载入「' + tag + '」，修改后点发布即可覆盖更新。', 'ok');
-        scrollTo(0, 0);
+        mrhxSmoothScrollTo(0, 400);
       } catch (e) {
         show(stM, '载入失败：' + e.message, 'err');
       } finally { b.disabled = false; }
