@@ -1125,7 +1125,7 @@ async function loadPosts() {
         return `<div class="game">
   <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views['/' + encodeURIComponent(tag + '.html')] || 0} 次</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
-    <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || '')}" placeholder="默认：${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
+    <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="默认：${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
     <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
     <button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>

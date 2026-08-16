@@ -56,6 +56,14 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 .mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
 .mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-csub button:hover{background:#c93a3f}
+.mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.mrhx-cpop.show{display:flex}
+.mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
+.mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
+.mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
+.mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.mrhx-cpop-ok:hover{background:#c93a3f}
+@keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
 .mrhx-top.show{opacity:1;pointer-events:auto}
 .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
