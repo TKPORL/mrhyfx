@@ -11,15 +11,7 @@ const slugify = s => String(s).trim().toLowerCase()
   .replace(/^-+|-+$/g, '')
   .substring(0, 80);
 
-// 只处理 counts.json 中存在的帖子文件，避免删除帖子后 gen.js 重新生成
-const counts = fs.existsSync('counts.json') ? readJson('counts.json') : {};
-const files = fs.readdirSync('.').filter(f => {
-  if (!/\.html$/i.test(f)) return false;
-  if (f === 'index.html' || f === 'publish.html' || f === 'Tsinhoht.html' || f === 'search.html' || f === 'email-preview.html') return false;
-  // 检查是否在 counts.json 中
-  const tag = f.replace(/\.html$/i, '');
-  return tag in counts;
-});
+const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -651,7 +643,6 @@ function renderGamePage(g, sourceFile) {
   loadLikes();
   load();
 })();
-});
 </script>
 <!--mrhx-comments-end-->`;
   }
@@ -1060,7 +1051,6 @@ html = (function reorderNodes(str) {
   </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
 (function () {
   var SB = '${sb}';
   var KEY = '${key}';
@@ -1339,7 +1329,6 @@ document.addEventListener('DOMContentLoaded', function () {
   loadLikes();
   load();
 })();
-});
 </script>
 <!--mrhx-comments-end-->`;
     }
@@ -1374,9 +1363,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (title === before) break;
       }
       const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
-      // 跳过 logo.webp 和 favicon，取第一个 assets 目录下的图片作为封面
-      const imgMatch = b.match(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/);
-      const img = imgMatch ? imgMatch[1] : '';
+      const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
       const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
       return { title, intro, img, links, plat, source: TITLES[shortName] || shortName, isPinned: PINS.indexOf(shortName) !== -1, pageUrl: shortName + '.html' };
