@@ -439,25 +439,20 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
 .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:700}
 .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
-.mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
-.mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-.mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none;padding:12px 14px;margin-bottom:8px}
+.mrhx-comments .mrhx-citem{margin-bottom:10px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxFade .35s ease both}
+.mrhx-comments .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+.mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
 .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
 .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
 .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
 .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
-.mrhx-cmeta b{font-size:14px;font-weight:600;color:#2b2b2b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mrhx-ctime{font-size:12px;color:#aaa}
-.mrhx-ccontent{font-size:14px;color:#444;line-height:1.7;word-break:break-word}
-.mrhx-cform{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:20px;margin-top:8px}
-.mrhx-cform-title{font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:14px}
-.mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
-.mrhx-crow input,.mrhx-crow textarea{flex:1;padding:10px 14px;border:1px solid #e2e0dc;border-radius:10px;font-size:14px;font-family:inherit;background:#faf9f7;color:#333;outline:none;transition:.2s}
-.mrhx-crow input:focus,.mrhx-crow textarea:focus{border-color:#e5484d;background:#fff}
-.mrhx-crow textarea{min-height:90px;resize:vertical}
-.mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
-.mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-csub button:hover{background:#c93a3f}
+.mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
+.mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
+.mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
+.mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;padding-left:45px;margin-top:-4px}
+.mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
+.mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
+.mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 .mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
 .mrhx-cpop.show{display:flex}
 .mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
@@ -465,6 +460,19 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 .mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
 .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
 .mrhx-cpop-ok:hover{background:#c93a3f}
+.mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
+.mrhx-cform{margin-top:18px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
+.mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
+.mrhx-crow input{flex:1;border:1px solid #e2e0dc;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-width:0;transition:.2s}
+.mrhx-cform textarea{width:100%;border:1px solid #e2e0dc;border-radius:9px;padding:11px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-height:82px;resize:vertical;box-sizing:border-box;transition:.2s}
+.mrhx-cform textarea:focus,.mrhx-crow input:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
+.mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
+.mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-csub button:hover{background:#c93a3f}
+.mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
+.mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
 @keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
 .mrhx-top.show{opacity:1;pointer-events:auto}
@@ -1010,7 +1018,6 @@ html = (function reorderNodes(str) {
   // pinned post summary card (links to the day page, not individual games)
   const pinnedDays = days.filter(d => pinnedNames.indexOf(d.file) !== -1);
   const pinnedSection = pinnedDays.length ? `<div class="sect gsect"><h2>置顶求助</h2><span>${pinnedDays.reduce((s,d)=>s+d.gameCount,0)} 款</span></div>
-  <div class="ggrid">
   ${pinnedDays.map((d, di) => {
     const title = path.parse(d.file).name;
     const disp = TITLES[title] || title;
@@ -1026,8 +1033,7 @@ html = (function reorderNodes(str) {
   ${covers ? `<div class="covers">${covers}</div>` : ''}
   <div class="arrow">→</div>
 </a>`;
-  }).join('\n')}
-  </div>` : '';
+  }).join('\n')}` : '';
 
   const gameGrid = gridGames.map((g, gi) => {
     const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
