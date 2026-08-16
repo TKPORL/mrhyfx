@@ -986,18 +986,25 @@ html = (function reorderNodes(str) {
 
   const pinnedNames = PINS.map(p => p + '.html');
   const gridGames = allGames.filter(g => pinnedNames.indexOf(g.file) === -1);
-  const pinnedGames = allGames.filter(g => pinnedNames.indexOf(g.file) !== -1);
 
-  const pinnedSection = pinnedGames.length ? `<div class="sect gsect"><h2>置顶求助</h2><span>${pinnedGames.length} 款</span></div>
+  // pinned post summary card (links to the day page, not individual games)
+  const pinnedDays = days.filter(d => pinnedNames.indexOf(d.file) !== -1);
+  const pinnedSection = pinnedDays.length ? `<div class="sect gsect"><h2>置顶求助</h2><span>${pinnedDays.reduce((s,d)=>s+d.gameCount,0)} 款</span></div>
   <div class="ggrid">
-  ${pinnedGames.map((g, gi) => {
-    const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
-    const platTag = g.plat ? `<span class="g-plat">${g.plat}</span>` : '';
-    return `<a class="gcard" href="${esc(g.gameUrl)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
-  ${cover}
-  <div class="g-body">
-    <div class="g-title">${esc(g.title)}${platTag}</div>
+  ${pinnedDays.map((d, di) => {
+    const title = path.parse(d.file).name;
+    const disp = TITLES[title] || title;
+    const dayHtml = fs.readFileSync(d.file, 'utf8');
+    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
+      .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
+    return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
+  <div class="date"><b style="font-size:12px">置顶</b></div>
+  <div class="info">
+    <div class="ptitle">${esc(disp)} <span class="pinb">置顶</span></div>
+    <div class="pmeta">共 ${d.gameCount} 款游戏</div>
   </div>
+  ${covers ? `<div class="covers">${covers}</div>` : ''}
+  <div class="arrow">→</div>
 </a>`;
   }).join('\n')}
   </div>` : '';
