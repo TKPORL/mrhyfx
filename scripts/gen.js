@@ -751,25 +751,6 @@ html = (function reorderNodes(str) {
 
   const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
 
-  const pinnedNames = PINS.map(p => p + '.html');
-  const gridGames = allGames.filter(g => pinnedNames.indexOf(g.file) === -1);
-
-  const gameGrid = gridGames.map((g, gi) => {
-    const cover = g.img ? `<div class="g-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
-    const platTag = g.plat ? `<span class="g-plat">${g.plat}</span>` : '';
-    const dl = g.links.slice(0, 2).map(l => `<a class="g-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
-    const srcName = path.parse(g.file).name;
-    const srcDisp = TITLES[srcName] || srcName;
-    return `<a class="gcard" href="${esc(g.file)}" style="animation-delay:${Math.min(gi, 24) * 0.03}s">
-  ${cover}
-  <div class="g-body">
-    <div class="g-title">${esc(g.title)}${platTag}</div>
-    <div class="g-src">来源 · ${esc(srcDisp)}</div>
-    ${dl ? `<div class="g-dls">${dl}</div>` : ''}
-  </div>
-</a>`;
-  }).join('\n');
-
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -880,10 +861,6 @@ footer b{color:#e5484d}
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   ${dayLis || '<div class="empty">暂无分享</div>'}
-  ${gridGames.length ? `<div class="sect gsect"><h2>全部游戏</h2><span>${gridGames.length} 款</span></div>
-  <div class="ggrid">
-  ${gameGrid}
-  </div>` : ''}
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
