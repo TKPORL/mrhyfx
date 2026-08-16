@@ -378,9 +378,10 @@ function renderGamePage(g, sourceFile) {
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
-  var popShown = false;
   if (pop) {
-    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
+    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
+    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
@@ -549,7 +550,13 @@ function renderGamePage(g, sourceFile) {
         headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
         body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
       }).then(function (r) {
-        if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+        if (!r.ok) {
+          return r.text().then(function (t) {
+            var msg = 'HTTP ' + r.status;
+            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+            throw new Error(msg);
+          });
+        }
         return r.json();
       });
     }
@@ -559,15 +566,20 @@ function renderGamePage(g, sourceFile) {
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
       if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      var j = r.json();
-      return j.then ? j : Promise.resolve(j);
+      if (!r.ok) {
+        return r.text().then(function (t) {
+          var msg = 'HTTP ' + r.status;
+          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+          throw new Error(msg);
+        });
+      }
+      return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { alert('发送失败：' + e.message + '\n\n如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   // 点赞功能
   var likeBar = document.getElementById('mrhx-like-bar');
@@ -1052,9 +1064,10 @@ html = (function reorderNodes(str) {
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
-  var popShown = false;
   if (pop) {
-    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
+    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
+    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
@@ -1223,7 +1236,13 @@ html = (function reorderNodes(str) {
         headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
         body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
       }).then(function (r) {
-        if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+        if (!r.ok) {
+          return r.text().then(function (t) {
+            var msg = 'HTTP ' + r.status;
+            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+            throw new Error(msg);
+          });
+        }
         return r.json();
       });
     }
@@ -1233,15 +1252,20 @@ html = (function reorderNodes(str) {
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
       if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      var j = r.json();
-      return j.then ? j : Promise.resolve(j);
+      if (!r.ok) {
+        return r.text().then(function (t) {
+          var msg = 'HTTP ' + r.status;
+          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+          throw new Error(msg);
+        });
+      }
+      return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { alert('发送失败：' + e.message + '\n\n如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   // 点赞功能
   var likeBar = document.getElementById('mrhx-like-bar');
@@ -1735,30 +1759,35 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     if (!kw && curPlat === 'all') { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
     fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
       var kwLow = kw ? kw.toLowerCase() : '';
-      var pinnedAlways = [];
-      var normal = [];
+      var results = [];
       data.forEach(function (g) {
         var gPlat = (g.plat || '').toLowerCase();
         var platPass = true;
         if (curPlat === 'pc') platPass = (gPlat === 'pc');
         else if (curPlat === 'android') platPass = (gPlat.indexOf('安卓') > -1);
         else if (curPlat === 'pcandroid') platPass = (gPlat.indexOf('pc+安卓') === 0 || gPlat.indexOf('pc + 安卓') === 0 || gPlat.indexOf('安卓') > -1 && gPlat.indexOf('pc') > -1);
+        if (!platPass) return;
         var titleLow = (g.title || '').toLowerCase();
         var introLow = (g.intro || '').toLowerCase();
         var sourceLow = (g.source || '').toLowerCase();
-        var kwPass = !kwLow || titleLow.indexOf(kwLow) > -1 || introLow.indexOf(kwLow) > -1 || sourceLow.indexOf(kwLow) > -1;
-        var hit = platPass && kwPass;
-        // 置顶帖：只要 platPass 通过就强制保留，kw 不通过也保留（仅置顶）
-        if (g.isPinned && platPass) {
-          pinnedAlways.push({ g: g, score: (kwPass ? 1 : 0) });
-        } else if (hit) {
-          normal.push({ g: g, score: 0 });
+        var titleHit = kwLow && titleLow.indexOf(kwLow) > -1;
+        var introHit = kwLow && introLow.indexOf(kwLow) > -1;
+        var sourceHit = kwLow && sourceLow.indexOf(kwLow) > -1;
+        var kwPass = !kwLow || titleHit || introHit || sourceHit;
+        if (!kwPass) return;
+        var score = 0;
+        if (kwLow) {
+          if (titleLow === kwLow) score += 100;
+          else if (titleLow.indexOf(kwLow) === 0) score += 80;
+          else if (titleHit) score += 60;
+          if (introHit) score += 30;
+          if (sourceHit) score += 10;
         }
+        results.push({ g: g, score: score });
       });
-      // 置顶帖按 kwPass（命中优先） > 原顺序
-      pinnedAlways.sort(function (a, b) { return (b.score - a.score); });
-      _hits = pinnedAlways.map(function (x) { return x.g; }).concat(normal.map(function (x) { return x.g; }));
-      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (pinnedAlways.length ? '，置顶 ' + pinnedAlways.length + ' 个优先显示' : '') + '）';
+      results.sort(function (a, b) { return b.score - a.score; });
+      _hits = results.map(function (x) { return x.g; });
+      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (kw ? '「' + esc(kw) + '」' : '') + '）';
       if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到匹配的游戏' + (kw ? '（「' + esc(kw) + '」）' : '') + '，换个关键词或平台试试～</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
       renderMore();
     }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败，请检查网络或刷新页面</div>'; document.getElementById('mrhx-more').style.display = 'none'; });

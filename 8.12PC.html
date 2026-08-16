@@ -1403,9 +1403,10 @@
   var replyEl = document.getElementById('mrhx-creply');
   var replyPid = null;
   var all = [];
-  var popShown = false;
   if (pop) {
-    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
+    // 点击邮箱输入框就弹窗提示（不限制只弹一次，每次点击都弹）
+    mailEl.addEventListener('click', function () { pop.classList.add('show'); });
+    mailEl.addEventListener('focus', function () { pop.classList.add('show'); });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
   }
@@ -1575,7 +1576,13 @@
         headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
         body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
       }).then(function (r) {
-        if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+        if (!r.ok) {
+          return r.text().then(function (t) {
+            var msg = 'HTTP ' + r.status;
+            try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+            throw new Error(msg);
+          });
+        }
         return r.json();
       });
     }
@@ -1585,15 +1592,22 @@
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
       if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
-      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      var j = r.json();
-      return j.then ? j : Promise.resolve(j);
+      if (!r.ok) {
+        return r.text().then(function (t) {
+          var msg = 'HTTP ' + r.status;
+          try { var d = JSON.parse(t); msg = (d && (d.message || d.details || d.hint || d.error)) || msg; } catch (e2) { if (t) msg = msg + '：' + t.slice(0, 300); }
+          throw new Error(msg);
+        });
+      }
+      return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { alert('发送失败：' + e.message + '
+
+如果反复失败，请在 Supabase SQL Editor 运行建表 SQL（见评论区说明）。'); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   // 点赞功能
   var likeBar = document.getElementById('mrhx-like-bar');

@@ -127,30 +127,35 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     if (!kw && curPlat === 'all') { countEl.textContent = '（输入关键词或选择平台筛选）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或按平台筛选</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
     fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
       var kwLow = kw ? kw.toLowerCase() : '';
-      var pinnedAlways = [];
-      var normal = [];
+      var results = [];
       data.forEach(function (g) {
         var gPlat = (g.plat || '').toLowerCase();
         var platPass = true;
         if (curPlat === 'pc') platPass = (gPlat === 'pc');
         else if (curPlat === 'android') platPass = (gPlat.indexOf('安卓') > -1);
         else if (curPlat === 'pcandroid') platPass = (gPlat.indexOf('pc+安卓') === 0 || gPlat.indexOf('pc + 安卓') === 0 || gPlat.indexOf('安卓') > -1 && gPlat.indexOf('pc') > -1);
+        if (!platPass) return;
         var titleLow = (g.title || '').toLowerCase();
         var introLow = (g.intro || '').toLowerCase();
         var sourceLow = (g.source || '').toLowerCase();
-        var kwPass = !kwLow || titleLow.indexOf(kwLow) > -1 || introLow.indexOf(kwLow) > -1 || sourceLow.indexOf(kwLow) > -1;
-        var hit = platPass && kwPass;
-        // 置顶帖：只要 platPass 通过就强制保留，kw 不通过也保留（仅置顶）
-        if (g.isPinned && platPass) {
-          pinnedAlways.push({ g: g, score: (kwPass ? 1 : 0) });
-        } else if (hit) {
-          normal.push({ g: g, score: 0 });
+        var titleHit = kwLow && titleLow.indexOf(kwLow) > -1;
+        var introHit = kwLow && introLow.indexOf(kwLow) > -1;
+        var sourceHit = kwLow && sourceLow.indexOf(kwLow) > -1;
+        var kwPass = !kwLow || titleHit || introHit || sourceHit;
+        if (!kwPass) return;
+        var score = 0;
+        if (kwLow) {
+          if (titleLow === kwLow) score += 100;
+          else if (titleLow.indexOf(kwLow) === 0) score += 80;
+          else if (titleHit) score += 60;
+          if (introHit) score += 30;
+          if (sourceHit) score += 10;
         }
+        results.push({ g: g, score: score });
       });
-      // 置顶帖按 kwPass（命中优先） > 原顺序
-      pinnedAlways.sort(function (a, b) { return (b.score - a.score); });
-      _hits = pinnedAlways.map(function (x) { return x.g; }).concat(normal.map(function (x) { return x.g; }));
-      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (pinnedAlways.length ? '，置顶 ' + pinnedAlways.length + ' 个优先显示' : '') + '）';
+      results.sort(function (a, b) { return b.score - a.score; });
+      _hits = results.map(function (x) { return x.g; });
+      countEl.textContent = '（找到 ' + _hits.length + ' 个' + (kw ? '「' + esc(kw) + '」' : '') + '）';
       if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到匹配的游戏' + (kw ? '（「' + esc(kw) + '」）' : '') + '，换个关键词或平台试试～</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
       renderMore();
     }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败，请检查网络或刷新页面</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
