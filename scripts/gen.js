@@ -383,8 +383,21 @@ function renderGamePage(g, sourceFile) {
     }).catch(function(e) { alert('发送失败：' + e.message); }).finally(function() { btn.disabled = false; btn.textContent = '发表评论'; });
   });
   load();
+  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
+  if (pop) {
+    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
+    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
+    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
+  }
 })();
 </script>
+<div class="mrhx-cpop" id="mrhx-cpop">
+  <div class="mrhx-cpop-box">
+    <h3>邮箱填写提示</h3>
+    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
+    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
+  </div>
+</div>
 <!--mrhx-comments-end-->`;
   }
   return `<!DOCTYPE html>
@@ -479,12 +492,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
   </div>
 </header>
 <main>
-  <a class="gp-back-top" href="/index.html">← 返回首页</a>
+  <a class="gp-back-top" href="https://tkporl.github.io/mrhyfx/">← 返回首页</a>
   <div class="gp-cover">${cover}</div>
   <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
   ${intro}
   ${dlBtns ? `<div class="gp-dls">${dlBtns}</div>` : ''}
-  ${backLink}
   ${commentBlock}
 </main>
 <button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
