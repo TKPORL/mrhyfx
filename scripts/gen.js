@@ -48,6 +48,7 @@ const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
+const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
@@ -244,7 +245,7 @@ async function localize(html, tag) {
           const res = await fetch(url);
           if (!res.ok) throw new Error('HTTP ' + res.status);
           fs.writeFileSync(path.join(dir, name), Buffer.from(await res.arrayBuffer()));
-          html = html.split(url).join(`assets/${tag}/${name}`);
+          html = html.split(url).join(`${CDN_URL}/assets/${tag}/${name}`);
           console.log('  img', tag, name);
           break;
         } catch (e) {
@@ -255,6 +256,7 @@ async function localize(html, tag) {
     }
   }
   html = html.replace(/assets\/[^"/]+(?=\/)/g, 'assets/' + tag);
+  html = html.replace(/src="assets\//g, `src="${CDN_URL}/assets/`);
   return html.split('crossorigin="anonymous"').join('');
 }
 
@@ -315,13 +317,13 @@ header{background:#fff;border-bottom:1px solid #ecebe9}
   nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   @media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
 </style>
-<link rel="icon" href="favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="favicon.webp">
+<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
@@ -456,7 +458,7 @@ html = (function reorderNodes(str) {
     const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <a class="mlogo" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
@@ -481,8 +483,8 @@ html = (function reorderNodes(str) {
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
-    html = html.replace('</head>', (html.includes('rel="icon" href="favicon.webp"')) ? '</head>' : `<link rel="icon" href="favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="favicon.webp">
+    html = html.replace('</head>', (html.includes('rel="icon" href="' + CDN_URL + '/favicon.webp"')) ? '</head>' : `<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 </head>`);
 
     const v = SITE.comments;
@@ -716,7 +718,7 @@ html = (function reorderNodes(str) {
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
-    const covers = [...new Set([...dayHtml.matchAll(/src="(assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
+    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
@@ -805,13 +807,13 @@ footer b{color:#e5484d}
   .arrow{display:none}
 }
 </style>
-<link rel="icon" href="favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="favicon.webp">
+<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">

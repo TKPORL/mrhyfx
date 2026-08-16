@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
       "（这是一封系统自动发送的通知邮件，请勿直接回复）",
     ].join("\n");
 
-    const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url: siteUrl + pageUrl, logo: siteUrl + "favicon.webp" });
+    const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url: siteUrl + pageUrl, logo: "https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" });
 
     await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】" + adminNick + " 回复了你的评论", text, html });
     return json({ ok: true, smtpHost: host, smtpPort: port, smtpUser: user });

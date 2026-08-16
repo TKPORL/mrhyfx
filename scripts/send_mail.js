@@ -136,7 +136,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
     '（这是一封系统自动发送的通知邮件，请勿直接回复）'
   ].join('\n');
   const url = siteUrl + pageUrl;
-  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo: siteUrl + 'favicon.webp' });
+  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo: 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp' });
   await smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html });
   console.log('邮件发送成功 -> ' + to);
 })().catch((e) => { console.error('邮件发送失败：' + (e && e.message || e)); process.exit(1); });
