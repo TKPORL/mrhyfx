@@ -91,6 +91,7 @@ const sharedCss = `<style>
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
+  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important}
     .mrhx-bar{padding:12px 14px;gap:10px}
@@ -403,6 +404,8 @@ const searchIndex = [];
 
     html = html.replace(/<a class="mrhx-btn-([a-z-]+)"/g, '<a class="mrhx-btn mrhx-btn-$1"');
 
+    const pageFallbackPlat = /pcaz|安卓/i.test(tag) ? 'PC+安卓' : (/pc$/i.test(tag) ? 'PC' : '');
+
 html = (function reorderNodes(str) {
     var start = str.indexOf('<ul class="node-list">');
     if (start < 0) return str;
@@ -439,9 +442,18 @@ html = (function reorderNodes(str) {
       if (!note && !img) return block;
       var noteBlock = note ? note[0] : '';
       var imgBlock = img ? img[0] : '';
+      var contentBlock = content ? content[0] : '';
+      var plat = '';
+      var platSource = noteBlock + (contentBlock || '');
+      if (/PC\s*\+\s*安卓/.test(platSource) || /安卓/.test(platSource)) plat = 'PC+安卓';
+      else if (/PC/.test(platSource)) plat = 'PC';
+      if (!plat && pageFallbackPlat) plat = pageFallbackPlat;
+      if (plat && contentBlock) {
+        contentBlock = contentBlock.replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
+      }
       var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>\s*/);
       var open = openTag ? openTag[0] : '<li class="node heading3">';
-      return open + (content ? content[0] : '') + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
+      return open + contentBlock + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
     });
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
   })(html);
@@ -666,8 +678,8 @@ html = (function reorderNodes(str) {
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      const title = (b.match(/<div class="content mm-editor" ><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
-      const intro = (b.match(/<div class="note mm-editor"><span>([^<]*)<\/span><\/div>/) || [])[1] || '';
+      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<[^>]+>/g, '').trim();
+      const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
       return { title, intro, img, links, source: TITLES[shortName] || shortName };
