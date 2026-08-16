@@ -529,14 +529,25 @@ function renderGamePage(g, sourceFile) {
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    function doSubmit() {
+      return fetch(SB + '/rest/v1/comments', {
+        method: 'POST',
+        headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
+        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      }).then(function (r) {
+        if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+        return r.json();
+      });
+    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
       if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      return r.json();
+      var j = r.json();
+      return j.then ? j : Promise.resolve(j);
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
@@ -1178,14 +1189,25 @@ html = (function reorderNodes(str) {
     if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
     if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    function doSubmit() {
+      return fetch(SB + '/rest/v1/comments', {
+        method: 'POST',
+        headers: Object.assign(headers(), { 'Prefer': 'return=representation' }),
+        body: JSON.stringify({ url: PATH, nick: nick, email: mail, content: content, pid: replyPid || null })
+      }).then(function (r) {
+        if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+        return r.json();
+      });
+    }
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
     }).then(function (r) {
-      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (r.status === 404) return doSubmit(); // RPC 未建：fallback 直接 INSERT comments 表
       if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      return r.json();
+      var j = r.json();
+      return j.then ? j : Promise.resolve(j);
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       replyPid = null; replyEl.textContent = '';
@@ -1279,7 +1301,15 @@ html = (function reorderNodes(str) {
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
+      let title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
+      // 去掉标题末尾已包含的（1）[PC]/[PC+安卓]/[安卓] 等括号版 或（2）裸的 PC+安卓/PC/安卓/PC端/安卓端 文字后缀
+      // 可能重复出现多次（如"特工17PC+安卓PC+安卓"），循环剥直到没变化（最多5次防死循环）
+      for (let _i = 0; _i < 5; _i++) {
+        const before = title;
+        title = title.replace(/\s*[\[【(（]\s*(PC\s*\+\s*安卓|PC\+安卓|PC|安卓|安卓端|PC端)\s*[\]】)）]\s*$/i, '').trim();
+        title = title.replace(/\s*(PC\s*\+\s*安卓|PC\+安卓|安卓端|PC端|PC|安卓)\s*$/i, '').trim();
+        if (title === before) break;
+      }
       const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
       const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
@@ -1301,7 +1331,7 @@ html = (function reorderNodes(str) {
     const pinnedNames = PINS.map(p => p + '.html');
 
     for (const g of gamesWithPages) {
-      if (pinnedNames.indexOf(g.file) !== -1) continue; // skip pinned posts
+      // 所有游戏（含置顶帖内的）都生成单独 games/N.html 页，首页网格才能点进去不 404
       const gameHtml = renderGamePage(g, file);
       const gameDir = path.join('games');
       fs.mkdirSync(gameDir, { recursive: true });
@@ -1365,7 +1395,14 @@ html = (function reorderNodes(str) {
   const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
 
   const pinnedNames = PINS.map(p => p + '.html');
-  const gridGames = allGames; // 包含所有游戏（含置顶帖游戏），全部同步到首页网格
+  // 包含所有游戏（含置顶帖游戏），全部同步到首页网格
+  // 排序：按母帖 days 数组的先后（置顶帖→最新日期→最旧日期），同一母帖按原解析顺序
+  const fileRank = new Map(days.map((d, i) => [d.file, i]));
+  let _seq = 0;
+  const gridGames = allGames
+    .map(g => [g, fileRank.get(g.file) ?? 9999, ++_seq])
+    .sort((a, b) => (a[1] - b[1]) || (a[2] - b[2]))
+    .map(x => x[0]);
 
   // pinned post summary card (links to the day page, not individual games)
   const pinnedDays = days.filter(d => pinnedNames.indexOf(d.file) !== -1);
