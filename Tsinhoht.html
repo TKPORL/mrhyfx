@@ -1083,7 +1083,7 @@ async function apiDelete(repo, token, path, sha, msg) {
 function jsonItemBelongsToPost(item, tag) {
   if (!item || typeof item !== 'object') return false;
   const html = tag + '.html';
-  return ['tag', 'source', 'file', 'path', 'url', 'href', 'post', 'postUrl'].some(function (key) {
+  return ['tag', 'source', 'file', 'path', 'url', 'href', 'post', 'postUrl', 'pageUrl', 'gameUrl'].some(function (key) {
     const value = String(item[key] || '').replace(/^\//, '');
     return value === tag || value === html || value.endsWith('/' + html);
   });
@@ -1109,6 +1109,71 @@ async function buildPostCleanupFiles(repo, tag) {
     files.push({ path: name, content: btoa(unescape(encodeURIComponent(JSON.stringify(value, null, 2) + '\n'))) });
   }
   return files;
+}
+
+// 删除 games/N 时，同步在合集帖母帖 HTML 里移除对应 li.node.heading3，避免 gen.js 重建时又生成回来
+// 返回 { path, content, sha, parentTag, title } 可直接加到 atomicCommit；找不到匹配则返回 null
+async function removeGameFromParentHtml(repo, token, gameTag) {
+  // 1. 通过 search_index.json 定位母帖 pageUrl 与游戏 title/img
+  const searchRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!searchRaw || !Array.isArray(searchRaw)) return null;
+  const gameHtml = gameTag + '.html';
+  const hit = searchRaw.find(x => (x.gameUrl || '').replace(/^\//, '') === gameHtml.replace(/^\//, ''));
+  if (!hit || !hit.pageUrl) return null;
+  const parentPath = hit.pageUrl; // e.g. "8.1.1.html"
+  const parentTag = parentPath.replace(/\.html?$/i, '');
+  if (parentTag.startsWith('games/')) return null; // 本身已是单游戏帖，没有母帖
+  const expectTitle = String(hit.title || '').trim();
+  const expectImg = String(hit.img || '').trim();
+
+  // 2. 下载母帖 HTML 与其 SHA（从 tree 或 apiGet）
+  const parentInfo = await apiGet(repo, token, parentPath);
+  if (!parentInfo) return null;
+  const htmlText = typeof parentInfo.content === 'string' && parentInfo.encoding === 'base64'
+    ? decodeURIComponent(escape(atob(parentInfo.content)))
+    : parentInfo.content;
+  if (!htmlText) return null;
+  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+  const lis = [...doc.querySelectorAll('li.node.heading3')];
+  if (!lis.length) return null;
+
+  // 3. 用 title + img 匹配 li，找到目标索引
+  let targetIdx = -1;
+  for (let i = 0; i < lis.length; i++) {
+    const li = lis[i];
+    const nameEl = li.querySelector('.content.mm-editor span');
+    const title = nameEl ? nameEl.textContent.trim() : '';
+    const firstImg = li.querySelector('.image-list img');
+    const img = firstImg ? (firstImg.getAttribute('src') || '').trim() : '';
+    const titleMatch = expectTitle && (title === expectTitle || title.indexOf(expectTitle) !== -1 || expectTitle.indexOf(title) !== -1);
+    const imgMatch = expectImg && img && (img === expectImg || img.replace(/^https?:\/\//, '') === expectImg.replace(/^https?:\/\//, ''));
+    if ((titleMatch && imgMatch) || (titleMatch && !expectImg) || (imgMatch && !expectTitle)) {
+      targetIdx = i;
+      break;
+    }
+  }
+  if (targetIdx === -1) return null;
+
+  // 4. 从 DOM 中移除目标 li，序列化回 HTML
+  lis[targetIdx].remove();
+  const serializer = new XMLSerializer();
+  // 将修改后的 <html> 根序列化，保留 doctype
+  let newHtml = '';
+  const doctype = doc.doctype;
+  if (doctype) {
+    newHtml += '<!DOCTYPE ' + doctype.name;
+    if (doctype.publicId) newHtml += ' PUBLIC "' + doctype.publicId + '"';
+    if (doctype.systemId) newHtml += ' "' + doctype.systemId + '"';
+    newHtml += '>\n';
+  }
+  newHtml += serializer.serializeToString(doc.documentElement);
+  return {
+    path: parentPath,
+    content: btoa(unescape(encodeURIComponent(newHtml + '\n'))),
+    sha: parentInfo.sha || null,
+    parentTag: parentTag,
+    title: expectTitle || gameTag
+  };
 }
 
 async function deletePostComments(tag, isGame) {
@@ -1334,6 +1399,19 @@ function bindPostButtons(box, token, repo) {
         const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
         const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + assetTag + '/'));
         const dataFiles = await buildPostCleanupFiles(repo, tag);
+        // 删除单游戏帖时：同步在合集帖母帖 HTML 里移除对应条目，防止 gen.js 重新运行时又生成回来
+        if (isGame) {
+          try {
+            const parentPatch = await removeGameFromParentHtml(repo, token, tag);
+            if (parentPatch) {
+              // atomicCommit 会以新 blob 替换原路径的 blob，SHA 不传入也能覆盖
+              dataFiles.push({ path: parentPatch.path, content: parentPatch.content });
+              steps.push('已从母帖「' + parentPatch.parentTag + '」中移除游戏条目：' + parentPatch.title);
+            }
+          } catch (patchErr) {
+            steps.push('母帖条目移除失败（不影响主删除流程）：' + patchErr.message);
+          }
+        }
         await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
         steps.push('配置与索引已清理');
         const assets = paths.filter(t => t.path !== filePath);
