@@ -185,6 +185,7 @@ const sharedCss = `<style>
 
 const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
+var _nl = String.fromCharCode(10);
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
@@ -445,7 +446,7 @@ function renderGamePage(g, sourceFile) {
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { alert('置顶失败：' + e.message + '\\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
@@ -1131,7 +1132,7 @@ html = (function reorderNodes(str) {
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { alert('置顶失败：' + e.message + _nl + '请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
