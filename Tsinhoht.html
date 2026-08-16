@@ -252,10 +252,20 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 
   <div class="panel" id="panelManage">
     <div class="card">
-      <div class="row" style="justify-content:space-between">
+      <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <h2>帖子管理</h2>
-        <button class="btn btn-s" id="refresh">刷新列表</button>
+        <div class="row" style="gap:6px;flex-wrap:wrap">
+          <input type="search" id="postSearch" placeholder="🔍 搜索帖子标题 / 文件名 / 游戏名" style="min-width:260px">
+          <select id="postFilter" style="padding:6px 10px;border-radius:8px;border:1px solid #e9e6e2">
+            <option value="all">全部</option>
+            <option value="day">合集帖（日更）</option>
+            <option value="game">单游戏帖（games/）</option>
+            <option value="other">其他</option>
+          </select>
+          <button class="btn btn-s" id="refresh">刷新列表</button>
+        </div>
       </div>
+      <div id="postSearchMeta" style="font-size:12px;color:#888;margin:6px 0 10px"></div>
       <div id="postBox"></div>
       <div id="statusM"></div>
       <p class="warn">删除帖子会同时删除它的全部图片（assets 目录）、标题和游戏数配置，然后自动重新生成首页。</p>
@@ -1144,6 +1154,258 @@ function postRepoPath(tag) {
   return tag.startsWith('games/') ? tag + '.html' : tag + '.html';
 }
 
+// 帖子列表全局缓存：{ posts, tree, titles, counts, pins, gameTitles, views, token, repo }
+var _postCtx = null;
+// 渲染帖子列表（可反复调用，已筛选过的 posts 数组）
+function renderPosts(filteredPosts) {
+  if (!_postCtx) return;
+  const { posts, tree, titles, counts, pins, gameTitles, views, token, repo } = _postCtx;
+  const box = $('postBox');
+  const meta = $('postSearchMeta');
+  const total = posts.length;
+  const shown = filteredPosts.length;
+  const kw = ($('postSearch')?.value || '').trim();
+  const ft = $('postFilter')?.value || 'all';
+  if (meta) {
+    if (!kw && ft === 'all') {
+      meta.textContent = `共 ${total} 条帖子`;
+    } else {
+      meta.textContent = `搜索结果 ${shown}/${total} 条` + (kw ? `（关键词：${kw}）` : '') + (ft !== 'all' ? `（分类：${ft}）` : '');
+    }
+  }
+  if (!shown) { box.innerHTML = '<p style="color:#999;font-size:13px">没有匹配的帖子，换个关键词试试～</p>'; return; }
+  box.innerHTML = filteredPosts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
+    const tag = p.path.replace(/\.html$/, '');
+    const isGame = p.path.startsWith('games/');
+    const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
+    const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + assetTag + '/')).length;
+    const isPinned = !isGame && pins.indexOf(tag) !== -1;
+    let displayTitle = isGame ? gameTitles[p.path] : titles[tag];
+    if (!displayTitle) {
+      const m = tag.match(/(\d+)[月\.](\d+)(.*)/);
+      if (m) {
+        const plat = /pcaz/i.test(m[3]) ? 'PC+安卓' : /pc/i.test(m[3]) ? 'PC' : '';
+        displayTitle = `${m[1]}月${m[2]}日${plat ? '（' + plat + '）' : ''}`;
+      } else {
+        displayTitle = tag;
+      }
+    }
+    const viewPath = isGame ? '/' + p.path : '/' + encodeURIComponent(tag + '.html');
+    const statLine = isGame
+      ? `${esc(p.path)} · ${imgCount} 张图 · 访问 ${views[viewPath] || 0} 次`
+      : `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
+    return `<div class="game">
+  <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
+  <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
+    <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
+    <button class="btn btn-s" data-tsave="${esc(tag)}" data-isgame="${isGame}">保存标题</button>
+    ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
+    <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
+    <button class="btn btn-s" data-copy="${esc(tag)}" data-isgame="${isGame}">复制到表单</button>
+    <button class="btn btn-s" data-edit="${esc(tag)}" data-isgame="${isGame}">编辑</button>
+    <button class="del" data-del="${esc(tag)}" data-isgame="${isGame}">删除</button>
+  </div>
+</div>`;
+  }).join('');
+  bindPostButtons(box, token, repo);
+}
+// 绑定帖子卡片里的按钮（复制/编辑/删除/保存标题/置顶）
+function bindPostButtons(box, token, repo) {
+  const titles = _postCtx.titles, counts = _postCtx.counts, tree = _postCtx.tree;
+  [...box.querySelectorAll('[data-copy]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.copy;
+      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
+      b.disabled = true;
+      show(stM, '正在解析「' + tag + '」的数据到发布表单…', 'info');
+      try {
+        const filePath = postRepoPath(tag);
+        const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+        if (!cards.length) throw new Error('没有解析到条目');
+        $('gameBox').innerHTML = '';
+        cards.forEach(c => {
+           const card = addGameCard();
+           card.querySelector('.g-name').value = c.name || '';
+           card.querySelector('.g-intro').value = c.intro || '';
+           card.querySelector('.g-imgs').value = c.imgs || '';
+           card.querySelector('.g-linkM').value = c.linkM || '';
+           card.querySelector('.g-linkB').value = c.linkB || '';
+           card.querySelector('.g-customName').value = c.customName || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || '';
+         });
+         $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
+         $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
+         $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
+         switchTab('tabForm');
+         show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
+        scrollTo(0, 0);
+      } catch (e) {
+        show(stM, '复制失败：' + e.message, 'err');
+      } finally { b.disabled = false; }
+    };
+  });
+  [...box.querySelectorAll('[data-edit]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.edit;
+      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
+      b.disabled = true;
+      show(stM, '正在载入「' + tag + '」到表单编辑区…', 'info');
+      try {
+        const filePath = postRepoPath(tag);
+        const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+        if (!cards.length) throw new Error('没有解析到条目');
+        $('gameBox').innerHTML = '';
+        cards.forEach(c => {
+           const card = addGameCard();
+           card.querySelector('.g-name').value = c.name || '';
+           card.querySelector('.g-intro').value = c.intro || '';
+           card.querySelector('.g-imgs').value = c.imgs || '';
+           card.querySelector('.g-linkM').value = c.linkM || '';
+           card.querySelector('.g-linkB').value = c.linkB || '';
+           card.querySelector('.g-customName').value = c.customName || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || '';
+         });
+         $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
+         $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
+         $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
+         $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
+        $('editBar').classList.add('show');
+        switchTab('tabForm');
+        show(stF, '已载入「' + tag + '」，修改后点发布即可覆盖更新。', 'ok');
+        scrollTo(0, 0);
+      } catch (e) {
+        show(stM, '载入失败：' + e.message, 'err');
+      } finally { b.disabled = false; }
+    };
+  });
+  [...box.querySelectorAll('[data-del]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.del;
+      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
+      if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
+      b.disabled = true;
+      show(stM, '正在准备清理 ' + tag + ' 的索引与配置…', 'info');
+      try {
+        const steps = [];
+        const filePath = postRepoPath(tag);
+        const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
+        const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + assetTag + '/'));
+        const dataFiles = await buildPostCleanupFiles(repo, tag);
+        await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
+        steps.push('配置与索引已清理');
+        const assets = paths.filter(t => t.path !== filePath);
+        for (const t of assets) {
+          const info = await apiGet(repo, token, t.path);
+          const result = await apiDelete(repo, token, t.path, info && info.sha, '删除帖子资源: ' + tag);
+          steps.push(result.skipped ? t.path + ' 不存在，已跳过' : t.path + ' 已删除');
+        }
+        const htmlInfo = await apiGet(repo, token, filePath);
+        const htmlResult = await apiDelete(repo, token, filePath, htmlInfo && htmlInfo.sha, '删除帖子: ' + tag);
+        steps.push(htmlResult.skipped ? filePath + ' 不存在，已视为删除成功' : filePath + ' 已删除');
+        let commentMessage = '';
+        try {
+          const count = await deletePostComments(tag, isGame);
+          commentMessage = '评论已删除 ' + count + ' 条';
+          steps.push(commentMessage);
+        } catch (commentError) {
+          commentMessage = '评论清理未完成：' + commentError.message + '。GitHub 侧已完成，可修正配置后重试。';
+          steps.push(commentMessage);
+        }
+        show(stM, 'GitHub 侧删除完成，生成工作流将重建首页、搜索、RSS 和 sitemap。\n' + steps.join('\n'), commentMessage.indexOf('未完成') === -1 ? 'ok' : 'warn');
+        loadPosts();
+      } catch (e) {
+        show(stM, '删除失败：' + e.message, 'err');
+        b.disabled = false;
+      }
+    };
+  });
+  [...box.querySelectorAll('[data-tsave]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.tsave;
+      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
+      const input = box.querySelector('.t-edit[data-tag="' + tag + '"]');
+      const val = input ? input.value.trim() : '';
+      if (!val) { show(stM, '标题不能为空', 'err'); return; }
+      b.disabled = true;
+      show(stM, '正在保存标题…', 'info');
+      try {
+        if (isGame) {
+          const giRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
+          const numStr = tag.replace(/^games\//, '');
+          const idx = Number(numStr) - 1;
+          if (!Number.isFinite(idx) || idx < 0 || idx >= giRaw.length) throw new Error('未在 search_index.json 中找到条目 index=' + (idx + 1));
+          giRaw[idx].title = val;
+          const commits = [];
+          commits.push(putFilePromise(repo, token, 'search_index.json', btoa(unescape(encodeURIComponent(JSON.stringify(giRaw, null, 2) + '\n'))), '更新搜索索引标题: ' + tag, 'search_index.json'));
+          await atomicCommit(repo, token, commits, '更新游戏标题: ' + tag, stM, 'search_index.json');
+        } else {
+          await updateJson(repo, token, 'titles.json', tag, val, stM);
+        }
+        const titleEl = b.closest('.game').querySelector('.gnum');
+        if (titleEl) titleEl.textContent = val;
+        show(stM, '标题已保存！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+      } catch (e) {
+        show(stM, '保存失败：' + e.message, 'err');
+      } finally { b.disabled = false; }
+    };
+  });
+  [...box.querySelectorAll('[data-pinbtn]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.pinbtn;
+      b.disabled = true;
+      show(stM, '正在更新置顶状态…', 'info');
+      try {
+        let arr = [];
+        const raw = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+        if (Array.isArray(raw)) arr = raw;
+        const idx = arr.indexOf(tag);
+        if (idx !== -1) arr.splice(idx, 1); else arr.unshift(tag);
+        await putFile(repo, token, 'pins.json', btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2) + '\n'))),
+          '更新置顶: ' + tag, stM, 'pins.json');
+        show(stM, (idx !== -1 ? '已取消置顶' : '已置顶') + '「' + tag + '」！首页正在更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
+        loadPosts();
+      } catch (e) {
+        show(stM, '置顶操作失败：' + e.message, 'err');
+        b.disabled = false;
+      }
+    };
+  });
+}
+// 根据搜索框 + 分类下拉筛选帖子并重新渲染
+function applySearchFilter() {
+  if (!_postCtx) return;
+  const kw = ($('postSearch')?.value || '').trim().toLowerCase();
+  const ft = $('postFilter')?.value || 'all';
+  const { posts, gameTitles, titles } = _postCtx;
+  const filtered = posts.filter(p => {
+    const tag = p.path.replace(/\.html$/, '');
+    const isGame = p.path.startsWith('games/');
+    if (ft === 'game' && !isGame) return false;
+    if (ft === 'day' && isGame) return false;
+    if (ft === 'other' && (isGame || /^\d+[\.月]\d+/.test(tag) || tag === 'qzt')) return false;
+    if (!kw) return true;
+    // 搜索范围：路径 / tag / 展示标题 / （合集帖）友好标题
+    let displayTitle = isGame ? (gameTitles[p.path] || '') : (titles[tag] || '');
+    if (!displayTitle && !isGame) {
+      const m2 = tag.match(/(\d+)[月\.](\d+)(.*)/);
+      if (m2) {
+        const plat = /pcaz/i.test(m2[3]) ? 'PC+安卓' : /pc/i.test(m2[3]) ? 'PC' : '';
+        displayTitle = `${m2[1]}月${m2[2]}日${plat ? '（' + plat + '）' : ''}`;
+      }
+    }
+    const hay = (tag + ' ' + p.path + ' ' + displayTitle + ' ' + (titles[tag] || '') + ' ' + (gameTitles[p.path] || '')).toLowerCase();
+    return hay.includes(kw);
+  });
+  renderPosts(filtered);
+}
+
+
 async function loadPosts() {
   const token = $('token').value.trim();
   const repo = $('repo').value.trim();
@@ -1173,218 +1435,18 @@ async function loadPosts() {
         if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
       } catch (e) {}
     }
-    if (!posts.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无帖子</p>'; }
-    else {
-      box.innerHTML = posts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
-        const tag = p.path.replace(/\.html$/, '');
-        const isGame = p.path.startsWith('games/');
-        const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
-        const isPinned = !isGame && pins.indexOf(tag) !== -1;
-        // generate friendly default title if titles.json doesn't have one
-        let displayTitle = isGame ? gameTitles[p.path] : titles[tag];
-        if (!displayTitle) {
-          const m = tag.match(/(\d+)[月\.](\d+)(.*)/);
-          if (m) {
-            const plat = /pcaz/i.test(m[3]) ? 'PC+安卓' : /pc/i.test(m[3]) ? 'PC' : '';
-            displayTitle = `${m[1]}月${m[2]}日${plat ? '（' + plat + '）' : ''}`;
-          } else {
-            displayTitle = tag;
-          }
-        }
-        const viewPath = isGame ? '/' + p.path : '/' + encodeURIComponent(tag + '.html');
-        const statLine = isGame
-          ? `${esc(p.path)} · ${imgCount} 张图 · 访问 ${views[viewPath] || 0} 次`
-          : `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
-        return `<div class="game">
-  <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
-  <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
-    <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
-    <button class="btn btn-s" data-tsave="${esc(tag)}" data-isgame="${isGame}">保存标题</button>
-    ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
-    <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
-    <button class="btn btn-s" data-copy="${esc(tag)}" data-isgame="${isGame}">复制到表单</button>
-    <button class="btn btn-s" data-edit="${esc(tag)}" data-isgame="${isGame}">编辑</button>
-    <button class="del" data-del="${esc(tag)}" data-isgame="${isGame}">删除</button>
-  </div>
-</div>`;
-      }).join('');
-      [...box.querySelectorAll('[data-copy]')].forEach(b => {
-        b.onclick = async () => {
-          const tag = b.dataset.copy;
-          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
-          b.disabled = true;
-          show(stM, '正在解析「' + tag + '」的数据到发布表单…', 'info');
-          try {
-            const filePath = postRepoPath(tag);
-            const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-            const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
-            if (!cards.length) throw new Error('没有解析到条目');
-            $('gameBox').innerHTML = '';
-            cards.forEach(c => {
-               const card = addGameCard();
-               card.querySelector('.g-name').value = c.name || '';
-               card.querySelector('.g-intro').value = c.intro || '';
-               card.querySelector('.g-imgs').value = c.imgs || '';
-               card.querySelector('.g-linkM').value = c.linkM || '';
-               card.querySelector('.g-linkB').value = c.linkB || '';
-               card.querySelector('.g-customName').value = c.customName || '';
-               card.querySelector('.g-customUrl').value = c.customUrl || '';
-             });
-             $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
-             $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
-             $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
-             switchTab('tabForm');
-             show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
-            scrollTo(0, 0);
-          } catch (e) {
-            show(stM, '复制失败：' + e.message, 'err');
-          } finally { b.disabled = false; }
-        };
-      });
-      [...box.querySelectorAll('[data-edit]')].forEach(b => {
-        b.onclick = async () => {
-          const tag = b.dataset.edit;
-          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
-          b.disabled = true;
-          show(stM, '正在载入「' + tag + '」到表单编辑区…', 'info');
-          try {
-            const filePath = postRepoPath(tag);
-            const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-            const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
-            if (!cards.length) throw new Error('没有解析到条目');
-            $('gameBox').innerHTML = '';
-            cards.forEach(c => {
-               const card = addGameCard();
-               card.querySelector('.g-name').value = c.name || '';
-               card.querySelector('.g-intro').value = c.intro || '';
-               card.querySelector('.g-imgs').value = c.imgs || '';
-               card.querySelector('.g-linkM').value = c.linkM || '';
-               card.querySelector('.g-linkB').value = c.linkB || '';
-               card.querySelector('.g-customName').value = c.customName || '';
-               card.querySelector('.g-customUrl').value = c.customUrl || '';
-             });
-             $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
-             $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
-             $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
-             $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
-            $('editBar').classList.add('show');
-            switchTab('tabForm');
-            show(stF, '已载入「' + tag + '」，修改后点发布即可覆盖更新。', 'ok');
-            scrollTo(0, 0);
-          } catch (e) {
-            show(stM, '载入失败：' + e.message, 'err');
-          } finally { b.disabled = false; }
-        };
-      });
-      [...box.querySelectorAll('[data-del]')].forEach(b => {
-        b.onclick = async () => {
-          const tag = b.dataset.del;
-          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
-          if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
-          b.disabled = true;
-          show(stM, '正在准备清理 ' + tag + ' 的索引与配置…', 'info');
-          try {
-            const steps = [];
-            const filePath = postRepoPath(tag);
-            const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
-            const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + assetTag + '/'));
-            const dataFiles = await buildPostCleanupFiles(repo, tag);
-            await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
-            steps.push('配置与索引已清理');
-            const assets = paths.filter(t => t.path !== filePath);
-            for (const t of assets) {
-              const info = await apiGet(repo, token, t.path);
-              const result = await apiDelete(repo, token, t.path, info && info.sha, '删除帖子资源: ' + tag);
-              steps.push(result.skipped ? t.path + ' 不存在，已跳过' : t.path + ' 已删除');
-            }
-            const htmlInfo = await apiGet(repo, token, filePath);
-            const htmlResult = await apiDelete(repo, token, filePath, htmlInfo && htmlInfo.sha, '删除帖子: ' + tag);
-            steps.push(htmlResult.skipped ? filePath + ' 不存在，已视为删除成功' : filePath + ' 已删除');
-            let commentMessage = '';
-            try {
-              const count = await deletePostComments(tag, isGame);
-              commentMessage = '评论已删除 ' + count + ' 条';
-              steps.push(commentMessage);
-            } catch (commentError) {
-              commentMessage = '评论清理未完成：' + commentError.message + '。GitHub 侧已完成，可修正配置后重试。';
-              steps.push(commentMessage);
-            }
-            show(stM, 'GitHub 侧删除完成，生成工作流将重建首页、搜索、RSS 和 sitemap。\n' + steps.join('\n'), commentMessage.indexOf('未完成') === -1 ? 'ok' : 'warn');
-            loadPosts();
-          } catch (e) {
-            show(stM, '删除失败：' + e.message, 'err');
-            b.disabled = false;
-          }
-        };
-      });
-      [...box.querySelectorAll('[data-tsave]')].forEach(b => {
-        b.onclick = async () => {
-          const tag = b.dataset.tsave;
-          const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
-          const input = box.querySelector('.t-edit[data-tag="' + tag + '"]');
-          const val = input ? input.value.trim() : '';
-          if (!val) { show(stM, '标题不能为空', 'err'); return; }
-          b.disabled = true;
-          show(stM, '正在保存标题…', 'info');
-          try {
-            if (isGame) {
-              // 单游戏帖：更新 search_index.json 对应条目的 title
-              const giRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
-              // games/N.html 在 search_index 中的位置 = N-1（按生成顺序）
-              const numStr = tag.replace(/^games\//, '');
-              const idx = Number(numStr) - 1;
-              if (!Number.isFinite(idx) || idx < 0 || idx >= giRaw.length) throw new Error('未在 search_index.json 中找到条目 index=' + (idx + 1));
-              giRaw[idx].title = val;
-              // 也更新对应 titles.json 里旧集合标题（如果存在）
-              const titlesRaw = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-              const srcTitle = giRaw[idx].source;
-              const commits = [];
-              commits.push(putFilePromise(repo, token, 'search_index.json', btoa(unescape(encodeURIComponent(JSON.stringify(giRaw, null, 2) + '\n'))), '更新搜索索引标题: ' + tag, 'search_index.json'));
-              // 同时更新 titles.json 中若有对应条目（按合集名）也更新，但通常不影响
-              await atomicCommit(repo, token, commits, '更新游戏标题: ' + tag, stM, 'search_index.json');
-            } else {
-              await updateJson(repo, token, 'titles.json', tag, val, stM);
-            }
-            const titleEl = b.closest('.game').querySelector('.gnum');
-            if (titleEl) titleEl.textContent = val;
-            show(stM, '标题已保存！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
-          } catch (e) {
-            show(stM, '保存失败：' + e.message, 'err');
-          } finally { b.disabled = false; }
-        };
-      });
-      [...box.querySelectorAll('[data-pinbtn]')].forEach(b => {
-        b.onclick = async () => {
-          const tag = b.dataset.pinbtn;
-          b.disabled = true;
-          show(stM, '正在更新置顶状态…', 'info');
-          try {
-            let arr = [];
-            const raw = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : null).catch(() => null);
-            if (Array.isArray(raw)) arr = raw;
-            const idx = arr.indexOf(tag);
-            if (idx !== -1) arr.splice(idx, 1); else arr.unshift(tag);
-            await putFile(repo, token, 'pins.json', btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2) + '\n'))),
-              '更新置顶: ' + tag, stM, 'pins.json');
-            show(stM, (idx !== -1 ? '已取消置顶' : '已置顶') + '「' + tag + '」！首页正在更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
-            loadPosts();
-          } catch (e) {
-            show(stM, '置顶操作失败：' + e.message, 'err');
-            b.disabled = false;
-          }
-        };
-      });
-    }
+    _postCtx = { posts, tree, titles, counts, pins, gameTitles, views, token, repo };
+    applySearchFilter();
     show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
   } catch (e) {
     show(stM, '读取失败：' + e.message, 'err');
   }
 }
-$('refresh').onclick = loadPosts;
+
+  if ($('postSearch')) { $('postSearch').addEventListener('input', () => applySearchFilter()); }
+  if ($('postFilter')) { $('postFilter').addEventListener('change', () => applySearchFilter()); }
+  
+  $('refresh').onclick = loadPosts;
 
 async function loadLinks() {
   const repo = $('repo').value.trim();
