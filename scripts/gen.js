@@ -55,6 +55,7 @@ const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '�
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
 const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
+const SITE_URL = 'https://tkporl.github.io/mrhyfx/';
 
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
@@ -338,10 +339,11 @@ function renderGamePage(g, sourceFile) {
 <script>
 (function () {
   var SB = '${sb}', KEY = '${key}', PATH = '/games/${g.slug}.html';
-  var loaded = false;
+  var mailEl = document.getElementById('mrhx-mail');
+  var popShown = false;
   function headers() { return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY }; }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function load() {
-    if (loaded) return; loaded = true;
     fetch(SB + '/rest/v1/rpc/get_comment?path=' + encodeURIComponent(PATH) + '&limit=200', { headers: headers() })
       .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(d) {
@@ -349,7 +351,8 @@ function renderGamePage(g, sourceFile) {
         var list = document.getElementById('mrhx-clist');
         var num = document.getElementById('mrhx-cnum');
         num.textContent = d.data ? ' ' + d.data.length + ' 条评论' : '';
-        if (!d.data || !d.data.length) { list.innerHTML = '<div style="color:#aaa;padding:20px 0;text-align:center">暂无评论，来抢沙发吧</div>'; return; }
+        list.textContent = '';
+        if (!d.data || !d.data.length) { list.innerHTML = '<div class="mrhx-cempty">暂无评论，来抢沙发吧</div>'; return; }
         d.data.sort(function(a,b){ return a.p_time - b.p_time; }).forEach(function(c) {
           var time = new Date(c.p_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
           var replyHtml = (c.p_replies && c.p_replies.length) ? c.p_replies.map(function(r){
@@ -384,7 +387,7 @@ function renderGamePage(g, sourceFile) {
   });
   load();
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
-  if (pop) {
+  if (pop && mailEl) {
     mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
     pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
     popOk.addEventListener('click', function () { pop.classList.remove('show'); });
@@ -497,9 +500,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="/index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <a class="site" href="${SITE_URL}">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
     <div class="site-header-right">
-      <form class="mrhx-search" action="/search.html" method="get">
+      <form class="mrhx-search" action="${SITE_URL}search.html" method="get">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -508,7 +511,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
   </div>
 </header>
 <main>
-  <a class="gp-back-top" href="https://tkporl.github.io/mrhyfx/">← 返回首页</a>
+  <a class="gp-back-top" href="${SITE_URL}">← 返回首页</a>
   <div class="gp-cover">${cover}</div>
   <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
   ${intro}
@@ -1216,8 +1219,8 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="/index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
-    <form class="mrhx-search" action="/search.html" method="get">
+    <a class="site" href="${SITE_URL}">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <form class="mrhx-search" action="${SITE_URL}search.html" method="get">
       <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>

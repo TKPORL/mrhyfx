@@ -1094,10 +1094,16 @@ async function loadPosts() {
   try {
     const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`,
       { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
-    const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !t.path.startsWith('games/') && !['index.html', 'Tsinhoht.html'].includes(t.path));
+    const posts = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'Tsinhoht.html', 'search.html', 'publish.html', 'email-preview.html'].includes(t.path));
     const titles = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const pins = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : []).catch(() => []);
+    let gameTitles = {};
+    try {
+      const gi = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
+      // games/N.html maps by index: searchIndex[0] -> games/1.html
+      gi.forEach((g, i) => { gameTitles['games/' + (i + 1) + '.html'] = g.title; });
+    } catch (e) {}
     let views = {};
     const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
     if (sbUrl && sbAnon && sbSecret) {
@@ -1112,10 +1118,11 @@ async function loadPosts() {
     else {
       box.innerHTML = posts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
         const tag = p.path.replace(/\.html$/, '');
+        const isGame = p.path.startsWith('games/');
         const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
-        const isPinned = pins.indexOf(tag) !== -1;
+        const isPinned = !isGame && pins.indexOf(tag) !== -1;
         // generate friendly default title if titles.json doesn't have one
-        let displayTitle = titles[tag];
+        let displayTitle = isGame ? gameTitles[p.path] : titles[tag];
         if (!displayTitle) {
           const m = tag.match(/(\d+)[月\.](\d+)(.*)/);
           if (m) {
@@ -1125,15 +1132,18 @@ async function loadPosts() {
             displayTitle = tag;
           }
         }
+        const viewPath = isGame ? '/' + p.path : '/' + encodeURIComponent(tag + '.html');
+        const statLine = isGame
+          ? `${esc(p.path)} · ${imgCount} 张图 · 访问 ${views[viewPath] || 0} 次`
+          : `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
         return `<div class="game">
-  <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views['/' + encodeURIComponent(tag + '.html')] || 0} 次</span></div>
+  <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
     <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
-    <button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>
+    ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
-    <button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button>
-    <button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>
+    ${isGame ? '' : `<button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button><button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>`}
     <button class="del" data-del="${esc(tag)}">删除</button>
   </div>
 </div>`;
