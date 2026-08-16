@@ -303,7 +303,8 @@ function renderGamePage(g, sourceFile) {
   const sourceName = path.parse(sourceFile).name;
   const sourceDisp = TITLES[sourceName] || sourceName;
   const navLinksStr = NAV.map(n => `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`).join('');
-  const cover = g.img ? `<div class="gp-cover"><img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy"></div>` : '';
+  const cover = g.img ? `<img src="${esc(g.img)}" alt="${esc(g.title)}" loading="lazy">` : '';
+  const SITE_BASE = '..'; // game pages are in games/ subdirectory
   const platTag = g.plat ? `<span class="gp-plat">${g.plat}</span>` : '';
   const dlBtns = g.links.slice(0, 3).map(l => `<a class="gp-dl" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('');
   const intro = g.intro ? `<div class="gp-intro">${esc(g.intro)}</div>` : '';
@@ -335,6 +336,13 @@ function renderGamePage(g, sourceFile) {
       <button type="submit">发表评论</button>
     </div>
   </form>
+</div>
+<div class="mrhx-cpop" id="mrhx-cpop">
+  <div class="mrhx-cpop-box">
+    <h3>邮箱填写提示</h3>
+    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
+    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
+  </div>
 </div>
 <script>
 (function () {
@@ -394,13 +402,6 @@ function renderGamePage(g, sourceFile) {
   }
 })();
 </script>
-<div class="mrhx-cpop" id="mrhx-cpop">
-  <div class="mrhx-cpop-box">
-    <h3>邮箱填写提示</h3>
-    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
-    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
-  </div>
-</div>
 <!--mrhx-comments-end-->`;
   }
   return `<!DOCTYPE html>
@@ -500,9 +501,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="${SITE_URL}">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <a class="site" href="${SITE_BASE}/">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
     <div class="site-header-right">
-      <form class="mrhx-search" action="${SITE_URL}search.html" method="get">
+      <form class="mrhx-search" action="${SITE_BASE}/search.html" method="get">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -511,7 +512,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 40px}
   </div>
 </header>
 <main>
-  <a class="gp-back-top" href="${SITE_URL}">← 返回首页</a>
+  <a class="gp-back-top" href="${SITE_BASE}/">← 返回首页</a>
   <div class="gp-cover">${cover}</div>
   <h1 class="gp-title">${esc(g.title)}${platTag}</h1>
   ${intro}
@@ -1219,8 +1220,8 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="${SITE_URL}">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
-    <form class="mrhx-search" action="${SITE_URL}search.html" method="get">
+    <a class="site" href="./">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
+    <form class="mrhx-search" action="search.html" method="get">
       <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
