@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
     <html lang="zh-CN">
       <head>
         <meta charset="utf-8" />
@@ -1023,8 +1023,8 @@
       <body class="narrow">
   <!--mrhx-->
 <style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;margin-top:88px !important}
+  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
@@ -1038,10 +1038,7 @@
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-  @media (min-width:721px){
-    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
-  }
-  .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
   .mrhx-btn-m{background:#e5484d;color:#fff}
@@ -1057,7 +1054,15 @@
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both}
   .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
-  @media (max-width:720px){
+  .node-list{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;list-style:none;margin:0 !important;padding:0 !important}
+  .node-list .node{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.25s;display:flex;flex-direction:column}
+  .node-list .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+  .node-list .node .bullet{display:none}
+  .node-list .node .image-list{margin:0;padding:0}
+  .node-list .node .image{width:100% !important;height:auto;max-height:220px;object-fit:cover;display:block}
+  .node-list .node .content{font-size:15px;font-weight:700;color:#2b2b2b;padding:12px 14px 4px;line-height:1.4;margin:0}
+  .node-list .node .note{font-size:12px;color:#888;padding:4px 14px 8px;white-space:normal;line-height:1.5;margin:0}
+  .node-list .node .mrhx-dl{padding:0 14px 14px;margin:0}
     body.narrow{padding-left:12px !important;padding-right:12px !important}
     .mrhx-bar{padding:12px 14px;gap:10px}
     .mrhx-bar .mlogo{font-size:17px}
@@ -1071,6 +1076,10 @@
     .mrhx-search input{flex:1;width:auto}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
+    .node-list{grid-template-columns:1fr;gap:10px}
+    .node-list .node .image{max-height:180px}
+    .node-list{grid-template-columns:1fr;gap:10px}
+    .node-list .node .image{max-height:180px}
   }
   .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
   .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
