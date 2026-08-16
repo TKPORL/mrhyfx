@@ -193,8 +193,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <h2>基本信息</h2>
       <div class="field">
         <label>文件名（英文/数字，用于网址，不要中文）</label>
-        <input type="text" id="fName">
-        <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/8.11.html</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="fName" style="flex:1;min-width:0">
+          <button class="btn btn-s" id="autoNumber" type="button">自动编号</button>
+        </div>
+        <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/你的编号.html，点「自动编号」从 games/ 已有最大序号+1 生成</p>
       </div>
       <div class="field">
         <label>帖子标题（首页和页面顶部显示的名字）</label>
@@ -1695,6 +1698,21 @@ $('disableCC').onclick = async () => {
 };
 
 $('loadComments').onclick = loadComments;
+
+$('autoNumber').onclick = async () => {
+  const btn = $('autoNumber');
+  btn.disabled = true;
+  try {
+    const token = $('token').value.trim(), repo = $('repo').value.trim();
+    if (!token || !repo.includes('/')) throw new Error('请先填写 Token 和仓库');
+    const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
+    const nums = tree.tree.map(t => t.path.replace(/^games\//, '').replace(/\.html$/, '')).filter(n => /^\d+$/.test(n)).map(Number);
+    const next = Math.max(0, ...nums) + 1;
+    $('fName').value = String(next);
+    show(stF, '已自动生成下一个编号：' + next, 'ok');
+  } catch (e) { show(stF, e.message, 'err'); }
+  finally { btn.disabled = false; }
+};
 
 $('pubForm').onclick = async () => {
   const btn = $('pubForm'); btn.disabled = true;
