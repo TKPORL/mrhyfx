@@ -662,10 +662,11 @@ html = (function reorderNodes(str) {
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
     html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
-    html = html.replace('</body>', (html.includes('inc_page_view') || !vb) ? `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${staggerBlock}\n  </body>` : `  ${topBtn}\n  ${commentBlock}${commentBlock ? '\n  ' : ''}${vb}${staggerBlock}\n  </body>`);
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
