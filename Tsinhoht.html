@@ -880,11 +880,24 @@ function collectGames() {
   })).filter(c => c.name || c.intro || c.imgs || c.linkM || c.linkB || c.customName || c.customUrl || c.files.length);
 }
 
+function randomAlnum(len) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let s = '';
+  const b = new Uint8Array(len);
+  const fill = crypto.getRandomValues ? crypto.getRandomValues.bind(crypto) : (a => { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; });
+  fill(b);
+  for (let i = 0; i < len; i++) s += chars[b[i] % chars.length];
+  return s;
+}
+
 function fileToBase64(f) {
   return new Promise((res, rej) => {
     const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = rej;
+    r.onload = () => {
+      if (!r.result) rej(new Error('读取文件失败（内容为空）：' + f.name));
+      else res(r.result.split(',')[1]);
+    };
+    r.onerror = () => rej(new Error('读取文件失败：' + f.name + '（文件可能被占用或损坏，请换一张图重试）'));
     r.readAsDataURL(f);
   });
 }
@@ -900,7 +913,7 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
       if (seenFiles.has(fileKey)) continue;
       seenFiles.add(fileKey);
       const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
-      const raw = btoa(unescape(encodeURIComponent(f.name))).replace(/[+/=]/g, '').slice(0, 8);
+      const raw = randomAlnum(10);
       let rawName = raw + '.' + ext;
       while (usedNames.has(rawName)) {
         const dot = rawName.lastIndexOf('.');
@@ -1971,7 +1984,7 @@ $('pubForm').onclick = async () => {
     localStorage.removeItem(DRAFT_FORM);
     $('editBar').classList.remove('show');
   } catch (e) {
-    show(stF, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
+    show(stF, '发布失败：' + (e && e.message ? e.message : String(e)) + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
   } finally { btn.disabled = false; }
 };
 
@@ -1984,7 +1997,7 @@ $('pubHtml').onclick = async () => {
     await publish(stH, name, title, '', htmlContent);
     await updateTimestamp($('repo').value.trim(), $('token').value.trim(), name).catch(() => {});
   } catch (e) {
-    show(stH, '发布失败：' + e.message + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
+    show(stH, '发布失败：' + (e && e.message ? e.message : String(e)) + '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错', 'err');
   } finally { btn.disabled = false; }
 };
 
