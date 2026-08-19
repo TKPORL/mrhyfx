@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>评论区样式预览 · 每条独立外框版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;padding:40px 20px}
+.wrap{max-width:760px;margin:0 auto}
+.hint{background:#fff7ed;border:1px solid #fde4c8;border-radius:12px;padding:14px 18px;font-size:13px;color:#9a6700;margin-bottom:24px;line-height:1.9}
+.mrhx-comments{max-width:100%;margin-top:20px;padding-top:22px;border-top:2px solid #ecebe9}
+.mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
+.mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
+.mrhx-cfbar{text-align:center;margin-top:6px;margin-bottom:14px}
+.mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
+.mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
+.mrhx-cfold-wrap{position:relative}
+.mrhx-cfold-wrap.mrhx-cfolded{max-height:440px;overflow:hidden}
+.mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
+.mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
+.mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
+.mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+.mrhx-creply-item{width:calc(100% - 22px);min-width:0;max-width:100%;margin-left:22px;border-left:3px solid #f0b4b6;border:1px solid #ecebe9;border-radius:13px;background:#fdf9f7;box-shadow:0 1px 3px rgba(0,0,0,.04);padding:14px 16px}
+.mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+.mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
+.mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
+.mrhx-cav-admin{background:linear-gradient(135deg,#ff6b3d,#e5484d)}
+.mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+.mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
+.mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
+.mrhx-ctime{font-size:11px;color:#b8b2aa}
+.mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:4px;letter-spacing:.5px}
+.mrhx-cpin{background:#e58d0a}
+.mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:45px;margin-top:-4px}
+.mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
+.mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
+.mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (max-width:720px){.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hint">这是「每条评论都有独立外框」预览版（主评论白框 + 回复粉色左边框浅色框）。以下是模拟数据，请确认效果：回复是否都有外框、长内容是否自动换行不溢出、折叠/展开是否好用。确认后我再同步到正式页面。</div>
+  <div class="mrhx-comments" id="mrhx-comments">
+    <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
+    <div class="mrhx-cfbar" id="mrhx-cfbar" style="display:none"><button type="button" class="mrhx-cfbtn" id="mrhx-cfbar-btn">缩短评论</button></div>
+    <div class="mrhx-cfold-wrap" id="mrhx-cfold-wrap">
+      <div id="mrhx-clist"></div>
+      <div class="mrhx-cfold-mask" id="mrhx-cfold-mask"><button type="button" class="mrhx-cfbtn" id="mrhx-cfold-btn">展开评论</button></div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var list = document.getElementById('mrhx-clist');
+  var foldWrap = document.getElementById('mrhx-cfold-wrap');
+  var foldMask = document.getElementById('mrhx-cfold-mask');
+  var foldBtn = document.getElementById('mrhx-cfold-btn');
+  var cfbar = document.getElementById('mrhx-cfbar');
+  var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
+  var folded = true;
+  var all = [
+    { id: 'c1', pid: null, nick: '爱吃肉的猫', is_admin: false, pinned: false, content: '8月17号的资源链接失效了，能补一下吗？\n好人一生平安～', created_at: '2026-08-17T09:00:00Z' },
+    { id: 'c2', pid: 'c1', nick: 'Tsinho', is_admin: true, pinned: false, content: '已重新上传，刷新一下就能看到新链接啦。', created_at: '2026-08-17T09:10:00Z' },
+    { id: 'c3', pid: 'c1', nick: '路人甲', is_admin: false, pinned: false, content: '同求！我也点不开', created_at: '2026-08-17T09:15:00Z' },
+    { id: 'c4', pid: null, nick: '夜夜', is_admin: false, pinned: true, content: '求一个 盛夏的回忆 安卓版，找了好久都没找到，拜托了🙏', created_at: '2026-08-18T10:00:00Z' },
+    { id: 'c5', pid: 'c4', nick: 'Tsinho', is_admin: true, pinned: false, content: '已经发到置顶帖里了，去看看吧。', created_at: '2026-08-18T10:30:00Z' },
+    { id: 'c6', pid: null, nick: 'Sakura_Lover', is_admin: false, pinned: false, content: '这条用来测试超长英文和网址不会撑破框：https://pan.baidu.com/s/abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ?pwd=8888\nSupercalifragilisticexpialidocious antidisestablishmentarianism pneumonoultramicroscopicsilicovolcanoconiosis', created_at: '2026-08-18T12:00:00Z' },
+    { id: 'c7', pid: 'c6', nick: '测试员', is_admin: false, pinned: false, content: '回复测试：这条是回复，内容多一些，看看它自己的外框是否完整、和主评论是否区分清楚。', created_at: '2026-08-18T12:05:00Z' },
+    { id: 'c8', pid: 'c6', nick: '路人乙', is_admin: false, pinned: false, content: '还有一条回复，验证多回复时每条都有独立框。', created_at: '2026-08-18T12:06:00Z' },
+    { id: 'c9', pid: null, nick: '潜水员', is_admin: false, pinned: false, content: '评论多了以后会自动折叠，点展开评论就能看全部，很方便。', created_at: '2026-08-18T13:00:00Z' },
+    { id: 'c10', pid: 'c9', nick: 'Tsinho', is_admin: true, pinned: false, content: '是的，超过 6 条就会折叠，这是第 10 条，用来凑数量。', created_at: '2026-08-18T13:05:00Z' }
+  ];
+  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
+  function fmt(t) {
+    var d = new Date(t); var now = new Date();
+    var s = Math.floor((now - d) / 1000);
+    if (s < 60) return '刚刚';
+    if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+    if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+  function render() {
+    list.textContent = '';
+    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
+    function buildRow(c) {
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
+      var head = h('div', 'mrhx-chead');
+      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
+      var meta = h('div', 'mrhx-cmeta');
+      meta.appendChild(h('b', '', c.nick || '匿名'));
+      if (c.pid) {
+        var parent = all.filter(function (p) { return p.id === c.pid; })[0];
+        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
+      }
+      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
+      meta.appendChild(h('span', 'mrhx-ctime', fmt(c.created_at)));
+      head.appendChild(meta);
+      row.appendChild(head);
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));
+      var bar = h('div', 'mrhx-cbar');
+      var rp = h('button', 'mrhx-cbtn', '回复');
+      bar.appendChild(rp);
+      row.appendChild(bar);
+      return row;
+    }
+    function addTree(pid, box) {
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
+          return a.created_at.localeCompare(b.created_at);
+        })
+        .forEach(function (c) {
+          box.appendChild(buildRow(c));
+          addTree(c.id, box);
+        });
+    }
+    addTree(null, list);
+    applyFold();
+  }
+  function applyFold() {
+    var need = all.length > 6;
+    if (!need) {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      cfbar.style.display = 'none';
+      return;
+    }
+    if (folded) {
+      foldWrap.classList.add('mrhx-cfolded');
+      foldMask.classList.add('mrhx-cfold-show');
+      foldBtn.textContent = '展开评论（' + all.length + ' 条）';
+      cfbar.style.display = 'none';
+    } else {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      cfbar.style.display = 'block';
+    }
+  }
+  foldBtn.onclick = function () { folded = false; applyFold(); };
+  cfbarBtn.onclick = function () { folded = true; applyFold(); };
+  render();
+})();
+</script>
+</body>
+</html>
