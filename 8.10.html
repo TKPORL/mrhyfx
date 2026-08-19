@@ -1077,7 +1077,7 @@
   .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
   .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
+  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;max-width:100%;margin-left:22px;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:none}
   .mrhx-creply-item:hover{box-shadow:0 4px 12px rgba(229,72,77,.05)}
   .mrhx-thread{margin-top:8px;padding-left:0}
   .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
@@ -1086,7 +1086,7 @@
   .mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
   .mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
   .mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
-  .mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;padding-left:45px;margin-top:-4px}
+  .mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:45px;margin-top:-4px}
   .mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
   .mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
   .mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
@@ -1116,6 +1116,13 @@
   .mrhx-csub button:hover{background:#c93a3f}
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
+  .mrhx-cfold-wrap{position:relative}
+  .mrhx-cfold-wrap.mrhx-cfolded{max-height:440px;overflow:hidden}
+  .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
+  .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
+  .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
+  .mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
+  .mrhx-cfbar{text-align:center;margin-top:6px}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}
@@ -1417,7 +1424,11 @@
   <!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div id="mrhx-clist"></div>
+  <div class="mrhx-cfbar" id="mrhx-cfbar" style="display:none"><button type="button" class="mrhx-cfbtn" id="mrhx-cfbar-btn">缩短评论</button></div>
+  <div class="mrhx-cfold-wrap" id="mrhx-cfold-wrap">
+    <div id="mrhx-clist"></div>
+    <div class="mrhx-cfold-mask" id="mrhx-cfold-mask"><button type="button" class="mrhx-cfbtn" id="mrhx-cfold-btn">展开评论</button></div>
+  </div>
   <form id="mrhx-cform" class="mrhx-cform">
     <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
       <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
@@ -1453,6 +1464,34 @@
   var hpEl = document.getElementById('mrhx-hp');
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
   var replyEl = document.getElementById('mrhx-creply');
+  var foldWrap = document.getElementById('mrhx-cfold-wrap');
+  var foldMask = document.getElementById('mrhx-cfold-mask');
+  var foldBtn = document.getElementById('mrhx-cfold-btn');
+  var cfbar = document.getElementById('mrhx-cfbar');
+  var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
+  var folded = true;
+  function applyFold() {
+    if (!foldWrap) return;
+    var need = all.length > 6;
+    if (!need) {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'none';
+      return;
+    }
+    if (folded) {
+      foldWrap.classList.add('mrhx-cfolded');
+      foldMask.classList.add('mrhx-cfold-show');
+      foldBtn.textContent = '展开评论（' + all.length + ' 条）';
+      if (cfbar) cfbar.style.display = 'none';
+    } else {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'block';
+    }
+  }
+  if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
+  if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
   var replyPid = null;
   var all = [];
   var popShown = false;
@@ -1522,16 +1561,12 @@
         .forEach(function (c) {
           var row = buildRow(c);
           box.appendChild(row);
-          var children = all.filter(function (x) { return x.pid === c.id; })
-            .sort(function (a, b) { return a.created_at.localeCompare(b.created_at); });
-          if (!children.length) return;
-          var threadBox = h('div', 'mrhx-thread');
-          row.appendChild(threadBox);
-          addTree(c.id, threadBox);
+          addTree(c.id, box);
         });
     }
     addTree(null, list);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
+    applyFold();
   }
   function load() {
     fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
