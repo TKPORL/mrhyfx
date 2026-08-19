@@ -1023,8 +1023,8 @@
       <body class="narrow">
   <!--mrhx-->
 <style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
+  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
@@ -1055,10 +1055,18 @@
   .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .node{animation:mrhxFade .5s ease both}
-  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
+  .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
+  .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+  .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
+  .node .bullet .bullet-dot{background:#fff}
+  .node.collapsed > .bullet{background-color:#dee0e3}
+  .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
+  .node .content{font-size:15px;font-weight:600;line-height:1.6;word-break:break-word}
+  .node .note{font-size:13px;color:#666;line-height:1.7;margin-top:6px;word-break:break-word;white-space:pre-wrap}
+  .title{font-weight:700;word-break:break-word}
+  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
   @media (max-width:720px){
-    body.narrow{padding-left:12px !important;padding-right:12px !important}
+    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
     .mrhx-bar{padding:12px 14px;gap:10px}
     .mrhx-bar .mlogo{font-size:17px}
     .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
@@ -1069,6 +1077,11 @@
     .mrhx-bar .search-row{width:100%;justify-content:flex-end}
     .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
+    .title{font-size:20px;line-height:32px;min-height:32px;padding-bottom:16px;margin-bottom:16px}
+    .node-list{margin-left:0}
+    .node{padding:14px;border-radius:12px}
+    .node .bullet{display:none}
+    .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
   }

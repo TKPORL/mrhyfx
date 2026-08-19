@@ -5,7 +5,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html');
+const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -58,8 +58,8 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
       </div>`;
 
 const sharedCss = `<style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important}
-  .mrhx-bar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
+  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
   .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
@@ -90,10 +90,18 @@ const sharedCss = `<style>
   .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .node{animation:mrhxFade .5s ease both}
-  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d}
+  .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
+  .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+  .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
+  .node .bullet .bullet-dot{background:#fff}
+  .node.collapsed > .bullet{background-color:#dee0e3}
+  .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
+  .node .content{font-size:15px;font-weight:600;line-height:1.6;word-break:break-word}
+  .node .note{font-size:13px;color:#666;line-height:1.7;margin-top:6px;word-break:break-word;white-space:pre-wrap}
+  .title{font-weight:700;word-break:break-word}
+  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
   @media (max-width:720px){
-    body.narrow{padding-left:12px !important;padding-right:12px !important}
+    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
     .mrhx-bar{padding:12px 14px;gap:10px}
     .mrhx-bar .mlogo{font-size:17px}
     .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
@@ -104,6 +112,11 @@ const sharedCss = `<style>
     .mrhx-bar .search-row{width:100%;justify-content:flex-end}
     .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
+    .title{font-size:20px;line-height:32px;min-height:32px;padding-bottom:16px;margin-bottom:16px}
+    .node-list{margin-left:0}
+    .node{padding:14px;border-radius:12px}
+    .node .bullet{display:none}
+    .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     .image-list .image{max-width:100% !important}
   }
@@ -308,8 +321,8 @@ function emptyIndex(navLinks) {
 <title>${SITE_NAME} · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #ecebe9}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:115px}
+header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
   .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
   .site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
@@ -324,7 +337,7 @@ header{background:#fff;border-bottom:1px solid #ecebe9}
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  @media (max-width:720px){.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
+  @media (max-width:720px){body{padding-top:105px}.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
 </style>
 <link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
@@ -921,8 +934,8 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 <title>搜索 · ${esc(SITE_NAME)}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:85px}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,.04)}
 .hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
 .site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
 .site em{font-style:normal;color:#e5484d}
@@ -948,7 +961,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .btn-dl-m{background:#e5484d;color:#fff}
 .btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
-@media (max-width:720px){.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
+@media (max-width:720px){body{padding-top:75px}.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
 </style>
 </head>
 <body>
