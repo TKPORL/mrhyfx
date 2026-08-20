@@ -204,11 +204,6 @@ footer b{color:#e5484d}
     <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
     <div class="mrhx-popup-content">
       <h3>📢 【公告】</h3>
-      <p>-不好意思大伙 现在网站出现了点小bug-</p>
-      <p>-我正在修-可以正常下载-</p>
-      <p>-看名字就行 图片可能有误-</p>
-      <p>-图片我得等明天再全部重新调换一下现在太晚了-</p>
-      <p>-抱歉 给大家带来了不好的体验-</p>
       <p>各位老师好，Tsinho黄油站 已于 8月10日 正式上线！</p>
       <p>收藏防迷路 记得回家路</p>
       <p>纯公益-无任何付费内容</p>
@@ -254,19 +249,7 @@ footer b{color:#e5484d}
   t();
 })();
 </script>
-<script>
-(function () {
-  try {
-    var day = new Date().toISOString().slice(0, 10);
-    var k = 'mrhx_v_' + day + '_' + '/index.html'.replace(/[^a-zA-Z0-9]/g, '_');
-    if (localStorage.getItem(k)) return;
-    localStorage.setItem(k, '1');
-    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html' }) });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/index.html', p_day: day }) }).catch(function () {});
-  } catch (e) {}
-})();
-</script>
+
 <script>
 (function () {
   var PAGESIZE = 24;
@@ -306,7 +289,7 @@ footer b{color:#e5484d}
       show(0);
     }
   }
-  var CURL = 'https://kydmccknlbpczeqppbtc.supabase.co', CANON = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  var CURL = '', CANON = '';
   if (CURL && CANON) {
     fetch(CURL + '/rest/v1/comments?select=url', { headers: { 'apikey': CANON, 'Authorization': 'Bearer ' + CANON } })
       .then(function (r) { return r.json(); })
