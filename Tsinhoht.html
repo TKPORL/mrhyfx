@@ -200,7 +200,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <input type="text" id="fName" style="flex:1;min-width:0">
           <button class="btn btn-s" id="autoNumber" type="button">自动编号</button>
         </div>
-        <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/你的编号.html，点「自动编号」从 games/ 已有最大序号+1 生成</p>
+        <p class="hint">网址会是 https://tkporl.github.io/mrhyfx/你的编号.html，点「自动编号」从已有帖子最大序号+1 生成</p>
       </div>
       <div class="field">
         <label>帖子标题（首页和页面顶部显示的名字）</label>
@@ -263,7 +263,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <select id="postFilter" style="padding:6px 10px;border-radius:8px;border:1px solid #e9e6e2">
             <option value="all">全部</option>
             <option value="day">合集帖（日更）</option>
-            <option value="game">单游戏帖（games/）</option>
+            
             <option value="other">其他</option>
           </select>
           <button class="btn btn-s" id="refresh">刷新列表</button>
@@ -1167,77 +1167,12 @@ async function buildPostCleanupFiles(repo, tag) {
   return files;
 }
 
-// 删除 games/N 时，同步在合集帖母帖 HTML 里移除对应 li.node.heading3，避免 gen.js 重建时又生成回来
-// 返回 { path, content, sha, parentTag, title } 可直接加到 atomicCommit；找不到匹配则返回 null
-async function removeGameFromParentHtml(repo, token, gameTag) {
-  // 1. 通过 search_index.json 定位母帖 pageUrl 与游戏 title/img
-  const searchRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : null).catch(() => null);
-  if (!searchRaw || !Array.isArray(searchRaw)) return null;
-  const gameHtml = gameTag + '.html';
-  const hit = searchRaw.find(x => (x.gameUrl || '').replace(/^\//, '') === gameHtml.replace(/^\//, ''));
-  if (!hit || !hit.pageUrl) return null;
-  const parentPath = hit.pageUrl; // e.g. "8.1.1.html"
-  const parentTag = parentPath.replace(/\.html?$/i, '');
-  if (parentTag.startsWith('games/')) return null; // 本身已是单游戏帖，没有母帖
-  const expectTitle = String(hit.title || '').trim();
-  const expectImg = String(hit.img || '').trim();
-
-  // 2. 下载母帖 HTML 与其 SHA（从 tree 或 apiGet）
-  const parentInfo = await apiGet(repo, token, parentPath);
-  if (!parentInfo) return null;
-  const htmlText = typeof parentInfo.content === 'string' && parentInfo.encoding === 'base64'
-    ? decodeURIComponent(escape(atob(parentInfo.content)))
-    : parentInfo.content;
-  if (!htmlText) return null;
-  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-  const lis = [...doc.querySelectorAll('li.node.heading3')];
-  if (!lis.length) return null;
-
-  // 3. 用 title + img 匹配 li，找到目标索引
-  let targetIdx = -1;
-  for (let i = 0; i < lis.length; i++) {
-    const li = lis[i];
-    const nameEl = li.querySelector('.content.mm-editor span');
-    const title = nameEl ? nameEl.textContent.trim() : '';
-    const firstImg = li.querySelector('.image-list img');
-    const img = firstImg ? (firstImg.getAttribute('src') || '').trim() : '';
-    const titleMatch = expectTitle && (title === expectTitle || title.indexOf(expectTitle) !== -1 || expectTitle.indexOf(title) !== -1);
-    const imgMatch = expectImg && img && (img === expectImg || img.replace(/^https?:\/\//, '') === expectImg.replace(/^https?:\/\//, ''));
-    if ((titleMatch && imgMatch) || (titleMatch && !expectImg) || (imgMatch && !expectTitle)) {
-      targetIdx = i;
-      break;
-    }
-  }
-  if (targetIdx === -1) return null;
-
-  // 4. 从 DOM 中移除目标 li，序列化回 HTML
-  lis[targetIdx].remove();
-  const serializer = new XMLSerializer();
-  // 将修改后的 <html> 根序列化，保留 doctype
-  let newHtml = '';
-  const doctype = doc.doctype;
-  if (doctype) {
-    newHtml += '<!DOCTYPE ' + doctype.name;
-    if (doctype.publicId) newHtml += ' PUBLIC "' + doctype.publicId + '"';
-    if (doctype.systemId) newHtml += ' "' + doctype.systemId + '"';
-    newHtml += '>\n';
-  }
-  newHtml += serializer.serializeToString(doc.documentElement);
-  return {
-    path: parentPath,
-    content: btoa(unescape(encodeURIComponent(newHtml + '\n'))),
-    sha: parentInfo.sha || null,
-    parentTag: parentTag,
-    title: expectTitle || gameTag
-  };
-}
-
-async function deletePostComments(tag, isGame) {
+async function deletePostComments(tag) {
   const base = sbBase();
   const anon = $('sbAnon').value.trim();
   const admin = $('sbSecret').value.trim();
   if (!base || !anon || !admin) throw new Error('Supabase 未配置，GitHub 数据已清理；请填写评论管理配置后重试评论清理');
-  const url = isGame ? '/' + tag + '.html' : '/' + tag + '.html';
+  const url = '/' + tag + '.html';
   const headers = Object.assign(sbHeaders(), { 'x-admin-key': admin });
   const list = await fetch(`${base}/rest/v1/comments?url=eq.${encodeURIComponent(url)}&select=id,pid`, { headers: headers });
   if (!list.ok) throw new Error('读取评论失败 HTTP ' + list.status);
@@ -1282,42 +1217,17 @@ function parseCollectionDoc(doc) {
     };
   });
 }
-// 从单游戏帖（games/N.html）解析出 1 个卡片数据
-function parseGameDoc(doc) {
-  const titleEl = doc.querySelector('h1.gp-title');
-  let name = '';
-  if (titleEl) {
-    // 移除平台标签 span.gp-plat
-    const clone = titleEl.cloneNode(true);
-    (clone.querySelectorAll('.gp-plat') || []).forEach(s => s.remove());
-    name = clone.textContent.trim();
-  }
-  const coverImg = doc.querySelector('.gp-cover img');
-  const imgs = coverImg ? (coverImg.getAttribute('src') || '') : '';
-  const introEl = doc.querySelector('.gp-intro');
-  const intro = introEl ? introEl.textContent.trim() : '';
-  let linkM = '', linkB = '', customName = '', customUrl = '';
-  doc.querySelectorAll('.gp-dls .gp-dl').forEach(a => {
-    const href = a.getAttribute('href') || '';
-    const txt = a.textContent.trim();
-    if (/pan\.baidu\.com/.test(href) || /度盘/.test(txt)) linkB = href;
-    else if (/yun\.139\.com/.test(href) || /移动/.test(txt)) linkM = href;
-    else { customName = txt.replace(/[：:]\s*$/, '').trim(); customUrl = href; }
-  });
-  return [{ name, intro, imgs, linkM, linkB, customName, customUrl }];
-}
-// 判断 tag 是否为 games/ 单游戏帖，返回其实际在仓库中的路径 {N}.html
+// 判断 tag 返回其实际在仓库中的路径 {N}.html
 function postRepoPath(tag) {
-  // 单游戏帖 tag 形如 "games/1"，合集帖 tag 形如 "8.1.1"
-  return tag.startsWith('games/') ? tag + '.html' : tag + '.html';
+  return tag + '.html';
 }
 
-// 帖子列表全局缓存：{ posts, tree, titles, counts, pins, gameTitles, views, token, repo }
+// 帖子列表全局缓存：{ posts, tree, titles, counts, pins, icons, views, token, repo }
 var _postCtx = null;
 // 渲染帖子列表（可反复调用，已筛选过的 posts 数组）
 function renderPosts(filteredPosts) {
   if (!_postCtx) return;
-  const { posts, tree, titles, counts, pins, icons, gameTitles, views, token, repo } = _postCtx;
+  const { posts, tree, titles, counts, pins, icons, views, token, repo } = _postCtx;
   const box = $('postBox');
   const meta = $('postSearchMeta');
   const total = posts.length;
@@ -1334,11 +1244,9 @@ function renderPosts(filteredPosts) {
   if (!shown) { box.innerHTML = '<p style="color:#999;font-size:13px">没有匹配的帖子，换个关键词试试～</p>'; return; }
   box.innerHTML = filteredPosts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
     const tag = p.path.replace(/\.html$/, '');
-    const isGame = p.path.startsWith('games/');
-    const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
-    const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + assetTag + '/')).length;
-    const isPinned = !isGame && pins.indexOf(tag) !== -1;
-    let displayTitle = isGame ? gameTitles[p.path] : titles[tag];
+    const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
+    const isPinned = pins.indexOf(tag) !== -1;
+    let displayTitle = titles[tag];
     if (!displayTitle) {
       const m = tag.match(/(\d+)[月\.](\d+)(.*)/);
       if (m) {
@@ -1348,23 +1256,21 @@ function renderPosts(filteredPosts) {
         displayTitle = tag;
       }
     }
-    const viewPath = isGame ? '/' + p.path : '/' + encodeURIComponent(tag + '.html');
-    const statLine = isGame
-      ? `${esc(p.path)} · ${imgCount} 张图 · 访问 ${views[viewPath] || 0} 次`
-      : `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
+    const viewPath = '/' + encodeURIComponent(tag + '.html');
+    const statLine = `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
     return `<div class="game">
   <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
-    <button class="btn btn-s" data-tsave="${esc(tag)}" data-isgame="${isGame}">保存标题</button>
+    <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
     <span class="icon-prev">${icons[tag] ? (/^https?:/i.test(icons[tag]) ? '<img src="' + esc(icons[tag]) + '" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;vertical-align:middle">' : '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(icons[tag]) + '</span>') : ''}</span>
     <input type="text" class="t-edit" data-icon="${esc(tag)}" value="${esc(icons[tag] || '')}" placeholder="图标：填图片URL或直接输入文字（留空=自动）" style="flex:1;min-width:140px;font-size:12px">
     <button class="btn btn-s" data-isave="${esc(tag)}">存图标</button>
-    ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
+    <button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
-    <button class="btn btn-s" data-copy="${esc(tag)}" data-isgame="${isGame}">复制到表单</button>
-    <button class="btn btn-s" data-edit="${esc(tag)}" data-isgame="${isGame}">编辑</button>
-    <button class="del" data-del="${esc(tag)}" data-isgame="${isGame}">删除</button>
+    <button class="btn btn-s" data-copy="${esc(tag)}">复制到表单</button>
+    <button class="btn btn-s" data-edit="${esc(tag)}">编辑</button>
+    <button class="del" data-del="${esc(tag)}">删除</button>
   </div>
 </div>`;
   }).join('');
@@ -1376,7 +1282,6 @@ function bindPostButtons(box, token, repo) {
   [...box.querySelectorAll('[data-copy]')].forEach(b => {
     b.onclick = async () => {
       const tag = b.dataset.copy;
-      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
       b.disabled = true;
       show(stM, '正在解析「' + tag + '」的数据到发布表单…', 'info');
       try {
@@ -1384,7 +1289,7 @@ function bindPostButtons(box, token, repo) {
         const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-        const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+        const cards = parseCollectionDoc(doc);
         if (!cards.length) throw new Error('没有解析到条目');
         $('gameBox').innerHTML = '';
         cards.forEach(c => {
@@ -1397,9 +1302,9 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-customName').value = c.customName || '';
            card.querySelector('.g-customUrl').value = c.customUrl || '';
          });
-         $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
-         $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
-         $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
+         $('fName').value = tag;
+         $('fTitle').value = titles[tag] || tag;
+         $('fCount').value = counts[tag] || cards.length;
          switchTab('tabForm');
          show(stF, '已把「' + tag + '」的全部数据复制到表单！修改文件名/标题后即可发布（图片沿用站内地址，无需重新上传）。', 'ok');
         mrhxSmoothScrollTo(0, 400);
@@ -1411,7 +1316,6 @@ function bindPostButtons(box, token, repo) {
   [...box.querySelectorAll('[data-edit]')].forEach(b => {
     b.onclick = async () => {
       const tag = b.dataset.edit;
-      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
       b.disabled = true;
       show(stM, '正在载入「' + tag + '」到表单编辑区…', 'info');
       try {
@@ -1419,7 +1323,7 @@ function bindPostButtons(box, token, repo) {
         const res = await fetch(`${RAW_BASE}/${repo}/main/${filePath}`);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-        const cards = isGame ? parseGameDoc(doc) : parseCollectionDoc(doc);
+        const cards = parseCollectionDoc(doc);
         if (!cards.length) throw new Error('没有解析到条目');
         $('gameBox').innerHTML = '';
         cards.forEach(c => {
@@ -1432,9 +1336,9 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-customName').value = c.customName || '';
            card.querySelector('.g-customUrl').value = c.customUrl || '';
          });
-         $('fName').value = tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag;
-         $('fTitle').value = titles[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || tag;
-         $('fCount').value = counts[tag.startsWith('games/') ? tag.replace(/^games\//, '') : tag] || cards.length;
+         $('fName').value = tag;
+         $('fTitle').value = titles[tag] || tag;
+         $('fCount').value = counts[tag] || cards.length;
          $('editBar').innerHTML = '正在编辑：<b>' + tag + '.html</b>（点发布后文件名不变则直接覆盖，修改文件名则发布为新帖子）';
         $('editBar').classList.add('show');
         switchTab('tabForm');
@@ -1448,29 +1352,14 @@ function bindPostButtons(box, token, repo) {
   [...box.querySelectorAll('[data-del]')].forEach(b => {
     b.onclick = async () => {
       const tag = b.dataset.del;
-      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
       if (!confirm('确定删除帖子「' + tag + '」吗？\n会同时删除它的全部图片，且不可恢复。')) return;
       b.disabled = true;
       show(stM, '正在准备清理 ' + tag + ' 的索引与配置…', 'info');
       try {
         const steps = [];
         const filePath = postRepoPath(tag);
-        const assetTag = isGame ? tag.replace(/^games\//, '') : tag;
-        const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + assetTag + '/'));
+        const paths = tree.tree.filter(t => t.path === filePath || t.path.startsWith('assets/' + tag + '/'));
         const dataFiles = await buildPostCleanupFiles(repo, tag);
-        // 删除单游戏帖时：同步在合集帖母帖 HTML 里移除对应条目，防止 gen.js 重新运行时又生成回来
-        if (isGame) {
-          try {
-            const parentPatch = await removeGameFromParentHtml(repo, token, tag);
-            if (parentPatch) {
-              // atomicCommit 会以新 blob 替换原路径的 blob，SHA 不传入也能覆盖
-              dataFiles.push({ path: parentPatch.path, content: parentPatch.content });
-              steps.push('已从母帖「' + parentPatch.parentTag + '」中移除游戏条目：' + parentPatch.title);
-            }
-          } catch (patchErr) {
-            steps.push('母帖条目移除失败（不影响主删除流程）：' + patchErr.message);
-          }
-        }
         await atomicCommit(repo, token, dataFiles, '删除帖子数据: ' + tag, stM, '清理配置与索引');
         steps.push('配置与索引已清理');
         const assets = paths.filter(t => t.path !== filePath);
@@ -1484,7 +1373,7 @@ function bindPostButtons(box, token, repo) {
         steps.push(htmlResult.skipped ? filePath + ' 不存在，已视为删除成功' : filePath + ' 已删除');
         let commentMessage = '';
         try {
-          const count = await deletePostComments(tag, isGame);
+          const count = await deletePostComments(tag);
           commentMessage = '评论已删除 ' + count + ' 条';
           steps.push(commentMessage);
         } catch (commentError) {
@@ -1502,25 +1391,13 @@ function bindPostButtons(box, token, repo) {
   [...box.querySelectorAll('[data-tsave]')].forEach(b => {
     b.onclick = async () => {
       const tag = b.dataset.tsave;
-      const isGame = (b.dataset.isgame === 'true' || b.dataset.isgame === true);
       const input = box.querySelector('.t-edit[data-tag="' + tag + '"]');
       const val = input ? input.value.trim() : '';
       if (!val) { show(stM, '标题不能为空', 'err'); return; }
       b.disabled = true;
       show(stM, '正在保存标题…', 'info');
       try {
-        if (isGame) {
-          const giRaw = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
-          const numStr = tag.replace(/^games\//, '');
-          const idx = Number(numStr) - 1;
-          if (!Number.isFinite(idx) || idx < 0 || idx >= giRaw.length) throw new Error('未在 search_index.json 中找到条目 index=' + (idx + 1));
-          giRaw[idx].title = val;
-          const commits = [];
-          commits.push(putFilePromise(repo, token, 'search_index.json', btoa(unescape(encodeURIComponent(JSON.stringify(giRaw, null, 2) + '\n'))), '更新搜索索引标题: ' + tag, 'search_index.json'));
-          await atomicCommit(repo, token, commits, '更新游戏标题: ' + tag, stM, 'search_index.json');
-        } else {
-          await updateJson(repo, token, 'titles.json', tag, val, stM);
-        }
+        await updateJson(repo, token, 'titles.json', tag, val, stM);
         const titleEl = b.closest('.game').querySelector('.gnum');
         if (titleEl) titleEl.textContent = val;
         show(stM, '标题已保存！首页正在自动更新，2-3 分钟后生效（Ctrl+F5 强刷）。', 'ok');
@@ -1573,24 +1450,21 @@ function applySearchFilter() {
   if (!_postCtx) return;
   const kw = ($('postSearch')?.value || '').trim().toLowerCase();
   const ft = $('postFilter')?.value || 'all';
-  const { posts, gameTitles, titles } = _postCtx;
+  const { posts, titles } = _postCtx;
   const filtered = posts.filter(p => {
     const tag = p.path.replace(/\.html$/, '');
-    const isGame = p.path.startsWith('games/');
-    if (ft === 'game' && !isGame) return false;
-    if (ft === 'day' && isGame) return false;
-    if (ft === 'other' && (isGame || /^\d+[\.月]\d+/.test(tag) || tag === 'qzt')) return false;
+    if (ft === 'day' && !/^\d+[\.月]\d+/.test(tag)) return false;
+    if (ft === 'other' && (/^\d+[\.月]\d+/.test(tag) || tag === 'qzt')) return false;
     if (!kw) return true;
-    // 搜索范围：路径 / tag / 展示标题 / （合集帖）友好标题
-    let displayTitle = isGame ? (gameTitles[p.path] || '') : (titles[tag] || '');
-    if (!displayTitle && !isGame) {
+    let displayTitle = titles[tag] || '';
+    if (!displayTitle) {
       const m2 = tag.match(/(\d+)[月\.](\d+)(.*)/);
       if (m2) {
         const plat = /pcaz/i.test(m2[3]) ? 'PC+安卓' : /pc/i.test(m2[3]) ? 'PC' : '';
         displayTitle = `${m2[1]}月${m2[2]}日${plat ? '（' + plat + '）' : ''}`;
       }
     }
-    const hay = (tag + ' ' + p.path + ' ' + displayTitle + ' ' + (titles[tag] || '') + ' ' + (gameTitles[p.path] || '')).toLowerCase();
+    const hay = (tag + ' ' + p.path + ' ' + displayTitle + ' ' + (titles[tag] || '')).toLowerCase();
     return hay.includes(kw);
   });
   renderPosts(filtered);
@@ -1611,12 +1485,6 @@ async function loadPosts() {
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const pins = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : []).catch(() => []);
     const icons = await fetch(`${RAW_BASE}/${repo}/main/icons.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    let gameTitles = {};
-    try {
-      const gi = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
-      // games/N.html maps by index: searchIndex[0] -> games/1.html
-      gi.forEach((g, i) => { gameTitles['games/' + (i + 1) + '.html'] = g.title; });
-    } catch (e) {}
     let views = {};
     const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
     if (sbUrl && sbAnon && sbSecret) {
@@ -1627,7 +1495,7 @@ async function loadPosts() {
         if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
       } catch (e) {}
     }
-    _postCtx = { posts, tree, titles, counts, pins, icons, gameTitles, views, token, repo };
+    _postCtx = { posts, tree, titles, counts, pins, icons, views, token, repo };
     applySearchFilter();
     show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
   } catch (e) {
