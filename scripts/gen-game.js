@@ -508,9 +508,10 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 <style>
 ${sharedCssInner}
 ${indexCss}
+body.narrow{max-width:none !important;padding-top:80px !important}
 </style>
 </head>
-<body class="narrow">
+<body>
 ${barIdx2}
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${games.length}</b> 款游戏资源</div>
