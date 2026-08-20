@@ -156,7 +156,7 @@ const pageScript = `
 
 const gamePage = (g, file) => {
   const bar = barHtml.replace(/href="index\.html"/g, 'href="../index.html"').replace(/href="search\.html"/g, 'href="../search.html"').replace(/action="search\.html"/g, 'action="../search.html"');
-  const imgSrc = i => i.replace(/^assets\/game\//, '../assets/game/');
+  const imgSrc = i => i.startsWith('http') ? i : CDN_URL + '/' + i;
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -454,7 +454,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
   const relPath = p => 'game/' + p;
   const pageRel = p => 'game/' + p;
-  const idxImg = i => i;
+  const idxImg = i => i.startsWith('http') ? i : CDN_URL + '/' + i;
+  const searchIndex = [];
+  const errors = [];
   const slugMap = new Map();
   for (const g of games) {
     if (slugMap.has(g.slug)) errors.push(`重复 slug: ${g.slug} (${slugMap.get(g.slug)} 与 ${g.title})`);
@@ -470,8 +472,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     }
   }
   fs.mkdirSync('assets/game', { recursive: true });
-  const searchIndex = [];
-  const errors = [];
   for (const g of games) {
     g.imgs = await copyImgs(g);
     for (const i of g.imgs) {
@@ -494,8 +494,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   const indexBody = games.map((g, gi) => {
     const cover = g.imgs[0] ? '<img src="' + esc(idxImg(g.imgs[0])) + '" alt="" loading="lazy">' : '<div class="noimg">暂无截图</div>';
     const dls = g.dls.length ? '<div class="g-dl">' + g.dls.map(btnHtml).join('') + '</div>' : '';
-    return '<div class="g-card" style="animation-delay:' + (gi * 0.03) + 's"><a class="g-cover" href="' + pageRel(g.file) + '">' + cover + '</a><div class="g-info"><a class="g-t" href="' + pageRel(g.file) + '">' + esc(g.title) + (g.plat ? ' <em class="mrhx-plat">' + esc(g.plat) + '</em>' : '') + '</a>' + (g.intro ? '<div class="g-intro">' + esc(g.intro) + '</div>' : '') + dls + '<div class="g-hint">点击卡片进入详情 ›</div></div></div>';
-  }).join('\n  ').replace(/href="game\//g, 'href="../game/').replace(/src="assets\/game\//g, 'src="../../assets/game/');
+    return '<div class="g-card" style="animation-delay:' + (gi * 0.03) + 's"><a class="g-cover" href="../' + pageRel(g.file) + '">' + cover + '</a><div class="g-info"><a class="g-t" href="../' + pageRel(g.file) + '">' + esc(g.title) + (g.plat ? ' <em class="mrhx-plat">' + esc(g.plat) + '</em>' : '') + '</a>' + (g.intro ? '<div class="g-intro">' + esc(g.intro) + '</div>' : '') + dls + '<div class="g-hint">点击卡片进入详情 ›</div></div></div>';
+  }).join('\n  ');
   const barIdx2 = barHtml.replace(/href="index\.html"/g, 'href="../index.html"').replace(/href="search\.html"/g, 'href="../search.html"').replace(/action="search\.html"/g, 'action="../search.html"');
   const indexPage = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -551,6 +551,8 @@ ${announcePopup}
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${baseUrl}/index.html</loc><priority>1.0</priority></url>
+  <url><loc>${baseUrl}/posts/index.html</loc><priority>0.9</priority></url>
+${posts.map(f => `  <url><loc>${baseUrl}/posts/${f}</loc><priority>0.7</priority></url>`).join('\n')}
 ${games.map(g => `  <url><loc>${baseUrl}/${pageRel(g.file)}</loc><priority>0.6</priority></url>`).join('\n')}
   <url><loc>${baseUrl}/search.html</loc><priority>0.4</priority></url>
 </urlset>
