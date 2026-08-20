@@ -75,19 +75,32 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
       n.classList.toggle('exp', on);
       update();
     }
-    if (note && note.scrollHeight > note.clientHeight + 2) {
-      n.appendChild(hint);
-      hint.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        setExp(!n.classList.contains('exp'));
-      });
+    // 始终添加展开/收起按钮
+    n.appendChild(hint);
+    if (note) {
+      // 笔记内容不溢出时隐藏展开按钮，但展开后始终显示收起按钮
+      if (note.scrollHeight <= note.clientHeight + 2) {
+        hint.style.display = 'none';
+      }
     }
+    hint.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setExp(!n.classList.contains('exp'));
+    });
     n.addEventListener('click', function (e) {
       if (e.target.closest('a')) return;
       if (n.classList.contains('exp')) return;
       setExp(true);
     });
+    // 展开后始终显示收起按钮
+    var origUpdate = update;
+    update = function () {
+      origUpdate();
+      if (n.classList.contains('exp')) {
+        hint.style.display = 'inline-block';
+      }
+    };
   });
 })();
 </script>
@@ -566,10 +579,10 @@ html = (function reorderNodes(str) {
     const lastLi = html.lastIndexOf('</li>');
     html = html.slice(0, lastLi + 5) + '\n' + extrasNodes + html.slice(lastLi + 5);
 
-    const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
+    const navPills = [`<a href="../index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <a class="mlogo" href="../index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
