@@ -1,9 +1,4 @@
 {
-  "comments": {
-    "enabled": true,
-    "url": "https://kydmccknlbpczeqppbtc.supabase.co",
-    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
-  },
   "site": {
     "name": "Tsinho黄油站",
     "logoEm": "黄油站",
@@ -14,11 +9,6 @@
     "enabled": true,
     "title": "📢 【公告】",
     "lines": [
-      "-不好意思大伙 现在网站出现了点小bug-",
-      "-我正在修-可以正常下载-",
-      "-看名字就行 图片可能有误-",
-      "-图片我得等明天再全部重新调换一下现在太晚了-",
-      "-抱歉 给大家带来了不好的体验-",
       "各位老师好，Tsinho黄油站 已于 8月10日 正式上线！",
       "收藏防迷路 记得回家路",
       "纯公益-无任何付费内容",
@@ -31,21 +21,9 @@
       "Tsinho黄油推荐站 个人运营团队"
     ]
   },
-  "downloadButtons": [
-    {
-      "name": "百度网盘",
-      "pattern": "pan.baidu.com",
-      "cls": "mrhx-btn-b"
-    },
-    {
-      "name": "移动云盘（不限速）",
-      "pattern": "yun.139.com",
-      "cls": "mrhx-btn-m"
-    },
-    {
-      "name": "夸克网盘",
-      "pattern": "quark.cn",
-      "cls": "mrhx-btn-qk"
-    }
-  ]
+  "comments": {
+    "enabled": false,
+    "url": "",
+    "anonKey": ""
+  }
 }
