@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>发布中心 · 黄油分享</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f5f4f0;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
@@ -28,6 +29,8 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;color:#2b2b2b}
 .card{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:16px;transition:box-shadow .2s}
 .card:hover{box-shadow:0 3px 12px rgba(0,0,0,.06)}
 .card h2{font-size:15px;font-weight:700;margin-bottom:14px;color:#2b2b2b;display:flex;align-items:center;gap:6px}
+  #postSearch{padding:8px 14px;border-radius:10px;border:1px solid #e9e6e2;font-size:13px;font-family:inherit;background:#faf9f7;outline:none;transition:.2s;color:#333}
+  #postSearch:focus{border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
 .field{margin-bottom:14px;position:relative;transition:all .2s}
 .field.act{padding-left:12px;border-left:3px solid #e5484d;border-radius:6px;background:linear-gradient(90deg,rgba(229,72,77,.05),transparent);transition:all .25s}
 .field.act label{color:#e5484d}
@@ -219,6 +222,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <h2>游戏内容</h2>
         <div class="row" style="gap:6px">
           <button class="btn btn-s" id="previewAll">预览全部</button>
+          <button class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
           <button class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
         </div>
       </div>
@@ -320,7 +324,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <h2>访问统计</h2>
-        <button class="btn btn-s" id="refreshStats">刷新</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-s" id="cleanStats">清理失效统计</button>
+          <button class="btn btn-s" id="refreshStats">刷新</button>
+        </div>
       </div>
       <div class="stat-overview" id="statOverview">
         <div class="stat-box" style="background:#fff7e6;cursor:pointer" id="statTodayComments" title="点击查看今日评论">
@@ -863,6 +870,42 @@ function renum() {
   });
 }
 $('addGame').onclick = () => addGameCard();
+$('exportImgs').onclick = async () => {
+  const cards = [...$('gameBox').children];
+  const total = cards.length;
+  if (!total) { toast('当前没有游戏卡片'); return; }
+  if (typeof JSZip === 'undefined') { toast('JSZip 加载失败，请检查网络后重试'); return; }
+  const zip = new JSZip();
+  const folder = zip.folder('游戏图片');
+  let n = 0, fileCount = 0, urlCount = 0;
+  for (const c of cards) {
+    const name = (c.querySelector('.g-name').value.trim() || ('游戏' + (n + 1))).replace(/[\\/:*?"<>|\s]+/g, '-').slice(0, 30);
+    const fInput = c.querySelector('.g-files');
+    for (const f of (fInput.files || [])) {
+      folder.file(n + '-' + name + '-' + f.name, f);
+      n++; fileCount++;
+    }
+    const urls = (c.querySelector('.g-imgs').value || '').split('\n').map(s => s.trim()).filter(Boolean);
+    for (const u of urls) {
+      try {
+        const blob = await fetch(u).then(r => { if (!r.ok) throw 0; return r.blob(); });
+        const ext = (u.match(/\.([a-zA-Z0-9]+)(\?|#|$)/) || [])[1] || 'jpg';
+        folder.file(n + '-' + name + '.img' + (urls.length > 1 ? urlCount + 1 : '') + '.' + ext, blob);
+        n++; urlCount++;
+      } catch (e) { toast('图片下载失败（已跳过）：' + u); }
+    }
+  }
+  if (!n) { toast('没有可导出的图片（请上传文件或填写图片 URL）'); return; }
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '游戏图片_' + new Date().toISOString().slice(0, 10) + '.zip';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('已导出 ' + n + ' 张图片（文件 ' + fileCount + ' + 链接 ' + urlCount + '）到 ZIP');
+};
 restoreDraft();
 attachDraft();
 if (!localStorage.getItem(DRAFT_FORM)) addGameCard();
@@ -1274,7 +1317,7 @@ var _postCtx = null;
 // 渲染帖子列表（可反复调用，已筛选过的 posts 数组）
 function renderPosts(filteredPosts) {
   if (!_postCtx) return;
-  const { posts, tree, titles, counts, pins, gameTitles, views, token, repo } = _postCtx;
+  const { posts, tree, titles, counts, pins, icons, gameTitles, views, token, repo } = _postCtx;
   const box = $('postBox');
   const meta = $('postSearchMeta');
   const total = posts.length;
@@ -1314,6 +1357,9 @@ function renderPosts(filteredPosts) {
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
     <button class="btn btn-s" data-tsave="${esc(tag)}" data-isgame="${isGame}">保存标题</button>
+    <span class="icon-prev">${icons[tag] ? (/^https?:/i.test(icons[tag]) ? '<img src="' + esc(icons[tag]) + '" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;vertical-align:middle">' : '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(icons[tag]) + '</span>') : ''}</span>
+    <input type="text" class="t-edit" data-icon="${esc(tag)}" value="${esc(icons[tag] || '')}" placeholder="图标：填图片URL或直接输入文字（留空=自动）" style="flex:1;min-width:140px;font-size:12px">
+    <button class="btn btn-s" data-isave="${esc(tag)}">存图标</button>
     ${isGame ? '' : `<button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>`}
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
     <button class="btn btn-s" data-copy="${esc(tag)}" data-isgame="${isGame}">复制到表单</button>
@@ -1483,6 +1529,23 @@ function bindPostButtons(box, token, repo) {
       } finally { b.disabled = false; }
     };
   });
+  [...box.querySelectorAll('[data-isave]')].forEach(b => {
+    b.onclick = async () => {
+      const tag = b.dataset.isave;
+      const input = box.querySelector('.t-edit[data-icon="' + tag + '"]');
+      const val = input ? input.value.trim() : '';
+      b.disabled = true;
+      show(stM, '正在保存图标…', 'info');
+      try {
+        await updateJson(repo, token, 'icons.json', tag, val, stM);
+        const prev = b.closest('.game').querySelector('.icon-prev');
+        if (prev) prev.innerHTML = val ? (/^https?:/i.test(val) ? '<img src="' + esc(val) + '" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;vertical-align:middle">' : '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(val) + '</span>') : '';
+        show(stM, '图标已保存！首页重新生成后生效（2-3 分钟）。', 'ok');
+      } catch (e) {
+        show(stM, '保存失败：' + e.message, 'err');
+      } finally { b.disabled = false; }
+    };
+  });
   [...box.querySelectorAll('[data-pinbtn]')].forEach(b => {
     b.onclick = async () => {
       const tag = b.dataset.pinbtn;
@@ -1547,6 +1610,7 @@ async function loadPosts() {
     const titles = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const pins = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : []).catch(() => []);
+    const icons = await fetch(`${RAW_BASE}/${repo}/main/icons.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     let gameTitles = {};
     try {
       const gi = await fetch(`${RAW_BASE}/${repo}/main/search_index.json`).then(r => r.ok ? r.json() : []).catch(() => []);
@@ -1563,7 +1627,7 @@ async function loadPosts() {
         if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
       } catch (e) {}
     }
-    _postCtx = { posts, tree, titles, counts, pins, gameTitles, views, token, repo };
+    _postCtx = { posts, tree, titles, counts, pins, icons, gameTitles, views, token, repo };
     applySearchFilter();
     show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
   } catch (e) {
@@ -1857,8 +1921,21 @@ async function loadStats() {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const arr = await res.json();
-    const total = arr.reduce((s, v) => s + v.count, 0);
-    const postCount = arr.length;
+    let valid = null;
+    const repo = $('repo').value.trim(), token = $('token').value.trim();
+    if (repo.includes('/') && token) {
+      try {
+        const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
+        if (tree && tree.tree) {
+          valid = new Set(['/index.html', '/search.html']);
+          tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path)).forEach(t => valid.add('/' + t.path));
+        }
+      } catch (e) {}
+    }
+    const rows = valid ? arr.filter(v => valid.has(v.url)) : arr;
+    const deadRows = valid ? arr.filter(v => !valid.has(v.url)) : [];
+    const total = rows.reduce((s, v) => s + v.count, 0);
+    const postCount = rows.length;
     const avg = postCount ? Math.round(total / postCount) : 0;
     $('statTotalViews').textContent = total;
     $('statTotalPosts').textContent = postCount;
@@ -1870,7 +1947,7 @@ async function loadStats() {
       const dRes = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc`, {
         headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
       });
-      if (dRes.ok) { todayArr = await dRes.json(); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
+      if (dRes.ok) { todayArr = (await dRes.json()).filter(v => !valid || valid.has(v.url)); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
     } catch (e) {}
     $('statTodayViews').textContent = todayTotal;
     let todayCommentCount = 0;
@@ -1879,7 +1956,13 @@ async function loadStats() {
       if (cRes.ok) { const cc = await cRes.json(); todayCommentCount = cc.length; }
     } catch (e) {}
     $('statTodayCommentCount').textContent = todayCommentCount;
+    _deadRows = deadRows;
     box.innerHTML = '';
+    if (!valid) {
+      box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">未填 GitHub Token/仓库，帖子总数按全部访问记录统计（可能包含已删除帖子的记录）。填好 Token 后刷新更准确。</p>');
+    } else if (deadRows.length) {
+      box.insertAdjacentHTML('beforeend', '<p class="warn" style="margin-top:10px">发现 ' + deadRows.length + ' 条已失效路径的访问记录（已删除的帖子），累计 ' + deadRows.reduce((s, v) => s + v.count, 0) + ' 次：<br>' + deadRows.map(v => (String(v.url).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '（' + v.count + ' 次）')).join('，') + '</p>');
+    }
   } catch (e) {
     show(stS, '加载失败：' + e.message + '\n\n请确认 Supabase 配置正确且 page_views 表已创建。', 'err');
     $('statTotalViews').textContent = '-';
@@ -1891,6 +1974,29 @@ async function loadStats() {
 }
 $('refreshStats').onclick = loadStats;
 $('statTodayComments').onclick = () => switchTab('tabComments');
+let _deadRows = [];
+$('cleanStats').onclick = async () => {
+  const btn = $('cleanStats'); btn.disabled = true;
+  try {
+    if (!$('sbSecret').value.trim()) { show(stS, '请先填写管理密钥（评论管理页签那串）', 'err'); return; }
+    if (!_deadRows || !_deadRows.length) { show(stS, '当前没有失效记录可清理（先点刷新）。', 'info'); return; }
+    if (!confirm('将删除 ' + _deadRows.length + ' 条失效访问记录（已删除帖子的浏览量，不可恢复），继续？')) return;
+    show(stS, '正在清理…', 'info');
+    let n = 0;
+    for (const d of _deadRows) {
+      const r = await fetch(`${sbBase()}/rest/v1/page_views?url=eq.${encodeURIComponent(d.url)}`, {
+        method: 'DELETE',
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': $('sbSecret').value.trim() })
+      });
+      if (r.ok) n++;
+    }
+    show(stS, '已清理 ' + n + ' / ' + _deadRows.length + ' 条失效记录。', n === _deadRows.length ? 'ok' : 'err');
+    _deadRows = [];
+    loadStats();
+  } catch (e) {
+    show(stS, '清理失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+};
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }

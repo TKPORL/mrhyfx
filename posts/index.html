@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tsinho黄油站 · 每日更新</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
+.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
+.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
+.site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
+.site em{font-style:normal;color:#e5484d}
+.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
+.site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
+.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
+nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
+.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
+.mrhx-search input:focus{border-color:#e5484d;background:#fff}
+.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-search button:hover{background:#c93a3f}
+nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+@keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
+.upd b{color:#e5484d}
+.upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+  .upd-note{font-size:12.5px;color:#999;margin:-14px 0 20px;padding-left:4px;line-height:1.7}
+  .mode-switch{display:inline-block;padding:8px 16px;border-radius:99px;background:#fff;border:1px solid #f0b4b6;color:#e5484d;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .mode-switch:hover{background:#e5484d;color:#fff}
+  .pcmt{color:#e58d0a}
+  .pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
+  .pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
+  .pg:hover:not(.off){border-color:#e5484d;color:#e5484d}
+  .pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
+  .pg.off{opacity:.35;cursor:default}
+  .pginfo{font-size:12px;color:#999;margin-left:6px}
+.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
+.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa}
+.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .55s ease both}
+.post:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.date{flex-shrink:0;width:62px;height:62px;border-radius:12px;background:#e5484d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;transition:.25s}
+.post:hover .date{transform:rotate(-4deg) scale(1.05)}
+.date b{font-size:22px;font-weight:700}
+.date span{font-size:11px;opacity:.85}
+.info{flex:1;min-width:0}
+.ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
+.pmeta{font-size:13px;color:#999}
+.pinb{display:inline-block;background:#e58d0a;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.covers{display:flex;gap:8px;flex-shrink:0}
+.covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9;transition:.25s}
+.post:hover .covers img{transform:translateY(-2px)}
+.arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
+.post:hover .arrow{color:#e5484d;transform:translateX(5px)}
+.empty{text-align:center;color:#999;padding:40px 0}
+.gsect{margin-top:34px}
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px}
+.gcard{display:flex;flex-direction:column;background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.gcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.g-cover{width:100%;aspect-ratio:4/3;overflow:hidden;background:#f4f2ef}
+.g-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:.3s}
+.gcard:hover .g-cover img{transform:scale(1.04)}
+.g-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}
+.g-title{font-size:14px;font-weight:700;color:#2b2b2b;line-height:1.45;display:flex;align-items:flex-start;flex-wrap:wrap;gap:5px}
+.g-plat{display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:#fff;background:#e5484d;white-space:nowrap;vertical-align:2px}
+.g-src{font-size:11px;color:#aaa}
+.g-dls{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.g-dl{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
+.g-dl:hover{background:#c93a3f}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer b{color:#e5484d}
+@media (max-width:720px){
+  .hwrap{padding:12px 14px;gap:10px}
+  .site{font-size:17px}
+  .site img.site-logo{width:100px;height:auto}
+  .site small{display:none}
+  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
+  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  nav::-webkit-scrollbar{display:none}
+  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
+  .mrhx-search input{flex:1;width:auto}
+  main{padding:18px 14px 32px}
+  .upd{padding:12px 14px;font-size:13px}
+  .post{flex-wrap:wrap;gap:12px;padding:14px}
+  .date{width:52px;height:52px;border-radius:10px}
+  .date b{font-size:19px}
+  .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
+  .covers{flex:1 1 100%;order:3;overflow-x:auto;padding-bottom:2px}
+  .covers img{width:54px;height:54px}
+  .arrow{display:none}
+  .ggrid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .g-title{font-size:13px}
+}
+</style>
+<link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp">
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a class="site" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <div class="site-header-right">
+      <form class="mrhx-search" action="search.html" method="get">
+      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+      <nav><a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a><a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a><a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></nav>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>176</b> 款游戏资源</div>
+  <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
+  <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <a class="mode-switch" href="../index.html">单帖模式：每个游戏独立一页</a>
+  </div>
+  <div class="sect"><h2>每日分享</h2><span>9 期</span></div>
+  <div id="dayLis"><a class="post" href="qzt.html" data-path="/posts/qzt.html" style="animation-delay:0s">
+  <div class="date"><b style="font-size:12px">求助资源贴</b></div>
+  <div class="info">
+    <div class="ptitle">求助资源贴（可以在这贴求黄油游戏哈） <span class="pinb">置顶</span></div>
+    <div class="pmeta">共 21 款游戏<span class="pcmt" data-cpath="/posts/qzt.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/54m55bel.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/5rC45oGS.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/6Laz5LiL.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/5Yek5Yew.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/55av54uC.jpg" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="820PCAZ.html" data-path="/posts/820PCAZ.html" style="animation-delay:0.1s">
+  <div class="date"><b style="font-size:12px">8月20号黄油更新-PC+安卓</b></div>
+  <div class="info">
+    <div class="ptitle">8月20号黄油更新-PC+安卓</div>
+    <div class="pmeta">共 18 款游戏 · PC<span class="pcmt" data-cpath="/posts/820PCAZ.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/820PCAZ/86nsa00pyl.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/820PCAZ/nnkbr87bxi.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/820PCAZ/fx4og09t7g.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/820PCAZ/v0zx0o1w2h.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/820PCAZ/6itoxd3eiq.jpg" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.19pc.html" data-path="/posts/8.19pc.html" style="animation-delay:0.2s">
+  <div class="date"><b>19</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月19号黄油分享-PC版</div>
+    <div class="pmeta">共 23 款游戏 · PC<span class="pcmt" data-cpath="/posts/8.19pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.19pc/dobguscehu.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.19pc/3tmt3c0z5r.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.19pc/5k8mx6t0m0.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.19pc/26ugcmwdk7.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.19pc/vaajeylks5.webp" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.17pc.html" data-path="/posts/8.17pc.html" style="animation-delay:0.30000000000000004s">
+  <div class="date"><b>17</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月17号黄油分享-PC版</div>
+    <div class="pmeta">共 38 款游戏 · PC<span class="pcmt" data-cpath="/posts/8.17pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.17pc/5LyK55S4.webp" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.17pc/5aaW54uQ.gif" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.17pc/6KGX5aS0.webp" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.17pc/6KGX5aS0.jpg" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.17pc/5LiA5qy5.webp" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.12pcaz.html" data-path="/posts/8.12pcaz.html" style="animation-delay:0.4s">
+  <div class="date"><b>12</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月12号黄油（PC+安卓）</div>
+    <div class="pmeta">共 12 款游戏 · PC<span class="pcmt" data-cpath="/posts/8.12pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12pcaz/img_01.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12pcaz/img_02.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12pcaz/img_03.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12pcaz/img_04.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12pcaz/img_05.png" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.12PC.html" data-path="/posts/8.12PC.html" style="animation-delay:0.5s">
+  <div class="date"><b>12</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月12号黄油（PC）</div>
+    <div class="pmeta">共 8 款游戏 · PC<span class="pcmt" data-cpath="/posts/8.12PC.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12PC/img_01.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12PC/img_02.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12PC/img_03.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12PC/img_04.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.12PC/img_05.png" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.1.1.html" data-path="/posts/8.1.1.html" style="animation-delay:0.6000000000000001s">
+  <div class="date"><b>1</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月11号黄油 43款（PC+安卓）下载链接已恢复</div>
+    <div class="pmeta">共 28 款游戏<span class="pcmt" data-cpath="/posts/8.1.1.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_01.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_02.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_03.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_04.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.1.1/img_05.png" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.11.html" data-path="/posts/8.11.html" style="animation-delay:0.7000000000000001s">
+  <div class="date"><b>11</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月11号黄油 41款（PC）下载链接已恢复</div>
+    <div class="pmeta">共 15 款游戏<span class="pcmt" data-cpath="/posts/8.11.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.11/img_01.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.11/img_02.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.11/img_03.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.11/img_04.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.11/img_05.png" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.10.html" data-path="/posts/8.10.html" style="animation-delay:0.8s">
+  <div class="date"><b>10</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月10号黄油 92款（PC+安卓）下载链接已恢复</div>
+    <div class="pmeta">共 13 款游戏<span class="pcmt" data-cpath="/posts/8.10.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.10/img_01.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.10/img_02.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.10/img_03.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.10/img_04.png" alt="" loading="lazy"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/8.10/img_05.png" alt="" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a></div>
+</main>
+<footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<div class="mrhx-popup" id="mrhxPopup">
+  <div class="mrhx-popup-inner">
+    <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
+    <div class="mrhx-popup-content">
+      <h3>📢 【公告】</h3>
+      <p>各位老师好，Tsinho黄油站 已于 8月10日 正式上线！</p>
+      <p>收藏防迷路 记得回家路</p>
+      <p>纯公益-无任何付费内容</p>
+      <p>一、 游戏求助</p>
+      <p>1.找资源：欢迎在任意文章评论区留言（大部分都有）站长在线时30分钟内整理发布</p>
+      <p>2.求助汇总贴：所有补发和求助的游戏，将统一更新在“首页置顶帖子”</p>
+      <p>二、 进度通知</p>
+      <p>资源发布后，系统会自动发送邮件提醒。请务必填写常用有效邮箱，以免漏收通知。</p>
+      <p>如果觉得本站不错 还请帮忙推广一下 感谢大家的理解与支持！</p>
+      <p>Tsinho黄油推荐站 个人运营团队</p>
+    </div>
+    <button class="mrhx-popup-btn" onclick="document.getElementById('mrhxPopup').style.display='none'">我知道了</button>
+  </div>
+</div>
+<style>
+.mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
+.mrhx-popup-inner{background:#fff;border-radius:16px;padding:30px 28px 22px;max-width:600px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
+.mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
+.mrhx-popup-content h3{font-size:18px;color:#2b2b2b;margin-bottom:12px}
+.mrhx-popup-content p{font-size:14px;color:#666;line-height:1.8;margin-bottom:8px;white-space:pre-wrap}
+.mrhx-popup-btn{margin-top:14px;padding:10px 28px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
+@keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
+@keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+</style>
+<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+<script>
+(function () {
+  try {
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/posts/index.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/posts/index.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/posts/index.html', p_day: day }) }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+<script>
+(function () {
+  var PAGESIZE = 24;
+  var lis = document.getElementById('dayLis');
+  if (lis) {
+    var cards = [].slice.call(lis.children).filter(function (c) { return c.classList && c.classList.contains('post'); });
+    var pages = Math.ceil(cards.length / PAGESIZE);
+    if (pages > 1) {
+      var nav = document.createElement('div');
+      nav.className = 'pgbar';
+      var h = '<button type="button" class="pg" data-p="-1">‹ 上一页</button>';
+      for (var i = 0; i < pages; i++) h += '<button type="button" class="pg" data-p="' + i + '">' + (i + 1) + '</button>';
+      h += '<button type="button" class="pg" data-p="' + pages + '">下一页 ›</button>';
+      h += '<span class="pginfo">共 ' + pages + ' 页 · 每页 ' + PAGESIZE + ' 个</span>';
+      nav.innerHTML = h;
+      lis.insertAdjacentElement('afterend', nav);
+      var cur = 0;
+      function show(p) {
+        cards.forEach(function (c, i) { c.style.display = (i >= p * PAGESIZE && i < (p + 1) * PAGESIZE) ? '' : 'none'; });
+        [].slice.call(nav.querySelectorAll('.pg')).forEach(function (b) {
+          var bp = parseInt(b.getAttribute('data-p'), 10);
+          b.classList.toggle('on', bp === p);
+          b.classList.toggle('off', (bp === -1 && p === 0) || (bp === pages && p === pages - 1));
+        });
+        window.scrollTo({ top: lis.getBoundingClientRect().top + window.pageYOffset - 130, behavior: 'smooth' });
+      }
+      nav.addEventListener('click', function (e) {
+        var b = e.target.closest('.pg');
+        if (!b || b.classList.contains('off')) return;
+        var p = parseInt(b.getAttribute('data-p'), 10);
+        if (p === -1) p = cur - 1;
+        if (p === pages) p = cur + 1;
+        if (p < 0 || p >= pages) return;
+        cur = p;
+        show(p);
+      });
+      show(0);
+    }
+  }
+  var CURL = 'https://kydmccknlbpczeqppbtc.supabase.co', CANON = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  if (CURL && CANON) {
+    fetch(CURL + '/rest/v1/comments?select=url', { headers: { 'apikey': CANON, 'Authorization': 'Bearer ' + CANON } })
+      .then(function (r) { return r.json(); })
+      .then(function (rows) {
+        var m = {};
+        rows.forEach(function (c) { m[c.url] = (m[c.url] || 0) + 1; });
+        document.querySelectorAll('[data-cpath]').forEach(function (el) {
+          var n = m[el.getAttribute('data-cpath')];
+          if (n) el.textContent = ' · 评论 ' + n + ' 条';
+        });
+      }).catch(function () {});
+  }
+})();
+</script>
+
+</body>
+</html>

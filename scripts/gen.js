@@ -5,7 +5,8 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const files = fs.readdirSync('.').filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
+const POST_DIR = 'posts';
+const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -29,6 +30,12 @@ if (fs.existsSync('pins.json')) {
   if (Array.isArray(p)) PINS = p;
 }
 
+let ICONS = {};
+if (fs.existsSync('icons.json')) {
+  const ic = readJson('icons.json');
+  if (ic && typeof ic === 'object') ICONS = ic;
+}
+
 let SITE = { comments: { enabled: false, apiBase: '' } };
 if (fs.existsSync('site.json')) {
   const s = readJson('site.json');
@@ -49,6 +56,42 @@ const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '�
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
 const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
+const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
+
+const nodeExpandScript = `<!--mrhx-expand--><script>
+(function () {
+  document.querySelectorAll('.node.heading3').forEach(function (n) {
+    if (n.classList.contains('node-full')) return;
+    if (n.querySelector('.exp-hint')) return;
+    var note = n.querySelector('.note');
+    var hint = document.createElement('span');
+    hint.className = 'exp-hint';
+    hint.textContent = '介绍较长，点击展开';
+    function update() {
+      var on = n.classList.contains('exp');
+      hint.textContent = on ? '收起 ↑' : '介绍较长，点击展开';
+    }
+    function setExp(on) {
+      n.classList.toggle('exp', on);
+      update();
+    }
+    if (note && note.scrollHeight > note.clientHeight + 2) {
+      n.appendChild(hint);
+      hint.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setExp(!n.classList.contains('exp'));
+      });
+    }
+    n.addEventListener('click', function (e) {
+      if (e.target.closest('a')) return;
+      if (n.classList.contains('exp')) return;
+      setExp(true);
+    });
+  });
+})();
+</script>
+`;
 
 const PUBLISH_RE = /<div class="publish"[\s\S]*?<\/div>/;
 const newPublish = `<div class="publish" style="display: flex; align-items: center; justify-content: center;">
@@ -87,7 +130,7 @@ const sharedCss = `<style>
   .mrhx-btn-qk:hover{background:#4f46e5}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-  .mrhx-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px}
+  .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
@@ -99,6 +142,23 @@ const sharedCss = `<style>
   .node .content{font-size:15px;font-weight:600;line-height:1.6;word-break:break-word}
   .node .note{font-size:13px;color:#666;line-height:1.7;margin-top:6px;word-break:break-word;white-space:pre-wrap}
   .title{font-weight:700;word-break:break-word}
+  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-left:0}
+  body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;cursor:pointer}
+  body.mrhx-grid2 .node .bullet{display:none}
+  body.mrhx-grid2 .node .content::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
+  body.mrhx-grid2 .node .content{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  body.mrhx-grid2 .node .exp-hint{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px dashed #e5484d;color:#e5484d;font-size:11px;font-weight:600;width:max-content}
+  body.mrhx-grid2 .node.exp .exp-hint{border-color:#ccc;color:#999}
+  body.mrhx-grid2 .node.exp .content{display:none}
+  body.mrhx-grid2 .node.exp .image-list{display:none}
+  body.mrhx-grid2 .node.exp .mrhx-dl{display:none}
+  body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;max-height:none;overflow:visible}
+  body.mrhx-grid2 .node-full{grid-column:1/-1;display:block}
+  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible;display:block}
+  body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;overflow:visible}
+  body.mrhx-grid2 .node .image-list .image img{width:100%;height:190px;object-fit:contain;background:#f7f5f2;border-radius:8px}
+  body.mrhx-grid2 .node .mrhx-dl{margin-top:auto}
   .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
@@ -118,6 +178,10 @@ const sharedCss = `<style>
     .node .bullet{display:none}
     .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
+    body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    body.mrhx-grid2 .node{padding:12px;border-radius:12px}
+    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 100%;text-align:center}
+    body.mrhx-grid2 .node .note{font-size:12px}
     .image-list .image{max-width:100% !important}
   }
   .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
@@ -370,7 +434,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 function verify(days, index) {
   const errors = [];
   for (const d of days) {
-    const ref = `href="${esc(d.file)}"`;
+    const ref = `href="${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
     if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
@@ -381,6 +445,14 @@ function verify(days, index) {
     if (!titleOk && !h1Ok) errors.push(`帖子标题未同步: ${d.file} (期望 ${disp})`);
     if (SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
     if (SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
+    [...h.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)].forEach(m => {
+      const t = m[1].replace(/<[^>]+>/g, '').trim();
+      if (/(?:PC\s*\+\s*安卓|PC|安卓){2,}/.test(t)) errors.push(`标题含重复平台标记: ${d.file} → ${t}`);
+    });
+    [...h.matchAll(/(?:href|src)="([^"]+)"/g)].forEach(m => {
+      const u = m[1];
+      if (/javascript:/i.test(u) || /[\s"'<>]/.test(u)) errors.push(`非法链接格式: ${d.file} → ${u}`);
+    });
   }
   if (errors.length) {
     console.error('❌ 发布自检未通过:');
@@ -398,7 +470,7 @@ const searchIndex = [];
 const allGames = [];
 (async () => {
   for (const file of files) {
-    let html = fs.readFileSync(file, 'utf8');
+    let html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
     const computed = (html.match(/<li class="node[^"]*heading/g) || []).length;
     const tag = dayTag(file);
     const gameCount = overrides[tag] !== undefined ? overrides[tag] : computed;
@@ -471,10 +543,13 @@ html = (function reorderNodes(str) {
       else if (/PC/.test(platSource)) plat = 'PC';
       if (!plat && pageFallbackPlat) plat = pageFallbackPlat;
       if (plat && contentBlock) {
-        contentBlock = contentBlock.replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
+        contentBlock = contentBlock.replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '').replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
       }
       var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
+      if (contentBlock && contentBlock.indexOf('免费帮找黄油') > -1) {
+        open = open.replace(/<li class="node heading3">/, '<li class="node heading3 node-full">');
+      }
       return open + contentBlock + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
     });
     blocks = blocks.filter(b => b.trim().length > 0);
@@ -516,6 +591,8 @@ html = (function reorderNodes(str) {
       html = html.replace('</body>', `  <!--mrhx-stagger--><style>\n${staggered}\n</style>\n  </body>`);
     }
     const shortName = path.parse(file).name;
+    const gridCls = GRID2_POSTS.has(shortName) ? ' mrhx-grid2' : '';
+    html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m.replace(/class="([^"]*)"/, (_, c) => `class="${c.replace(/\s*mrhx-grid2/g, '')}${gridCls}"`) : `<body class="narrow${gridCls}">`);
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
@@ -563,7 +640,7 @@ html = (function reorderNodes(str) {
 (function () {
   var SB = '${sb}';
   var KEY = '${key}';
-  var PATH = '/${esc(shortName)}.html';
+  var PATH = '/posts/${esc(shortName)}.html';
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
@@ -662,8 +739,8 @@ html = (function reorderNodes(str) {
     function addTree(pid, box) {
       all.filter(function (c) { return (c.pid || null) === pid; })
         .sort(function (a, b) {
-          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || a.created_at.localeCompare(b.created_at);
-          return a.created_at.localeCompare(b.created_at);
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
+          return b.created_at.localeCompare(a.created_at);
         })
         .forEach(function (c) {
           var row = buildRow(c);
@@ -676,7 +753,7 @@ html = (function reorderNodes(str) {
     applyFold();
   }
   function load() {
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.asc', { headers: headers() })
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.desc', { headers: headers() })
       .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
       .then(function (d) { all = d || []; render(); })
       .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
@@ -712,9 +789,10 @@ html = (function reorderNodes(str) {
     html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
-    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
+    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/posts/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
-    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}\n  </body>`);
+    html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
@@ -740,9 +818,13 @@ html = (function reorderNodes(str) {
     searchIndex.push(...games);
     allGames.push(...games.map(g => ({ ...g, file })));
 
-    fs.writeFileSync(file, html);
-    console.log('day page ok:', file, '(' + gameCount + ' 款游戏)');
-    days.push({ file, gameCount, tag });
+    fs.writeFileSync(POST_DIR + '/' + file, html);
+    console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
+    days.push({ file: POST_DIR + '/' + file, gameCount, tag });
+    if (overrides[tag] === undefined || String(overrides[tag]) !== String(computed)) {
+      overrides[tag] = computed;
+      try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
+    }
   }
 
   days.sort((a, b) => {
@@ -781,17 +863,20 @@ html = (function reorderNodes(str) {
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
     const dateN = title.match(/(\d+)\.(\d+)/);
+    const _ic = ICONS[title];
     const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
+      : _ic ? (/^https?:/i.test(_ic) ? `<img src="${esc(_ic)}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : `<b style="font-size:12px">${esc(_ic)}</b>`)
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
-    return `<a class="post" href="${d.file}" style="animation-delay:${di * 0.1}s">
+    const _pfile = path.basename(d.file);
+    return `<a class="post" href="${_pfile}" data-path="/${d.file}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
   <div class="info">
     <div class="ptitle">${esc(disp)}${pinned ? ` <span class="pinb">置顶</span>` : ''}</div>
-    <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}</div>
+    <div class="pmeta">共 ${d.gameCount} 款游戏${plat ? ' · ' + plat : ''}<span class="pcmt" data-cpath="/${d.file}"></span></div>
   </div>
   ${covers ? `<div class="covers">${covers}</div>` : ''}
   <div class="arrow">→</div>
@@ -799,6 +884,64 @@ html = (function reorderNodes(str) {
   }).join('\n');
 
   const totalGames = days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0);
+
+  const _cUrl = (SITE.comments.enabled && SITE.comments.url) ? SITE.comments.url.replace(/\/+$/, '') : '';
+  const _cAnon = (SITE.comments.enabled && SITE.comments.anonKey) ? SITE.comments.anonKey : '';
+  const indexScript = `<script>
+(function () {
+  var PAGESIZE = 24;
+  var lis = document.getElementById('dayLis');
+  if (lis) {
+    var cards = [].slice.call(lis.children).filter(function (c) { return c.classList && c.classList.contains('post'); });
+    var pages = Math.ceil(cards.length / PAGESIZE);
+    if (pages > 1) {
+      var nav = document.createElement('div');
+      nav.className = 'pgbar';
+      var h = '<button type="button" class="pg" data-p="-1">‹ 上一页</button>';
+      for (var i = 0; i < pages; i++) h += '<button type="button" class="pg" data-p="' + i + '">' + (i + 1) + '</button>';
+      h += '<button type="button" class="pg" data-p="' + pages + '">下一页 ›</button>';
+      h += '<span class="pginfo">共 ' + pages + ' 页 · 每页 ' + PAGESIZE + ' 个</span>';
+      nav.innerHTML = h;
+      lis.insertAdjacentElement('afterend', nav);
+      var cur = 0;
+      function show(p) {
+        cards.forEach(function (c, i) { c.style.display = (i >= p * PAGESIZE && i < (p + 1) * PAGESIZE) ? '' : 'none'; });
+        [].slice.call(nav.querySelectorAll('.pg')).forEach(function (b) {
+          var bp = parseInt(b.getAttribute('data-p'), 10);
+          b.classList.toggle('on', bp === p);
+          b.classList.toggle('off', (bp === -1 && p === 0) || (bp === pages && p === pages - 1));
+        });
+        window.scrollTo({ top: lis.getBoundingClientRect().top + window.pageYOffset - 130, behavior: 'smooth' });
+      }
+      nav.addEventListener('click', function (e) {
+        var b = e.target.closest('.pg');
+        if (!b || b.classList.contains('off')) return;
+        var p = parseInt(b.getAttribute('data-p'), 10);
+        if (p === -1) p = cur - 1;
+        if (p === pages) p = cur + 1;
+        if (p < 0 || p >= pages) return;
+        cur = p;
+        show(p);
+      });
+      show(0);
+    }
+  }
+  var CURL = '${_cUrl}', CANON = '${_cAnon}';
+  if (CURL && CANON) {
+    fetch(CURL + '/rest/v1/comments?select=url', { headers: { 'apikey': CANON, 'Authorization': 'Bearer ' + CANON } })
+      .then(function (r) { return r.json(); })
+      .then(function (rows) {
+        var m = {};
+        rows.forEach(function (c) { m[c.url] = (m[c.url] || 0) + 1; });
+        document.querySelectorAll('[data-cpath]').forEach(function (el) {
+          var n = m[el.getAttribute('data-cpath')];
+          if (n) el.textContent = ' · 评论 ' + n + ' 条';
+        });
+      }).catch(function () {});
+  }
+})();
+</script>
+`;
 
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -831,6 +974,16 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+  .upd-note{font-size:12.5px;color:#999;margin:-14px 0 20px;padding-left:4px;line-height:1.7}
+  .mode-switch{display:inline-block;padding:8px 16px;border-radius:99px;background:#fff;border:1px solid #f0b4b6;color:#e5484d;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .mode-switch:hover{background:#e5484d;color:#fff}
+  .pcmt{color:#e58d0a}
+  .pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
+  .pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
+  .pg:hover:not(.off){border-color:#e5484d;color:#e5484d}
+  .pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
+  .pg.off{opacity:.35;cursor:default}
+  .pginfo{font-size:12px;color:#999;margin-left:6px}
 .sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
 .sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
 .sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
@@ -908,21 +1061,26 @@ footer b{color:#e5484d}
 </header>
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
+  <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
+  <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+    <a class="mode-switch" href="../index.html">单帖模式：每个游戏独立一页</a>
+  </div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
-  ${dayLis || '<div class="empty">暂无分享</div>'}
+  <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
-${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/posts/index.html') : ''}
+${indexScript}
 </body>
 </html>
 `;
-  fs.writeFileSync('index.html', index);
-  console.log('index.html ok, days:', days.length);
+  fs.writeFileSync(POST_DIR + '/index.html', index);
+  console.log('posts/index.html ok, days:', days.length);
 
-  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
-  console.log('search_index.json ok, games:', searchIndex.length);
+  fs.writeFileSync(POST_DIR + '/search_index.json', JSON.stringify(searchIndex));
+  console.log('posts/search_index.json ok, games:', searchIndex.length);
 
   verify(days, index, searchIndex);
 
@@ -1029,48 +1187,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 </body>
 </html>
 `;
-  fs.writeFileSync('search.html', searchPage);
-  console.log('search.html ok');
-
-  const baseUrl = (SITE.site && SITE.site.url || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '');
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>${baseUrl}/index.html</loc><priority>1.0</priority></url>
-${days.map(d => {
-    const t = TIMESTAMPS[path.parse(d.file).name] || new Date().toISOString();
-    return `  <url><loc>${baseUrl}/${d.file}</loc><lastmod>${String(t).slice(0, 10)}</lastmod><priority>0.8</priority></url>`;
-  }).join('\n')}
-  <url><loc>${baseUrl}/search.html</loc><priority>0.4</priority></url>
-</urlset>
-`;
-  fs.writeFileSync('sitemap.xml', sitemap);
-  console.log('sitemap.xml ok');
-
-  const rssItems = days.map(d => {
-    const title = path.parse(d.file).name;
-    const disp = TITLES[title] || title;
-    const t = TIMESTAMPS[title] || new Date().toISOString();
-    const desc = `共 ${d.gameCount} 款游戏，点击查看详情。`;
-    return `    <item>
-      <title>${esc(disp)}</title>
-      <link>${baseUrl}/${d.file}</link>
-      <guid isPermaLink="true">${baseUrl}/${d.file}</guid>
-      <pubDate>${new Date(t).toUTCString()}</pubDate>
-      <description>${esc(desc)}</description>
-    </item>`;
-  }).join('\n');
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${esc(SITE_NAME)}</title>
-    <link>${baseUrl}/index.html</link>
-    <description>${esc(SITE_TAG)}</description>
-    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
-${rssItems}
-  </channel>
-</rss>
-`;
-  fs.writeFileSync('rss.xml', rss);
-  console.log('rss.xml ok');
+  fs.writeFileSync(POST_DIR + '/search.html', searchPage);
+  console.log('posts/search.html ok');
 })().catch(e => { console.error(e); process.exit(1); });
