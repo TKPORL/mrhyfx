@@ -126,7 +126,7 @@ const pageScript = `
 
 const gamePage = (g, file) => {
   const bar = barHtml.replace(/href="index\.html"/g, 'href="../index.html"').replace(/href="search\.html"/g, 'href="../search.html"').replace(/action="search\.html"/g, 'action="../search.html"');
-  const imgSrc = i => i;
+  const imgSrc = i => i.replace(/^assets\/game\//, '../assets/game/');
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -407,7 +407,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   const ordered = posts.slice().sort((a, b) => dnum(b) - dnum(a));
 
   const qztHtml = fs.readFileSync('posts/qzt.html', 'utf8');
-  const qztGames = parseGames(qztHtml).filter(g => !/免费帮找黄油/.test(g.title)).map(g => Object.assign({}, g, { source: 'qzt' }));
+  const qztGames = parseGames(qztHtml).filter(g => !/免费帮找/.test(g.title)).map(g => Object.assign({}, g, { source: 'qzt' }));
   const games = qztGames.slice();
   for (const f of ordered) {
     const h = fs.readFileSync(POST_DIR + '/' + f, 'utf8');

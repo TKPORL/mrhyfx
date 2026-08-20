@@ -547,7 +547,7 @@ html = (function reorderNodes(str) {
       }
       var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
-      if (contentBlock && contentBlock.indexOf('免费帮找黄油') > -1) {
+      if (contentBlock && contentBlock.indexOf('免费帮找') > -1) {
         open = open.replace(/<li class="node heading3">/, '<li class="node heading3 node-full">');
       }
       return open + contentBlock + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';

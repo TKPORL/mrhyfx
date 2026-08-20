@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新作[互动SLG/触摸妹妹] 只用猜拳让妹妹怀孕的游戏 いもうとをじゃんけんで孕ませるだけのゲーム。 AI汉化版+存档 [340M] · Tsinho黄油站</title>
+<link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp">
+<style>
+
+  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
+  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+  .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+  .mrhx-bar .mlogo span{color:#e5484d}
+  .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
+  .mrhx-bar .bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
+  .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
+  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:flex-end}
+  .mrhx-bar .mnav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
+  .mrhx-search{display:flex;align-items:center;gap:5px}
+  .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
+  .mrhx-search input:focus{border-color:#e5484d;background:#fff}
+  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+  .mrhx-search button:hover{background:#c93a3f}
+  .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+  @media (min-width:721px){
+    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
+  }
+  .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
+  .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+  .mrhx-btn-m{background:#e5484d;color:#fff}
+  .mrhx-btn-m:hover{background:#c93a3f}
+  .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+  .mrhx-btn-b:hover{background:#d8edde}
+  .mrhx-btn-qk{background:#6366f1;color:#fff}
+  .mrhx-btn-qk:hover{background:#4f46e5}
+  .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
+  .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
+  .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
+  @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
+  .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+  .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
+  .node .bullet .bullet-dot{background:#fff}
+  .node.collapsed > .bullet{background-color:#dee0e3}
+  .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
+  .node .content{font-size:15px;font-weight:600;line-height:1.6;word-break:break-word}
+  .node .note{font-size:13px;color:#666;line-height:1.7;margin-top:6px;word-break:break-word;white-space:pre-wrap}
+  .title{font-weight:700;word-break:break-word}
+  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-left:0}
+  body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;cursor:pointer}
+  body.mrhx-grid2 .node .bullet{display:none}
+  body.mrhx-grid2 .node .content::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
+  body.mrhx-grid2 .node .content{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  body.mrhx-grid2 .node .exp-hint{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px dashed #e5484d;color:#e5484d;font-size:11px;font-weight:600;width:max-content}
+  body.mrhx-grid2 .node.exp .exp-hint{border-color:#ccc;color:#999}
+  body.mrhx-grid2 .node.exp .content{display:none}
+  body.mrhx-grid2 .node.exp .image-list{display:none}
+  body.mrhx-grid2 .node.exp .mrhx-dl{display:none}
+  body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;max-height:none;overflow:visible}
+  body.mrhx-grid2 .node-full{grid-column:1/-1;display:block}
+  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible;display:block}
+  body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;overflow:visible}
+  body.mrhx-grid2 .node .image-list .image img{width:100%;height:190px;object-fit:contain;background:#f7f5f2;border-radius:8px}
+  body.mrhx-grid2 .node .mrhx-dl{margin-top:auto}
+  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
+  @media (max-width:720px){
+    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
+    .mrhx-bar{padding:12px 14px;gap:10px}
+    .mrhx-bar .mlogo{font-size:17px}
+    .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
+    .mrhx-bar .bar-right{gap:8px}
+    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+    .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
+    .mrhx-bar .mnav::-webkit-scrollbar{display:none}
+    .mrhx-bar .search-row{width:100%;justify-content:flex-end}
+    .mrhx-search{width:100%}
+    .mrhx-search input{flex:1;width:auto}
+    .title{font-size:20px;line-height:32px;min-height:32px;padding-bottom:16px;margin-bottom:16px}
+    .node-list{margin-left:0}
+    .node{padding:14px;border-radius:12px}
+    .node .bullet{display:none}
+    .node .content{font-size:14px}
+    .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
+    body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    body.mrhx-grid2 .node{padding:12px;border-radius:12px}
+    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 100%;text-align:center}
+    body.mrhx-grid2 .node .note{font-size:12px}
+    .image-list .image{max-width:100% !important}
+  }
+  .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
+  .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
+  .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
+  .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
+  .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;max-width:100%;margin-left:22px;border:1px solid #ecebe9;border-left:3px solid #f0b4b6;border-radius:13px;background:#fdf9f7;box-shadow:0 1px 3px rgba(0,0,0,.04);padding:14px 16px}
+  .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+  .mrhx-thread{margin-top:8px;padding-left:0}
+  .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
+  .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
+  .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+  .mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
+  .mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
+  .mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
+  .mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:45px;margin-top:-4px}
+  .mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
+  .mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
+  .mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+  .mrhx-cdel{color:#c93a3f}
+  .mrhx-cdel:hover{color:#fff;background:#e5484d;border-color:#e5484d}
+  .mrhx-cav-admin{background:linear-gradient(135deg,#ff6b3d,#e5484d)}
+  .mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:4px;letter-spacing:.5px}
+  .mrhx-cpin{background:#e58d0a}
+  .mrhx-citem-admin{border-color:#f0b4b6;background:linear-gradient(180deg,#fff,#fff8f7)}
+  .mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
+  .mrhx-cpop.show{display:flex}
+  .mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
+  .mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
+  .mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
+  .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+  .mrhx-cpop-ok:hover{background:#c93a3f}
+  .mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
+  .mrhx-cform{margin-top:18px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
+  .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
+  .mrhx-crow input{flex:1;border:1px solid #e2e0dc;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-width:0;transition:.2s}
+  .mrhx-cform textarea{width:100%;border:1px solid #e2e0dc;border-radius:9px;padding:11px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-height:82px;resize:vertical;box-sizing:border-box;transition:.2s}
+  .mrhx-cform textarea:focus,.mrhx-crow input:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
+  .mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
+  .mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+  .mrhx-csub button:hover{background:#c93a3f}
+  .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
+  .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
+  .mrhx-cfold-wrap{position:relative}
+  .mrhx-cfold-wrap.mrhx-cfolded{max-height:440px;overflow:hidden}
+  .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
+  .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
+  .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
+  .mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
+  .mrhx-cfbar{text-align:center;margin-top:6px}
+  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
+  .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
+  .mrhx-top.show{opacity:1;pointer-events:auto}
+  .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
+
+
+  .g-back{display:inline-block;margin:18px 2px 14px;font-size:13px;font-weight:600}
+  .g-back a{color:#e5484d;text-decoration:none;background:#fff;border:1px solid #f0b4b6;padding:7px 16px;border-radius:99px;transition:.2s;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .g-back a:hover{background:#e5484d;color:#fff;border-color:#e5484d}
+  .g-body{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .g-note{font-size:14px;color:#444;line-height:1.8;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .g-note.exp{display:block;white-space:pre-wrap}
+  .g-more{display:none;border:none;background:none;color:#e5484d;font-size:13px;font-weight:600;cursor:pointer;padding:8px 2px 0;font-family:inherit}
+  .g-imgs{list-style:none;margin-top:14px;padding:0}
+  .g-imgs li{margin-bottom:12px}
+  .g-imgs img{max-width:100%;height:auto;border-radius:10px;border:1px solid #ecebe9;display:block}
+  .g-dl{display:flex;gap:10px;margin-top:16px;flex-wrap:nowrap}
+  .g-dl .mrhx-btn{flex:1;justify-content:center;white-space:nowrap}
+  @media (max-width:720px){.g-body{padding:14px}.g-dl{gap:8px}.g-dl .mrhx-btn{padding:9px 10px;font-size:13px}}
+
+</style>
+</head>
+<body class="narrow">
+<div class="mrhx-bar">
+  <a class="mlogo" href="../index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <div class="bar-right">
+  <div class="search-row">
+  <form class="mrhx-search" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
+    <button type="submit">搜索</button>
+  </form>
+  </div>
+  <div class="mnav"><a href="../index.html">首页</a>
+    <a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
+    <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
+    <a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></div>
+  </div>
+</div>
+<div class="g-back"><a href="../index.html">← 返回首页</a></div>
+<div class="title">新作[互动SLG/触摸妹妹] 只用猜拳让妹妹怀孕的游戏 いもうとをじゃんけんで孕ませるだけのゲーム。 AI汉化版+存档 [340M] <em class="mrhx-plat">PC</em></div>
+<div class="g-body">
+  
+  <ul class="g-imgs"><li><img src="../assets/game/80-新作[互动SLG-触摸妹妹]-只用猜拳让妹妹怀孕的游戏-いもうとをじゃんけんで孕ませるだけのゲーム。/img0.jpg" alt="" loading="lazy"></li></ul>
+  <div class="g-dl"><a class="mrhx-btn mrhx-btn-m" href="https://yun.139.com/shareweb/#/w/i/2wFGwnBDpkbv2" target="_blank" rel="noreferrer"><span>移动云盘</span></a><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1tonoO3xc8vmlPc5Ym4jhjQ?pwd=txch" target="_blank" rel="noreferrer"><span>百度网盘</span></a></div>
+</div>
+<!--mrhx-comments-->
+<div class="mrhx-comments" id="mrhx-comments">
+  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
+  <div class="mrhx-cfbar" id="mrhx-cfbar" style="display:none"><button type="button" class="mrhx-cfbtn" id="mrhx-cfbar-btn">缩短评论</button></div>
+  <div class="mrhx-cfold-wrap" id="mrhx-cfold-wrap">
+    <div id="mrhx-clist"></div>
+    <div class="mrhx-cfold-mask" id="mrhx-cfold-mask"><button type="button" class="mrhx-cfbtn" id="mrhx-cfold-btn">展开评论</button></div>
+  </div>
+  <form id="mrhx-cform" class="mrhx-cform">
+    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+    <div class="mrhx-cform-title">💬 发表评论</div>
+    <div class="mrhx-crow">
+      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
+      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
+    </div>
+    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
+    <div class="mrhx-crow mrhx-csub">
+      <span id="mrhx-creply" class="mrhx-creply"></span>
+      <button type="submit">发表评论</button>
+    </div>
+  </form>
+</div>
+<div class="mrhx-cpop" id="mrhx-cpop">
+  <div class="mrhx-cpop-box">
+    <h3>邮箱填写提示</h3>
+    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
+    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
+  </div>
+</div>
+<script>
+(function () {
+  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
+  var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  var PATH = '/game/80-新作[互动SLG-触摸妹妹]-只用猜拳让妹妹怀孕的游戏-いもうとをじゃんけんで孕ませるだけのゲーム。.html';
+  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
+  var list = document.getElementById('mrhx-clist');
+  var form = document.getElementById('mrhx-cform');
+  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
+  var hpEl = document.getElementById('mrhx-hp');
+  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
+  var replyEl = document.getElementById('mrhx-creply');
+  var foldWrap = document.getElementById('mrhx-cfold-wrap');
+  var foldMask = document.getElementById('mrhx-cfold-mask');
+  var foldBtn = document.getElementById('mrhx-cfold-btn');
+  var cfbar = document.getElementById('mrhx-cfbar');
+  var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
+  var folded = true;
+  function applyFold() {
+    if (!foldWrap) return;
+    var need = all.length > 6;
+    if (!need) {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'none';
+      return;
+    }
+    if (folded) {
+      foldWrap.classList.add('mrhx-cfolded');
+      foldMask.classList.add('mrhx-cfold-show');
+      foldBtn.textContent = '展开评论（' + all.length + ' 条）';
+      if (cfbar) cfbar.style.display = 'none';
+    } else {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'block';
+    }
+  }
+  if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
+  if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
+  var replyPid = null;
+  var all = [];
+  var popShown = false;
+  if (pop) {
+    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
+    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
+    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
+  }
+  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
+  function headers() {
+    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+  }
+  function render() {
+    list.textContent = '';
+    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
+    function buildRow(c) {
+      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
+      var head = h('div', 'mrhx-chead');
+      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
+      var meta = h('div', 'mrhx-cmeta');
+      meta.appendChild(h('b', '', c.nick || '匿名'));
+      if (c.pid) {
+        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
+        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
+      }
+      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
+      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
+      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
+      head.appendChild(meta);
+      row.appendChild(head);
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));
+      var bar = h('div', 'mrhx-cbar');
+      var rp = h('button', 'mrhx-cbtn', '回复');
+      rp.onclick = function () {
+        if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
+        else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
+      };
+      bar.appendChild(rp);
+      if (ADMIN) {
+        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+        dl.onclick = function () {
+          if (!confirm('删除这条评论及其回复？')) return;
+          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+            .catch(function (e) { alert('删除失败：' + e.message); });
+        };
+        bar.appendChild(dl);
+        if (!c.pid) {
+          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
+          pin.onclick = function () {
+            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+          };
+          bar.appendChild(pin);
+        }
+      }
+      row.appendChild(bar);
+      return row;
+    }
+    function addTree(pid, box) {
+      all.filter(function (c) { return (c.pid || null) === pid; })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
+          return b.created_at.localeCompare(a.created_at);
+        })
+        .forEach(function (c) {
+          var row = buildRow(c);
+          box.appendChild(row);
+          addTree(c.id, box);
+        });
+    }
+    addTree(null, list);
+    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
+    applyFold();
+  }
+  function load() {
+    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.desc', { headers: headers() })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
+      .then(function (d) { all = d || []; render(); })
+      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
+  }
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    if (hpEl && hpEl.value) { form.reset(); return; }
+    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
+    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
+    fetch(SB + '/rest/v1/rpc/guard_comment', {
+      method: 'POST',
+      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
+    }).then(function (r) {
+      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
+      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
+      return r.json();
+    }).then(function (d) {
+      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
+      replyPid = null; replyEl.textContent = '';
+      form.reset();
+      load();
+    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+  };
+  load();
+})();
+</script>
+<!--mrhx-comments-end-->
+<script>
+(function () {
+  try {
+    var day = new Date().toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/game/80-新作[互动SLG-触摸妹妹]-只用猜拳让妹妹怀孕的游戏-いもうとをじゃんけんで孕ませるだけのゲーム。.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/game/80-新作[互动SLG-触摸妹妹]-只用猜拳让妹妹怀孕的游戏-いもうとをじゃんけんで孕ませるだけのゲーム。.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/game/80-新作[互动SLG-触摸妹妹]-只用猜拳让妹妹怀孕的游戏-いもうとをじゃんけんで孕ませるだけのゲーム。.html', p_day: day }) }).catch(function () {});
+  } catch (e) {}
+})();
+</script>
+
+<script>
+(function () {
+  var note = document.getElementById('g-note');
+  if (!note) return;
+  var more = document.getElementById('g-more');
+  if (note.scrollHeight > note.clientHeight) {
+    more.style.display = 'block';
+    more.onclick = function () {
+      var exp = note.classList.toggle('exp');
+      more.textContent = exp ? '收起 ↑' : '展开全部 ↓';
+    };
+  }
+})();
+</script>
+
+</body>
+</html>
