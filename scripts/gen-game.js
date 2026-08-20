@@ -461,8 +461,15 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     slugMap.set(g.slug, g.title);
   }
   if (fs.existsSync('game')) fs.rmSync('game', { recursive: true, force: true });
-  if (fs.existsSync('assets/game')) fs.rmSync('assets/game', { recursive: true, force: true });
   fs.mkdirSync('game', { recursive: true });
+  const neededSlugs = new Set(games.map(g => g.slug));
+  if (fs.existsSync('assets/game')) {
+    const existing = fs.readdirSync('assets/game').filter(d => fs.statSync('assets/game/' + d).isDirectory());
+    for (const d of existing) {
+      if (!neededSlugs.has(d)) fs.rmSync('assets/game/' + d, { recursive: true, force: true });
+    }
+  }
+  fs.mkdirSync('assets/game', { recursive: true });
   const searchIndex = [];
   const errors = [];
   for (const g of games) {
