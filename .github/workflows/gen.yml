@@ -22,9 +22,7 @@ jobs:
           node-version: 24
 
       - name: 运行生成脚本
-        run: |
-          node scripts/gen.js
-          node scripts/gen-game.js
+        run: node scripts/gen.js
 
       - name: 提交生成结果
         run: |

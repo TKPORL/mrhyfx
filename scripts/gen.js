@@ -975,8 +975,6 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
   .upd-note{font-size:12.5px;color:#999;margin:-14px 0 20px;padding-left:4px;line-height:1.7}
-  .mode-switch{display:inline-block;padding:8px 16px;border-radius:99px;background:#fff;border:1px solid #f0b4b6;color:#e5484d;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-  .mode-switch:hover{background:#e5484d;color:#fff}
   .pcmt{color:#e58d0a}
   .pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
   .pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
@@ -1062,9 +1060,6 @@ footer b{color:#e5484d}
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
-  <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <a class="mode-switch" href="posts/index.html">单帖模式：每个游戏独立一页</a>
-  </div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
