@@ -458,8 +458,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     const cover = g.imgs[0] ? '<img src="' + esc(idxImg(g.imgs[0])) + '" alt="" loading="lazy">' : '<div class="noimg">暂无截图</div>';
     const dls = g.dls.length ? '<div class="g-dl">' + g.dls.map(btnHtml).join('') + '</div>' : '';
     return '<div class="g-card" style="animation-delay:' + (gi * 0.03) + 's"><a class="g-cover" href="' + pageRel(g.file) + '">' + cover + '</a><div class="g-info"><a class="g-t" href="' + pageRel(g.file) + '">' + esc(g.title) + (g.plat ? ' <em class="mrhx-plat">' + esc(g.plat) + '</em>' : '') + '</a>' + (g.intro ? '<div class="g-intro">' + esc(g.intro) + '</div>' : '') + dls + '<div class="g-hint">点击卡片进入详情 ›</div></div></div>';
-  }).join('\n  ');
-  const barIdx2 = barHtml;
+  }).join('\n  ').replace(/href="game\//g, 'href="../game/').replace(/src="assets\/game\//g, 'src="../../assets/game/');
+  const barIdx2 = barHtml.replace(/href="index\.html"/g, 'href="../index.html"').replace(/href="search\.html"/g, 'href="../search.html"').replace(/action="search\.html"/g, 'action="../search.html"');
   const indexPage = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -479,9 +479,9 @@ ${barIdx2}
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${games.length}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶求助帖评论区留言游戏全名，站长看到会尽快补上</div>
   <div style="margin:0 0 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <a class="mode-switch" href="posts/index.html">合集模式：按帖子浏览</a>
+    <a class="mode-switch" href="../index.html">合集模式：按帖子浏览</a>
   </div>
-  <a class="post" href="posts/qzt.html" data-path="/posts/qzt.html">
+  <a class="post" href="qzt.html" data-path="/posts/qzt.html">
   <div class="date"><b>求</b><span>助</span></div>
   <div class="info">
     <div class="ptitle">求助资源帖 <span class="pinb">置顶</span></div>
@@ -500,8 +500,8 @@ ${indexScript}
 </body>
 </html>`;
 
-  fs.writeFileSync('index.html', indexPage);
-  console.log('index.html ok (单游戏模式), games:', games.length);
+  fs.writeFileSync(POST_DIR + '/index.html', indexPage);
+  console.log('posts/index.html ok (单游戏模式), games:', games.length);
 
   fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
   console.log('search_index.json ok, games:', searchIndex.length);

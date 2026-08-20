@@ -434,7 +434,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 function verify(days, index) {
   const errors = [];
   for (const d of days) {
-    const ref = `href="${esc(path.basename(d.file))}"`;
+    const ref = `href="posts/${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
     if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
@@ -872,7 +872,7 @@ html = (function reorderNodes(str) {
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
-    return `<a class="post" href="${_pfile}" data-path="/${d.file}" style="animation-delay:${di * 0.1}s">
+    return `<a class="post" href="posts/${_pfile}" data-path="/${d.file}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
   <div class="info">
     <div class="ptitle">${esc(disp)}${pinned ? ` <span class="pinb">置顶</span>` : ''}</div>
@@ -1063,7 +1063,7 @@ footer b{color:#e5484d}
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
   <div style="margin:0 0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-    <a class="mode-switch" href="../index.html">单帖模式：每个游戏独立一页</a>
+    <a class="mode-switch" href="posts/index.html">单帖模式：每个游戏独立一页</a>
   </div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
@@ -1071,13 +1071,13 @@ footer b{color:#e5484d}
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
-${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/posts/index.html') : ''}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
 </body>
 </html>
 `;
-  fs.writeFileSync(POST_DIR + '/index.html', index);
-  console.log('posts/index.html ok, days:', days.length);
+  fs.writeFileSync('index.html', index);
+  console.log('index.html ok (合集模式), days:', days.length);
 
   fs.writeFileSync(POST_DIR + '/search_index.json', JSON.stringify(searchIndex));
   console.log('posts/search_index.json ok, games:', searchIndex.length);
