@@ -6,7 +6,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 let SITE = {};
 if (fs.existsSync('site.json')) {
   const s = JSON.parse(fs.readFileSync('site.json', 'utf8').replace(/^\uFEFF/, ''));
-  SITE = { site: s.site || {}, comments: s.comments || {}, nav: s.nav || [] };
+  SITE = { site: s.site || {}, comments: s.comments || {}, announcement: s.announcement || {}, nav: s.nav || [] };
 }
 const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
 const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
@@ -31,6 +31,36 @@ const commentBlock = (srcHtml.match(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-commen
 const viewScript = (srcHtml.match(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?<\/script>/) || [])[0] || '';
 const SRC_PATH = '/' + path.basename(SOURCE_FILE);
 const SRC_RE = new RegExp('/(?:posts/)?' + path.basename(SOURCE_FILE).replace(/\./g, '\\.'), 'g');
+
+const announcePopup = (() => {
+  const ann = SITE.announcement && SITE.announcement.enabled !== false ? SITE.announcement : null;
+  if (!ann) return '';
+  const lines = (ann.lines && ann.lines.length) ? ann.lines : [];
+  const title = ann.title || '📢 公告';
+  if (!lines.length) return '';
+  return `<div class="mrhx-popup" id="mrhxPopup">
+  <div class="mrhx-popup-inner">
+    <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
+    <div class="mrhx-popup-content">
+      <h3>${title}</h3>
+      ${lines.map(l => `<p>${l}</p>`).join('\n      ')}
+    </div>
+    <button class="mrhx-popup-btn" onclick="document.getElementById('mrhxPopup').style.display='none'">我知道了</button>
+  </div>
+</div>
+<style>
+.mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
+.mrhx-popup-inner{background:#fff;border-radius:16px;padding:30px 28px 22px;max-width:600px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
+.mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
+.mrhx-popup-content h3{font-size:18px;color:#2b2b2b;margin-bottom:12px}
+.mrhx-popup-content p{font-size:14px;color:#666;line-height:1.8;margin-bottom:8px;white-space:pre-wrap}
+.mrhx-popup-btn{margin-top:14px;padding:10px 28px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
+@keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}
+@keyframes mrhxPopSlide{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+</style>`;
+})();
 
 const parseGames = html => {
   const blocks = [];
@@ -497,6 +527,7 @@ ${barIdx2}
 </main>
 <footer style="text-align:center;color:#999;font-size:12px;padding:28px 20px 40px;border-top:1px solid #ecebe9;margin-top:34px">${SITE_FOOTER}</footer>
 ${indexScript}
+${announcePopup}
 </body>
 </html>`;
 
