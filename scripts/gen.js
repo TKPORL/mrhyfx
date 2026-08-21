@@ -1081,7 +1081,7 @@ footer b{color:#e5484d}
 </header>
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
-  <div class="upd-note">右上角可搜索游戏；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
+  <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
