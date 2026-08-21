@@ -1035,10 +1035,10 @@ async function putFile(repo, token, path, content, msg, statusEl, step) {
   if (statusEl) show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
 }
 
-async function updateJson(repo, token, file, key, value, statusEl) {
+async function updateJson(repo, token, file, key, value, statusEl, allowCreate) {
   let obj = {};
   const raw = await fetch(`${RAW_BASE}/${repo}/main/${file}`).then(r => r.ok ? r.json() : null).catch(() => null);
-  if (raw === null) throw new Error('读取线上 ' + file + ' 失败，已取消保存（避免覆盖掉现有内容），请重试');
+  if (raw === null && !allowCreate) throw new Error('读取线上 ' + file + ' 失败，已取消保存（避免覆盖掉现有内容），请重试');
   if (raw && typeof raw === 'object') obj = raw;
   if (value === null || value === '') delete obj[key];
   else obj[key] = value;
@@ -1424,7 +1424,7 @@ function bindPostButtons(box, token, repo) {
       b.disabled = true;
       show(stM, '正在保存图标…', 'info');
       try {
-        await updateJson(repo, token, 'icons.json', tag, val, stM);
+        await updateJson(repo, token, 'icons.json', tag, val, stM, true);
         const prev = b.closest('.game').querySelector('.icon-prev');
         if (prev) prev.innerHTML = val ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(val) + '</span>' : '';
         show(stM, '图标已保存！首页重新生成后生效（2-3 分钟）。', 'ok');

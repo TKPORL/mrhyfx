@@ -584,10 +584,10 @@ html = (function reorderNodes(str) {
     const lastLi = html.lastIndexOf('</li>');
     html = html.slice(0, lastLi + 5) + '\n' + extrasNodes + html.slice(lastLi + 5);
 
-    const navPills = [`<a href="../index.html">首页</a>`, ...NAV.map(n =>
+    const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="../index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <a class="mlogo" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
