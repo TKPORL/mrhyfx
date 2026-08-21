@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -338,14 +339,18 @@ async function localize(html, tag) {
     fs.mkdirSync(dir, { recursive: true });
     let n = 0;
     for (const url of urls) {
-      const name = `img_${String(++n).padStart(2, '0')}.png`;
+      const name = `img_${String(++n).padStart(2, '0')}.webp`;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           const res = await fetch(url);
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          fs.writeFileSync(path.join(dir, name), Buffer.from(await res.arrayBuffer()));
+          const buf = Buffer.from(await res.arrayBuffer());
+          const compressed = await sharp(buf)
+            .webp({ quality: 80, alphaQuality: 100, lossless: false })
+            .toBuffer();
+          fs.writeFileSync(path.join(dir, name), compressed);
           html = html.split(url).join(`${CDN_URL}/assets/${tag}/${name}`);
-          console.log('  img', tag, name);
+          console.log('  img', tag, name, `(${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
           break;
         } catch (e) {
           if (attempt === 3) console.warn('  下载失败(保留原链接):', url, e.message);
@@ -354,7 +359,7 @@ async function localize(html, tag) {
       }
     }
   }
-  html = html.replace(/assets\/[^"/]+(?=\/)/g, 'assets/' + tag);
+  html = html.replace(/assets\/[^"\/]+(?=\/)/g, 'assets/' + tag);
   html = html.replace(/src="assets\//g, `src="${CDN_URL}/assets/`);
   return html.split('crossorigin="anonymous"').join('');
 }
@@ -478,17 +483,68 @@ function verify(days, index) {
   console.log('✅ 发布自检通过:', days.length, '个帖子');
 }
 
+
+// compress all existing images in assets/ to webp (quality 80)
+async function compressExistingAssets() {
+  const assetsDir = 'assets';
+  if (!fs.existsSync(assetsDir)) return;
+  const entries = fs.readdirSync(assetsDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const subDir = path.join(assetsDir, entry.name);
+    const files = fs.readdirSync(subDir);
+    for (const file of files) {
+      const ext = path.extname(file).toLowerCase();
+      if (!['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'].includes(ext)) continue;
+      const srcPath = path.join(subDir, file);
+      const dstPath = path.join(subDir, path.parse(file).name + '.webp');
+      if (fs.existsSync(dstPath) && fs.statSync(dstPath).mtime >= fs.statSync(srcPath).mtime) continue;
+      try {
+        const buf = fs.readFileSync(srcPath);
+        const compressed = await sharp(buf)
+          .webp({ quality: 80, alphaQuality: 100, lossless: false })
+          .toBuffer();
+        fs.writeFileSync(dstPath, compressed);
+        console.log('  compress', entry.name, file, `-> ${path.parse(file).name}.webp (${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
+      } catch (e) {
+        console.warn('  compress failed:', srcPath, e.message);
+      }
+    }
+  }
+}
+
 const days = [];
 const searchIndex = [];
 const allGames = [];
 (async () => {
-  for (const file of files) {
+    await compressExistingAssets();
+
+for (const file of files) {
     let html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
     const computed = (html.match(/<li class="node[^"]*heading/g) || []).length;
     const tag = dayTag(file);
     const gameCount = overrides[tag] !== undefined ? overrides[tag] : computed;
 
     html = await localize(html, tag);
+
+    // update local asset refs to .webp if exists
+    const tagDir = path.join('assets', tag);
+    if (fs.existsSync(tagDir)) {
+      const assetFiles = fs.readdirSync(tagDir);
+      const webpFiles = new Set(assetFiles.filter(f => f.endsWith('.webp')).map(f => f.replace('.webp', '')));
+      for (const base of webpFiles) {
+        // replace .png, .jpg, .jpeg, .gif references with .webp
+        const extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'];
+        for (const ext of extensions) {
+          const oldRef = `assets/${tag}/${base}${ext}`;
+          const newRef = `assets/${tag}/${base}.webp`;
+          if (html.includes(oldRef)) {
+            html = html.split(oldRef).join(newRef);
+          }
+        }
+      }
+    }
+
 
     const iconRe = /(?:<link rel="icon"[^>]*>\s*<link rel="apple-touch-icon"[^>]*>\s*)+/g;
     html = html.replace(iconRe, (m) => {
