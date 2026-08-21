@@ -1217,9 +1217,9 @@ function parseCollectionDoc(doc) {
     };
   });
 }
-// 判断 tag 返回其实际在仓库中的路径 {N}.html
+// 判断 tag 返回其实际在仓库中的路径 posts/{tag}.html
 function postRepoPath(tag) {
-  return tag + '.html';
+  return 'posts/' + tag + '.html';
 }
 
 // 帖子列表全局缓存：{ posts, tree, titles, counts, pins, icons, views, token, repo }
