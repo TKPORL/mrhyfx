@@ -882,9 +882,9 @@ html = (function reorderNodes(str) {
     const dateM = title.match(/(\d+)月(\d+)/);
     const dateN = title.match(/(\d+)\.(\d+)/);
     const _ic = ICONS[title];
-    const badge = dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
+    const badge = _ic ? `<b style="font-size:12px">${esc(_ic)}</b>`
+      : dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
-      : _ic ? (/^https?:/i.test(_ic) ? `<img src="${esc(_ic)}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : `<b style="font-size:12px">${esc(_ic)}</b>`)
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)

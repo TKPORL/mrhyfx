@@ -354,6 +354,16 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div id="statBox"></div>
       <div id="statusS"></div>
     </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>每日访问（最近 7 天）</h2>
+        <button class="btn btn-s" id="refreshDaily">刷新</button>
+      </div>
+      <p class="hint" style="margin-top:2px">按天统计的总访问次数，方便对比每天的流量变化（今天可能还在累加中）。</p>
+      <div id="dailyBox"><p class="hint">加载中…</p></div>
+      <div id="statusD"></div>
+    </div>
   </div>
 
   <div class="panel" id="panelLinks">
@@ -476,7 +486,7 @@ function switchTab(id) {
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
-  if (id === 'tabStats') loadStats();
+  if (id === 'tabStats') { loadStats(); loadDaily(); }
 }
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
@@ -1263,8 +1273,8 @@ function renderPosts(filteredPosts) {
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">
     <input type="text" class="t-edit" data-tag="${esc(tag)}" value="${esc(titles[tag] || displayTitle)}" placeholder="${esc(displayTitle)}" style="flex:1;min-width:180px;font-size:13px">
     <button class="btn btn-s" data-tsave="${esc(tag)}">保存标题</button>
-    <span class="icon-prev">${icons[tag] ? (/^https?:/i.test(icons[tag]) ? '<img src="' + esc(icons[tag]) + '" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;vertical-align:middle">' : '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(icons[tag]) + '</span>') : ''}</span>
-    <input type="text" class="t-edit" data-icon="${esc(tag)}" value="${esc(icons[tag] || '')}" placeholder="图标：填图片URL或直接输入文字（留空=自动）" style="flex:1;min-width:140px;font-size:12px">
+    <span class="icon-prev">${icons[tag] ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(icons[tag]) + '</span>' : ''}</span>
+    <input type="text" class="t-edit" data-icon="${esc(tag)}" value="${esc(icons[tag] || '')}" placeholder="图标文字（如 新、热、PC，留空=自动取标题首字）" maxlength="4" style="flex:1;min-width:140px;font-size:12px">
     <button class="btn btn-s" data-isave="${esc(tag)}">存图标</button>
     <button class="btn btn-s" data-pinbtn="${esc(tag)}">${isPinned ? '取消置顶' : '置顶'}</button>
     <a class="btn btn-s" href="${esc(p.path)}" target="_blank" rel="noreferrer">查看</a>
@@ -1416,7 +1426,7 @@ function bindPostButtons(box, token, repo) {
       try {
         await updateJson(repo, token, 'icons.json', tag, val, stM);
         const prev = b.closest('.game').querySelector('.icon-prev');
-        if (prev) prev.innerHTML = val ? (/^https?:/i.test(val) ? '<img src="' + esc(val) + '" alt="" style="width:34px;height:34px;border-radius:8px;object-fit:cover;vertical-align:middle">' : '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(val) + '</span>') : '';
+        if (prev) prev.innerHTML = val ? '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12px;font-weight:700;vertical-align:middle">' + esc(val) + '</span>' : '';
         show(stM, '图标已保存！首页重新生成后生效（2-3 分钟）。', 'ok');
       } catch (e) {
         show(stM, '保存失败：' + e.message, 'err');
@@ -1865,6 +1875,60 @@ $('cleanStats').onclick = async () => {
     show(stS, '清理失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
 };
+
+const stD = $('statusD');
+async function loadDaily() {
+  const box = $('dailyBox');
+  const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbAnon || !sbSecret) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>';
+    return;
+  }
+  box.innerHTML = '<p class="hint">加载中…</p>';
+  try {
+    // 最近 7 天（含今天）的起始日期
+    const DAYS = 7;
+    const start = new Date();
+    start.setDate(start.getDate() - (DAYS - 1));
+    const startStr = start.toISOString().slice(0, 10);
+    const res = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}`, {
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const arr = await res.json();
+    // 按天汇总总访问次数
+    const byDay = {};
+    arr.forEach(v => { byDay[v.day] = (byDay[v.day] || 0) + (v.count || 0); });
+    // 生成连续 7 天（缺失的天补 0），最新的在最上面
+    const rows = [];
+    for (let i = 0; i < DAYS; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      rows.push({ day: key, count: byDay[key] || 0 });
+    }
+    const maxCount = Math.max(1, ...rows.map(r => r.count));
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    box.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">' + rows.map(r => {
+      const dt = new Date(r.day + 'T00:00:00');
+      const label = (r.day.slice(5)) + ' ' + weekNames[dt.getDay()] + (r.day === todayKey ? '（今天）' : '');
+      const pct = Math.round(r.count / maxCount * 100);
+      return '<div style="display:flex;align-items:center;gap:10px">'
+        + '<div style="width:120px;flex:none;font-size:13px;color:#555">' + label + '</div>'
+        + '<div style="flex:1;background:#f0f0f0;border-radius:6px;height:22px;position:relative;overflow:hidden">'
+        + '<div style="width:' + pct + '%;height:100%;background:' + (r.day === todayKey ? '#e5484d' : '#f0a3a5') + ';border-radius:6px;min-width:2px"></div>'
+        + '</div>'
+        + '<div style="width:56px;flex:none;text-align:right;font-weight:700;color:#e5484d">' + r.count + '</div>'
+        + '</div>';
+    }).join('') + '</div>';
+    const weekTotal = rows.reduce((s, r) => s + r.count, 0);
+    box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">最近 7 天合计 ' + weekTotal + ' 次访问。数据来自 daily_page_views 表，每天独立记录，历史不会被今天覆盖。</p>');
+  } catch (e) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';
+  }
+}
+$('refreshDaily').onclick = loadDaily;
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
