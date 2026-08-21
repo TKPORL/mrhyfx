@@ -5,7 +5,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
-const POST_DIR = 'posts';
+const POST_DIR = '.';
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
@@ -447,7 +447,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 function verify(days, index) {
   const errors = [];
   for (const d of days) {
-    const ref = `href="posts/${esc(path.basename(d.file))}"`;
+    const ref = `href="${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
     if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
@@ -653,7 +653,7 @@ html = (function reorderNodes(str) {
 (function () {
   var SB = '${sb}';
   var KEY = '${key}';
-  var PATH = '/posts/${esc(shortName)}.html';
+  var PATH = '/${esc(shortName)}.html';
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
@@ -802,7 +802,7 @@ html = (function reorderNodes(str) {
     html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
-    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/posts/' + shortName + '.html') : '';
+    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
@@ -833,7 +833,7 @@ html = (function reorderNodes(str) {
 
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
-    days.push({ file: POST_DIR + '/' + file, gameCount, tag });
+    days.push({ file: file, gameCount, tag });
     if (overrides[tag] === undefined || String(overrides[tag]) !== String(computed)) {
       overrides[tag] = computed;
       try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
@@ -885,7 +885,7 @@ html = (function reorderNodes(str) {
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
-    return `<a class="post" href="posts/${_pfile}" data-path="/${d.file}" style="animation-delay:${di * 0.1}s">
+    return `<a class="post" href="${_pfile}" data-path="/${_pfile}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
   <div class="info">
     <div class="ptitle">${esc(disp)}${pinned ? ` <span class="pinb">置顶</span>` : ''}</div>
@@ -1087,8 +1087,8 @@ ${indexScript}
   fs.writeFileSync('index.html', index);
   console.log('index.html ok (合集模式), days:', days.length);
 
-  fs.writeFileSync(POST_DIR + '/search_index.json', JSON.stringify(searchIndex));
-  console.log('posts/search_index.json ok, games:', searchIndex.length);
+  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
+  console.log('search_index.json ok, games:', searchIndex.length);
 
   verify(days, index, searchIndex);
 
@@ -1161,7 +1161,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result"><div class="rt"><b>' + esc(g.title) + '</b><span class="src">' + esc(g.source) + '</span></div>' +
+    return '<div class="result"><div class="rt"><a href="' + esc(g.source) + '.html">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -1195,6 +1195,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 </body>
 </html>
 `;
-  fs.writeFileSync(POST_DIR + '/search.html', searchPage);
-  console.log('posts/search.html ok');
+  fs.writeFileSync('search.html', searchPage);
+  console.log('search.html ok');
 })().catch(e => { console.error(e); process.exit(1); });
