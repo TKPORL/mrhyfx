@@ -68,7 +68,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result"><div class="rt"><a href="' + esc(g.p) + '">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
+    return '<div class="result"><div class="rt"><a href="posts/' + esc(g.source) + '.html">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
