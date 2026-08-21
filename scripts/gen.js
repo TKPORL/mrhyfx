@@ -556,7 +556,12 @@ html = (function reorderNodes(str) {
       else if (/PC/.test(platSource)) plat = 'PC';
       if (!plat && pageFallbackPlat) plat = pageFallbackPlat;
       if (plat && contentBlock) {
-        contentBlock = contentBlock.replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '').replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
+        contentBlock = contentBlock
+          .replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '')
+          .replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '')
+          // 剥离游戏名文本末尾紧挨着的平台文字（可能带方括号/空格），避免与后加的标签重复
+          .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
+          .replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
       }
       var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
