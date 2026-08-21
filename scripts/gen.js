@@ -882,7 +882,11 @@ html = (function reorderNodes(str) {
     const dateM = title.match(/(\d+)月(\d+)/);
     const dateN = title.match(/(\d+)\.(\d+)/);
     const _ic = ICONS[title];
-    const badge = _ic ? `<b style="font-size:12px">${esc(_ic)}</b>`
+    // 图标文字若是日期格式（如 8月20 / 8.20），则渲染成「上号下月」两行，与其他日期徽章一致
+    const icM = _ic && _ic.match(/(\d+)月(\d+)/);
+    const icN = _ic && _ic.match(/(\d+)\.(\d+)/);
+    const badge = _ic && (icM || icN) ? `<b>${esc(icM ? icM[2] : icN[2])}</b><span>${esc(icM ? icM[1] : icN[1])}月</span>`
+      : _ic ? `<b style="font-size:12px">${esc(_ic)}</b>`
       : dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
