@@ -1,13 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const PAGES_PER_CATEGORY = 5;
-
-const CATEGORIES = [
-  { name: 'PC', url: 'https://acgll.xyz/category/pc' },
-  { name: 'AZ', url: 'https://acgll.xyz/category/az' },
-];
-
+const PAGES = 5;
+const BASE_URL = 'https://acgll.xyz/category/youxi';
 const DELAY_MS = 1000;
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -24,7 +19,7 @@ async function fetchPage(url) {
   return res.text();
 }
 
-function parseArticles(html, category) {
+function parseArticles(html) {
   const articles = [];
   const parts = html.split(/<posts\s+class="posts-item/);
   
@@ -57,53 +52,39 @@ function parseArticles(html, category) {
     const likeMatch = chunk.match(/<item\s+class="meta-like">[\s\S]*?<\/svg>\s*(\d+)/);
     const likes = likeMatch ? parseInt(likeMatch[1]) : 0;
     
-    articles.push({ title, url, img, tags, excerpt, author, date, views, likes, category });
+    articles.push({ title, url, img, tags, excerpt, author, date, views, likes });
   }
   
   return articles;
 }
 
-async function scrapeCategory(cat) {
-  console.log(`\nScraping: ${cat.name}`);
-  const all = [];
+function isPCTitle(title) {
+  return /【.*PC.*[\/\】]/i.test(title);
+}
+
+async function main() {
+  const allArticles = [];
   
-  for (let page = 1; page <= PAGES_PER_CATEGORY; page++) {
-    const url = page === 1 ? cat.url : `${cat.url}/page/${page}`;
+  console.log(`Scraping: ${BASE_URL} (${PAGES} pages)\n`);
+  
+  for (let page = 1; page <= PAGES; page++) {
+    const url = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}`;
     try {
       const html = await fetchPage(url);
-      const articles = parseArticles(html, cat.name);
-      console.log(`  Page ${page}: ${articles.length} articles`);
-      all.push(...articles);
-      if (page < PAGES_PER_CATEGORY) await sleep(DELAY_MS);
+      const articles = parseArticles(html);
+      const pcArticles = articles.filter(a => isPCTitle(a.title));
+      console.log(`  Page ${page}: ${articles.length} total, ${pcArticles.length} PC`);
+      allArticles.push(...pcArticles);
+      if (page < PAGES) await sleep(DELAY_MS);
     } catch (e) {
       console.error(`  Page ${page} error: ${e.message}`);
       break;
     }
   }
   
-  console.log(`  Total: ${all.length} articles`);
-  return all;
-}
-
-async function main() {
-  const allArticles = [];
-  
-  for (const cat of CATEGORIES) {
-    try {
-      const articles = await scrapeCategory(cat);
-      allArticles.push(...articles);
-    } catch (e) {
-      console.error(`Error scraping ${cat.name}: ${e.message}`);
-    }
-  }
-  
   const outputPath = path.join(__dirname, '..', 'library.json');
   fs.writeFileSync(outputPath, JSON.stringify(allArticles, null, 2), 'utf8');
-  console.log(`\nSaved ${allArticles.length} articles to library.json`);
-  
-  const byCat = {};
-  allArticles.forEach(a => { byCat[a.category] = (byCat[a.category] || 0) + 1; });
-  console.log('Summary:', byCat);
+  console.log(`\nSaved ${allArticles.length} PC articles to library.json`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
