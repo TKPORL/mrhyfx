@@ -452,17 +452,19 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 function verify(days, index) {
   const errors = [];
   for (const d of days) {
+    // skip qzt.html from normal day-page checks (different structure)
+    const isQzt = d.file === 'qzt.html';
     const ref = `href="${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
-    if (!h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
+    if (!isQzt && !h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
     if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
     const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
     const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
     const h1Ok = h.includes(`>${esc(disp)}</div>`);
     if (!titleOk && !h1Ok) errors.push(`帖子标题未同步: ${d.file} (期望 ${disp})`);
-    if (SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
-    if (SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
+    if (!isQzt && SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
+    if (!isQzt && SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
     [...h.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)].forEach(m => {
       const t = m[1].replace(/<[^>]+>/g, '').trim();
       if (/(?:PC\s*\+\s*安卓|PC|安卓){2,}/.test(t)) errors.push(`标题含重复平台标记: ${d.file} → ${t}`);
@@ -899,6 +901,13 @@ html = (function reorderNodes(str) {
       overrides[tag] = computed;
       try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
     }
+  }
+
+  // add qzt.html as a pinned day (excluded from normal processing)
+  if (fs.existsSync('qzt.html')) {
+    const qztHtml = fs.readFileSync('qzt.html', 'utf8');
+    const qztGameCount = (qztHtml.match(/<li class="node[^"]*heading/g) || []).length;
+    days.push({ file: 'qzt.html', gameCount: qztGameCount, tag: 'qzt' });
   }
 
   days.sort((a, b) => {
