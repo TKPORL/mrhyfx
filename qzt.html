@@ -1180,7 +1180,7 @@
 <!--mrhx-end-->
   <div class="title">求助资源贴（可以在这贴求黄油游戏哈）</div>
         <ul class="node-list">
-<li class="node heading3">
+<li class="node heading3 node-full">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -1192,6 +1192,7 @@
     
     
   </li>
+
 <li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
@@ -1770,7 +1771,7 @@ PS：如果使用手机解压，第一层视频解压还原成压缩包后，第
 (function () {
   var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
   var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
-  var PATH = '/8.10.html';
+  var PATH = '/qzt.html';
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
@@ -1922,7 +1923,7 @@ PS：如果使用手机解压，第一层视频解压还原成压缩包后，第
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html' }) });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html' }) });
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html', p_day: day }) }).catch(function () {});
   } catch (e) {}
 })();
