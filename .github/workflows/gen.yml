@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: 安装依赖
+        run: npm ci
+
       - name: 运行生成脚本
         run: node scripts/gen.js
 
