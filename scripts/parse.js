@@ -1,5 +1,6 @@
 const fs = require('fs');
-const html = fs.readFileSync('8.1.html', 'utf8');
+const inputFile = process.argv[2] || '8.1.html';
+const html = fs.readFileSync(inputFile, 'utf8');
 
 const parts = html.split(/<li class="node/);
 const entries = [];
@@ -45,4 +46,4 @@ for (let i = 1; i < parts.length; i++) {
 }
 
 fs.writeFileSync('games.json', JSON.stringify({ entries, extras }, null, 2), 'utf8');
-console.log('games:', entries.length, 'extras:', extras.length);
+console.log('input:', inputFile, 'games:', entries.length, 'extras:', extras.length);

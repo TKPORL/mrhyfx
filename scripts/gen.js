@@ -115,7 +115,7 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
       </div>`;
 
 const sharedCss = `<style>
-  body.narrow{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
+  body.narrow{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
   .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
   .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   .mrhx-bar .mlogo span{color:#e5484d}
@@ -131,10 +131,10 @@ const sharedCss = `<style>
   .mrhx-search button:hover{background:#c93a3f}
   .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
   @media (min-width:721px){
-    .mrhx-bar{max-width:min(1000px,100%) !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
+    .mrhx-bar{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
   }
-  .mrhx-dl{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-  .mrhx-btn{display:inline-flex;align-items:center;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
+  .mrhx-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .mrhx-btn{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
   .mrhx-btn-m{background:#e5484d;color:#fff}
   .mrhx-btn-m:hover{background:#c93a3f}
@@ -146,16 +146,15 @@ const sharedCss = `<style>
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
-  @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
+  @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}    .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:12px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
   .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
   .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
   .node .bullet .bullet-dot{background:#fff}
   .node.collapsed > .bullet{background-color:#dee0e3}
   .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
-  .node .content{font-size:15px;font-weight:600;line-height:1.6;word-break:break-word}
-  .node .note{font-size:13px;color:#666;line-height:1.7;margin-top:6px;word-break:break-word;white-space:pre-wrap}
-  .title{font-weight:700;word-break:break-word}
+  .node .content{font-size:14px;font-weight:600;line-height:1.5;word-break:break-word}
+  .node .note{font-size:12px;color:#666;line-height:1.6;margin-top:4px;word-break:break-word;white-space:pre-wrap}
+  .title{font-size:20px;font-weight:700;word-break:break-word;padding-bottom:14px;margin-bottom:14px}
   body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-left:0}
   body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;cursor:pointer}
   body.mrhx-grid2 .node .bullet{display:none}
@@ -189,9 +188,9 @@ const sharedCss = `<style>
     .mrhx-bar .search-row{width:100%;justify-content:flex-end}
     .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
-    .title{font-size:20px;line-height:32px;min-height:32px;padding-bottom:16px;margin-bottom:16px}
+    .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:12px;margin-bottom:12px}
     .node-list{margin-left:0}
-    .node{padding:14px;border-radius:12px}
+    .node{padding:12px;border-radius:12px}
     .node .bullet{display:none}
     .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
@@ -201,23 +200,23 @@ const sharedCss = `<style>
     body.mrhx-grid2 .node .note{font-size:12px}
     .image-list .image{max-width:100% !important}
   }
-  .mrhx-comments{max-width:100%;margin-top:34px;padding-top:22px;border-top:2px solid #ecebe9}
-  .mrhx-comments h2{font-size:19px;color:#2b2b2b;margin-bottom:16px;display:flex;align-items:baseline;gap:8px;font-weight:700}
+  .mrhx-comments{max-width:100%;margin-top:24px;padding-top:16px;border-top:2px solid #ecebe9}
+  .mrhx-comments h2{font-size:17px;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:baseline;gap:8px;font-weight:700}
   .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
-  .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s}
+  .mrhx-citem{width:100%;min-width:0;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:12px 14px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.2s}
   .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{width:calc(100% - 22px);min-width:0;max-width:100%;margin-left:22px;border:1px solid #ecebe9;border-left:3px solid #f0b4b6;border-radius:13px;background:#fdf9f7;box-shadow:0 1px 3px rgba(0,0,0,.04);padding:14px 16px}
-  .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-thread{margin-top:8px;padding-left:0}
-  .mrhx-chead{display:flex;align-items:center;gap:11px;margin-bottom:8px;min-width:0}
-  .mrhx-cav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 -2px 4px rgba(0,0,0,.08)}
-  .mrhx-cmeta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
-  .mrhx-cmeta b{font-size:14px;color:#2b2b2b;font-weight:600}
-  .mrhx-replyto{font-size:11px;color:#e58d0a;font-weight:500;white-space:nowrap}
-  .mrhx-cmeta .mrhx-ctime{font-size:11px;color:#b8b2aa}
-  .mrhx-ccontent{font-size:14px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:45px;margin-top:-4px}
-  .mrhx-cbar{margin-top:10px;padding-left:45px;display:flex;gap:6px}
-  .mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:12px;cursor:pointer;padding:5px 12px;border-radius:99px;transition:.2s}
+  .mrhx-creply-item{width:auto;min-width:0;max-width:100%;margin-left:12px;border:1px solid #ecebe9;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:10px 12px;margin-top:4px}
+  .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 4px 12px rgba(229,72,77,.06)}
+  .mrhx-thread{margin-top:4px;padding-left:0;overflow:hidden}
+  .mrhx-chead{display:flex;align-items:center;gap:6px;margin-bottom:3px;min-width:0}
+  .mrhx-cav{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .mrhx-cmeta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0}
+  .mrhx-cmeta b{font-size:12px;color:#2b2b2b;font-weight:600}
+  .mrhx-replyto{font-size:10px;color:#e58d0a;font-weight:500;white-space:nowrap}
+  .mrhx-cmeta .mrhx-ctime{font-size:10px;color:#b8b2aa}
+  .mrhx-ccontent{font-size:12px;color:#444;line-height:1.6;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:28px;margin-top:0}
+  .mrhx-cbar{margin-top:4px;padding-left:28px;display:flex;gap:4px}
+  .mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:11px;cursor:pointer;padding:3px 10px;border-radius:99px;transition:.2s}
   .mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   .mrhx-cdel{color:#c93a3f}
   .mrhx-cdel:hover{color:#fff;background:#e5484d;border-color:#e5484d}
@@ -233,7 +232,7 @@ const sharedCss = `<style>
   .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
   .mrhx-cpop-ok:hover{background:#c93a3f}
   .mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
-  .mrhx-cform{margin-top:18px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+  .mrhx-cform{margin-top:14px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
   .mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
   .mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
   .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
@@ -246,19 +245,22 @@ const sharedCss = `<style>
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
   .mrhx-cfold-wrap{position:relative}
-  .mrhx-cfold-wrap.mrhx-cfolded{max-height:440px;overflow:hidden}
+  .mrhx-cfold-wrap.mrhx-cfolded{max-height:280px;overflow:hidden}
   .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
   .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
   .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
   .mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
   .mrhx-cfbar{text-align:center;margin-top:6px}
-  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:8px}.mrhx-creply-item{width:calc(100% - 10px);margin-left:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
+  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{margin-left:8px;padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}
+  :focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:4px}
+  .mrhx-popup[role='dialog']:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
 </style>`;
 
-const topButton = `<button class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
@@ -282,18 +284,28 @@ const popupHtml = (() => {
   const ann = SITE.announcement && SITE.announcement.enabled !== false ? SITE.announcement : null;
   const lines = (ann && ann.lines && ann.lines.length) ? ann.lines
     : ['本站点8月10刚刚起步！可能还存在一些bug！请见谅！', '有任何建议或问题，欢迎在评论区留言或联系站长。'];
-  const title = (ann && ann.title) ? ann.title : '📢 公告';
+  const title = (ann && ann.title) ? ann.title : '公告';
   if (ann && ann.enabled === false) return '';
-  return `<div class="mrhx-popup" id="mrhxPopup">
+  return `<div class="mrhx-popup" id="mrhxPopup" role="dialog" aria-modal="true" aria-labelledby="mrhxPopupTitle">
   <div class="mrhx-popup-inner">
-    <button class="mrhx-popup-close" onclick="document.getElementById('mrhxPopup').style.display='none'">×</button>
+    <button type="button" class="mrhx-popup-close" id="mrhxPopupClose" aria-label="关闭公告">×</button>
     <div class="mrhx-popup-content">
-      <h3>${title}</h3>
+      <h3 id="mrhxPopupTitle">${title}</h3>
       ${lines.map(l => `<p>${l}</p>`).join('\n      ')}
     </div>
-    <button class="mrhx-popup-btn" onclick="document.getElementById('mrhxPopup').style.display='none'">我知道了</button>
+    <button type="button" class="mrhx-popup-btn" id="mrhxPopupOk">我知道了</button>
   </div>
 </div>
+<script>
+(function(){
+  var k='mrhx_ann_dismissed';
+  var v=localStorage.getItem(k);
+  if(v){var t=parseInt(v,10);if(Date.now()-t<10800000){var el=document.getElementById('mrhxPopup');if(el)el.style.display='none';return;}}
+  var close=function(){localStorage.setItem(k,String(Date.now()));var el=document.getElementById('mrhxPopup');if(el)el.style.display='none';};
+  var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
+  var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
+})();
+</script>
 <style>
 .mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
 .mrhx-popup-inner{background:#fff;border-radius:16px;padding:24px 22px 18px;max-width:520px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
@@ -322,11 +334,16 @@ const viewScript = (sb, key, path) => `<script>
 })();
 </script>`;
 
-const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${i * 0.05}s}`).join('\n');
+const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${Math.round(i * 50) / 1000}s}`).join('\n');
 
 function dayTag(file) {
-  const m = file.match(/(\d+)月(\d+)/);
-  return m ? `${m[1]}月${m[2]}` : path.parse(file).name;
+  const name = path.parse(file).name;
+  const m = name.match(/(\d+)月(\d+)/);
+  if (m) return `${m[1]}月${m[2]}`;
+  // Handle M.D.D format (e.g., 8.1.1 → 8月11)
+  const dot3 = name.match(/^(\d+)\.(\d+)\.(\d+)/);
+  if (dot3) return `${dot3[1]}月${parseInt(dot3[2] + dot3[3])}`;
+  return name;
 }
 
 function iconTitle(d) {
@@ -337,6 +354,11 @@ function iconTitle(d) {
 async function localize(html, tag) {
   // 先把所有旧 CDN URL 替换成 @main，不需要重新下载
   html = html.replace(/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main`);
+  // 移除幕布导出的内嵌字体（@font-face base64）
+  html = html.replace(/@font-face\s*\{[^}]*font-family\s*:\s*['"]?mm-iconfont['"]?;[^}]*\}/g, '');
+  html = html.replace(/\.mm-iconfont::before\s*\{[^}]*\}/g, '');
+  // 修复 viewport maximum-scale=1 阻止缩放
+  html = html.replace(/<meta[^>]*name=['"]viewport['"][^>]*>/gi, '<meta name="viewport" content="width=device-width, initial-scale=1">');
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
@@ -435,7 +457,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
   <div class="hwrap">
     <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
-      <form class="mrhx-search" action="search.html" method="get">
+      <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -663,6 +685,8 @@ html = (function reorderNodes(str) {
   </div>
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
+    // Add lang="zh-CN" to <html> if missing
+    html = html.replace(/<html(?!\s[^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
     html = html.replace(/\s*<!--mrhx-->[\s\S]*?<!--mrhx-end-->\s*/g, `\n  ${injected}\n  `);
     if (!html.includes('<!--mrhx-->')) {
@@ -704,16 +728,16 @@ html = (function reorderNodes(str) {
       <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
       <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
     </div>
-    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" required></textarea>
+    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" maxlength="2000" required></textarea>
     <div class="mrhx-crow mrhx-csub">
       <span id="mrhx-creply" class="mrhx-creply"></span>
       <button type="submit">发表评论</button>
     </div>
   </form>
 </div>
-<div class="mrhx-cpop" id="mrhx-cpop">
+<div class="mrhx-cpop" id="mrhx-cpop" role="dialog" aria-modal="true" aria-labelledby="mrhx-cpop-title">
   <div class="mrhx-cpop-box">
-    <h3>邮箱填写提示</h3>
+    <h3 id="mrhx-cpop-title">邮箱填写提示</h3>
     <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
     <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
   </div>
@@ -791,6 +815,7 @@ html = (function reorderNodes(str) {
       row.appendChild(h('div', 'mrhx-ccontent', c.content));
       var bar = h('div', 'mrhx-cbar');
       var rp = h('button', 'mrhx-cbtn', '回复');
+      rp.type = 'button';
       rp.onclick = function () {
         if (replyPid === c.id) { replyPid = null; replyEl.textContent = ''; }
         else { replyPid = c.id; replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）'; }
@@ -798,6 +823,7 @@ html = (function reorderNodes(str) {
       bar.appendChild(rp);
       if (ADMIN) {
         var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
+        dl.type = 'button';
         dl.onclick = function () {
           if (!confirm('删除这条评论及其回复？')) return;
           fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
@@ -807,6 +833,7 @@ html = (function reorderNodes(str) {
         bar.appendChild(dl);
         if (!c.pid) {
           var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
+          pin.type = 'button';
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
@@ -827,7 +854,9 @@ html = (function reorderNodes(str) {
         .forEach(function (c) {
           var row = buildRow(c);
           box.appendChild(row);
-          addTree(c.id, box);
+          var thread = h('div', 'mrhx-thread');
+          row.appendChild(thread);
+          addTree(c.id, thread);
         });
     }
     addTree(null, list);
@@ -835,6 +864,7 @@ html = (function reorderNodes(str) {
     applyFold();
   }
   function load() {
+    list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>';
     fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.desc', { headers: headers() })
       .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
       .then(function (d) { all = d || []; render(); })
@@ -944,7 +974,8 @@ html = (function reorderNodes(str) {
     const pinned = PINS.indexOf(title) !== -1;
     const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
-    const dateN = title.match(/(\d+)\.(\d+)/);
+    const dateD3 = title.match(/^(\d+)\.(\d+)\.(\d+)/);
+    const dateN = !dateD3 ? title.match(/(\d+)\.(\d+)/) : null;
     const _ic = ICONS[title];
     // 图标文字若是日期格式（如 8月20 / 8.20），则渲染成「上号下月」两行，与其他日期徽章一致
     const icM = _ic && _ic.match(/(\d+)月(\d+)/);
@@ -952,11 +983,12 @@ html = (function reorderNodes(str) {
     const badge = _ic && (icM || icN) ? `<b>${esc(icM ? icM[2] : icN[2])}</b><span>${esc(icM ? icM[1] : icN[1])}月</span>`
       : _ic ? `<b style="font-size:12px">${esc(_ic)}</b>`
       : dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
+      : dateD3 ? `<b>${parseInt(dateD3[2] + dateD3[3])}</b><span>${dateD3[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/]+\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
-      .map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
+      .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
     return `<a class="post" href="${_pfile}" data-path="/${_pfile}" style="animation-delay:${di * 0.1}s">
   <div class="date">${badge}</div>
@@ -1044,7 +1076,6 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-i
 .site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
 .site em{font-style:normal;color:#e5484d}
 .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
-.site small{display:block;font-size:11px;font-weight:400;color:#999;letter-spacing:0}
 .site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
 nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
@@ -1080,7 +1111,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .date span{font-size:11px;opacity:.85}
 .info{flex:1;min-width:0}
 .ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
-.pmeta{font-size:13px;color:#999}
+.pmeta{font-size:13px;color:#888}
 .pinb{display:inline-block;background:#e58d0a;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
 .covers{display:flex;gap:8px;flex-shrink:0}
 .covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9;transition:.25s}
@@ -1135,7 +1166,7 @@ footer b{color:#e5484d}
   <div class="hwrap">
     <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
-      <form class="mrhx-search" action="search.html" method="get">
+      <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -1207,7 +1238,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <header>
   <div class="hwrap">
     <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
-    <form class="mrhx-search" action="search.html" method="get">
+    <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -1215,7 +1246,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 </header>
 <main>
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
-  <div id="res"></div>
+  <div id="res" aria-busy="false"></div>
 </main>
 <footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>
 <script>
@@ -1251,13 +1282,23 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
   moreBtn.style.textAlign = 'center';
   moreBtn.style.marginTop = '6px';
-  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
+  resBox.appendChild(moreBtn);
   document.getElementById('mrhx-more').onclick = renderMore;
   if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     var kw = q.toLowerCase();
+    function fuzzyMatch(text, pattern) {
+      var t = (text || '').toLowerCase();
+      var p = pattern.toLowerCase();
+      if (t.indexOf(p) > -1) return true;
+      var pi = 0;
+      for (var ti = 0; ti < t.length && pi < p.length; ti++) {
+        if (t[ti] === p[pi]) pi++;
+      }
+      return pi === p.length;
+    }
     _hits = data.filter(function (g) {
-      return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
+      return fuzzyMatch(g.title, kw) || fuzzyMatch(g.intro, kw) || fuzzyMatch(g.plat, kw);
     });
     countEl.textContent = '（找到 ' + _hits.length + ' 个）';
     if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }

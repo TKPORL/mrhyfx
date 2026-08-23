@@ -177,20 +177,20 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   <h1>后台管理</h1>
   <p class="sub">添加 / 删除帖子、配置链接，全部在这里操作。改动会自动生成首页并部署，2-3 分钟后生效。</p>
 
-  <div class="tabs">
-    <button class="tab on" id="tabForm">发布帖子</button>
-    <button class="tab" id="tabManage">帖子管理</button>
-    <button class="tab" id="tabComments">评论管理</button>
-    <button class="tab" id="tabStats">访问统计</button>
-    <button class="tab" id="tabLinks">链接配置</button>
-    <button class="tab" id="tabHtml">HTML 模式</button>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab on" id="tabForm" role="tab" aria-selected="true" aria-controls="panelForm">发布帖子</button>
+    <button type="button" class="tab" id="tabManage" role="tab" aria-selected="false" aria-controls="panelManage">帖子管理</button>
+    <button type="button" class="tab" id="tabComments" role="tab" aria-selected="false" aria-controls="panelComments">评论管理</button>
+    <button type="button" class="tab" id="tabStats" role="tab" aria-selected="false" aria-controls="panelStats">访问统计</button>
+    <button type="button" class="tab" id="tabLinks" role="tab" aria-selected="false" aria-controls="panelLinks">链接配置</button>
+    <button type="button" class="tab" id="tabHtml" role="tab" aria-selected="false" aria-controls="panelHtml">HTML 模式</button>
   </div>
 
   <div class="panel on" id="panelForm">
     <div class="editbar" id="editBar"></div>
     <div class="draftbar" id="draftBar">
       <span>已自动保存的未发布草稿（<b id="draftTime"></b>）已恢复。上传的图片文件需重新选择，图片 URL、文字、链接都已保留。</span>
-      <button class="btn btn-s" id="clearFormDraft">清空表单草稿</button>
+      <button type="button" class="btn btn-s" id="clearFormDraft">清空表单草稿</button>
     </div>
     <div class="card">
       <h2>基本信息</h2>
@@ -210,9 +210,8 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <label>游戏数量（可选，留空则按下面添加的游戏条数自动统计）</label>
         <input type="number" id="fCount">
       </div>
-      <div class="row" style="gap:10px">
-        <button class="btn btn-s" id="exportForm">导出数据</button>
-        <button class="btn btn-s" id="importForm">导入数据</button>
+      <div class="row" style="gap:10px">         <button type="button" class="btn btn-s" id="exportForm">导出数据</button>
+         <button type="button" class="btn btn-s" id="importForm">导入数据</button>
         <input type="file" id="importFile" accept=".json" style="display:none">
       </div>
     </div>
@@ -221,9 +220,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div class="row" style="justify-content:space-between">
         <h2>游戏内容</h2>
         <div class="row" style="gap:6px">
-          <button class="btn btn-s" id="previewAll">预览全部</button>
-          <button class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
-          <button class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
+          <button type="button" class="btn btn-s" id="previewAll">预览全部</button>
+          <button type="button" class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
+          <button type="button" class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
         </div>
       </div>
       <div id="gameBox"></div>
@@ -247,7 +246,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <input type="text" id="repo" value="TKPORL/mrhyfx">
       </div>
       <div class="row">
-        <button class="btn btn-p" id="pubForm">发布</button>
+        <button type="button" class="btn btn-p" id="pubForm">发布</button>
       </div>
       <div id="status"></div>
       <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后刷新如看不到更新请 Ctrl+F5 强刷。</p>
@@ -266,7 +265,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
             
             <option value="other">其他</option>
           </select>
-          <button class="btn btn-s" id="refresh">刷新列表</button>
+          <button type="button" class="btn btn-s" id="refresh">刷新列表</button>
         </div>
       </div>
       <div id="postSearchMeta" style="font-size:12px;color:#888;margin:6px 0 10px"></div>
@@ -305,9 +304,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <p class="hint">推荐：上面「发布帖子」页签填好 GitHub Token（勾选 repo + workflow 权限）后，本站长回复会自动触发仓库 Actions 用你的 QQ 邮箱发邮件给用户（见 README「站长回复邮件通知」）。此框仅供旧版 Supabase 通道使用：部署 notify-reply 函数并配好 SMTP 后，把 Notify-Secret 填这里（只存本浏览器）。两种方式都不填则回复照常发布、只是不发邮件。</p>
       </div>
       <div class="row">
-        <button class="btn btn-p" id="saveCC">保存配置并启用评论</button>
-        <button class="btn btn-s" id="disableCC">停用评论</button>
-        <button class="btn btn-s" id="loadComments">加载评论列表</button>
+        <button type="button" class="btn btn-p" id="saveCC">保存配置并启用评论</button>
+        <button type="button" class="btn btn-s" id="disableCC">停用评论</button>
+        <button type="button" class="btn btn-s" id="loadComments">加载评论列表</button>
       </div>
       <div id="statusC"></div>
       <p class="warn">保存配置会提交 site.json 到仓库，随后所有帖子（含已有的）自动带上评论区，2-3 分钟后生效。管理密钥填好后：本页签可批量删除；打开任意帖子，评论下方也会出现删除按钮。</p>
@@ -325,8 +324,8 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div class="row" style="justify-content:space-between">
         <h2>访问统计</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-s" id="cleanStats">清理失效统计</button>
-          <button class="btn btn-s" id="refreshStats">刷新</button>
+          <button type="button" class="btn btn-s" id="cleanStats">清理失效统计</button>
+          <button type="button" class="btn btn-s" id="refreshStats">刷新</button>
         </div>
       </div>
       <div class="stat-overview" id="statOverview">
@@ -357,8 +356,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 
     <div class="card">
       <div class="row" style="justify-content:space-between">
-        <h2>每日访问（最近 7 天）</h2>
-        <button class="btn btn-s" id="refreshDaily">刷新</button>
+        <h2>每日访问（最近 7 天）</h2>          <button type="button" class="btn btn-s" id="refreshDaily">刷新</button>
       </div>
       <p class="hint" style="margin-top:2px">按天统计的总访问次数，方便对比每天的流量变化（今天可能还在累加中）。</p>
       <div id="dailyBox"><p class="hint">加载中…</p></div>
@@ -374,7 +372,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <textarea id="linksJson" style="height:220px;font-family:Consolas,monospace"></textarea>
       </div>
       <div class="row">
-        <button class="btn btn-p" id="saveLinks">保存</button>
+        <button type="button" class="btn btn-p" id="saveLinks">保存</button>
       </div>
       <div id="statusL"></div>
     </div>
@@ -407,7 +405,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <p class="hint">清空公告内容和标题后保存，即可关闭公告弹窗。</p>
       </div>
       <div class="row">
-        <button class="btn btn-p" id="saveSite">保存站点设置</button>
+        <button type="button" class="btn btn-p" id="saveSite">保存站点设置</button>
       </div>
       <div id="statusSite"></div>
     </div>
@@ -429,7 +427,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <textarea id="html" style="height:320px"></textarea>
       </div>
       <div class="row">
-        <button class="btn btn-p" id="pubHtml">发布</button>
+        <button type="button" class="btn btn-p" id="pubHtml">发布</button>
         <button type="button" class="btn btn-s" id="tpl">载入现有页面模板</button>
       </div>
       <div id="statusHtml"></div>
@@ -1670,9 +1668,17 @@ async function loadComments() {
   show(stC, '正在加载评论…', 'info');
   try {
     if ($('repo').value.trim()) postTitlesCache = await fetch(`${RAW_BASE}/${$('repo').value.trim()}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.desc&limit=2000`, { headers: sbHeaders() });
-    if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
-    const all = await res.json();
+    const PAGE_SIZE = 50;
+    let all = [];
+    let offset = 0;
+    while (true) {
+      const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.desc&limit=${PAGE_SIZE}&offset=${offset}`, { headers: sbHeaders() });
+      if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+      const batch = await res.json();
+      all = all.concat(batch);
+      if (batch.length < PAGE_SIZE) break;
+      offset += PAGE_SIZE;
+    }
     if (!all.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
       const replyMap = {};
@@ -2043,7 +2049,17 @@ $('tpl').onclick = async () => {
   const btn = $('tpl'); btn.disabled = true;
   try {
     show(stH, '正在载入现有页面模板…', 'info');
-    const res = await fetch('8.10.html');
+    const token = $('token').value.trim();
+    const repo = $('repo').value.trim();
+    let tplUrl = '8.10.html';
+    if (token && repo.includes('/')) {
+      try {
+        const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
+        const htmlFiles = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'Tsinhoht.html', 'search.html', 'publish.html', 'email-preview.html', 'site-preview.html', 'comments-preview.html'].includes(t.path));
+        if (htmlFiles.length) tplUrl = `${RAW_BASE}/${repo}/main/${htmlFiles[0].path}`;
+      } catch (e) { /* fallback to 8.10.html */ }
+    }
+    const res = await fetch(tplUrl);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     $('html').value = text.replace(/<!--mrhx-->[\s\S]*?<!--mrhx-end-->\n/, '');

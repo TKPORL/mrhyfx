@@ -34,13 +34,15 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
 @media (max-width:720px){body{padding-top:75px}.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}
+:focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:4px}
 </style>
 </head>
 <body>
 <header>
   <div class="hwrap">
     <a class="site" href="index.html">Tsinho<em>黄油站</em></a>
-    <form class="mrhx-search" action="search.html" method="get">
+    <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
       <button type="submit">搜索</button>
     </form>
@@ -48,7 +50,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 </header>
 <main>
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
-  <div id="res"></div>
+  <div id="res" aria-busy="false"></div>
 </main>
 <footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <script>
@@ -84,13 +86,23 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
   moreBtn.style.textAlign = 'center';
   moreBtn.style.marginTop = '6px';
-  resBox.parentNode.insertBefore(moreBtn, resBox.nextSibling);
+  resBox.appendChild(moreBtn);
   document.getElementById('mrhx-more').onclick = renderMore;
   if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     var kw = q.toLowerCase();
+    function fuzzyMatch(text, pattern) {
+      var t = (text || '').toLowerCase();
+      var p = pattern.toLowerCase();
+      if (t.indexOf(p) > -1) return true;
+      var pi = 0;
+      for (var ti = 0; ti < t.length && pi < p.length; ti++) {
+        if (t[ti] === p[pi]) pi++;
+      }
+      return pi === p.length;
+    }
     _hits = data.filter(function (g) {
-      return (g.title || '').toLowerCase().indexOf(kw) > -1 || (g.intro || '').toLowerCase().indexOf(kw) > -1;
+      return fuzzyMatch(g.title, kw) || fuzzyMatch(g.intro, kw) || fuzzyMatch(g.plat, kw);
     });
     countEl.textContent = '（找到 ' + _hits.length + ' 个）';
     if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
