@@ -13,7 +13,7 @@ if (!files.length) console.warn('未找到每日分享导出文件，将生成�
 
 // 支持命令行传版本号：node scripts/gen.js v2026.8.24
 const NEW_TAG = process.argv[2] || null;
-if (NEW_TAG) {
+if (NEW_TAG && NEW_TAG !== 'auto') {
   const genFile = fs.readFileSync(__filename, 'utf8');
   const updated = genFile.replace(
     /const CDN_URL = 'https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
@@ -80,6 +80,10 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');
     if (!img) return;
+    var tip = document.createElement('span');
+    tip.className = 'img-tip';
+    tip.textContent = '点击查看介绍';
+    n.appendChild(tip);
     var collapseBtn = document.createElement('span');
     collapseBtn.className = 'exp-hint';
     collapseBtn.textContent = '收起 ↑';
@@ -159,6 +163,8 @@ const sharedCss = `<style>
   body.mrhx-grid2 .node .content{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:none}
   body.mrhx-grid2 .node .image-list .image img{cursor:pointer}
+  body.mrhx-grid2 .node .img-tip{display:block;margin-top:6px;font-size:11px;color:#aaa;text-align:center}
+  body.mrhx-grid2 .node.exp .img-tip{display:none}
   body.mrhx-grid2 .node .exp-hint{display:none;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;cursor:pointer}
   body.mrhx-grid2 .node .exp-hint:hover{border-color:#e5484d;color:#e5484d}
   body.mrhx-grid2 .node.exp .content{display:none}
