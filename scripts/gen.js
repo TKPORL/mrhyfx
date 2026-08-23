@@ -344,14 +344,14 @@ function dayTag(file) {
   const dot3 = name.match(/^(\d+)\.(\d+)\.(\d+)/);
   if (dot3) {
     const base = `${dot3[1]}.${parseInt(dot3[2] + dot3[3])}`;
-    // Check if an asset directory already exists for this base (possibly with suffix)
-    if (fs.existsSync(path.join('assets', base))) return base;
-    // Look for existing dir that starts with base (e.g., 8.11pcaz)
+    // Prefer longer (more specific) match first, e.g. 8.11pcaz over 8.11
     try {
       const dirs = fs.readdirSync('assets').filter(d => fs.statSync(path.join('assets', d)).isDirectory());
-      const match = dirs.find(d => d.startsWith(base));
-      if (match) return match;
+      const longer = dirs.filter(d => d.startsWith(base) && d !== base).sort((a, b) => b.length - a.length);
+      if (longer.length) return longer[0];
     } catch (e) {}
+    // Fall back to exact base match
+    if (fs.existsSync(path.join('assets', base))) return base;
     return base;
   }
   return name;
@@ -697,7 +697,7 @@ html = (function reorderNodes(str) {
 </div>`;
     const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
-    html = html.replace(/<html(?!\s[^>]*\slang)/i, '<html lang="zh-CN"');
+    html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
     html = html.replace(/\s*<!--mrhx-->[\s\S]*?<!--mrhx-end-->\s*/g, `\n  ${injected}\n  `);
     if (!html.includes('<!--mrhx-->')) {
