@@ -17,7 +17,7 @@ if (NEW_TAG) {
   const genFile = fs.readFileSync(__filename, 'utf8');
   const updated = genFile.replace(
     /const CDN_URL = 'https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
-    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@vTsinho2'`
+    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
   );
   if (updated !== genFile) {
     fs.writeFileSync(__filename, updated, 'utf8');
@@ -1265,8 +1265,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
 
-  // 自动 commit + push
-  if (NEW_TAG) {
+  // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理）
+  if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {
     try {
       execSync('git add -A', { stdio: 'inherit' });
       execSync(`git commit -m "发布 ${NEW_TAG}"`, { stdio: 'inherit' });
