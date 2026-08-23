@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const { execSync } = require('child_process');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -9,6 +10,20 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFE
 const POST_DIR = '.';
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
+
+// 支持命令行传版本号：node scripts/gen.js v2026.8.24
+const NEW_TAG = process.argv[2] || null;
+if (NEW_TAG) {
+  const genFile = fs.readFileSync(__filename, 'utf8');
+  const updated = genFile.replace(
+    /const CDN_URL = 'https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
+    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
+  );
+  if (updated !== genFile) {
+    fs.writeFileSync(__filename, updated, 'utf8');
+    console.log(`CDN_URL updated to @${NEW_TAG}`);
+  }
+}
 
 let overrides = {};
 if (fs.existsSync('counts.json')) overrides = readJson('counts.json');
@@ -63,45 +78,26 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
 (function () {
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
-    if (n.querySelector('.exp-hint')) return;
-    var note = n.querySelector('.note');
-    var hint = document.createElement('span');
-    hint.className = 'exp-hint';
-    hint.textContent = '介绍较长，点击展开';
-    function update() {
-      var on = n.classList.contains('exp');
-      hint.textContent = on ? '收起 ↑' : '介绍较长，点击展开';
-    }
-    function setExp(on) {
-      n.classList.toggle('exp', on);
-      update();
-    }
-    // 始终添加展开/收起按钮
-    n.appendChild(hint);
-    if (note) {
-      // 笔记内容不溢出时隐藏展开按钮，但展开后始终显示收起按钮
-      if (note.scrollHeight <= note.clientHeight + 2) {
-        hint.style.display = 'none';
-      }
-    }
-    hint.addEventListener('click', function (e) {
+    var img = n.querySelector('.image-list img');
+    if (!img) return;
+    var collapseBtn = document.createElement('span');
+    collapseBtn.className = 'exp-hint';
+    collapseBtn.textContent = '收起 ↑';
+    collapseBtn.style.display = 'none';
+    n.appendChild(collapseBtn);
+    img.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      setExp(!n.classList.contains('exp'));
+      var on = !n.classList.contains('exp');
+      n.classList.toggle('exp', on);
+      collapseBtn.style.display = on ? 'inline-block' : 'none';
     });
-    n.addEventListener('click', function (e) {
-      if (e.target.closest('a')) return;
-      if (n.classList.contains('exp')) return;
-      setExp(true);
+    collapseBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      n.classList.remove('exp');
+      collapseBtn.style.display = 'none';
     });
-    // 展开后始终显示收起按钮
-    var origUpdate = update;
-    update = function () {
-      origUpdate();
-      if (n.classList.contains('exp')) {
-        hint.style.display = 'inline-block';
-      }
-    };
   });
 })();
 </script>
@@ -161,9 +157,10 @@ const sharedCss = `<style>
   body.mrhx-grid2 .node .bullet{display:none}
   body.mrhx-grid2 .node .content::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
   body.mrhx-grid2 .node .content{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  body.mrhx-grid2 .node .exp-hint{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px dashed #e5484d;color:#e5484d;font-size:11px;font-weight:600;width:max-content}
-  body.mrhx-grid2 .node.exp .exp-hint{border-color:#ccc;color:#999}
+  body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:none}
+  body.mrhx-grid2 .node .image-list .image img{cursor:pointer}
+  body.mrhx-grid2 .node .exp-hint{display:none;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;cursor:pointer}
+  body.mrhx-grid2 .node .exp-hint:hover{border-color:#e5484d;color:#e5484d}
   body.mrhx-grid2 .node.exp .content{display:none}
   body.mrhx-grid2 .node.exp .image-list{display:none}
   body.mrhx-grid2 .node.exp .mrhx-dl{display:none}
@@ -194,7 +191,7 @@ const sharedCss = `<style>
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     body.mrhx-grid2 .node{padding:12px;border-radius:12px}
-    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 100%;text-align:center}
+    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     body.mrhx-grid2 .node .note{font-size:12px}
     .image-list .image{max-width:100% !important}
   }
@@ -1264,4 +1261,17 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 `;
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
+
+  // 如果传了版本号，自动 commit + tag + push
+  if (NEW_TAG) {
+    try {
+      execSync('git add -A', { stdio: 'inherit' });
+      execSync(`git commit -m "发布 ${NEW_TAG}"`, { stdio: 'inherit' });
+      execSync(`git tag ${NEW_TAG}`, { stdio: 'inherit' });
+      execSync('git push && git push --tags', { stdio: 'inherit' });
+      console.log(`\n✅ ${NEW_TAG} 发布完成`);
+    } catch (e) {
+      console.error('git 操作失败:', e.message);
+    }
+  }
 })().catch(e => { console.error(e); process.exit(1); });
