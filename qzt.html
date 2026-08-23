@@ -1688,6 +1688,25 @@ PS：如果使用手机解压，第一层视频解压还原成压缩包后，第
   t();
 })();
 </script>
+<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
   <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
