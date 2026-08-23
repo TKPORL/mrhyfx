@@ -17,7 +17,7 @@ if (NEW_TAG) {
   const genFile = fs.readFileSync(__filename, 'utf8');
   const updated = genFile.replace(
     /const CDN_URL = 'https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
-    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
+    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@Tsinho1'`
   );
   if (updated !== genFile) {
     fs.writeFileSync(__filename, updated, 'utf8');
