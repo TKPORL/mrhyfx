@@ -7,7 +7,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
 const POST_DIR = '.';
-const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'qzt.html');
+const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 let overrides = {};
@@ -172,7 +172,7 @@ const sharedCss = `<style>
   body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible;display:block}
   body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;overflow:visible}
   body.mrhx-grid2 .node .image-list .image img{width:100%;height:190px;object-fit:contain;background:#f7f5f2;border-radius:8px}
-  body.mrhx-grid2 .node .mrhx-dl{margin-top:auto}
+  body.mrhx-grid2 .node .mrhx-dl{margin-top:8px}
   .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
@@ -626,7 +626,7 @@ html = (function reorderNodes(str) {
       if (contentBlock && contentBlock.indexOf('免费帮找') > -1) {
         open = open.replace(/<li class="node heading3">/, '<li class="node heading3 node-full">');
       }
-      return open + contentBlock + (noteBlock ? '\n    ' + noteBlock : '') + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + '\n  </li>';
+      return open + contentBlock + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + (noteBlock ? '\n    ' + noteBlock : '') + '\n  </li>';
     });
     blocks = blocks.filter(b => b.trim().length > 0);
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
@@ -901,13 +901,6 @@ html = (function reorderNodes(str) {
       overrides[tag] = computed;
       try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
     }
-  }
-
-  // add qzt.html as a pinned day (excluded from normal processing)
-  if (fs.existsSync('qzt.html')) {
-    const qztHtml = fs.readFileSync('qzt.html', 'utf8');
-    const qztGameCount = (qztHtml.match(/<li class="node[^"]*heading/g) || []).length;
-    days.push({ file: 'qzt.html', gameCount: qztGameCount, tag: 'qzt' });
   }
 
   days.sort((a, b) => {
