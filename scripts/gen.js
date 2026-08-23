@@ -340,9 +340,20 @@ function dayTag(file) {
   const name = path.parse(file).name;
   const m = name.match(/(\d+)月(\d+)/);
   if (m) return `${m[1]}月${m[2]}`;
-  // Handle M.D.D format (e.g., 8.1.1 → 8月11)
+  // Handle M.D.D format (e.g., 8.1.1 → look up existing asset dir or use 8.11)
   const dot3 = name.match(/^(\d+)\.(\d+)\.(\d+)/);
-  if (dot3) return `${dot3[1]}月${parseInt(dot3[2] + dot3[3])}`;
+  if (dot3) {
+    const base = `${dot3[1]}.${parseInt(dot3[2] + dot3[3])}`;
+    // Check if an asset directory already exists for this base (possibly with suffix)
+    if (fs.existsSync(path.join('assets', base))) return base;
+    // Look for existing dir that starts with base (e.g., 8.11pcaz)
+    try {
+      const dirs = fs.readdirSync('assets').filter(d => fs.statSync(path.join('assets', d)).isDirectory());
+      const match = dirs.find(d => d.startsWith(base));
+      if (match) return match;
+    } catch (e) {}
+    return base;
+  }
   return name;
 }
 
