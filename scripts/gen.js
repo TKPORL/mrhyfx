@@ -330,6 +330,9 @@ function iconTitle(d) {
 }
 
 async function localize(html, tag) {
+  // 先把所有旧 CDN URL 的 tag 替换成新的，不需要重新下载
+  html = html.replace(/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG || 'v2026.8.23'}`);
+
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
   if (urls.length) {
