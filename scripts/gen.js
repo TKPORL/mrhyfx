@@ -71,8 +71,7 @@ const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
-let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@v2026.8.23';
-if (NEW_TAG) CDN_URL = `https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}`;
+let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
 
 const nodeExpandScript = `<!--mrhx-expand--><script>
@@ -330,8 +329,8 @@ function iconTitle(d) {
 }
 
 async function localize(html, tag) {
-  // 先把所有旧 CDN URL 的 tag 替换成新的，不需要重新下载
-  html = html.replace(/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG || 'v2026.8.23'}`);
+  // 先把所有旧 CDN URL 替换成 @main，不需要重新下载
+  html = html.replace(/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main`);
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
@@ -1266,13 +1265,12 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
 
-  // 如果传了版本号，自动 commit + tag + push
+  // 自动 commit + push
   if (NEW_TAG) {
     try {
       execSync('git add -A', { stdio: 'inherit' });
       execSync(`git commit -m "发布 ${NEW_TAG}"`, { stdio: 'inherit' });
-      execSync(`git tag ${NEW_TAG}`, { stdio: 'inherit' });
-      execSync('git push && git push --tags', { stdio: 'inherit' });
+      execSync('git push', { stdio: 'inherit' });
       console.log(`\n✅ ${NEW_TAG} 发布完成`);
     } catch (e) {
       console.error('git 操作失败:', e.message);
