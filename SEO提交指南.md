@@ -46,7 +46,7 @@
 ## AI 这边已经做好的（不用管）
 
 - ✅ 全站每页都有 description / keywords / canonical / Open Graph 标签
-- ✅ 关键词已埋好：Tsinho黄油站、Tsinho、tsinho、Tsinho工作室、黄油、黄油站、黄油分享、黄油游戏、PC黄油、安卓黄油、galgame、汉化黄油 等 21 个
+- ✅ 关键词已埋好（61 个）：Tsinho黄油站、Tsinho、tsinho、Tsinho工作室、黄油、黄油站、绅士游戏、galgame、里番游戏、成人游戏、18禁游戏、PC黄油、安卓黄油、中文黄油、AI汉化、RPG/SLG/ADV黄油、NTR黄油、黄油下载站、免费黄油、黄油合集 等五大类
 - ✅ sitemap.xml 自动生成（每次更新帖子自动带上新页面）
 - ✅ robots.txt 允许所有爬虫抓取
 - ✅ 全站图标统一为网站 favicon

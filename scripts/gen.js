@@ -80,9 +80,21 @@ const SEO_DESCRIPTION = (SITE.seo && SITE.seo.description) ||
   'Tsinho黄油站（Tsinho黄油推荐站·Tsinho工作室）每日更新：PC+安卓双平台黄油游戏分享，AI汉化、官方中文，移动云盘与百度网盘直达下载，支持游戏求助与补档。';
 const SEO_KEYWORDS = (SITE.seo && Array.isArray(SITE.seo.keywords) && SITE.seo.keywords.length)
   ? SITE.seo.keywords
-  : ['Tsinho黄油站', 'Tsinho', 'tsinho', 'TSINHO', 'Tsinho工作室', '黄油', '黄油站', '黄油分享', '黄油游戏',
-     '每日黄油分享', 'PC黄油', '安卓黄油', 'PC安卓黄油', 'galgame', '汉化黄油', 'AI汉化黄油', '黄油下载',
-     '黄油资源', '游戏资源分享', '汉化游戏', '单机游戏'];
+  : [
+    // 品牌
+    'Tsinho黄油站', 'Tsinho', 'tsinho', 'TSINHO', 'Tsinho工作室', 'Tsinho黄油推荐站', 'tsinho黄油站', '黄油推荐站',
+    // 品类通用
+    '黄油', '黄油站', '黄油分享', '黄油游戏', '每日黄油分享', '黄油单机', '绅士游戏', '绅士黄油', '绅士游戏下载',
+    '里番游戏', 'ERO游戏', 'eroge', '成人游戏', '18禁游戏', 'R18游戏', '涩涩游戏', 'galgame',
+    // 平台/语言
+    'PC黄油', '安卓黄油', 'PC安卓黄油', 'PC单机黄油', '手机黄油', '安卓手机黄油', '中文黄油', '官中黄油',
+    '官方中文黄油', '汉化黄油', 'AI汉化黄油', 'AI汉化游戏', '生肉黄油',
+    // 类型/玩法
+    'RPG黄油', 'SLG黄油', 'ADV黄油', '动态CG黄油', 'NTR黄油', '像素黄油', '3D黄油',
+    // 搜索意图
+    '黄油下载', '黄油下载站', '黄油网盘下载', '百度网盘黄油', '移动云盘黄油', '免费黄油', '黄油分享网站',
+    '每日更新黄油', '黄油合集', '黄油补档', '黄油求助', '黄油资源', '游戏资源分享', '汉化游戏', '单机游戏', '黄油网站推荐'
+  ];
 function seoHead(file, pageTitle) {
   const t = pageTitle ? `${pageTitle} · ${SITE_NAME}` : `${SITE_NAME} · 每日更新`;
   const url = file ? SITE_URL + file : SITE_URL;
