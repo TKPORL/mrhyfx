@@ -1382,15 +1382,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   // ===== SEO: sitemap.xml + robots.txt =====
   const today = new Date().toISOString().slice(0, 10);
   const smEntries = [{ loc: SITE_URL, pri: '1.0', mod: today }];
-  const qztTs = TIMESTAMPS['qzt'];
-  smEntries.push({ loc: SITE_URL + 'qzt.html', pri: '0.8', mod: (qztTs ? String(qztTs).slice(0, 10) : today) });
-  for (const d of days) {
-    const name = path.parse(d.file).name;
-    if (name === 'qzt') continue;
-    const ts = TIMESTAMPS[name];
-    smEntries.push({ loc: SITE_URL + d.file, pri: '0.7', mod: (ts ? String(ts).slice(0, 10) : today) });
-  }
-  smEntries.push({ loc: SITE_URL + 'search.html', pri: '0.4', mod: today });
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     smEntries.map(e => `  <url><loc>${esc(e.loc)}</loc><lastmod>${esc(e.mod)}</lastmod><priority>${e.pri}</priority></url>`).join('\n') +
     `\n</urlset>\n`;
