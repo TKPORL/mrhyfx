@@ -28,5 +28,15 @@
     "enabled": true,
     "url": "https://kydmccknlbpczeqppbtc.supabase.co",
     "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
+  },
+  "seo": {
+    "url": "https://tkporl.github.io/mrhyfx/",
+    "verification": {
+      "google": "VpsDgk3IMraB1pVzxdJKFU9S_2X4q15ShE3z3BLz6pY",
+      "bing": "",
+      "baidu": "",
+      "sogou": "",
+      "yandex": ""
+    }
   }
 }

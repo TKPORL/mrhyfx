@@ -74,6 +74,42 @@ const SITE_AUTHOR = 'Tsinho';
 let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
 
+// ===== SEO =====
+const SITE_URL = ((SITE.seo && SITE.seo.url) || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '') + '/';
+const SEO_DESCRIPTION = (SITE.seo && SITE.seo.description) ||
+  'Tsinho黄油站（Tsinho黄油推荐站·Tsinho工作室）每日更新：PC+安卓双平台黄油游戏分享，AI汉化、官方中文，移动云盘与百度网盘直达下载，支持游戏求助与补档。';
+const SEO_KEYWORDS = (SITE.seo && Array.isArray(SITE.seo.keywords) && SITE.seo.keywords.length)
+  ? SITE.seo.keywords
+  : ['Tsinho黄油站', 'Tsinho', 'tsinho', 'TSINHO', 'Tsinho工作室', '黄油', '黄油站', '黄油分享', '黄油游戏',
+     '每日黄油分享', 'PC黄油', '安卓黄油', 'PC安卓黄油', 'galgame', '汉化黄油', 'AI汉化黄油', '黄油下载',
+     '黄油资源', '游戏资源分享', '汉化游戏', '单机游戏'];
+function seoHead(file, pageTitle) {
+  const t = pageTitle ? `${pageTitle} · ${SITE_NAME}` : `${SITE_NAME} · 每日更新`;
+  const url = file ? SITE_URL + file : SITE_URL;
+  const V = (SITE.seo && SITE.seo.verification) || {};
+  const verif = [
+    V.google && `<meta name="google-site-verification" content="${esc(V.google)}">`,
+    V.bing && `<meta name="msvalidate.01" content="${esc(V.bing)}">`,
+    V.baidu && `<meta name="baidu-site-verification" content="${esc(V.baidu)}">`,
+    V.sogou && `<meta name="sogou_site_verification" content="${esc(V.sogou)}">`,
+    V.yandex && `<meta name="yandex-verification" content="${esc(V.yandex)}">`
+  ].filter(Boolean).join('\n');
+  return [
+    `<meta name="description" content="${esc(SEO_DESCRIPTION)}">`,
+    `<meta name="keywords" content="${SEO_KEYWORDS.map(esc).join(',')}">`,
+    `<meta name="author" content="${esc(SITE_AUTHOR)}">`,
+    `<meta name="robots" content="index,follow">`,
+    `<link rel="canonical" href="${url}">`,
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:site_name" content="${esc(SITE_NAME)}">`,
+    `<meta property="og:title" content="${esc(t)}">`,
+    `<meta property="og:description" content="${esc(SEO_DESCRIPTION)}">`,
+    `<meta property="og:url" content="${url}">`,
+    `<meta property="og:image" content="${CDN_URL}/logo.webp">`,
+    verif
+  ].filter(Boolean).join('\n');
+}
+
 const nodeExpandScript = `<!--mrhx-expand--><script>
 (function () {
   document.querySelectorAll('.node.heading3').forEach(function (n) {
@@ -82,7 +118,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     if (!img) return;
     var tip = document.createElement('span');
     tip.className = 'img-tip';
-    tip.textContent = '点击图片查看介绍';
+    tip.textContent = '点击图片查看完整介绍';
     n.appendChild(tip);
     var collapseBtn = document.createElement('span');
     collapseBtn.className = 'exp-hint';
@@ -155,27 +191,26 @@ const sharedCss = `<style>
   .node .content{font-size:14px;font-weight:600;line-height:1.5;word-break:break-word}
   .node .note{font-size:12px;color:#666;line-height:1.6;margin-top:4px;word-break:break-word;white-space:pre-wrap}
   .title{font-size:20px;font-weight:700;word-break:break-word;padding-bottom:14px;margin-bottom:14px}
-  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-left:0}
-  body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;cursor:pointer}
+  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-left:0}
+  body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;padding:0;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
+  body.mrhx-grid2 .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
   body.mrhx-grid2 .node .bullet{display:none}
-  body.mrhx-grid2 .node .content::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#e5484d;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 3px rgba(229,72,77,.15)}
-  body.mrhx-grid2 .node .content{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  body.mrhx-grid2 .node .note{font-size:12.5px;line-height:1.6;margin-top:5px;display:none}
-  body.mrhx-grid2 .node .image-list .image img{cursor:pointer}
-  body.mrhx-grid2 .node .img-tip{display:block;margin-top:6px;font-size:11px;color:#aaa;text-align:center}
+  body.mrhx-grid2 .node .image-list{order:-1;margin:0;padding:0;display:block;background:#f4f2ef;overflow:hidden}
+  body.mrhx-grid2 .node .image-list .image-row{margin:0;display:block}
+  body.mrhx-grid2 .node .image-list .image img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#f4f2ef;border-radius:0;cursor:pointer;transition:transform .3s}
+  body.mrhx-grid2 .node:hover .image-list .image img{transform:scale(1.04)}
+  body.mrhx-grid2 .node .content{order:1;margin:12px 14px 0;font-size:14px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  body.mrhx-grid2 .node .note{order:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:7px 14px 0;font-size:12px;color:#888;line-height:1.65}
+  body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
+  body.mrhx-grid2 .node .mrhx-dl{order:3;margin:8px 14px 12px}
+  body.mrhx-grid2 .node .img-tip{order:4;display:block;margin:0 14px 12px;font-size:11px;color:#aaa;text-align:center}
   body.mrhx-grid2 .node.exp .img-tip{display:none}
-  body.mrhx-grid2 .node .exp-hint{display:none;margin-top:10px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;cursor:pointer}
+  body.mrhx-grid2 .node .exp-hint{order:5;display:none;margin:0 14px 12px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;max-width:calc(100% - 28px);cursor:pointer}
   body.mrhx-grid2 .node .exp-hint:hover{border-color:#e5484d;color:#e5484d}
-  body.mrhx-grid2 .node.exp .content{display:none}
-  body.mrhx-grid2 .node.exp .image-list{display:none}
-  body.mrhx-grid2 .node.exp .mrhx-dl{display:none}
-  body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;max-height:none;overflow:visible}
-  body.mrhx-grid2 .node-full{grid-column:1/-1;display:block}
-  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible;display:block}
-  body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;overflow:visible}
-  body.mrhx-grid2 .node .image-list .image img{width:100%;height:190px;object-fit:contain;background:#f7f5f2;border-radius:8px}
-  body.mrhx-grid2 .node .mrhx-dl{margin-top:8px}
-  .mrhx-plat{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
+  body.mrhx-grid2 .node-full{grid-column:1/-1;display:flex;flex-direction:column}
+  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible}
+  body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
+  .mrhx-plat{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
     .mrhx-bar{padding:12px 14px;gap:10px}
@@ -195,9 +230,13 @@ const sharedCss = `<style>
     .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    body.mrhx-grid2 .node{padding:12px;border-radius:12px}
+    body.mrhx-grid2 .node{border-radius:12px}
+    body.mrhx-grid2 .node .content{margin:10px 12px 0}
+    body.mrhx-grid2 .node .note{margin:6px 12px 0;font-size:12px}
+    body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
+    body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}
+    body.mrhx-grid2 .node .exp-hint{margin:0 12px 12px}
     body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
-    body.mrhx-grid2 .node .note{font-size:12px}
     .image-list .image{max-width:100% !important}
   }
   .mrhx-comments{max-width:100%;margin-top:24px;padding-top:16px;border-top:2px solid #ecebe9}
@@ -370,6 +409,14 @@ async function localize(html, tag) {
   html = html.replace(/\.mm-iconfont::before\s*\{[^}]*\}/g, '');
   // 修复 viewport maximum-scale=1 阻止缩放
   html = html.replace(/<meta[^>]*name=['"]viewport['"][^>]*>/gi, '<meta name="viewport" content="width=device-width, initial-scale=1">');
+  // 剥离卡片封面的内联固定宽度，交给 CSS 自适应（否则窄卡会横向溢出）
+  html = html.replace(/<img\b([^>]*class="image"[^>]*)>/gi, (m, attrs) => {
+    const cleaned = attrs.replace(/\sstyle="([^"]*)"/i, (s, inner) => {
+      const rest = inner.replace(/width\s*:\s*[\d.]+(?:px)?\s*;?/gi, '').trim();
+      return rest ? ` style="${rest}"` : '';
+    });
+    return '<img' + cleaned + '>';
+  });
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
@@ -716,6 +763,8 @@ html = (function reorderNodes(str) {
     html = html.replace('</head>', (html.includes('rel="icon" href="' + CDN_URL + '/favicon.webp"')) ? '</head>' : `<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 </head>`);
+    html = html.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->/g, '');
+    html = html.replace('</head>', `<!--mrhx-seo-->${seoHead(shortName + '.html', dispTitle)}<!--/mrhx-seo-->\n</head>`);
 
     const v = SITE.comments;
     let commentBlock = '';
@@ -909,7 +958,7 @@ html = (function reorderNodes(str) {
 <!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
-    html = html.replace(/<button class="mrhx-top" id="mrhxTopBtn"[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace(/<button[^>]*class="mrhx-top"[^>]*>[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
@@ -1078,6 +1127,7 @@ html = (function reorderNodes(str) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${SITE_NAME} · 每日更新</title>
+${seoHead('', null)}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
@@ -1103,6 +1153,8 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
   .upd-note{font-size:12.5px;color:#999;margin:-14px 0 20px;padding-left:4px;line-height:1.7}
+  .dyx-btn{display:inline-flex;align-items:center;margin:-10px 0 20px 4px;padding:7px 16px;border-radius:99px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:.2s}
+  .dyx-btn:hover{background:#c93a3f;transform:translateY(-1px);box-shadow:0 4px 12px rgba(229,72,77,.35)}
   .pcmt{color:#e58d0a}
   .pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
   .pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
@@ -1188,6 +1240,7 @@ footer b{color:#e5484d}
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
+  <a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站 · 全部游戏一页直达（推荐）</a>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
@@ -1213,6 +1266,9 @@ ${indexScript}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>搜索 · ${esc(SITE_NAME)}</title>
+${seoHead('search.html', '搜索')}
+<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:85px}
@@ -1322,6 +1378,27 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 `;
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
+
+  // ===== SEO: sitemap.xml + robots.txt =====
+  const today = new Date().toISOString().slice(0, 10);
+  const smEntries = [{ loc: SITE_URL, pri: '1.0', mod: today }];
+  const qztTs = TIMESTAMPS['qzt'];
+  smEntries.push({ loc: SITE_URL + 'qzt.html', pri: '0.8', mod: (qztTs ? String(qztTs).slice(0, 10) : today) });
+  for (const d of days) {
+    const name = path.parse(d.file).name;
+    if (name === 'qzt') continue;
+    const ts = TIMESTAMPS[name];
+    smEntries.push({ loc: SITE_URL + d.file, pri: '0.7', mod: (ts ? String(ts).slice(0, 10) : today) });
+  }
+  smEntries.push({ loc: SITE_URL + 'search.html', pri: '0.4', mod: today });
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    smEntries.map(e => `  <url><loc>${esc(e.loc)}</loc><lastmod>${esc(e.mod)}</lastmod><priority>${e.pri}</priority></url>`).join('\n') +
+    `\n</urlset>\n`;
+  fs.writeFileSync('sitemap.xml', sitemap);
+  console.log('sitemap.xml ok, urls:', smEntries.length);
+  fs.writeFileSync('robots.txt',
+    'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
+  console.log('robots.txt ok');
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {

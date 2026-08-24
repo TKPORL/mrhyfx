@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /comments-preview.html
+Disallow: /email-preview.html
+Disallow: /site-preview.html
+
+Sitemap: https://tkporl.github.io/mrhyfx/sitemap.xml
