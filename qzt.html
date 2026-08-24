@@ -1171,9 +1171,6 @@
   <div class="title">求助资源贴（可以在这贴求黄油游戏哈）</div>
         <ul class="node-list">
 <li class="node heading3 node-full">
-    <div class="bullet">
-    <div class="bullet-dot"></div>
-  </div>
   <div class="content mm-editor" ><span>免费帮找游戏（纯公益）</span></div>
     <div class="note mm-editor"><span>1.有需要的资源，直接在下方评论区留言。我们会帮大家寻找，找到后发布到本贴，系统会根据你填写的邮箱自动发送通知。
 2.本站所有资源免费分享，不收取任何费用。资源来之不易，请大家珍惜。请勿将本站资源用于商业倒卖（倒卖狗），违者将被永久拉黑并公示。
@@ -1723,6 +1720,25 @@ PS：如果使用手机解压，第一层视频解压还原成压缩包后，第
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>
+<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
 <button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
 (function () {
