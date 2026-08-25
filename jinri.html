@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="description" content="">
+<title>资源合集</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#333}
+a{text-decoration:none;color:inherit}
+
+/* 密码门 */
+#pw{position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#pw-box{padding:36px 40px;border-radius:14px;border:1px solid #e0e0e0;max-width:320px;width:90%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+#pw-box h2{font-size:17px;margin-bottom:4px;font-weight:700}
+#pw-box p{font-size:13px;color:#999;margin-bottom:20px}
+#pw-input{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;text-align:center;letter-spacing:4px;outline:none;font-family:inherit}
+#pw-input:focus{border-color:#e5484d}
+#pw-btn{width:100%;margin-top:12px;padding:10px 0;border:none;border-radius:8px;background:#e5484d;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+#pw-btn:hover{background:#c93a3f}
+#pw-err{font-size:13px;color:#e5484d;display:none;margin-top:8px}
+noscript #noscript-msg{display:block;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:28px;text-align:center;color:#999;font-size:14px}
+#noscript-msg{display:none}
+
+/* 内容区 */
+#app{display:none;max-width:680px;margin:0 auto;padding:40px 20px 60px}
+h1{font-size:20px;font-weight:700;margin-bottom:4px}
+.subtitle{font-size:13px;color:#aaa;margin-bottom:28px}
+.section{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:18px 20px;margin-bottom:12px}
+.section h3{font-size:14px;font-weight:700;margin-bottom:10px;color:#222}
+.btn{display:inline-block;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s,min-width:120px;text-align:center}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.btn-red{background:#e5484d;color:#fff}
+.btn-blue{background:#3da8f5;color:#fff}
+.btn-green{background:#75c940;color:#fff}
+.btn-purple{background:#797ec9;color:#fff}
+.txt{font-size:13px;color:#555;line-height:1.8;margin-top:8px}
+.txt a{color:#e5484d;font-weight:600}
+.note{font-size:12px;color:#aaa;margin-top:8px;line-height:1.7}
+.qq{color:#e58d0a;font-weight:700}
+ul{padding-left:18px;font-size:13px;color:#555;line-height:2}
+.fade{animation:fu .35s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade:nth-child(2){animation-delay:.05s}
+.fade:nth-child(3){animation-delay:.1s}
+.fade:nth-child(4){animation-delay:.15s}
+.fade:nth-child(5){animation-delay:.2s}
+.fade:nth-child(6){animation-delay:.25s}
+.fade:nth-child(7){animation-delay:.3s}
+footer{margin-top:32px;text-align:center;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+
+<div id="pw">
+  <div id="pw-box">
+    <h2>🔒 密码保护</h2>
+    <p>请输入密码查看内容</p>
+    <input id="pw-input" type="password" placeholder="输入密码…" autocomplete="off" maxlength="20">
+    <button id="pw-btn">进入</button>
+    <div id="pw-err">密码错误，请重试</div>
+  </div>
+  <noscript><div id="noscript-msg">本页面需要 JavaScript 支持，请开启后刷新。</div></noscript>
+</div>
+
+<div id="app"></div>
+
+<script>
+(function(){
+  /* === 反爬：UA 检测 → 清空页面 === */
+  var ua = navigator.userAgent || '';
+  if (/Baiduspider|Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Baiduspider-BROWSER/i.test(ua)){
+    document.documentElement.innerHTML='';return;
+  }
+
+  /* === 密码验证 === */
+  var PW = atob('MjI1NQ==');
+  if(localStorage.getItem('_rpwd')!=='1'){
+    var input=document.getElementById('pw-input'),
+        btn=document.getElementById('pw-btn'),
+        err=document.getElementById('pw-err');
+    function ok(){
+      if(input.value===PW){
+        document.getElementById('pw').style.display='none';
+        document.getElementById('app').style.display='block';
+        localStorage.setItem('_rpwd','1');
+      }else{err.style.display='block';input.value='';input.focus();}
+    }
+    btn.addEventListener('click',ok);
+    input.addEventListener('keydown',function(e){if(e.key==='Enter')ok();});
+    return;
+  }
+  document.getElementById('pw').style.display='none';
+  document.getElementById('app').style.display='block';
+})();
+</script>
+<script>
+/* === 内容动态注入（原始 HTML 不含任何真实链接） === */
+(function(){
+  var C = document.getElementById('app');
+  var R = atob('aHR0cHM6Ly90a3BvcmwuZ2l0aHViLmlvL21yaHlmeC8=');
+  var Y = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8ydVIxenoXcnJQeTk=');
+  var J = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8yd0ZHNnNpNW1FMW1y');
+  var O = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8yc1VmQlJwV2FTeTU=');
+  var L = atob('aHR0cHM6Ly9saW5rMy5jYy9Uc2luaG8=');
+
+  C.innerHTML = [
+    '<h1 class="fade">📦 今日合集</h1>',
+    '<div class="subtitle fade">点击按钮前往备用通道访问</div>',
+    '<div class="section fade"><h3>📦 今日合集</h3>',
+    '<a class="btn btn-red" href="'+R+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<p class="txt">每日更新PC+安卓双平台游戏分享，AI汉化、官方中文，移动云盘与百度网盘直达下载。</p></div>',
+
+    '<div class="section fade"><h3>🎮 全部黄油（1w+）</h3>',
+    '<a class="btn btn-blue" href="'+R+'" target="_blank" rel="nofollow noopener">备用通道</a></div>',
+
+    '<div class="section fade"><h3>📖 解压教程</h3>',
+    '<a class="btn btn-green" href="'+J+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<p class="txt">iOS 手机解压推荐用 ES文件浏览器，否则会提示文件损坏或密码错误。</p></div>',
+
+    '<div class="section fade"><h3>🔗 其他资源</h3>',
+    '<a class="btn btn-purple" href="'+L+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<ul><li>破解软件 / 游戏</li><li>影视动漫小说漫画音乐破解版</li><li>梯子 / 节点 / 加速器</li><li>老司机看片软件</li><li>黄油资源</li><li>成人壁纸</li><li>网盘不限速教程和工具</li></ul></div>',
+
+    '<div class="section fade"><h3>⚡ 夸克帮下载（2024年至今）</h3>',
+    '<a class="btn btn-red" href="'+O+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<p class="txt">没会员或嫌慢的，直接找我，下好后可到目录查看。</p></div>',
+
+    '<div class="section fade"><h3>🔍 黄油帮找服务（2025年8月起）</h3>',
+    '<p class="txt">想要啥游戏，去<strong>今日合集置顶帖</strong>底下留言，看到会尽量找。</p></div>',
+
+    '<div class="section fade"><h3>💬 关于本站</h3>',
+    '<p class="txt">网站可能还有小 bug，我白天上班精力有限，老哥们多包涵。<br>',
+    '有问题直接 Q 我：<span class="qq">🐧 1709156212</span></p></div>',
+
+    '<div class="section fade"><h3>🔙 备用通道汇总</h3>',
+    '<a class="btn btn-red" href="'+R+'" target="_blank" rel="nofollow noopener">今日合集</a> ',
+    '<a class="btn btn-blue" href="'+R+'" target="_blank" rel="nofollow noopener">全部黄油</a> ',
+    '<a class="btn btn-green" href="'+J+'" target="_blank" rel="nofollow noopener">解压教程</a> ',
+    '<a class="btn btn-purple" href="'+L+'" target="_blank" rel="nofollow noopener">其他资源</a>',
+    '<p class="note">上方短链若失效，请直接点击备用通道按钮</p></div>',
+
+    '<footer>仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>'
+  ].join('\n');
+})();
+</script>
+</body>
+</html>
