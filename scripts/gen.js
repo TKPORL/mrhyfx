@@ -8,7 +8,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
 const POST_DIR = '.';
-const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html');
+const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 // 支持命令行传版本号：node scripts/gen.js v2026.8.24
@@ -550,19 +550,20 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 function verify(days, index) {
   const errors = [];
   for (const d of days) {
-    // skip qzt.html from normal day-page checks (different structure)
+    // skip qzt.html and jinri.html from normal day-page checks (different structure)
     const isQzt = d.file === 'qzt.html';
+    const isJinri = d.file === 'jinri.html';
     const ref = `href="${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
-    if (!isQzt && !h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
+    if ((isQzt || isJinri) ? false : !h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
     if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
     const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
     const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
     const h1Ok = h.includes(`>${esc(disp)}</div>`);
     if (!titleOk && !h1Ok) errors.push(`帖子标题未同步: ${d.file} (期望 ${disp})`);
-    if (!isQzt && SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
-    if (!isQzt && SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
+    if ((isQzt || isJinri) ? false : SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
+    if ((isQzt || isJinri) ? false : SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
     [...h.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)].forEach(m => {
       const t = m[1].replace(/<[^>]+>/g, '').trim();
       if (/(?:PC\s*\+\s*安卓|PC|安卓){2,}/.test(t)) errors.push(`标题含重复平台标记: ${d.file} → ${t}`);

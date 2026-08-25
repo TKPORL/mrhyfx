@@ -10,8 +10,6 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#333}
 a{text-decoration:none;color:inherit}
-
-/* 密码门 */
 #pw{position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #pw-box{padding:36px 40px;border-radius:14px;border:1px solid #e0e0e0;max-width:320px;width:90%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.06)}
 #pw-box h2{font-size:17px;margin-bottom:4px;font-weight:700}
@@ -23,8 +21,6 @@ a{text-decoration:none;color:inherit}
 #pw-err{font-size:13px;color:#e5484d;display:none;margin-top:8px}
 noscript #noscript-msg{display:block;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:28px;text-align:center;color:#999;font-size:14px}
 #noscript-msg{display:none}
-
-/* 内容区 */
 #app{display:none;max-width:680px;margin:0 auto;padding:40px 20px 60px}
 h1{font-size:20px;font-weight:700;margin-bottom:4px}
 .subtitle{font-size:13px;color:#aaa;margin-bottom:28px}
@@ -49,6 +45,8 @@ ul{padding-left:18px;font-size:13px;color:#555;line-height:2}
 .fade:nth-child(5){animation-delay:.2s}
 .fade:nth-child(6){animation-delay:.25s}
 .fade:nth-child(7){animation-delay:.3s}
+.fade:nth-child(8){animation-delay:.35s}
+.fade:nth-child(9){animation-delay:.4s}
 footer{margin-top:32px;text-align:center;font-size:11px;color:#bbb}
 </style>
 </head>
@@ -69,27 +67,24 @@ footer{margin-top:32px;text-align:center;font-size:11px;color:#bbb}
 
 <script>
 (function(){
-  /* === 反爬：UA 检测 → 清空页面 === */
-  var ua = navigator.userAgent || '';
-  if (/Baiduspider|Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Baiduspider-BROWSER/i.test(ua)){
+  /* UA 检测 → 清空页面 */
+  var ua = navigator.userAgent||'';
+  if(/Baiduspider|Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Baiduspider-BROWSER/i.test(ua)){
     document.documentElement.innerHTML='';return;
   }
-
-  /* === 密码验证 === */
-  var PW = atob('MjI1NQ==');
-  if(localStorage.getItem('_rpwd')!=='1'){
-    var input=document.getElementById('pw-input'),
-        btn=document.getElementById('pw-btn'),
-        err=document.getElementById('pw-err');
-    function ok(){
-      if(input.value===PW){
+  /* 密码门 */
+  var PW='2255';
+  if(localStorage.getItem('_rp')!=='1'){
+    var inp=document.getElementById('pw-input'),btn=document.getElementById('pw-btn'),err=document.getElementById('pw-err');
+    function chk(){
+      if(inp.value===PW){
         document.getElementById('pw').style.display='none';
         document.getElementById('app').style.display='block';
-        localStorage.setItem('_rpwd','1');
-      }else{err.style.display='block';input.value='';input.focus();}
+        localStorage.setItem('_rp','1');
+      }else{err.style.display='block';inp.value='';inp.focus();}
     }
-    btn.addEventListener('click',ok);
-    input.addEventListener('keydown',function(e){if(e.key==='Enter')ok();});
+    btn.addEventListener('click',chk);
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')chk();});
     return;
   }
   document.getElementById('pw').style.display='none';
@@ -97,51 +92,34 @@ footer{margin-top:32px;text-align:center;font-size:11px;color:#bbb}
 })();
 </script>
 <script>
-/* === 内容动态注入（原始 HTML 不含任何真实链接） === */
 (function(){
-  var C = document.getElementById('app');
-  var R = atob('aHR0cHM6Ly90a3BvcmwuZ2l0aHViLmlvL21yaHlmeC8=');
-  var Y = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8ydVIxenoXcnJQeTk=');
-  var J = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8yd0ZHNnNpNW1FMW1y');
-  var O = atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8yc1VmQlJwV2FTeTU=');
-  var L = atob('aHR0cHM6Ly9saW5rMy5jYy9Uc2luaG8=');
-
-  C.innerHTML = [
+  /* 所有链接在内存中构建，不写入 HTML 源码 */
+  var p=atob('aHR0cHM6Ly90a3BvcmwuZ2l0aHViLmlvL21yaHlmeC8=');
+  var q=atob('aHR0cHM6Ly95dW4uMTM5LmNvbS9zaGFyZXdhcC8jL20vaT8yc1VmQlJwV2FTeTU=');
+  var el=document.getElementById('app');
+  var B=function(cls,h){return '<a class="btn btn-'+cls+'" href="'+h+'" target="_blank" rel="nofollow noopener">备用通道</a>';};
+  el.innerHTML=[
     '<h1 class="fade">📦 今日合集</h1>',
     '<div class="subtitle fade">点击按钮前往备用通道访问</div>',
-    '<div class="section fade"><h3>📦 今日合集</h3>',
-    '<a class="btn btn-red" href="'+R+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<div class="section fade"><h3>📦 今日合集</h3>',B('red',p),
     '<p class="txt">每日更新PC+安卓双平台游戏分享，AI汉化、官方中文，移动云盘与百度网盘直达下载。</p></div>',
-
-    '<div class="section fade"><h3>🎮 全部黄油（1w+）</h3>',
-    '<a class="btn btn-blue" href="'+R+'" target="_blank" rel="nofollow noopener">备用通道</a></div>',
-
-    '<div class="section fade"><h3>📖 解压教程</h3>',
-    '<a class="btn btn-green" href="'+J+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<div class="section fade"><h3>🎮 全部黄油（1w+）</h3>',B('blue',p),'</div>',
+    '<div class="section fade"><h3>📖 解压教程</h3>',B('green',p),
     '<p class="txt">iOS 手机解压推荐用 ES文件浏览器，否则会提示文件损坏或密码错误。</p></div>',
-
     '<div class="section fade"><h3>🔗 其他资源</h3>',
-    '<a class="btn btn-purple" href="'+L+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<a class="btn btn-purple" href="'+atob('aHR0cHM6Ly9saW5rMy5jYy9Uc2luaG8=')+'" target="_blank" rel="nofollow noopener">备用通道</a>',
     '<ul><li>破解软件 / 游戏</li><li>影视动漫小说漫画音乐破解版</li><li>梯子 / 节点 / 加速器</li><li>老司机看片软件</li><li>黄油资源</li><li>成人壁纸</li><li>网盘不限速教程和工具</li></ul></div>',
-
-    '<div class="section fade"><h3>⚡ 夸克帮下载（2024年至今）</h3>',
-    '<a class="btn btn-red" href="'+O+'" target="_blank" rel="nofollow noopener">备用通道</a>',
+    '<div class="section fade"><h3>⚡ 夸克帮下载（2024年至今）</h3>',B('red',q),
     '<p class="txt">没会员或嫌慢的，直接找我，下好后可到目录查看。</p></div>',
-
     '<div class="section fade"><h3>🔍 黄油帮找服务（2025年8月起）</h3>',
     '<p class="txt">想要啥游戏，去<strong>今日合集置顶帖</strong>底下留言，看到会尽量找。</p></div>',
-
     '<div class="section fade"><h3>💬 关于本站</h3>',
     '<p class="txt">网站可能还有小 bug，我白天上班精力有限，老哥们多包涵。<br>',
     '有问题直接 Q 我：<span class="qq">🐧 1709156212</span></p></div>',
-
     '<div class="section fade"><h3>🔙 备用通道汇总</h3>',
-    '<a class="btn btn-red" href="'+R+'" target="_blank" rel="nofollow noopener">今日合集</a> ',
-    '<a class="btn btn-blue" href="'+R+'" target="_blank" rel="nofollow noopener">全部黄油</a> ',
-    '<a class="btn btn-green" href="'+J+'" target="_blank" rel="nofollow noopener">解压教程</a> ',
-    '<a class="btn btn-purple" href="'+L+'" target="_blank" rel="nofollow noopener">其他资源</a>',
+    B('red',p)+' '+B('blue',p)+' '+B('green',p)+' '+
+    '<a class="btn btn-purple" href="'+atob('aHR0cHM6Ly9saW5rMy5jYy9Uc2luaG8=')+'" target="_blank" rel="nofollow noopener">其他资源</a>',
     '<p class="note">上方短链若失效，请直接点击备用通道按钮</p></div>',
-
     '<footer>仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>'
   ].join('\n');
 })();
