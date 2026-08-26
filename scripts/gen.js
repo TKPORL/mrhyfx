@@ -1111,6 +1111,7 @@ html = (function reorderNodes(str) {
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace(/<script>\s*\(function\(\)\{[\s\S]*?download_clicks[\s\S]*?<\/script>\s*/g, '');
     const dt = (v.enabled && v.url && v.anonKey) ? dlTrackScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${dt ? '\n  ' + dt : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
