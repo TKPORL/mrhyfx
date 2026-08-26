@@ -312,6 +312,11 @@ const sharedCss = `<style>
   .mrhx-cinline-form .mrhx-cinline-send:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-cinline-form .mrhx-cinline-cancel{border:1px solid #ecebe9;background:#fff;color:#888;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
   .mrhx-cinline-form .mrhx-cinline-cancel:hover{color:#e5484d;border-color:#f0b4b6}
+  .mrhx-cinline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
+  .mrhx-cinline-to::before{content:'↩ '}
+  .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
+  .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
   .mrhx-cfbar{text-align:center;margin-top:6px}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{margin-left:12px;padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
@@ -866,7 +871,6 @@ html = (function reorderNodes(str) {
   }
   if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
   if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
-  var replyPid = null;
   var all = [];
   var popShown = false;
   if (pop) {
@@ -902,12 +906,17 @@ html = (function reorderNodes(str) {
       rp.type = 'button';
       rp.onclick = function () {
         var existForm = row.querySelector('.mrhx-cinline-form');
-        if (existForm) { existForm.remove(); replyPid = null; replyEl.textContent = ''; return; }
+        if (existForm) { existForm.remove(); return; }
         document.querySelectorAll('.mrhx-cinline-form').forEach(function(f) { f.remove(); });
-        replyPid = c.id;
-        replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）';
         var iform = document.createElement('div');
         iform.className = 'mrhx-cinline-form';
+        var ihead = document.createElement('div');
+        ihead.className = 'mrhx-cinline-head';
+        ihead.appendChild(h('span', 'mrhx-cinline-to', '回复 @' + (c.nick || '匿名')));
+        var xBtn = document.createElement('button');
+        xBtn.type = 'button'; xBtn.className = 'mrhx-cinline-x'; xBtn.textContent = '取消';
+        ihead.appendChild(xBtn);
+        iform.appendChild(ihead);
         var ta = document.createElement('textarea');
         ta.placeholder = '回复 @' + (c.nick || '匿名') + '…';
         ta.maxLength = 2000;
@@ -929,7 +938,8 @@ html = (function reorderNodes(str) {
         bar.parentNode.insertBefore(iform, bar.nextSibling);
         ta.focus();
         imail.addEventListener('focus', function () { if (!popShown) { popShown = true; if (pop) pop.classList.add('show'); } });
-        cancelBtn.onclick = function () { iform.remove(); replyPid = null; replyEl.textContent = ''; };
+        xBtn.onclick = function () { iform.remove(); };
+        cancelBtn.onclick = function () { iform.remove(); };
         sendBtn.onclick = function () {
           var nick = inick.value.trim(), mail = imail.value.trim(), content = ta.value.trim();
           if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
@@ -938,7 +948,7 @@ html = (function reorderNodes(str) {
           fetch(SB + '/rest/v1/rpc/guard_comment', {
             method: 'POST',
             headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-            body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
+            body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: c.id })
           }).then(function (r) {
             if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
             if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
@@ -947,7 +957,6 @@ html = (function reorderNodes(str) {
             if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
             localStorage.setItem('mrhx_nick', nick);
             localStorage.setItem('mrhx_mail', mail);
-            replyPid = null; replyEl.textContent = '';
             load();
           }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { sendBtn.disabled = false; sendBtn.textContent = '发送'; });
         };
@@ -1012,14 +1021,13 @@ html = (function reorderNodes(str) {
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
       headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: replyPid || null })
+      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: null })
     }).then(function (r) {
       if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
       if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
       return r.json();
     }).then(function (d) {
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-      replyPid = null; replyEl.textContent = '';
       form.reset();
       load();
     }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });

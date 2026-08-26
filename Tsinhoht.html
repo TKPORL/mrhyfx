@@ -1236,7 +1236,7 @@ var _postCtx = null;
 // 渲染帖子列表（可反复调用，已筛选过的 posts 数组）
 function renderPosts(filteredPosts) {
   if (!_postCtx) return;
-  const { posts, tree, titles, counts, pins, icons, views, token, repo } = _postCtx;
+  const { posts, tree, titles, counts, pins, icons, views, timestamps, token, repo } = _postCtx;
   const box = $('postBox');
   const meta = $('postSearchMeta');
   const total = posts.length;
@@ -1251,7 +1251,14 @@ function renderPosts(filteredPosts) {
     }
   }
   if (!shown) { box.innerHTML = '<p style="color:#999;font-size:13px">没有匹配的帖子，换个关键词试试～</p>'; return; }
-  box.innerHTML = filteredPosts.sort((a, b) => b.path.localeCompare(a.path)).map(p => {
+  box.innerHTML = filteredPosts.sort((a, b) => {
+    const aTag = a.path.replace(/\.html$/, '');
+    const bTag = b.path.replace(/\.html$/, '');
+    const aP = pins.indexOf(aTag) !== -1, bP = pins.indexOf(bTag) !== -1;
+    if (aP !== bP) return bP - aP;
+    const aT = timestamps[aTag] || '', bT = timestamps[bTag] || '';
+    return bT.localeCompare(aT);
+  }).map(p => {
     const tag = p.path.replace(/\.html$/, '');
     const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
     const isPinned = pins.indexOf(tag) !== -1;
@@ -1494,6 +1501,7 @@ async function loadPosts() {
     const counts = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const pins = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : []).catch(() => []);
     const icons = await fetch(`${RAW_BASE}/${repo}/main/icons.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    const timestamps = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     let views = {};
     const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
     if (sbUrl && sbAnon && sbSecret) {
@@ -1504,7 +1512,7 @@ async function loadPosts() {
         if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
       } catch (e) {}
     }
-    _postCtx = { posts, tree, titles, counts, pins, icons, views, token, repo };
+    _postCtx = { posts, tree, titles, counts, pins, icons, views, timestamps, token, repo };
     applySearchFilter();
     show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
   } catch (e) {
