@@ -366,6 +366,16 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div id="dailyBox"><p class="hint">加载中…</p></div>
       <div id="statusD"></div>
     </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>📊 每日数据快照（最近 7 天）</h2>
+        <button type="button" class="btn btn-s" id="refreshSnapshots">刷新</button>
+      </div>
+      <p class="hint" style="margin-top:2px">每天打开后台统计页时自动保存当日快照，记录累计访问、帖子数、今日访问、今日评论、今日下载。历史数据不会被覆盖，可回看过去7天。</p>
+      <div id="snapshotBox"><p class="hint">加载中…</p></div>
+      <div id="statusSnap"></div>
+    </div>
   </div>
 
   <div class="panel" id="panelLinks">
@@ -488,7 +498,7 @@ function switchTab(id) {
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
-  if (id === 'tabStats') { loadStats(); loadDaily(); }
+  if (id === 'tabStats') { loadStats(); loadDaily(); loadSnapshots(); }
 }
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
@@ -1938,6 +1948,8 @@ async function loadStats() {
       if (dlRes.ok) { totalDlClicks = (await dlRes.json()).length; }
     } catch (e) {}
     $('statDlClickCount').textContent = totalDlClicks;
+    // 自动保存今日快照
+    saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
     box.innerHTML = '';
     if (!valid) {
@@ -2074,6 +2086,90 @@ async function loadDaily() {
   }
 }
 $('refreshDaily').onclick = loadDaily;
+
+// === 每日数据快照 ===
+const SNAP_TABLE = 'daily_snapshots';
+async function saveTodaySnapshot(stats) {
+  const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbSecret) return;
+  const today = bjDay();
+  try {
+    // 检查今天是否已有快照
+    const check = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}?select=day&day=eq.${today}`, {
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+    });
+    if (check.ok) {
+      const existing = await check.json();
+      if (existing.length > 0) return; // 已有快照，跳过
+    }
+    // 插入今日快照
+    const res = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}`, {
+      method: 'POST',
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({
+        day: today,
+        total_views: stats.totalViews,
+        total_posts: stats.totalPosts,
+        avg_views: stats.avgViews,
+        today_views: stats.todayViews,
+        today_comments: stats.todayComments,
+        today_downloads: stats.todayDownloads
+      })
+    });
+    if (!res.ok) console.error('[snapshot] save failed:', res.status);
+  } catch (e) { console.error('[snapshot]', e); }
+}
+async function loadSnapshots() {
+  const box = $('snapshotBox');
+  const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置。</p>'; return; }
+  box.innerHTML = '<p class="hint">加载中…</p>';
+  try {
+    const DAYS = 7;
+    const start = new Date();
+    start.setDate(start.getDate() - (DAYS - 1));
+    const startStr = bjDay(start);
+    const res = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}?select=*&day=gte.${startStr}&order=day.desc`, {
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    if (!rows.length) {
+      box.innerHTML = '<p class="hint" style="margin-top:8px">暂无快照数据。打开统计页时会自动保存今天的快照。</p>';
+      return;
+    }
+    const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    let html = '<div style="margin-top:10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<thead><tr style="border-bottom:2px solid #e8e6e0;text-align:left">';
+    html += '<th style="padding:8px 10px;color:#666;font-weight:600">日期</th>';
+    html += '<th style="padding:8px 10px;color:#e5484d;font-weight:600;text-align:right">累计访问</th>';
+    html += '<th style="padding:8px 10px;color:#1a5fb4;font-weight:600;text-align:right">帖子数</th>';
+    html += '<th style="padding:8px 10px;color:#1a7f37;font-weight:600;text-align:right">今日访问</th>';
+    html += '<th style="padding:8px 10px;color:#e58d0a;font-weight:600;text-align:right">今日评论</th>';
+    html += '<th style="padding:8px 10px;color:#7c3aed;font-weight:600;text-align:right">今日下载</th>';
+    html += '</tr></thead><tbody>';
+    const todayKey = bjDay();
+    rows.forEach(r => {
+      const dt = new Date(r.day + 'T00:00:00');
+      const label = r.day.slice(5) + ' ' + weekNames[dt.getDay()];
+      const isToday = r.day === todayKey;
+      const bg = isToday ? 'background:#fef6f6' : '';
+      html += '<tr style="border-bottom:1px solid #f0eee8;' + bg + '">';
+      html += '<td style="padding:8px 10px;color:#333">' + label + (isToday ? ' <span style="color:#e5484d;font-size:11px">今天</span>' : '') + '</td>';
+      html += '<td style="padding:8px 10px;text-align:right;font-weight:600;color:#e5484d">' + (r.total_views || 0) + '</td>';
+      html += '<td style="padding:8px 10px;text-align:right;color:#1a5fb4">' + (r.total_posts || 0) + '</td>';
+      html += '<td style="padding:8px 10px;text-align:right;color:#1a7f37">' + (r.today_views || 0) + '</td>';
+      html += '<td style="padding:8px 10px;text-align:right;color:#e58d0a">' + (r.today_comments || 0) + '</td>';
+      html += '<td style="padding:8px 10px;text-align:right;color:#7c3aed">' + (r.today_downloads || 0) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 daily_snapshots 表已创建。SQL：<br><code style="font-size:11px;background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:4px;white-space:pre-wrap">CREATE TABLE daily_snapshots (\n  day DATE PRIMARY KEY,\n  total_views INT DEFAULT 0,\n  total_posts INT DEFAULT 0,\n  avg_views INT DEFAULT 0,\n  today_views INT DEFAULT 0,\n  today_comments INT DEFAULT 0,\n  today_downloads INT DEFAULT 0,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE daily_snapshots ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow all\" ON daily_snapshots USING (true) WITH CHECK (true);</code></p>';
+  }
+}
+$('refreshSnapshots').onclick = loadSnapshots;
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
