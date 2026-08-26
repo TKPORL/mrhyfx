@@ -2003,13 +2003,11 @@ https://www.patreon.com/nekoaddict</span></div>
       var rp = h('button', 'mrhx-cbtn', '回复');
       rp.type = 'button';
       rp.onclick = function () {
-        // Remove any existing inline form
         var existForm = row.querySelector('.mrhx-cinline-form');
         if (existForm) { existForm.remove(); replyPid = null; replyEl.textContent = ''; return; }
         document.querySelectorAll('.mrhx-cinline-form').forEach(function(f) { f.remove(); });
         replyPid = c.id;
         replyEl.textContent = '回复 @' + (c.nick || '匿名') + '（再次点击取消）';
-        // Build inline form
         var iform = document.createElement('div');
         iform.className = 'mrhx-cinline-form';
         var ta = document.createElement('textarea');
@@ -2037,7 +2035,7 @@ https://www.patreon.com/nekoaddict</span></div>
         sendBtn.onclick = function () {
           var nick = inick.value.trim(), mail = imail.value.trim(), content = ta.value.trim();
           if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+          if (!/^[^s@]+@[^s@]+.[^s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
           sendBtn.disabled = true; sendBtn.textContent = '发送中…';
           fetch(SB + '/rest/v1/rpc/guard_comment', {
             method: 'POST',
@@ -2081,26 +2079,21 @@ https://www.patreon.com/nekoaddict</span></div>
       row.appendChild(bar);
       return row;
     }
-    function addReplies(pid, box) {
+    function addTree(pid, box) {
       all.filter(function (c) { return (c.pid || null) === pid; })
-        .sort(function (a, b) { return b.created_at.localeCompare(a.created_at); })
+        .sort(function (a, b) {
+          if (pid === null) return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
+          return b.created_at.localeCompare(a.created_at);
+        })
         .forEach(function (c) {
           var row = buildRow(c);
           box.appendChild(row);
-          addReplies(c.id, box);
+          var thread = h('div', 'mrhx-thread');
+          row.appendChild(thread);
+          addTree(c.id, thread);
         });
     }
-    all.filter(function (c) { return (c.pid || null) === null; })
-      .sort(function (a, b) {
-        return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at);
-      })
-      .forEach(function (c) {
-        var row = buildRow(c);
-        list.appendChild(row);
-        var replies = h('div', 'mrhx-thread');
-        list.appendChild(replies);
-        addReplies(c.id, replies);
-      });
+    addTree(null, list);
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
     applyFold();
   }
