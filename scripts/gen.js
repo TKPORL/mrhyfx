@@ -1004,7 +1004,7 @@ html = (function reorderNodes(str) {
           .forEach(function(r) {
             var d = depthMap[r.id] || 1;
             var row = buildRow(r);
-            row.style.marginLeft = (d * 20) + 'px';
+            row.style.marginLeft = d > 0 ? '20px' : '';
             list.appendChild(row);
             renderChildren(r.id);
           });

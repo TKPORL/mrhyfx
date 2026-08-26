@@ -1889,7 +1889,7 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
           .forEach(function(r) {
             var d = depthMap[r.id] || 1;
             var row = buildRow(r);
-            row.style.marginLeft = (d * 20) + 'px';
+            row.style.marginLeft = d > 0 ? '20px' : '';
             list.appendChild(row);
             renderChildren(r.id);
           });
