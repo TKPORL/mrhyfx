@@ -401,6 +401,22 @@ const viewScript = (sb, key, path) => `<script>
 })();
 </script>`;
 
+const dlTrackScript = (sb, key, postUrl) => `<script>
+(function(){
+  var SB='${sb}',K='${key}',POST='${postUrl}';
+  var h={'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'};
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a.mrhx-btn-m,a.mrhx-btn-b,a.mrhx-btn-qk');
+    if(!a)return;
+    try{
+      var game=a.closest('.node');
+      var name=game?game.querySelector('.node-name'):null;
+      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom'})});
+    }catch(x){}
+  });
+})();
+</script>`;
+
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${Math.round(i * 50) / 1000}s}`).join('\n');
 
 function dayTag(file) {
@@ -963,6 +979,38 @@ html = (function reorderNodes(str) {
       };
       bar.appendChild(rp);
       if (ADMIN) {
+        var eb = h('button', 'mrhx-cbtn', '编辑');
+        eb.type = 'button';
+        eb.onclick = function () {
+          var box = row.querySelector('.mrhx-cedit');
+          if (box) { box.style.display = box.style.display === 'none' ? 'block' : 'none'; return; }
+          var wrap = document.createElement('div');
+          wrap.className = 'mrhx-cedit';
+          wrap.style.cssText = 'margin-top:8px;padding:8px;background:#faf9f7;border-radius:8px;border:1px solid #e8e8e8';
+          var ta = document.createElement('textarea');
+          ta.value = c.content;
+          ta.style.cssText = 'width:100%;min-height:50px;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical';
+          var saveBtn = h('button', 'mrhx-cbtn', '保存');
+          saveBtn.type = 'button';
+          saveBtn.style.cssText = 'margin-top:6px;margin-right:6px;background:#e5484d;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
+          saveBtn.onclick = function () {
+            var val = ta.value.trim();
+            if (!val) { alert('内容不能为空'); return; }
+            saveBtn.disabled = true; saveBtn.textContent = '保存中…';
+            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ content: val }) })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+              .catch(function (e) { alert('编辑失败：' + e.message); saveBtn.disabled = false; saveBtn.textContent = '保存'; });
+          };
+          var cancelBtn = h('button', 'mrhx-cbtn', '取消');
+          cancelBtn.type = 'button';
+          cancelBtn.style.cssText = 'margin-top:6px;background:#f0f0f0;color:#666;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
+          cancelBtn.onclick = function () { wrap.style.display = 'none'; };
+          wrap.appendChild(ta);
+          wrap.appendChild(saveBtn);
+          wrap.appendChild(cancelBtn);
+          row.appendChild(wrap);
+        };
+        bar.appendChild(eb);
         var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
         dl.type = 'button';
         dl.onclick = function () {
@@ -996,8 +1044,13 @@ html = (function reorderNodes(str) {
         return depthMap[c.id];
       }
       all.forEach(function(c) { getDepth(c); });
+      function latestActivity(c) {
+        var latest = c.created_at;
+        all.forEach(function(r) { if (r.pid === c.id && r.created_at > latest) latest = r.created_at; });
+        return latest;
+      }
       var topLevel = all.filter(function(c) { return !c.pid; })
-        .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at); });
+        .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a)); });
       function renderChildren(parentId) {
         all.filter(function(r) { return r.pid === parentId; })
           .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
@@ -1058,7 +1111,8 @@ html = (function reorderNodes(str) {
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
-    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
+    const dt = (v.enabled && v.url && v.anonKey) ? dlTrackScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${dt ? '\n  ' + dt : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
@@ -1335,6 +1389,7 @@ footer b{color:#e5484d}
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
   <a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站 · 全部游戏一页直达（推荐）</a>
+  <a class="dyx-btn" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer" style="background:#e5484d;color:#fff;border-color:#e5484d">全部黄油（1w+）</a>
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>

@@ -325,7 +325,6 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div class="row" style="justify-content:space-between">
         <h2>访问统计</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn btn-s" id="cleanStats">清理失效统计</button>
           <button type="button" class="btn btn-s" id="refreshStats">刷新</button>
         </div>
       </div>
@@ -349,6 +348,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <div class="stat-box" style="background:#e6f4ea">
           <div class="stat-num" style="color:#1a7f37" id="statAvgViews">-</div>
           <div class="stat-label">平均访问</div>
+        </div>
+        <div class="stat-box" style="background:#f3e8ff;cursor:pointer" id="statDlClicks" title="点击查看下载统计详情">
+          <div class="stat-num" style="color:#7c3aed" id="statDlClickCount">-</div>
+          <div class="stat-label">累计下载点击</div>
         </div>
       </div>
       <div id="statBox"></div>
@@ -1113,6 +1116,17 @@ async function publish(statusEl, name, title, count, htmlContent) {
   let titles = (tRaw && typeof tRaw === 'object') ? tRaw : {};
   titles[htmlName] = title;
   files.push({ path: 'titles.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(titles, null, 2) + '\n'))) });
+  const dateMatch = title.match(/(\d{1,2})\s*[月.\/-]\s*(\d{1,2})\s*[号日]?/);
+  if (dateMatch) {
+    const month = parseInt(dateMatch[1]), day = parseInt(dateMatch[2]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const iconLabel = month + '月' + day;
+      const iRaw = await fetch(`${RAW_BASE}/${repo}/main/icons.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+      let icons = (iRaw && typeof iRaw === 'object') ? iRaw : {};
+      icons[htmlName] = iconLabel;
+      files.push({ path: 'icons.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(icons, null, 2) + '\n'))) });
+    }
+  }
   if (count) {
     const cRaw = await fetch(`${RAW_BASE}/${repo}/main/counts.json`).then(r => r.ok ? r.json() : null).catch(() => null);
     if (cRaw === null) throw new Error('读取线上 counts.json 失败，已取消发布（避免覆盖），请重试');
@@ -1699,7 +1713,7 @@ async function loadComments() {
         const parentNick = (c.pid && all.filter(p => p.id === c.pid)[0]) ? (all.filter(p => p.id === c.pid)[0].nick || '匿名') : '';
         const postLabel = (!c.pid) ? ` <span style="color:#e58d0a;font-size:11px">📄 ${esc(c.url || '')}</span>` : '';
         return `
-        <div class="cwrap${isReply ? ' creply' : ''}">
+        <div class="cwrap${isReply ? ' creply' : ''}" data-cid="${esc(c.id)}">
           <div class="prow">
             <div class="pt">
               <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${postLabel}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">回复 @' + esc(parentNick) + '</span>' : ''}</b>
@@ -1709,8 +1723,14 @@ async function loadComments() {
             </div>
             <div class="cactions">
               ${pinBtn}
+              <button class="btn btn-s" data-edit="${esc(c.id)}">编辑</button>
               <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
               <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
+            </div>
+            <div class="editbox" id="eb-${esc(c.id)}" style="display:none;margin-top:8px">
+              <textarea id="ec-${esc(c.id)}" style="min-height:50px;width:100%;margin-bottom:6px">${esc(c.content)}</textarea>
+              <button class="btn btn-p" data-savedit="${esc(c.id)}" data-curl="${esc(c.url || '')}">保存</button>
+              <button class="btn btn-s" data-canceledit="${esc(c.id)}">取消</button>
             </div>
           </div>
           <div class="rbox" id="rbox-${esc(c.id)}" style="display:none">
@@ -1726,7 +1746,14 @@ async function loadComments() {
           </div>
         </div>`;
       }
-      // Flat list: render parents, then all replies flat (like qzt.html addReplies)
+      function latestActivity(c) {
+        var latest = c.created_at;
+        all.forEach(function(r) { if (r.pid === c.id && r.created_at > latest) latest = r.created_at; });
+        return latest;
+      }
+      parents.sort(function(a, b) {
+        return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a));
+      });
       function addReplies(pid, container) {
         all.filter(function (c) { return (c.pid || null) === pid; })
           .sort(function (a, b) { return b.created_at.localeCompare(a.created_at); })
@@ -1815,11 +1842,45 @@ async function loadComments() {
           }
         };
       });
+      [...box.querySelectorAll('[data-edit]')].forEach(b => {
+        b.onclick = () => { const el = $('eb-' + b.dataset.edit); el.style.display = el.style.display === 'none' ? 'block' : 'none'; };
+      });
+      [...box.querySelectorAll('[data-canceledit]')].forEach(b => {
+        b.onclick = () => { $('eb-' + b.dataset.canceledit).style.display = 'none'; };
+      });
+      [...box.querySelectorAll('[data-savedit]')].forEach(b => {
+        b.onclick = async () => {
+          const id = b.dataset.savedit;
+          const content = $('ec-' + id).value.trim();
+          const admin = $('sbSecret').value.trim();
+          if (!content) { show(stC, '内容不能为空', 'err'); return; }
+          if (!admin) { show(stC, '请先填写管理密钥', 'err'); return; }
+          b.disabled = true;
+          try {
+            const res = await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(id)}`, {
+              method: 'PATCH',
+              headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
+              body: JSON.stringify({ content: content })
+            });
+            if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+            show(stC, '评论内容已更新', 'ok');
+            loadComments();
+          } catch (e) {
+            show(stC, '编辑失败：' + e.message, 'err');
+          } finally { b.disabled = false; }
+        };
+      });
     }
     show(stC, '共 ' + all.length + ' 条评论', 'ok');
   } catch (e) {
     show(stC, '加载失败：' + e.message + '\n\n常见原因：URL/密钥填错、SQL 没执行、项目被暂停（Free 版 7 天不活跃会暂停，去控制台恢复）。', 'err');
   }
+}
+
+function bjDay(date) {
+  const d = date || new Date();
+  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  return new Date(utc + 8 * 3600000).toISOString().slice(0, 10);
 }
 
 const stS = $('statusS');
@@ -1853,7 +1914,7 @@ async function loadStats() {
     $('statTotalViews').textContent = total;
     $('statTotalPosts').textContent = postCount;
     $('statAvgViews').textContent = avg;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = bjDay();
     let todayTotal = 0;
     let todayArr = [];
     try {
@@ -1864,11 +1925,18 @@ async function loadStats() {
     } catch (e) {}
     $('statTodayViews').textContent = todayTotal;
     let todayCommentCount = 0;
+    let todayComments = [];
     try {
-      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id&created_at=gte.${today}&limit=1000`, { headers: sbHeaders() });
-      if (cRes.ok) { const cc = await cRes.json(); todayCommentCount = cc.length; }
+      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${today}&order=created_at.desc&limit=1000`, { headers: sbHeaders() });
+      if (cRes.ok) { todayComments = await cRes.json(); todayCommentCount = todayComments.length; }
     } catch (e) {}
     $('statTodayCommentCount').textContent = todayCommentCount;
+    let totalDlClicks = 0;
+    try {
+      const dlRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=10000`, { headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret }) });
+      if (dlRes.ok) { totalDlClicks = (await dlRes.json()).length; }
+    } catch (e) {}
+    $('statDlClickCount').textContent = totalDlClicks;
     _deadRows = deadRows;
     box.innerHTML = '';
     if (!valid) {
@@ -1883,34 +1951,75 @@ async function loadStats() {
     $('statAvgViews').textContent = '-';
     $('statTodayViews').textContent = '-';
     $('statTodayCommentCount').textContent = '-';
+    $('statDlClickCount').textContent = '-';
   }
 }
 $('refreshStats').onclick = loadStats;
-$('statTodayComments').onclick = () => switchTab('tabComments');
-let _deadRows = [];
-$('cleanStats').onclick = async () => {
-  const btn = $('cleanStats'); btn.disabled = true;
-  try {
-    if (!$('sbSecret').value.trim()) { show(stS, '请先填写管理密钥（评论管理页签那串）', 'err'); return; }
-    if (!_deadRows || !_deadRows.length) { show(stS, '当前没有失效记录可清理（先点刷新）。', 'info'); return; }
-    if (!confirm('将删除 ' + _deadRows.length + ' 条失效访问记录（已删除帖子的浏览量，不可恢复），继续？')) return;
-    show(stS, '正在清理…', 'info');
-    let n = 0;
-    for (const d of _deadRows) {
-      const r = await fetch(`${sbBase()}/rest/v1/page_views?url=eq.${encodeURIComponent(d.url)}`, {
-        method: 'DELETE',
-        headers: Object.assign(sbHeaders(), { 'x-admin-key': $('sbSecret').value.trim() })
-      });
-      if (r.ok) n++;
-    }
-    show(stS, '已清理 ' + n + ' / ' + _deadRows.length + ' 条失效记录。', n === _deadRows.length ? 'ok' : 'err');
-    _deadRows = [];
-    loadStats();
-  } catch (e) {
-    show(stS, '清理失败：' + e.message, 'err');
-  } finally { btn.disabled = false; }
+$('statTodayComments').onclick = () => {
+  if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
+  let html = '<div style="max-height:60vh;overflow-y:auto">';
+  todayComments.forEach(c => {
+    const nick = (c.nick || '匿名').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const content = (c.content || '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const url = (c.url || '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    html += '<div style="padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'\'" data-jump="' + c.id + '">'
+      + '<div style="font-weight:600;font-size:13px;color:#333">' + nick + ' <span style="color:#999;font-size:11px">' + url + '</span></div>'
+      + '<div style="font-size:13px;color:#555;margin-top:4px">' + content + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center';
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:12px;max-width:520px;width:92vw;max-height:80vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)';
+  modal.innerHTML = '<div style="padding:14px 18px;border-bottom:1px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">今日新增评论 (' + todayComments.length + ')</b><button id="closeTcModal" style="border:none;background:none;font-size:20px;cursor:pointer;color:#999">&times;</button></div>' + html;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  modal.querySelector('#closeTcModal').onclick = () => overlay.remove();
+  modal.querySelectorAll('[data-jump]').forEach(el => {
+    el.onclick = () => {
+      overlay.remove();
+      switchTab('tabComments');
+      setTimeout(() => {
+        const target = document.querySelector('.cwrap[data-cid="' + el.dataset.jump + '"]');
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    };
+  });
 };
-
+$('statDlClicks').onclick = async () => {
+  const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbSecret) { show(stS, '请先填写 Supabase 配置', 'err'); return; }
+  try {
+    const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name,post_url,link_type,created_at&order=created_at.desc&limit=200`, { headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret }) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    if (!rows.length) { show(stS, '暂无下载点击记录', 'info'); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:12px;max-width:560px;width:92vw;max-height:80vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)';
+    let html = '<div style="padding:14px 18px;border-bottom:1px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">下载点击记录 (最近 ' + rows.length + ' 条)</b><button id="closeDlModal" style="border:none;background:none;font-size:20px;cursor:pointer;color:#999">&times;</button></div>';
+    html += '<div style="max-height:60vh;overflow-y:auto">';
+    rows.forEach(r => {
+      const g = (r.game_name || '未知').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const u = (r.post_url || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : '自定义';
+      const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
+      html += '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px"><b>' + g + '</b> <span style="color:#999">' + t + '</span> <span style="color:#aaa;font-size:11px">' + u + '</span><div style="color:#aaa;font-size:11px;margin-top:2px">' + d + '</div></div>';
+    });
+    html += '</div>';
+    modal.innerHTML = html;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+    modal.querySelector('#closeDlModal').onclick = () => overlay.remove();
+  } catch (e) {
+    show(stS, '加载下载统计失败：' + e.message, 'err');
+  }
+};
+let _deadRows = [];
 const stD = $('statusD');
 async function loadDaily() {
   const box = $('dailyBox');
@@ -1925,7 +2034,7 @@ async function loadDaily() {
     const DAYS = 7;
     const start = new Date();
     start.setDate(start.getDate() - (DAYS - 1));
-    const startStr = start.toISOString().slice(0, 10);
+    const startStr = bjDay(start);
     const res = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}`, {
       headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
     });
@@ -1939,11 +2048,11 @@ async function loadDaily() {
     for (let i = 0; i < DAYS; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = bjDay(d);
       rows.push({ day: key, count: byDay[key] || 0 });
     }
     const maxCount = Math.max(1, ...rows.map(r => r.count));
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = bjDay();
     const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     box.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">' + rows.map(r => {
       const dt = new Date(r.day + 'T00:00:00');
@@ -2027,6 +2136,18 @@ $('autoNumber').onclick = async () => {
   const btn = $('autoNumber');
   btn.disabled = true;
   try {
+    const title = $('fTitle').value.trim();
+    const dateMatch = title.match(/(\d{1,2})\s*[月.\/-]\s*(\d{1,2})\s*[号日]?/);
+    if (dateMatch) {
+      const month = parseInt(dateMatch[1]), day = parseInt(dateMatch[2]);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        const year = new Date().getFullYear();
+        const fname = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
+        $('fName').value = fname;
+        show(stF, '检测到标题中的日期，已生成编号：' + fname, 'ok');
+        return;
+      }
+    }
     const token = $('token').value.trim(), repo = $('repo').value.trim();
     if (!token || !repo.includes('/')) throw new Error('请先填写 Token 和仓库');
     const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());

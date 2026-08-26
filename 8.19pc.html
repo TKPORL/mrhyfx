@@ -1848,6 +1848,38 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
       };
       bar.appendChild(rp);
       if (ADMIN) {
+        var eb = h('button', 'mrhx-cbtn', '编辑');
+        eb.type = 'button';
+        eb.onclick = function () {
+          var box = row.querySelector('.mrhx-cedit');
+          if (box) { box.style.display = box.style.display === 'none' ? 'block' : 'none'; return; }
+          var wrap = document.createElement('div');
+          wrap.className = 'mrhx-cedit';
+          wrap.style.cssText = 'margin-top:8px;padding:8px;background:#faf9f7;border-radius:8px;border:1px solid #e8e8e8';
+          var ta = document.createElement('textarea');
+          ta.value = c.content;
+          ta.style.cssText = 'width:100%;min-height:50px;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical';
+          var saveBtn = h('button', 'mrhx-cbtn', '保存');
+          saveBtn.type = 'button';
+          saveBtn.style.cssText = 'margin-top:6px;margin-right:6px;background:#e5484d;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
+          saveBtn.onclick = function () {
+            var val = ta.value.trim();
+            if (!val) { alert('内容不能为空'); return; }
+            saveBtn.disabled = true; saveBtn.textContent = '保存中…';
+            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ content: val }) })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
+              .catch(function (e) { alert('编辑失败：' + e.message); saveBtn.disabled = false; saveBtn.textContent = '保存'; });
+          };
+          var cancelBtn = h('button', 'mrhx-cbtn', '取消');
+          cancelBtn.type = 'button';
+          cancelBtn.style.cssText = 'margin-top:6px;background:#f0f0f0;color:#666;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
+          cancelBtn.onclick = function () { wrap.style.display = 'none'; };
+          wrap.appendChild(ta);
+          wrap.appendChild(saveBtn);
+          wrap.appendChild(cancelBtn);
+          row.appendChild(wrap);
+        };
+        bar.appendChild(eb);
         var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
         dl.type = 'button';
         dl.onclick = function () {
@@ -1881,8 +1913,13 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
         return depthMap[c.id];
       }
       all.forEach(function(c) { getDepth(c); });
+      function latestActivity(c) {
+        var latest = c.created_at;
+        all.forEach(function(r) { if (r.pid === c.id && r.created_at > latest) latest = r.created_at; });
+        return latest;
+      }
       var topLevel = all.filter(function(c) { return !c.pid; })
-        .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.created_at.localeCompare(a.created_at); });
+        .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a)); });
       function renderChildren(parentId) {
         all.filter(function(r) { return r.pid === parentId; })
           .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
@@ -1946,6 +1983,21 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.19pc.html' }) });
     fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.19pc.html', p_day: day }) }).catch(function () {});
   } catch (e) {}
+})();
+</script>
+  <script>
+(function(){
+  var SB='https://kydmccknlbpczeqppbtc.supabase.co',K='sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',POST='/8.19pc.html';
+  var h={'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'};
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a.mrhx-btn-m,a.mrhx-btn-b,a.mrhx-btn-qk');
+    if(!a)return;
+    try{
+      var game=a.closest('.node');
+      var name=game?game.querySelector('.node-name'):null;
+      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom'})});
+    }catch(x){}
+  });
 })();
 </script><!--mrhx-expand--><script>
 (function () {
