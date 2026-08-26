@@ -2094,18 +2094,10 @@ async function saveTodaySnapshot(stats) {
   if (!sbUrl || !sbSecret) return;
   const today = bjDay();
   try {
-    // 检查今天是否已有快照
-    const check = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}?select=day&day=eq.${today}`, {
-      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-    });
-    if (check.ok) {
-      const existing = await check.json();
-      if (existing.length > 0) return; // 已有快照，跳过
-    }
-    // 插入今日快照
+    // upsert：今日快照已存在则更新，否则插入，保证当天数据始终同步
     const res = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}`, {
       method: 'POST',
-      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'return=minimal' }),
+      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
       body: JSON.stringify({
         day: today,
         total_views: stats.totalViews,
