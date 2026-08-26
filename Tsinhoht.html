@@ -1765,13 +1765,14 @@ async function loadComments() {
       var frag = '';
       parents.forEach(function (p) {
         frag += renderComment(p, false);
-        var replyContainer = '<div class="cwrap creply-wrap" data-rparent="' + esc(p.id) + '"></div>';
-        frag += replyContainer;
+        if (replyMap[p.id] && replyMap[p.id].length) {
+          frag += '<div class="creply-wrap" data-rparent="' + esc(p.id) + '"></div>';
+        }
       });
       box.innerHTML = frag;
       parents.forEach(function (p) {
         var wrap = box.querySelector('[data-rparent="' + p.id + '"]');
-        if (wrap && replyMap[p.id]) {
+        if (wrap) {
           addReplies(p.id, wrap);
         }
       });
