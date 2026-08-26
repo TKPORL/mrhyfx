@@ -8,7 +8,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
 const POST_DIR = '.';
-const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html');
+const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html' && f !== '404.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 // 支持命令行传版本号：node scripts/gen.js v2026.8.24
