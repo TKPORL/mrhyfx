@@ -410,9 +410,9 @@ const dlTrackScript = (sb, key, postUrl) => `<script>
     if(!a)return;
     try{
       var game=a.closest('.node');
-      var name=game?game.querySelector('.node-name'):null;
-      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom'})});
-    }catch(x){}
+      var name=game?game.querySelector('.content.mm-editor span'):null;
+      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom'})}).then(function(r){if(!r.ok)console.error('[dl-track] HTTP',r.status)}).catch(function(x){console.error('[dl-track]',x)});
+    }catch(x){console.error('[dl-track]',x)}
   });
 })();
 </script>`;
