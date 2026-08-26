@@ -1892,6 +1892,21 @@ https://www.patreon.com/nekoaddict</span></div>
     }catch(x){}
   });
 })();
+</script>
+<script>
+(function(){
+  var SB='https://kydmccknlbpczeqppbtc.supabase.co',K='sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',POST='/qzt.html';
+  var h={'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'};
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a.mrhx-btn-m,a.mrhx-btn-b,a.mrhx-btn-qk');
+    if(!a)return;
+    try{
+      var game=a.closest('.node');
+      var name=game?game.querySelector('.node-name'):null;
+      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom'})});
+    }catch(x){}
+  });
+})();
 </script><!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
