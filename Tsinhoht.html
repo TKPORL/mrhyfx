@@ -621,6 +621,61 @@ async function statsRefreshAll(triggerBtn) {
   }
 }
 
+// 刷新确认弹窗：选择「只刷新本模块」或「全部刷新」
+function showRefreshDialog(triggerBtn, singleLoadFn) {
+  // 创建遮罩
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:12px;max-width:360px;width:88vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)';
+  modal.innerHTML = '<div style="padding:14px 18px;border-bottom:1px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center">'
+    + '<b style="font-size:15px">刷新范围</b>'
+    + '<button id="closeRefreshDlg" style="border:none;background:none;font-size:20px;cursor:pointer;color:#999">&times;</button>'
+    + '</div>'
+    + '<div style="padding:16px 18px;font-size:14px;color:#555">请选择刷新范围：</div>'
+    + '<div style="padding:0 18px 16px;display:flex;flex-direction:column;gap:10px">'
+    + '<button id="refreshSingleBtn" style="padding:10px 16px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:14px;cursor:pointer;transition:background .15s">只刷新这个模块</button>'
+    + '<button id="refreshAllBtn" style="padding:10px 16px;border:1px solid #1a5fb4;border-radius:8px;background:#eef4fd;color:#1a5fb4;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s">全部模块都刷新</button>'
+    + '</div>';
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.onclick = e => { if (e.target === overlay) close(); };
+  modal.querySelector('#closeRefreshDlg').onclick = close;
+
+  // hover 效果
+  const singleBtn = modal.querySelector('#refreshSingleBtn');
+  const allBtn = modal.querySelector('#refreshAllBtn');
+  singleBtn.onmouseover = () => { singleBtn.style.background = '#e8e8e8'; };
+  singleBtn.onmouseout = () => { singleBtn.style.background = '#f9f9f9'; };
+  allBtn.onmouseover = () => { allBtn.style.background = '#dce9f7'; };
+  allBtn.onmouseout = () => { allBtn.style.background = '#eef4fd'; };
+
+  singleBtn.onclick = () => { close(); withRefreshBtn(triggerBtn, singleLoadFn)(); };
+  allBtn.onclick = () => { close(); statsRefreshAll(triggerBtn); };
+}
+
+// 单模块刷新（带按钮 loading 动画）
+function withRefreshBtn(btn, loadFn) {
+  return async function() {
+    if (!btn) return loadFn();
+    const origText = btn.textContent;
+    btn.textContent = '刷新中…';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    try {
+      await loadFn();
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+      btn.style.opacity = '';
+    }
+  };
+}
+
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 let toastTimer;
@@ -2141,7 +2196,7 @@ async function loadStats() {
     $('statTodayDlCount').textContent = '-';
   }
 }
-$('refreshStats').onclick = () => statsRefreshAll($('refreshStats'));
+$('refreshStats').onclick = () => showRefreshDialog($('refreshStats'), loadStats);
 $('statTodayComments').onclick = () => {
   if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
   let html = '<div style="max-height:60vh;overflow-y:auto">';
@@ -2299,7 +2354,7 @@ async function loadDaily() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';
   }
 }
-$('refreshDaily').onclick = () => statsRefreshAll($('refreshDaily'));
+$('refreshDaily').onclick = () => showRefreshDialog($('refreshDaily'), loadDaily);
 
 // === 每日数据快照 ===
 const SNAP_TABLE = 'daily_snapshots';
@@ -2375,7 +2430,7 @@ async function loadSnapshots() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 daily_snapshots 表已创建。SQL：<br><code style="font-size:11px;background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:4px;white-space:pre-wrap">CREATE TABLE daily_snapshots (\n  day DATE PRIMARY KEY,\n  total_views INT DEFAULT 0,\n  total_posts INT DEFAULT 0,\n  avg_views INT DEFAULT 0,\n  today_views INT DEFAULT 0,\n  today_comments INT DEFAULT 0,\n  today_downloads INT DEFAULT 0,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE daily_snapshots ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow all\" ON daily_snapshots USING (true) WITH CHECK (true);</code></p>';
   }
 }
-$('refreshSnapshots').onclick = () => statsRefreshAll($('refreshSnapshots'));
+$('refreshSnapshots').onclick = () => showRefreshDialog($('refreshSnapshots'), loadSnapshots);
 
 // === 热门下载排行 ===
 let _topDlMode = 'all';
@@ -2453,7 +2508,7 @@ async function loadTopDl() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
   }
 }
-$('refreshTopDl').onclick = () => statsRefreshAll($('refreshTopDl'));
+$('refreshTopDl').onclick = () => showRefreshDialog($('refreshTopDl'), loadTopDl);
 $('topDlAll').onclick = () => { _topDlMode = 'all'; $('topDlAll').style.borderColor = '#e5484d'; $('topDlAll').style.color = '#e5484d'; $('topDlToday').style.borderColor = ''; $('topDlToday').style.color = ''; loadTopDl(); };
 $('topDlToday').onclick = () => { _topDlMode = 'today'; $('topDlToday').style.borderColor = '#e5484d'; $('topDlToday').style.color = '#e5484d'; $('topDlAll').style.borderColor = ''; $('topDlAll').style.color = ''; loadTopDl(); };
 
