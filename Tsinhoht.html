@@ -2102,14 +2102,14 @@ async function loadComments() {
 
 function bjDay(date) {
   const d = date || new Date();
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000;
-  return new Date(utc + 8 * 3600000).toISOString().slice(0, 10);
+  // getTime() 始终返回 UTC 毫秒，+8h 直接得到北京时间，不依赖浏览器时区
+  return new Date(d.getTime() + 8 * 3600000).toISOString().slice(0, 10);
 }
 // 返回北京时间某天的 UTC 起止时间戳（用于 created_at 过滤）
 function bjDayUtcRange(date) {
   const d = date || new Date();
-  const utcMs = d.getTime() + d.getTimezoneOffset() * 60000;
-  const bjMs = utcMs + 8 * 3600000;
+  // +8h 将 UTC 偏移到北京时间，再用 getUTC* 取日期分量
+  const bjMs = d.getTime() + 8 * 3600000;
   const bjDate = new Date(bjMs);
   const y = bjDate.getUTCFullYear(), m = bjDate.getUTCMonth(), day = bjDate.getUTCDate();
   const startUtc = new Date(Date.UTC(y, m, day) - 8 * 3600000);
