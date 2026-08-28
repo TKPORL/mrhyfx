@@ -533,13 +533,14 @@ function switchTab(id, skipStore) {
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
 });
-// 恢复上次激活的标签页
-const savedTab = localStorage.getItem(TAB_KEY);
-if (savedTab && tabs[savedTab]) {
-  // 先把默认的 on 类去掉
-  $('tabForm').classList.remove('on');
-  $('panelForm').classList.remove('on');
-  switchTab(savedTab, true);
+// 恢复上次激活的标签页（延迟到 Supabase 配置加载完成后执行，避免 loadStats 拿不到配置）
+function restoreSavedTab() {
+  const savedTab = localStorage.getItem(TAB_KEY);
+  if (savedTab && tabs[savedTab]) {
+    $('tabForm').classList.remove('on');
+    $('panelForm').classList.remove('on');
+    switchTab(savedTab, true);
+  }
 }
 
 // 通用刷新动画：按钮显示 loading → 执行加载 → 内容淡入 → 恢复按钮
@@ -570,12 +571,15 @@ function withRefresh(btnId, loadFn, contentId) {
 // 统计模块联动刷新：记录旧值 → 全部加载 → 对比 → 显示增量
 const STAT_IDS = ['statTodayViews', 'statTodayCommentCount', 'statTodayDlCount', 'statTotalViews', 'statTotalPosts', 'statAvgViews', 'statDlClickCount'];
 let _statsRefreshing = false;
+let _statsLoaded = false;
 async function statsRefreshAll(triggerBtn) {
   if (_statsRefreshing) return;
   _statsRefreshing = true;
-  // 记录旧值
+  // 记录旧值（首次加载前没有真实旧值，不显示增量）
   const oldVals = {};
-  STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
+  if (_statsLoaded) {
+    STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
+  }
   // 在统计概览区域显示遮罩
   const overview = $('statOverviewDaily');
   let overlay = null;
@@ -609,6 +613,7 @@ async function statsRefreshAll(triggerBtn) {
         setTimeout(() => { badge.classList.add('hide'); setTimeout(() => badge.remove(), 500); }, 10000);
       }
     });
+    _statsLoaded = true;
   } finally {
     btns.forEach(id => { const b = $(id); if (b) { b.textContent = origTexts[id] || '刷新'; b.disabled = false; } });
     if (overlay) overlay.remove();
@@ -1762,6 +1767,8 @@ document.addEventListener('click', function (e) {
 });
 
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
+// 配置就绪后再恢复上次激活的标签页
+restoreSavedTab();
 const sbHeaders = () => {
   const key = $('sbAnon').value.trim();
   return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
