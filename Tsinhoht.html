@@ -528,7 +528,7 @@ function switchTab(id, skipStore) {
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
-  if (id === 'tabStats') { loadStats(); loadDaily(); loadSnapshots(); loadTopDl(); }
+  if (id === 'tabStats') { statsRefreshAll(); }
 }
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
@@ -567,54 +567,53 @@ function withRefresh(btnId, loadFn, contentId) {
 }
 
 
-// 统计专用刷新：记录旧值 → 加载 → 对比 → 显示增量 → 自动消失
+// 统计模块联动刷新：记录旧值 → 全部加载 → 对比 → 显示增量
 const STAT_IDS = ['statTodayViews', 'statTodayCommentCount', 'statTodayDlCount', 'statTotalViews', 'statTotalPosts', 'statAvgViews', 'statDlClickCount'];
-function withStatsRefresh(btnId, loadFn) {
-  return async function() {
-    const btn = $(btnId);
-    if (!btn) return loadFn();
-    // 记录旧值
-    const oldVals = {};
-    STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
-    // 显示遮罩
-    const card = btn.closest('.card');
-    let overlay = null;
-    if (card) {
-      card.style.position = 'relative';
-      overlay = document.createElement('div');
-      overlay.className = 'mrhx-stat-overlay';
-      overlay.innerHTML = '<div class="mrhx-stat-spinner"></div>';
-      card.appendChild(overlay);
-    }
-    const origText = btn.textContent;
-    btn.textContent = '刷新中…';
-    btn.disabled = true;
-    try {
-      await loadFn();
-      // 对比并显示增量
-      STAT_IDS.forEach(id => {
-        const el = $(id);
-        if (!el) return;
-        const newVal = parseInt(el.textContent) || 0;
-        const diff = newVal - (oldVals[id] || 0);
-        // 移除旧的增量标记
-        const oldInc = el.querySelector('.mrhx-inc');
-        if (oldInc) oldInc.remove();
-        if (diff > 0) {
-          const badge = document.createElement('span');
-          badge.className = 'mrhx-inc';
-          badge.textContent = '(+' + diff + ')';
-          el.appendChild(badge);
-          // 10秒后淡出
-          setTimeout(() => { badge.classList.add('hide'); setTimeout(() => badge.remove(), 500); }, 10000);
-        }
-      });
-    } finally {
-      btn.textContent = origText;
-      btn.disabled = false;
-      if (overlay) overlay.remove();
-    }
-  };
+let _statsRefreshing = false;
+async function statsRefreshAll(triggerBtn) {
+  if (_statsRefreshing) return;
+  _statsRefreshing = true;
+  // 记录旧值
+  const oldVals = {};
+  STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
+  // 在统计概览区域显示遮罩
+  const overview = $('statOverviewDaily');
+  let overlay = null;
+  if (overview && overview.parentElement) {
+    const parent = overview.closest('.card') || overview.parentElement;
+    parent.style.position = 'relative';
+    overlay = document.createElement('div');
+    overlay.className = 'mrhx-stat-overlay';
+    overlay.innerHTML = '<div class="mrhx-stat-spinner"></div>';
+    parent.appendChild(overlay);
+  }
+  // 更新所有刷新按钮状态
+  const btns = ['refreshStats', 'refreshDaily', 'refreshSnapshots', 'refreshTopDl'];
+  const origTexts = {};
+  btns.forEach(id => { const b = $(id); if (b) { origTexts[id] = b.textContent; b.textContent = '刷新中…'; b.disabled = true; } });
+  try {
+    await Promise.all([loadStats(), loadDaily(), loadSnapshots(), loadTopDl()]);
+    // 对比并显示增量
+    STAT_IDS.forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      const newVal = parseInt(el.textContent) || 0;
+      const diff = newVal - (oldVals[id] || 0);
+      const oldInc = el.querySelector('.mrhx-inc');
+      if (oldInc) oldInc.remove();
+      if (diff > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'mrhx-inc';
+        badge.textContent = '(+' + diff + ')';
+        el.appendChild(badge);
+        setTimeout(() => { badge.classList.add('hide'); setTimeout(() => badge.remove(), 500); }, 10000);
+      }
+    });
+  } finally {
+    btns.forEach(id => { const b = $(id); if (b) { b.textContent = origTexts[id] || '刷新'; b.disabled = false; } });
+    if (overlay) overlay.remove();
+    _statsRefreshing = false;
+  }
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -2135,7 +2134,7 @@ async function loadStats() {
     $('statTodayDlCount').textContent = '-';
   }
 }
-$('refreshStats').onclick = withStatsRefresh('refreshStats', loadStats);
+$('refreshStats').onclick = () => statsRefreshAll($('refreshStats'));
 $('statTodayComments').onclick = () => {
   if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
   let html = '<div style="max-height:60vh;overflow-y:auto">';
@@ -2293,7 +2292,7 @@ async function loadDaily() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';
   }
 }
-$('refreshDaily').onclick = withRefresh('refreshDaily', loadDaily, 'dailyBox');
+$('refreshDaily').onclick = () => statsRefreshAll($('refreshDaily'));
 
 // === 每日数据快照 ===
 const SNAP_TABLE = 'daily_snapshots';
@@ -2369,7 +2368,7 @@ async function loadSnapshots() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 daily_snapshots 表已创建。SQL：<br><code style="font-size:11px;background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:4px;white-space:pre-wrap">CREATE TABLE daily_snapshots (\n  day DATE PRIMARY KEY,\n  total_views INT DEFAULT 0,\n  total_posts INT DEFAULT 0,\n  avg_views INT DEFAULT 0,\n  today_views INT DEFAULT 0,\n  today_comments INT DEFAULT 0,\n  today_downloads INT DEFAULT 0,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE daily_snapshots ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow all\" ON daily_snapshots USING (true) WITH CHECK (true);</code></p>';
   }
 }
-$('refreshSnapshots').onclick = withRefresh('refreshSnapshots', loadSnapshots, 'snapshotBox');
+$('refreshSnapshots').onclick = () => statsRefreshAll($('refreshSnapshots'));
 
 // === 热门下载排行 ===
 let _topDlMode = 'all';
@@ -2447,7 +2446,7 @@ async function loadTopDl() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
   }
 }
-$('refreshTopDl').onclick = withRefresh('refreshTopDl', loadTopDl, 'topDlBox');
+$('refreshTopDl').onclick = () => statsRefreshAll($('refreshTopDl'));
 $('topDlAll').onclick = () => { _topDlMode = 'all'; $('topDlAll').style.borderColor = '#e5484d'; $('topDlAll').style.color = '#e5484d'; $('topDlToday').style.borderColor = ''; $('topDlToday').style.color = ''; loadTopDl(); };
 $('topDlToday').onclick = () => { _topDlMode = 'today'; $('topDlToday').style.borderColor = '#e5484d'; $('topDlToday').style.color = '#e5484d'; $('topDlAll').style.borderColor = ''; $('topDlAll').style.color = ''; loadTopDl(); };
 
