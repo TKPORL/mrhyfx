@@ -1916,6 +1916,17 @@ function bjDay(date) {
   const utc = d.getTime() + d.getTimezoneOffset() * 60000;
   return new Date(utc + 8 * 3600000).toISOString().slice(0, 10);
 }
+// 返回北京时间某天的 UTC 起止时间戳（用于 created_at 过滤）
+function bjDayUtcRange(date) {
+  const d = date || new Date();
+  const utcMs = d.getTime() + d.getTimezoneOffset() * 60000;
+  const bjMs = utcMs + 8 * 3600000;
+  const bjDate = new Date(bjMs);
+  const y = bjDate.getUTCFullYear(), m = bjDate.getUTCMonth(), day = bjDate.getUTCDate();
+  const startUtc = new Date(Date.UTC(y, m, day) - 8 * 3600000);
+  const endUtc = new Date(Date.UTC(y, m, day + 1) - 8 * 3600000);
+  return { start: startUtc.toISOString(), end: endUtc.toISOString() };
+}
 
 const stS = $('statusS');
 async function loadStats() {
@@ -1975,7 +1986,8 @@ async function loadStats() {
     let todayCommentCount = 0;
     let todayComments = [];
     try {
-      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${today}&order=created_at.desc`, {
+      const bjRange = bjDayUtcRange();
+      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${bjRange.start}&created_at=lt.${bjRange.end}&order=created_at.desc`, {
         headers: Object.assign(sbHeaders(), { 'Prefer': 'count=exact' })
       });
       if (cRes.ok) { todayCommentCount = parseInt(cRes.headers.get('content-range')?.split('/')[1] || '0', 10); todayComments = await cRes.json(); }
@@ -1991,7 +2003,8 @@ async function loadStats() {
       if (dlCountRes.ok) {
         totalDlClicks = parseInt(dlCountRes.headers.get('content-range')?.split('/')[1] || '0', 10);
       }
-      const dlTodayRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${today}`, {
+      const bjRangeDl = bjDayUtcRange();
+      const dlTodayRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}`, {
         headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
       });
       if (dlTodayRes.ok) {
