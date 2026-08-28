@@ -515,9 +515,11 @@ $('clearToken').addEventListener('click', () => {
 });
 $('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
 
+const TAB_KEY = 'mrhx_active_tab';
 const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
-function switchTab(id) {
+function switchTab(id, skipStore) {
   Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
+  if (!skipStore) localStorage.setItem(TAB_KEY, id);
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
@@ -526,6 +528,38 @@ function switchTab(id) {
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
 });
+// 恢复上次激活的标签页
+const savedTab = localStorage.getItem(TAB_KEY);
+if (savedTab && tabs[savedTab]) {
+  // 先把默认的 on 类去掉
+  $('tabForm').classList.remove('on');
+  $('panelForm').classList.remove('on');
+  switchTab(savedTab, true);
+}
+
+// 通用刷新动画：按钮显示 loading → 执行加载 → 内容淡入 → 恢复按钮
+function withRefresh(btnId, loadFn, contentId) {
+  return async function() {
+    const btn = $(btnId);
+    if (!btn) return loadFn();
+    const origText = btn.textContent;
+    btn.textContent = '刷新中…';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    try {
+      await loadFn();
+      // 内容淡入
+      if (contentId) {
+        const el = $(contentId);
+        if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .3s ease'; requestAnimationFrame(() => { el.style.opacity = '1'; }); }
+      }
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+      btn.style.opacity = '';
+    }
+  };
+}
 
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -1574,7 +1608,7 @@ async function loadPosts() {
   if ($('postSearch')) { $('postSearch').addEventListener('input', () => applySearchFilter()); }
   if ($('postFilter')) { $('postFilter').addEventListener('change', () => applySearchFilter()); }
   
-  $('refresh').onclick = loadPosts;
+  $('refresh').onclick = withRefresh('refresh', loadPosts, 'postBox');
 
 async function loadLinks() {
   const repo = $('repo').value.trim();
@@ -2046,7 +2080,7 @@ async function loadStats() {
     $('statTodayDlCount').textContent = '-';
   }
 }
-$('refreshStats').onclick = loadStats;
+$('refreshStats').onclick = withRefresh('refreshStats', loadStats, 'statBox');
 $('statTodayComments').onclick = () => {
   if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
   let html = '<div style="max-height:60vh;overflow-y:auto">';
@@ -2204,7 +2238,7 @@ async function loadDaily() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';
   }
 }
-$('refreshDaily').onclick = loadDaily;
+$('refreshDaily').onclick = withRefresh('refreshDaily', loadDaily, 'dailyBox');
 
 // === 每日数据快照 ===
 const SNAP_TABLE = 'daily_snapshots';
@@ -2280,7 +2314,7 @@ async function loadSnapshots() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 daily_snapshots 表已创建。SQL：<br><code style="font-size:11px;background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:4px;white-space:pre-wrap">CREATE TABLE daily_snapshots (\n  day DATE PRIMARY KEY,\n  total_views INT DEFAULT 0,\n  total_posts INT DEFAULT 0,\n  avg_views INT DEFAULT 0,\n  today_views INT DEFAULT 0,\n  today_comments INT DEFAULT 0,\n  today_downloads INT DEFAULT 0,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE daily_snapshots ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow all\" ON daily_snapshots USING (true) WITH CHECK (true);</code></p>';
   }
 }
-$('refreshSnapshots').onclick = loadSnapshots;
+$('refreshSnapshots').onclick = withRefresh('refreshSnapshots', loadSnapshots, 'snapshotBox');
 
 // === 热门下载排行 ===
 let _topDlMode = 'all';
@@ -2358,7 +2392,7 @@ async function loadTopDl() {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
   }
 }
-$('refreshTopDl').onclick = loadTopDl;
+$('refreshTopDl').onclick = withRefresh('refreshTopDl', loadTopDl, 'topDlBox');
 $('topDlAll').onclick = () => { _topDlMode = 'all'; $('topDlAll').style.borderColor = '#e5484d'; $('topDlAll').style.color = '#e5484d'; $('topDlToday').style.borderColor = ''; $('topDlToday').style.color = ''; loadTopDl(); };
 $('topDlToday').onclick = () => { _topDlMode = 'today'; $('topDlToday').style.borderColor = '#e5484d'; $('topDlToday').style.color = '#e5484d'; $('topDlAll').style.borderColor = ''; $('topDlAll').style.color = ''; loadTopDl(); };
 
