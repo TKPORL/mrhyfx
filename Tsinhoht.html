@@ -661,18 +661,42 @@ function showRefreshDialog(triggerBtn, singleLoadFn) {
 // 单模块刷新（带按钮 loading 动画）
 function withRefreshBtn(btn, loadFn) {
   return async function() {
-    if (!btn) return loadFn();
-    const origText = btn.textContent;
-    btn.textContent = '刷新中…';
-    btn.disabled = true;
-    btn.style.opacity = '.6';
-    try {
-      await loadFn();
-    } finally {
-      btn.textContent = origText;
-      btn.disabled = false;
-      btn.style.opacity = '';
+    // 记录旧值用于显示增量
+    const oldVals = {};
+    if (_statsLoaded) {
+      STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
     }
+    if (!btn) await loadFn();
+    else {
+      const origText = btn.textContent;
+      btn.textContent = '刷新中…';
+      btn.disabled = true;
+      btn.style.opacity = '.6';
+      try {
+        await loadFn();
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+    }
+    // 对比并显示增量
+    STAT_IDS.forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      const newVal = parseInt(el.textContent) || 0;
+      const diff = newVal - (oldVals[id] || 0);
+      const oldInc = el.querySelector('.mrhx-inc');
+      if (oldInc) oldInc.remove();
+      if (diff > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'mrhx-inc';
+        badge.textContent = '(+' + diff + ')';
+        el.appendChild(badge);
+        setTimeout(() => { badge.classList.add('hide'); setTimeout(() => badge.remove(), 500); }, 10000);
+      }
+    });
+    _statsLoaded = true;
   };
 }
 
