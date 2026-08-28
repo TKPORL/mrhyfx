@@ -386,6 +386,19 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
       <div id="snapshotBox"><p class="hint">加载中…</p></div>
       <div id="statusSnap"></div>
     </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>🏆 热门下载排行</h2>
+        <button type="button" class="btn btn-s" id="refreshTopDl">刷新</button>
+      </div>
+      <p class="hint" style="margin-top:2px">按下载次数排名，展示最受欢迎的游戏。支持切换「全部时间」和「今日」。</p>
+      <div style="display:flex;gap:6px;margin:10px 0">
+        <button type="button" class="btn btn-s" id="topDlAll" style="border-color:#e5484d;color:#e5484d">全部时间</button>
+        <button type="button" class="btn btn-s" id="topDlToday">今日</button>
+      </div>
+      <div id="topDlBox"><p class="hint">加载中…</p></div>
+    </div>
   </div>
 
   <div class="panel" id="panelLinks">
@@ -508,7 +521,7 @@ function switchTab(id) {
   if (id === 'tabManage') loadPosts();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
-  if (id === 'tabStats') { loadStats(); loadDaily(); loadSnapshots(); }
+  if (id === 'tabStats') { loadStats(); loadDaily(); loadSnapshots(); loadTopDl(); }
 }
 Object.keys(tabs).forEach(id => {
   $('tab' + id.slice(3)).onclick = () => switchTab(id);
@@ -2268,6 +2281,86 @@ async function loadSnapshots() {
   }
 }
 $('refreshSnapshots').onclick = loadSnapshots;
+
+// === 热门下载排行 ===
+let _topDlMode = 'all';
+async function loadTopDl() {
+  const box = $('topDlBox');
+  const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 Supabase 配置。</p>'; return; }
+  box.innerHTML = '<p class="hint">加载中…</p>';
+  try {
+    let rows = [];
+    let offset = 0;
+    const pageSize = 1000;
+    if (_topDlMode === 'today') {
+      const bjR = bjDayUtcRange();
+      while (true) {
+        const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&created_at=gte.${bjR.start}&created_at=lt.${bjR.end}&limit=${pageSize}&offset=${offset}`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const batch = await res.json();
+        rows = rows.concat(batch);
+        if (batch.length < pageSize) break;
+        offset += pageSize;
+      }
+    } else {
+      while (true) {
+        const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&limit=${pageSize}&offset=${offset}`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const batch = await res.json();
+        rows = rows.concat(batch);
+        if (batch.length < pageSize) break;
+        offset += pageSize;
+      }
+    }
+    if (!rows.length) {
+      box.innerHTML = '<p class="hint" style="margin-top:8px">暂无下载记录。</p>';
+      return;
+    }
+    // 按游戏名汇总
+    const counts = {};
+    rows.forEach(r => {
+      const name = (r.game_name || '').trim();
+      if (!name) return;
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 30);
+    if (!sorted.length) {
+      box.innerHTML = '<p class="hint" style="margin-top:8px">暂无有效下载记录（游戏名为空）。</p>';
+      return;
+    }
+    const maxCount = sorted[0][1];
+    const medals = ['🥇', '🥈', '🥉'];
+    let html = '<div style="margin-top:8px">';
+    sorted.forEach(([name, count], i) => {
+      const pct = Math.round(count / maxCount * 100);
+      const medal = i < 3 ? medals[i] : '';
+      const rank = i < 3 ? '' : (i + 1);
+      const displayName = name.length > 30 ? name.slice(0, 30) + '…' : name;
+      const escName = displayName.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+        + '<div style="width:28px;text-align:center;font-size:' + (i < 3 ? '16px' : '13px') + ';color:' + (i < 3 ? '#e5484d' : '#999') + ';font-weight:600;flex:none">' + (medal || rank) + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + name.replace(/"/g, '&quot;') + '">' + escName + '</div>'
+        + '<div style="background:#f0f0f0;border-radius:4px;height:6px;margin-top:3px;overflow:hidden">'
+        + '<div style="width:' + pct + '%;height:100%;background:' + (i < 3 ? '#e5484d' : '#f0a3a5') + ';border-radius:4px"></div>'
+        + '</div></div>'
+        + '<div style="width:44px;text-align:right;font-weight:700;font-size:13px;color:' + (i < 3 ? '#e5484d' : '#666') + ';flex:none">' + count + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
+  }
+}
+$('refreshTopDl').onclick = loadTopDl;
+$('topDlAll').onclick = () => { _topDlMode = 'all'; $('topDlAll').style.borderColor = '#e5484d'; $('topDlAll').style.color = '#e5484d'; $('topDlToday').style.borderColor = ''; $('topDlToday').style.color = ''; loadTopDl(); };
+$('topDlToday').onclick = () => { _topDlMode = 'today'; $('topDlToday').style.borderColor = '#e5484d'; $('topDlToday').style.color = '#e5484d'; $('topDlAll').style.borderColor = ''; $('topDlAll').style.color = ''; loadTopDl(); };
 
 async function delComments(filter, desc) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
