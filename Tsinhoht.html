@@ -1822,12 +1822,14 @@ document.addEventListener('click', function (e) {
 });
 
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');
-// 配置就绪后再恢复上次激活的标签页
-restoreSavedTab();
 const sbHeaders = () => {
   const key = $('sbAnon').value.trim();
   return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
 };
+const SNAP_TABLE = 'daily_snapshots';
+let _topDlMode = 'all';
+// 配置就绪后再恢复上次激活的标签页
+restoreSavedTab();
 
 let postTitlesCache = {};
 
@@ -2357,7 +2359,6 @@ async function loadDaily() {
 $('refreshDaily').onclick = () => showRefreshDialog($('refreshDaily'), loadDaily);
 
 // === 每日数据快照 ===
-const SNAP_TABLE = 'daily_snapshots';
 async function saveTodaySnapshot(stats) {
   const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
   if (!sbUrl || !sbSecret) return;
@@ -2433,7 +2434,6 @@ async function loadSnapshots() {
 $('refreshSnapshots').onclick = () => showRefreshDialog($('refreshSnapshots'), loadSnapshots);
 
 // === 热门下载排行 ===
-let _topDlMode = 'all';
 async function loadTopDl() {
   const box = $('topDlBox');
   const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
