@@ -1495,8 +1495,8 @@
       meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
       head.appendChild(meta);
       row.appendChild(head);
-      row.appendChild(h('div', 'mrhx-ccontent', c.content));
-      var bar = h('div', 'mrhx-cbar');
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));      var bar = h('div', 'mrhx-cbar');
+      if (!c.pinned) {
       var rp = h('button', 'mrhx-cbtn', '回复');
       rp.type = 'button';
       rp.onclick = function () {
@@ -1522,8 +1522,7 @@
         inick.type = 'text'; inick.placeholder = '昵称'; inick.maxLength = 30;
         inick.value = localStorage.getItem('mrhx_nick') || '';
         var imail = document.createElement('input');
-        imail.type = 'email'; imail.placeholder = '邮箱';
-        imail.value = localStorage.getItem('mrhx_mail') || '';
+        imail.type = 'email'; imail.placeholder = '邮箱'; imail.value = localStorage.getItem('mrhx_mail') || '';
         var sendBtn = document.createElement('button');
         sendBtn.type = 'button'; sendBtn.className = 'mrhx-cinline-send'; sendBtn.textContent = '发送';
         var cancelBtn = document.createElement('button');
@@ -1557,6 +1556,7 @@
         };
       };
       bar.appendChild(rp);
+      }
       if (ADMIN) {
         var eb = h('button', 'mrhx-cbtn', '编辑');
         eb.type = 'button';
