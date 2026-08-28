@@ -2185,19 +2185,24 @@ async function loadStats() {
     let totalDlClicks = 0;
     let todayDlClicks = 0;
     try {
-      // 使用 count=exact 绕过 Supabase 免费版 1000 行返回限制
-      const dlCountRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1`, {
-        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
-      });
-      if (dlCountRes.ok) {
-        totalDlClicks = parseInt(dlCountRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+      // 累计下载：分页拉取全部记录计数
+      { let o = 0; const ps = 1000;
+        while (true) {
+          const r = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=${ps}&offset=${o}`, {
+            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+          });
+          if (!r.ok) break; const b = await r.json(); totalDlClicks += b.length; if (b.length < ps) break; o += ps;
+        }
       }
+      // 今日下载：分页拉取今日记录计数
       const bjRangeDl = bjDayUtcRange();
-      const dlTodayRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}`, {
-        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
-      });
-      if (dlTodayRes.ok) {
-        todayDlClicks = parseInt(dlTodayRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+      { let o = 0; const ps = 1000;
+        while (true) {
+          const r = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}&limit=${ps}&offset=${o}`, {
+            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+          });
+          if (!r.ok) break; const b = await r.json(); todayDlClicks += b.length; if (b.length < ps) break; o += ps;
+        }
       }
     } catch (e) {}
     $('statDlClickCount').textContent = totalDlClicks;
