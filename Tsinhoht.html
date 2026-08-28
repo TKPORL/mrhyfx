@@ -164,6 +164,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   .rbox{width:calc(100% - 10px);margin-left:10px}
   .stat-box{min-width:calc(50% - 6px)}
 }
+.mrhx-stat-overlay{position:absolute;inset:0;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border-radius:12px;z-index:5;display:flex;align-items:center;justify-content:center;animation:mrhxFade .2s ease both}
+.mrhx-stat-spinner{width:32px;height:32px;border:3px solid #e8e6e0;border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .7s linear infinite}
+@keyframes mrhxSpin{to{transform:rotate(360deg)}}
+.mrhx-inc{display:inline-block;font-size:12px;font-weight:700;color:#1a7f37;margin-left:4px;vertical-align:middle;animation:mrhxFade .3s ease both;transition:opacity .5s ease}
+.mrhx-inc.hide{opacity:0}
 </style>
 </head>
 <body>
@@ -561,6 +566,56 @@ function withRefresh(btnId, loadFn, contentId) {
   };
 }
 
+
+// 统计专用刷新：记录旧值 → 加载 → 对比 → 显示增量 → 自动消失
+const STAT_IDS = ['statTodayViews', 'statTodayCommentCount', 'statTodayDlCount', 'statTotalViews', 'statTotalPosts', 'statAvgViews', 'statDlClickCount'];
+function withStatsRefresh(btnId, loadFn) {
+  return async function() {
+    const btn = $(btnId);
+    if (!btn) return loadFn();
+    // 记录旧值
+    const oldVals = {};
+    STAT_IDS.forEach(id => { const el = $(id); oldVals[id] = el ? parseInt(el.textContent) || 0 : 0; });
+    // 显示遮罩
+    const card = btn.closest('.card');
+    let overlay = null;
+    if (card) {
+      card.style.position = 'relative';
+      overlay = document.createElement('div');
+      overlay.className = 'mrhx-stat-overlay';
+      overlay.innerHTML = '<div class="mrhx-stat-spinner"></div>';
+      card.appendChild(overlay);
+    }
+    const origText = btn.textContent;
+    btn.textContent = '刷新中…';
+    btn.disabled = true;
+    try {
+      await loadFn();
+      // 对比并显示增量
+      STAT_IDS.forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        const newVal = parseInt(el.textContent) || 0;
+        const diff = newVal - (oldVals[id] || 0);
+        // 移除旧的增量标记
+        const oldInc = el.querySelector('.mrhx-inc');
+        if (oldInc) oldInc.remove();
+        if (diff > 0) {
+          const badge = document.createElement('span');
+          badge.className = 'mrhx-inc';
+          badge.textContent = '(+' + diff + ')';
+          el.appendChild(badge);
+          // 10秒后淡出
+          setTimeout(() => { badge.classList.add('hide'); setTimeout(() => badge.remove(), 500); }, 10000);
+        }
+      });
+    } finally {
+      btn.textContent = origText;
+      btn.disabled = false;
+      if (overlay) overlay.remove();
+    }
+  };
+}
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -2080,7 +2135,7 @@ async function loadStats() {
     $('statTodayDlCount').textContent = '-';
   }
 }
-$('refreshStats').onclick = withRefresh('refreshStats', loadStats, 'statBox');
+$('refreshStats').onclick = withStatsRefresh('refreshStats', loadStats);
 $('statTodayComments').onclick = () => {
   if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
   let html = '<div style="max-height:60vh;overflow-y:auto">';
