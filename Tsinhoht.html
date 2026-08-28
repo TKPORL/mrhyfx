@@ -105,13 +105,15 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .cwrap:first-child{padding-top:0}
 .creply{width:calc(100% - 20px);min-width:0;margin:2px 0 2px 20px;border-left:3px solid #e0c0c1;background:#fcfaf8;border-radius:0 8px 8px 0;padding:8px 14px}
 .creply-wrap{margin:0;padding:0;display:contents}
+.cwrap.has-replies{padding-bottom:2px;border-bottom:none!important}
+.cwrap.has-replies+.creply-wrap>.cwrap:first-child{margin-top:4px}
 .prow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;min-width:0}
 .prow .pt{flex:1;min-width:0}
 .prow .pt b{display:block;font-size:13px;color:#2b2b2b;margin-bottom:4px;font-weight:600}
 .prow .pf{display:block;font-size:12px;color:#777;line-height:1.6;word-break:break-word}
 .pf + .pf{margin-top:4px}
 .mbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
-.cactions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;padding-left:12px}
+.cactions{display:flex;flex-direction:row;gap:4px;align-items:center;flex-shrink:0;padding-left:12px;flex-wrap:wrap;justify-content:flex-end}
 .rbox{width:calc(100% - 24px);min-width:0;margin:10px 0 0 24px;background:#faf9f7;border:1px solid #e8e6e0;border-radius:8px;padding:10px 12px}
 .rrow{display:flex;gap:8px;margin-bottom:8px}
 .rrow input{flex:1;border:1px solid #dedcd6;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit}
@@ -157,7 +159,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   .links{flex-direction:column}
   textarea{height:auto}
   .prow{flex-direction:column;gap:6px}
-  .cactions{flex-direction:row;padding-left:0;margin-top:6px;flex-wrap:wrap}
+  .cactions{padding-left:0;margin-top:6px}
   .creply{width:calc(100% - 12px);margin-left:12px;padding-left:10px}
   .rbox{width:calc(100% - 10px);margin-left:10px}
   .stat-box{min-width:calc(50% - 6px)}
@@ -328,15 +330,23 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
           <button type="button" class="btn btn-s" id="refreshStats">刷新</button>
         </div>
       </div>
-      <div class="stat-overview" id="statOverview">
-        <div class="stat-box" style="background:#fff7e6;cursor:pointer" id="statTodayComments" title="点击查看今日评论">
-          <div class="stat-num" style="color:#e58d0a" id="statTodayCommentCount">-</div>
-          <div class="stat-label">今日新增评论</div>
-        </div>
+      <p style="font-size:12px;color:#999;margin:0 0 8px;font-weight:600;letter-spacing:1px">📊 每日</p>
+      <div class="stat-overview" id="statOverviewDaily">
         <div class="stat-box" style="background:#fff7e6">
           <div class="stat-num" style="color:#e58d0a" id="statTodayViews">-</div>
           <div class="stat-label">今日访问</div>
         </div>
+        <div class="stat-box" style="background:#fff7e6;cursor:pointer" id="statTodayComments" title="点击查看今日评论">
+          <div class="stat-num" style="color:#e58d0a" id="statTodayCommentCount">-</div>
+          <div class="stat-label">今日新增评论</div>
+        </div>
+        <div class="stat-box" style="background:#f3e8ff;cursor:pointer" id="statTodayDl" title="点击查看今日下载详情">
+          <div class="stat-num" style="color:#7c3aed" id="statTodayDlCount">-</div>
+          <div class="stat-label">今日下载</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#999;margin:12px 0 8px;font-weight:600;letter-spacing:1px">📈 累计</p>
+      <div class="stat-overview" id="statOverviewTotal">
         <div class="stat-box" style="background:#fdf3f3">
           <div class="stat-num" style="color:#e5484d" id="statTotalViews">-</div>
           <div class="stat-label">累计访问</div>
@@ -351,7 +361,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         </div>
         <div class="stat-box" style="background:#f3e8ff;cursor:pointer" id="statDlClicks" title="点击查看下载统计详情">
           <div class="stat-num" style="color:#7c3aed" id="statDlClickCount">-</div>
-          <div class="stat-label">累计下载点击</div>
+          <div class="stat-label">累计下载</div>
         </div>
       </div>
       <div id="statBox"></div>
@@ -1530,10 +1540,14 @@ async function loadPosts() {
     const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
     if (sbUrl && sbAnon && sbSecret) {
       try {
-        const vr = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count`, {
-          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-        });
-        if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); }
+        let vOffset = 0;
+        const vPageSize = 1000;
+        while (true) {
+          const vr = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&limit=${vPageSize}&offset=${vOffset}`, {
+            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+          });
+          if (vr.ok) { const arr = await vr.json(); arr.forEach(v => { views[v.url] = v.count; }); if (arr.length < vPageSize) break; vOffset += vPageSize; } else break;
+        }
       } catch (e) {}
     }
     _postCtx = { posts, tree, titles, counts, pins, icons, views, timestamps, token, repo };
@@ -1697,17 +1711,25 @@ async function sendReplyMail(url, to, toNick, content, adminNick) {
 
 async function loadComments() {
   const box = $('commentBox');
-  if (!sbBase() || !$('sbAnon').value.trim()) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先填写 Project URL 和 anon 公钥。</p>'; return; }
+  const base = sbBase();
+  const anon = $('sbAnon').value.trim();
+  if (!base || !anon) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论功能配置」中填写 Project URL 和 anon 公钥。</p>'; show(stC, 'Supabase 未配置，请填写评论配置', 'err'); return; }
   show(stC, '正在加载评论…', 'info');
+  box.innerHTML = '<p class="hint">加载中…</p>';
+  console.log('[comments] loadComments called, base=' + base + ', anon=' + (anon ? anon.slice(0,8)+'...' : 'EMPTY'));
   try {
     if ($('repo').value.trim()) postTitlesCache = await fetch(`${RAW_BASE}/${$('repo').value.trim()}/main/titles.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const PAGE_SIZE = 50;
     let all = [];
     let offset = 0;
     while (true) {
-      const res = await fetch(`${sbBase()}/rest/v1/comments?select=*&order=created_at.desc&limit=${PAGE_SIZE}&offset=${offset}`, { headers: sbHeaders() });
-      if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
+      const url = `${base}/rest/v1/comments?select=*&order=created_at.desc&limit=${PAGE_SIZE}&offset=${offset}`;
+      console.log('[comments] fetching:', url);
+      const res = await fetch(url, { headers: sbHeaders() });
+      console.log('[comments] response status:', res.status, res.ok);
+      if (!res.ok) { const d = await res.json().catch(() => null); console.error('[comments] error body:', d); throw new Error(`加载评论失败（HTTP ${res.status}）：${(d && (d.message || d.details || d.hint)) || '请检查 Supabase 配置'}`); }
       const batch = await res.json();
+      console.log('[comments] batch size:', batch.length, ', total so far:', all.length + batch.length);
       all = all.concat(batch);
       if (batch.length < PAGE_SIZE) break;
       offset += PAGE_SIZE;
@@ -1717,13 +1739,13 @@ async function loadComments() {
       const replyMap = {};
       all.filter(c => c.pid).forEach(c => { (replyMap[c.pid] = replyMap[c.pid] || []).push(c); });
       const parents = all.filter(c => !c.pid);
-      function renderComment(c, isReply) {
+      function renderComment(c, isReply, hasReplies) {
         const topId = c.pid || c.id;
         const pinBtn = (!c.pid) ? `<button class="btn btn-s" data-pin="${esc(c.id)}" data-pinned="${c.pinned ? 1 : 0}">${c.pinned ? '取消置顶' : '置顶'}</button>` : '';
         const parentNick = (c.pid && all.filter(p => p.id === c.pid)[0]) ? (all.filter(p => p.id === c.pid)[0].nick || '匿名') : '';
         const postLabel = (!c.pid) ? ` <span style="color:#e58d0a;font-size:11px">📄 ${esc(c.url || '')}</span>` : '';
         return `
-        <div class="cwrap${isReply ? ' creply' : ''}" data-cid="${esc(c.id)}">
+        <div class="cwrap${isReply ? ' creply' : ''}${hasReplies ? ' has-replies' : ''}" data-cid="${esc(c.id)}">
           <div class="prow">
             <div class="pt">
               <b>${esc(c.nick || '匿名')}${c.is_admin ? ' <span class="mbadge">站长</span>' : ''}${c.pinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}${postLabel}${parentNick ? ' <span style="color:#e58d0a;font-size:11px">回复 @' + esc(parentNick) + '</span>' : ''}</b>
@@ -1735,7 +1757,7 @@ async function loadComments() {
               ${pinBtn}
               <button class="btn btn-s" data-edit="${esc(c.id)}">编辑</button>
               <button class="del" data-dcid="${esc(c.id)}" data-pid="${esc(c.pid || '')}">删除</button>
-              <button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>
+              ${!c.pinned ? `<button class="btn btn-s" data-rp="${esc(c.id)}">回复</button>` : ''}
             </div>
             <div class="editbox" id="eb-${esc(c.id)}" style="display:none;margin-top:8px">
               <textarea id="ec-${esc(c.id)}" style="min-height:50px;width:100%;margin-bottom:6px">${esc(c.content)}</textarea>
@@ -1774,8 +1796,9 @@ async function loadComments() {
       }
       var frag = '';
       parents.forEach(function (p) {
-        frag += renderComment(p, false);
-        if (replyMap[p.id] && replyMap[p.id].length) {
+        var _hr = !!(replyMap[p.id] && replyMap[p.id].length);
+        frag += renderComment(p, false, _hr);
+        if (_hr) {
           frag += '<div class="creply-wrap" data-rparent="' + esc(p.id) + '"></div>';
         }
       });
@@ -1901,11 +1924,20 @@ async function loadStats() {
   if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return; }
   show(stS, '正在加载统计…', 'info');
   try {
-    const res = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc`, {
-      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const arr = await res.json();
+    // 分页拉取所有 page_views 记录，绕过 Supabase 免费版 1000 行限制
+    let arr = [];
+    let offset = 0;
+    const pageSize = 1000;
+    while (true) {
+      const partRes = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc&limit=${pageSize}&offset=${offset}`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      });
+      if (!partRes.ok) throw new Error('HTTP ' + partRes.status);
+      const part = await partRes.json();
+      arr = arr.concat(part);
+      if (part.length < pageSize) break;
+      offset += pageSize;
+    }
     let valid = null;
     const repo = $('repo').value.trim(), token = $('token').value.trim();
     if (repo.includes('/') && token) {
@@ -1929,25 +1961,45 @@ async function loadStats() {
     let todayTotal = 0;
     let todayArr = [];
     try {
-      const dRes = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc`, {
-        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-      });
-      if (dRes.ok) { todayArr = (await dRes.json()).filter(v => !valid || valid.has(v.url)); todayTotal = todayArr.reduce((s, v) => s + v.count, 0); }
+      let dOffset = 0;
+      const dPageSize = 1000;
+      while (true) {
+        const dRes = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc&limit=${dPageSize}&offset=${dOffset}`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        });
+        if (dRes.ok) { const batch = (await dRes.json()).filter(v => !valid || valid.has(v.url)); todayArr = todayArr.concat(batch); if (batch.length < dPageSize) break; dOffset += dPageSize; } else break;
+      }
+      todayTotal = todayArr.reduce((s, v) => s + v.count, 0);
     } catch (e) {}
     $('statTodayViews').textContent = todayTotal;
     let todayCommentCount = 0;
     let todayComments = [];
     try {
-      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${today}&order=created_at.desc&limit=1000`, { headers: sbHeaders() });
-      if (cRes.ok) { todayComments = await cRes.json(); todayCommentCount = todayComments.length; }
+      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${today}&order=created_at.desc`, {
+        headers: Object.assign(sbHeaders(), { 'Prefer': 'count=exact' })
+      });
+      if (cRes.ok) { todayCommentCount = parseInt(cRes.headers.get('content-range')?.split('/')[1] || '0', 10); todayComments = await cRes.json(); }
     } catch (e) {}
     $('statTodayCommentCount').textContent = todayCommentCount;
     let totalDlClicks = 0;
+    let todayDlClicks = 0;
     try {
-      const dlRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=10000`, { headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret }) });
-      if (dlRes.ok) { totalDlClicks = (await dlRes.json()).length; }
+      // 使用 count=exact 绕过 Supabase 免费版 1000 行返回限制
+      const dlCountRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
+      });
+      if (dlCountRes.ok) {
+        totalDlClicks = parseInt(dlCountRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+      }
+      const dlTodayRes = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${today}`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
+      });
+      if (dlTodayRes.ok) {
+        todayDlClicks = parseInt(dlTodayRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+      }
     } catch (e) {}
     $('statDlClickCount').textContent = totalDlClicks;
+    $('statTodayDlCount').textContent = todayDlClicks;
     // 自动保存今日快照
     saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
@@ -1965,6 +2017,7 @@ async function loadStats() {
     $('statTodayViews').textContent = '-';
     $('statTodayCommentCount').textContent = '-';
     $('statDlClickCount').textContent = '-';
+    $('statTodayDlCount').textContent = '-';
   }
 }
 $('refreshStats').onclick = loadStats;
@@ -2032,6 +2085,38 @@ $('statDlClicks').onclick = async () => {
     show(stS, '加载下载统计失败：' + e.message, 'err');
   }
 };
+$('statTodayDl').onclick = async () => {
+  const sbUrl = sbBase(), sbSecret = $('sbSecret').value.trim();
+  if (!sbUrl || !sbSecret) { show(stS, '请先填写 Supabase 配置', 'err'); return; }
+  const today = bjDay();
+  try {
+    const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name,post_url,link_type,created_at&created_at=gte.${today}&order=created_at.desc&limit=500`, { headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret }) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    if (!rows.length) { show(stS, '今日暂无下载点击记录', 'info'); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:12px;max-width:560px;width:92vw;max-height:80vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)';
+    let html = '<div style="padding:14px 18px;border-bottom:1px solid #e8e6e0;display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">今日下载记录 (' + rows.length + ' 条)</b><button id="closeTdlModal" style="border:none;background:none;font-size:20px;cursor:pointer;color:#999">&times;</button></div>';
+    html += '<div style="max-height:60vh;overflow-y:auto">';
+    rows.forEach(r => {
+      const g = String(r.game_name || '未知').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const u = String(r.post_url || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : '自定义';
+      const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
+      html += '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px"><b>' + g + '</b> <span style="color:#999">' + t + '</span> <span style="color:#aaa;font-size:11px">' + u + '</span><div style="color:#aaa;font-size:11px;margin-top:2px">' + d + '</div></div>';
+    });
+    html += '</div>';
+    modal.innerHTML = html;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+    modal.querySelector('#closeTdlModal').onclick = () => overlay.remove();
+  } catch (e) {
+    show(stS, '加载今日下载统计失败：' + e.message, 'err');
+  }
+};
 let _deadRows = [];
 const stD = $('statusD');
 async function loadDaily() {
@@ -2048,11 +2133,19 @@ async function loadDaily() {
     const start = new Date();
     start.setDate(start.getDate() - (DAYS - 1));
     const startStr = bjDay(start);
-    const res = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}`, {
-      headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const arr = await res.json();
+    let arr = [];
+    let dOff = 0;
+    const dPs = 1000;
+    while (true) {
+      const res = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}&limit=${dPs}&offset=${dOff}`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const batch = await res.json();
+      arr = arr.concat(batch);
+      if (batch.length < dPs) break;
+      dOff += dPs;
+    }
     // 按天汇总总访问次数
     const byDay = {};
     arr.forEach(v => { byDay[v.day] = (byDay[v.day] || 0) + (v.count || 0); });

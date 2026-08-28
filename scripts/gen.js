@@ -916,8 +916,8 @@ html = (function reorderNodes(str) {
       meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
       head.appendChild(meta);
       row.appendChild(head);
-      row.appendChild(h('div', 'mrhx-ccontent', c.content));
-      var bar = h('div', 'mrhx-cbar');
+      row.appendChild(h('div', 'mrhx-ccontent', c.content));      var bar = h('div', 'mrhx-cbar');
+      if (!c.pinned) {
       var rp = h('button', 'mrhx-cbtn', '回复');
       rp.type = 'button';
       rp.onclick = function () {
@@ -943,8 +943,7 @@ html = (function reorderNodes(str) {
         inick.type = 'text'; inick.placeholder = '昵称'; inick.maxLength = 30;
         inick.value = localStorage.getItem('mrhx_nick') || '';
         var imail = document.createElement('input');
-        imail.type = 'email'; imail.placeholder = '邮箱';
-        imail.value = localStorage.getItem('mrhx_mail') || '';
+        imail.type = 'email'; imail.placeholder = '邮箱'; imail.value = localStorage.getItem('mrhx_mail') || '';
         var sendBtn = document.createElement('button');
         sendBtn.type = 'button'; sendBtn.className = 'mrhx-cinline-send'; sendBtn.textContent = '发送';
         var cancelBtn = document.createElement('button');
@@ -978,6 +977,7 @@ html = (function reorderNodes(str) {
         };
       };
       bar.appendChild(rp);
+      }
       if (ADMIN) {
         var eb = h('button', 'mrhx-cbtn', '编辑');
         eb.type = 'button';
@@ -1532,13 +1532,20 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   // ===== SEO: sitemap.xml + robots.txt =====
   const today = new Date().toISOString().slice(0, 10);
   const smEntries = [{ loc: SITE_URL, pri: '1.0', mod: today }];
+  for (const d of days) {
+    const fname = path.basename(d.file);
+    const key = path.parse(d.file).name;
+    const ts = TIMESTAMPS[key];
+    const mod = ts ? new Date(ts).toISOString().slice(0, 10) : today;
+    smEntries.push({ loc: SITE_URL + fname, pri: '0.6', mod: mod });
+  }
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     smEntries.map(e => `  <url><loc>${esc(e.loc)}</loc><lastmod>${esc(e.mod)}</lastmod><priority>${e.pri}</priority></url>`).join('\n') +
     `\n</urlset>\n`;
   fs.writeFileSync('sitemap.xml', sitemap);
   console.log('sitemap.xml ok, urls:', smEntries.length);
   fs.writeFileSync('robots.txt',
-    'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
+    'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\nDisallow: /Tsinhoht.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
   console.log('robots.txt ok');
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理）
