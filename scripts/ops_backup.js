@@ -65,6 +65,8 @@ async function safeFetch(url, opts) {
 
   let data = null;
   if (sb && anonKey) {
+    // 路径穿越 / SSRF 防护：sb 来自 site.json 已通过 assertSafeUrl 校验
+    assertSafeUrl(sb); // 显式校验，提示静态扫描器
     try {
       const tables = {};
       const comments = await fetchJSON(sb + '/rest/v1/comments?select=*&order=created_at.asc', apiHeaders(anonKey, adminKey));
