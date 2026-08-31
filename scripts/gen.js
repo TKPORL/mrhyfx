@@ -390,14 +390,19 @@ const popupHtml = (() => {
 const viewScript = (sb, key, path) => `<script>
 (function () {
   try {
-    var day = new Date().toISOString().slice(0, 10);
+    // 北京时间（UTC+8）切日，跟后台 bjDay() 口径一致，跨 0 点数据不漏算
+    var day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
     var k = 'mrhx_v_' + day + '_' + '${path}'.replace(/[^a-zA-Z0-9]/g, '_');
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' };
-    fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) });
-    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) }).catch(function () {});
-  } catch (e) {}
+    fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_page_view', e); });
+    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
+  } catch (e) { console.error('[view-track]', e); }
 })();
 </script>`;
 
@@ -465,7 +470,10 @@ async function localize(html, tag) {
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
   if (urls.length) {
+    // tag 来自 dayTag() 解析文件名，仅含中文日期或数字，理论安全；显式白名单防止 path.join 路径穿越
+    if (!/^[\u4e00-\u9fa5\d.]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
     const dir = path.join('assets', tag);
+    if (path.resolve(dir).indexOf(path.resolve('assets') + path.sep) !== 0) throw new Error('tag 解析后路径越界: ' + tag);
     fs.mkdirSync(dir, { recursive: true });
     let n = 0;
     for (const url of urls) {
@@ -620,17 +628,28 @@ function verify(days, index) {
 // compress all existing images in assets/ to webp (quality 80)
 async function compressExistingAssets() {
   const assetsDir = 'assets';
+  const assetsRoot = path.resolve(assetsDir);
   if (!fs.existsSync(assetsDir)) return;
   const entries = fs.readdirSync(assetsDir, { withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
-    const subDir = path.join(assetsDir, entry.name);
-    const files = fs.readdirSync(subDir);
+    // 路径穿越防护：basename 白名单
+    const safeEntry = path.basename(entry.name);
+    if (!safeEntry || safeEntry.includes('..')) continue;
+    const subDirAbs = path.resolve(assetsRoot, safeEntry);
+    if (subDirAbs.indexOf(assetsRoot + path.sep) !== 0) continue;
+    const files = fs.readdirSync(subDirAbs);
     for (const file of files) {
-      const ext = path.extname(file).toLowerCase();
+      // 路径穿越防护：basename 白名单
+      const safeFile = path.basename(file);
+      if (!safeFile || safeFile.includes('..')) continue;
+      const ext = path.extname(safeFile).toLowerCase();
       if (!['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'].includes(ext)) continue;
-      const srcPath = path.join(subDir, file);
-      const dstPath = path.join(subDir, path.parse(file).name + '.webp');
+      const srcPath = path.resolve(subDirAbs, safeFile);
+      const dstName = path.parse(safeFile).name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const dstPath = path.resolve(subDirAbs, dstName + '.webp');
+      if (srcPath.indexOf(assetsRoot + path.sep) !== 0) continue;
+      if (dstPath.indexOf(assetsRoot + path.sep) !== 0) continue;
       if (fs.existsSync(dstPath) && fs.statSync(dstPath).mtime >= fs.statSync(srcPath).mtime) continue;
       try {
         const buf = fs.readFileSync(srcPath);
@@ -638,7 +657,7 @@ async function compressExistingAssets() {
           .webp({ quality: 80, alphaQuality: 100, lossless: false })
           .toBuffer();
         fs.writeFileSync(dstPath, compressed);
-        console.log('  compress', entry.name, file, `-> ${path.parse(file).name}.webp (${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
+        console.log('  compress', safeEntry, safeFile, `-> ${dstName}.webp (${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
       } catch (e) {
         console.warn('  compress failed:', srcPath, e.message);
       }
@@ -649,6 +668,8 @@ async function compressExistingAssets() {
 const days = [];
 const searchIndex = [];
 const allGames = [];
+// 后台搜索用的「帖子级别」索引：key=短文件名（如 "8.10"），value={title,games,intro}
+const gameIndex = {};
 (async () => {
     await compressExistingAssets();
 
@@ -1139,6 +1160,16 @@ html = (function reorderNodes(str) {
     searchIndex.push(...games);
     allGames.push(...games.map(g => ({ ...g, file })));
 
+    // 给后台搜索用的「帖子级别」索引：每期帖子的标题 + 所有游戏名 + 帖子正文 intro
+    if (!gameIndex[shortName]) {
+      const postIntro = (html.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
+      gameIndex[shortName] = {
+        title: TITLES[shortName] || shortName,
+        games: games.map(g => g.title).filter(Boolean),
+        intro: postIntro.replace(/<[^>]+>/g, '').trim()
+      };
+    }
+
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
     days.push({ file: file, gameCount, tag });
@@ -1408,6 +1439,9 @@ ${indexScript}
   fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
   console.log('search_index.json ok, games:', searchIndex.length);
 
+  fs.writeFileSync('game_index.json', JSON.stringify(gameIndex, null, 2));
+  console.log('game_index.json ok, posts:', Object.keys(gameIndex).length);
+
   verify(days, index, searchIndex);
 
   const searchPage = `<!DOCTYPE html>
@@ -1550,10 +1584,12 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {
+    // NEW_TAG 来自命令行，仅允许 YYYYMMDD 格式数字 + 可选短横线后缀，避免 shell 注入
+    if (!/^\d{8}(?:[-_][\w.-]+)?$/.test(NEW_TAG)) throw new Error('非法 NEW_TAG: ' + NEW_TAG);
     try {
-      execSync('git add -A', { stdio: 'inherit' });
-      execSync(`git commit -m "发布 ${NEW_TAG}"`, { stdio: 'inherit' });
-      execSync('git push', { stdio: 'inherit' });
+      execFileSync('git', ['add', '-A'], { stdio: 'inherit' });
+      execFileSync('git', ['commit', '-m', '发布 ' + NEW_TAG], { stdio: 'inherit' });
+      execFileSync('git', ['push'], { stdio: 'inherit' });
       console.log(`\n✅ ${NEW_TAG} 发布完成`);
     } catch (e) {
       console.error('git 操作失败:', e.message);

@@ -1685,7 +1685,7 @@ function applySearchFilter() {
   if (!_postCtx) return;
   const kw = ($('postSearch')?.value || '').trim().toLowerCase();
   const ft = $('postFilter')?.value || 'all';
-  const { posts, titles } = _postCtx;
+  const { posts, titles, gameIndex } = _postCtx;
   const filtered = posts.filter(p => {
     const tag = p.path.replace(/\.html$/, '');
     if (ft === 'day' && !/^\d+[\.月]\d+/.test(tag)) return false;
@@ -1699,7 +1699,11 @@ function applySearchFilter() {
         displayTitle = `${m2[1]}月${m2[2]}日${plat ? '（' + plat + '）' : ''}`;
       }
     }
-    const hay = (tag + ' ' + p.path + ' ' + displayTitle + ' ' + (titles[tag] || '')).toLowerCase();
+    // 后台搜索匹配：文件名 + 路径 + 标题 + game_index 里的游戏名 + 帖子 intro
+    const gi = gameIndex && gameIndex[tag];
+    const games = gi ? gi.games : [];
+    const intro = gi ? gi.intro : '';
+    const hay = (tag + ' ' + p.path + ' ' + displayTitle + ' ' + (titles[tag] || '') + ' ' + games.join(' ') + ' ' + intro).toLowerCase();
     return hay.includes(kw);
   });
   renderPosts(filtered);
@@ -1721,6 +1725,7 @@ async function loadPosts() {
     const pins = await fetch(`${RAW_BASE}/${repo}/main/pins.json`).then(r => r.ok ? r.json() : []).catch(() => []);
     const icons = await fetch(`${RAW_BASE}/${repo}/main/icons.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     const timestamps = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    const gameIndex = await fetch(`${RAW_BASE}/${repo}/main/game_index.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
     let views = {};
     const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
     if (sbUrl && sbAnon && sbSecret) {
@@ -1735,7 +1740,7 @@ async function loadPosts() {
         }
       } catch (e) {}
     }
-    _postCtx = { posts, tree, titles, counts, pins, icons, views, timestamps, token, repo };
+    _postCtx = { posts, tree, titles, counts, pins, icons, views, timestamps, gameIndex, token, repo };
     applySearchFilter();
     show(stM, '共 ' + posts.length + ' 期帖子', 'ok');
   } catch (e) {
@@ -2118,10 +2123,38 @@ function bjDayUtcRange(date) {
 }
 
 const stS = $('statusS');
+// 后台统计查询错误收集器：每次 fetch 失败时记录，渲染到 statBox 顶部
+const _statsErrs = [];
+function _pushErr(tag, detail) {
+  const msg = `[${tag}] ${detail}`;
+  _statsErrs.push(msg);
+  console.error('[stats]', msg);
+}
+async function _safeFetch(url, init, tag) {
+  try {
+    const r = await fetch(url, init);
+    if (!r.ok) {
+      let body = '';
+      try { body = (await r.text()).slice(0, 200); } catch (e) {}
+      _pushErr(tag, `HTTP ${r.status} ${r.statusText} ← ${url.split('?')[0]}${body ? ' · ' + body : ''}`);
+      return null;
+    }
+    return r;
+  } catch (e) {
+    _pushErr(tag, e.message + ' ← ' + url.split('?')[0]);
+    return null;
+  }
+}
 async function loadStats() {
   const box = $('statBox');
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
-  if (!sbUrl || !sbAnon || !sbSecret) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>'; $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return; }
+  _statsErrs.length = 0; // 每次刷新清空
+  if (!sbUrl || !sbAnon || !sbSecret) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。当前统计读取的项目：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">' + (sbUrl || '(空)') + '</code>，写入端内联的是：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">https://kydmccknlbpczeqppbtc.supabase.co</code>。两者必须一致才能看到访问量数据。</p>';
+    $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return;
+  }
+  // 顶部调试信息：当前项目 URL + 写入端对比
+  const debugInfo = '<div style="background:#fdf6e3;border:1px solid #e8d9a0;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#5a4a00"><b>调试信息：</b>读取项目 = <code>' + sbUrl + '</code>' + (sbUrl === 'https://kydmccknlbpczeqppbtc.supabase.co' ? ' <span style="color:#1a7f37">✓ 与写入端一致</span>' : ' <span style="color:#c93a3f">⚠ 与写入端 <code>https://kydmccknlbpczeqppbtc.supabase.co</code> 不一致，访问量将为 0</span>') + '</div>';
   show(stS, '正在加载统计…', 'info');
   try {
     // 分页拉取所有 page_views 记录，绕过 Supabase 免费版 1000 行限制
@@ -2129,10 +2162,10 @@ async function loadStats() {
     let offset = 0;
     const pageSize = 1000;
     while (true) {
-      const partRes = await fetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc&limit=${pageSize}&offset=${offset}`, {
+      const partRes = await _safeFetch(`${sbUrl}/rest/v1/page_views?select=url,count&order=count.desc&limit=${pageSize}&offset=${offset}`, {
         headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-      });
-      if (!partRes.ok) throw new Error('HTTP ' + partRes.status);
+      }, 'page_views');
+      if (!partRes) break;
       const part = await partRes.json();
       arr = arr.concat(part);
       if (part.length < pageSize) break;
@@ -2146,8 +2179,10 @@ async function loadStats() {
         if (tree && tree.tree) {
           valid = new Set(['/index.html', '/search.html']);
           tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path)).forEach(t => valid.add('/' + t.path));
+        } else {
+          _pushErr('github_tree', '返回数据无 tree 字段，请检查 Token 权限');
         }
-      } catch (e) {}
+      } catch (e) { _pushErr('github_tree', e.message); }
     }
     const rows = valid ? arr.filter(v => valid.has(v.url)) : arr;
     const deadRows = valid ? arr.filter(v => !valid.has(v.url)) : [];
@@ -2160,57 +2195,67 @@ async function loadStats() {
     const today = bjDay();
     let todayTotal = 0;
     let todayArr = [];
-    try {
+    {
       let dOffset = 0;
       const dPageSize = 1000;
       while (true) {
-        const dRes = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc&limit=${dPageSize}&offset=${dOffset}`, {
+        const dRes = await _safeFetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc&limit=${dPageSize}&offset=${dOffset}`, {
           headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-        });
-        if (dRes.ok) { const batch = (await dRes.json()).filter(v => !valid || valid.has(v.url)); todayArr = todayArr.concat(batch); if (batch.length < dPageSize) break; dOffset += dPageSize; } else break;
+        }, 'daily_page_views');
+        if (!dRes) break;
+        const batch = (await dRes.json()).filter(v => !valid || valid.has(v.url));
+        todayArr = todayArr.concat(batch);
+        if (batch.length < dPageSize) break;
+        dOffset += dPageSize;
       }
       todayTotal = todayArr.reduce((s, v) => s + v.count, 0);
-    } catch (e) {}
+    }
     $('statTodayViews').textContent = todayTotal;
     let todayCommentCount = 0;
     let todayComments = [];
-    try {
+    {
       const bjRange = bjDayUtcRange();
-      const cRes = await fetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${bjRange.start}&created_at=lt.${bjRange.end}&order=created_at.desc`, {
+      const cRes = await _safeFetch(`${sbUrl}/rest/v1/comments?select=id,nick,content,url,created_at&created_at=gte.${bjRange.start}&created_at=lt.${bjRange.end}&order=created_at.desc`, {
         headers: Object.assign(sbHeaders(), { 'Prefer': 'count=exact' })
-      });
-      if (cRes.ok) { todayCommentCount = parseInt(cRes.headers.get('content-range')?.split('/')[1] || '0', 10); todayComments = await cRes.json(); }
-    } catch (e) {}
+      }, 'comments');
+      if (cRes) {
+        todayCommentCount = parseInt(cRes.headers.get('content-range')?.split('/')[1] || '0', 10);
+        todayComments = await cRes.json();
+      }
+    }
     $('statTodayCommentCount').textContent = todayCommentCount;
     let totalDlClicks = 0;
     let todayDlClicks = 0;
-    try {
-      // 累计下载：分页拉取全部记录计数
-      { let o = 0; const ps = 1000;
-        while (true) {
-          const r = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=${ps}&offset=${o}`, {
-            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-          });
-          if (!r.ok) break; const b = await r.json(); totalDlClicks += b.length; if (b.length < ps) break; o += ps;
-        }
+    {
+      let o = 0; const ps = 1000;
+      while (true) {
+        const r = await _safeFetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=${ps}&offset=${o}`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        }, 'download_clicks');
+        if (!r) break;
+        const b = await r.json(); totalDlClicks += b.length; if (b.length < ps) break; o += ps;
       }
-      // 今日下载：分页拉取今日记录计数
+    }
+    {
       const bjRangeDl = bjDayUtcRange();
-      { let o = 0; const ps = 1000;
-        while (true) {
-          const r = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}&limit=${ps}&offset=${o}`, {
-            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-          });
-          if (!r.ok) break; const b = await r.json(); todayDlClicks += b.length; if (b.length < ps) break; o += ps;
-        }
+      let o = 0; const ps = 1000;
+      while (true) {
+        const r = await _safeFetch(`${sbUrl}/rest/v1/download_clicks?select=id&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}&limit=${ps}&offset=${o}`, {
+          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+        }, 'download_clicks_today');
+        if (!r) break;
+        const b = await r.json(); todayDlClicks += b.length; if (b.length < ps) break; o += ps;
       }
-    } catch (e) {}
+    }
     $('statDlClickCount').textContent = totalDlClicks;
     $('statTodayDlCount').textContent = todayDlClicks;
     // 自动保存今日快照
     saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
-    box.innerHTML = '';
+    box.innerHTML = debugInfo;
+    if (_statsErrs.length) {
+      box.insertAdjacentHTML('beforeend', '<div style="background:#fdecea;border:1px solid #e8a39a;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#a3361b"><b>查询出错 (' + _statsErrs.length + ' 条)：</b><br>' + _statsErrs.map(m => m.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join('<br>') + '</div>');
+    }
     if (!valid) {
       box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">未填 GitHub Token/仓库，帖子总数按全部访问记录统计（可能包含已删除帖子的记录）。填好 Token 后刷新更准确。</p>');
     } else if (deadRows.length) {
@@ -2225,6 +2270,7 @@ async function loadStats() {
     $('statTodayCommentCount').textContent = '-';
     $('statDlClickCount').textContent = '-';
     $('statTodayDlCount').textContent = '-';
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + (e.message || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) + '</p>';
   }
 }
 $('refreshStats').onclick = () => showRefreshDialog($('refreshStats'), loadStats);
@@ -2330,10 +2376,11 @@ async function loadDaily() {
   const box = $('dailyBox');
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
   if (!sbUrl || !sbAnon || !sbSecret) {
-    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。</p>';
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。当前读取项目：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">' + (sbUrl || '(空)') + '</code></p>';
     return;
   }
   box.innerHTML = '<p class="hint">加载中…</p>';
+  _statsErrs.length = 0;
   try {
     // 最近 7 天（含今天）的起始日期
     const DAYS = 7;
@@ -2344,10 +2391,10 @@ async function loadDaily() {
     let dOff = 0;
     const dPs = 1000;
     while (true) {
-      const res = await fetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}&limit=${dPs}&offset=${dOff}`, {
+      const res = await _safeFetch(`${sbUrl}/rest/v1/daily_page_views?select=day,count&day=gte.${startStr}&limit=${dPs}&offset=${dOff}`, {
         headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      }, 'daily_page_views_7d');
+      if (!res) break;
       const batch = await res.json();
       arr = arr.concat(batch);
       if (batch.length < dPs) break;
@@ -2380,6 +2427,19 @@ async function loadDaily() {
         + '</div>';
     }).join('') + '</div>';
     const weekTotal = rows.reduce((s, r) => s + r.count, 0);
+    const errBlock = _statsErrs.length ? '<div style="background:#fdecea;border:1px solid #e8a39a;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#a3361b"><b>查询出错 (' + _statsErrs.length + ' 条)：</b><br>' + _statsErrs.map(m => m.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join('<br>') + '</div>' : '';
+    box.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">' + rows.map(r => {
+      const dt = new Date(r.day + 'T00:00:00');
+      const label = (r.day.slice(5)) + ' ' + weekNames[dt.getDay()] + (r.day === todayKey ? '（今天）' : '');
+      const pct = Math.round(r.count / maxCount * 100);
+      return '<div style="display:flex;align-items:center;gap:10px">'
+        + '<div style="width:120px;flex:none;font-size:13px;color:#555">' + label + '</div>'
+        + '<div style="flex:1;background:#f0f0f0;border-radius:6px;height:22px;position:relative;overflow:hidden">'
+        + '<div style="width:' + pct + '%;height:100%;background:' + (r.day === todayKey ? '#e5484d' : '#f0a3a5') + ';border-radius:6px;min-width:2px"></div>'
+        + '</div>'
+        + '<div style="width:56px;flex:none;text-align:right;font-weight:700;color:#e5484d">' + r.count + '</div>'
+        + '</div>';
+    }).join('') + '</div>' + errBlock;
     box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">最近 7 天合计 ' + weekTotal + ' 次访问。数据来自 daily_page_views 表，每天独立记录，历史不会被今天覆盖。</p>');
   } catch (e) {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';

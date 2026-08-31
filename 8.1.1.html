@@ -1720,7 +1720,25 @@
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>
-<!--mrhx-stagger--><style>
+<script>
+(function () {
+  try {
+    // 北京时间（UTC+8）切日，跟后台 bjDay() 口径一致，跨 0 点数据不漏算
+    var day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+    var k = 'mrhx_v_' + day + '_' + '/8.1.1.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html' }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_page_view', e); });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html', p_day: day }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
+  } catch (e) { console.error('[view-track]', e); }
+})();
+</script>
+  <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
 .node:nth-child(3){animation-delay:0.1s}
@@ -2051,14 +2069,19 @@
   <script>
 (function () {
   try {
-    var day = new Date().toISOString().slice(0, 10);
+    // 北京时间（UTC+8）切日，跟后台 bjDay() 口径一致，跨 0 点数据不漏算
+    var day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
     var k = 'mrhx_v_' + day + '_' + '/8.1.1.html'.replace(/[^a-zA-Z0-9]/g, '_');
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html' }) });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html', p_day: day }) }).catch(function () {});
-  } catch (e) {}
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html' }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_page_view', e); });
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.1.1.html', p_day: day }) })
+      .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
+      .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
+  } catch (e) { console.error('[view-track]', e); }
 })();
 </script>
   <script>

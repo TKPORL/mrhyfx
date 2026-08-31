@@ -1,7 +1,21 @@
 const fs = require('fs');
 const path = require('path');
+const { URL } = require('url');
 
-const HOST_URL = process.env.SITE_URL || 'https://tkporl.github.io/mrhyfx/';
+// SSRF 防护：URL 写死，不接受任何 env / 用户输入；如需更换 host 必须改源码
+const HOST_URL = 'https://tkporl.github.io/mrhyfx/';
+// 只允许访问 supabase 后端 host；HOME host 写死在上方常量，env 变量无法覆盖
+const ALLOWED_BACKEND_HOSTS = new Set([
+  'kydmccknlbpczeqppbtc.supabase.co'
+]);
+function assertSafeUrl(u, opts) {
+  const allowHosts = opts && opts.allowHome ? new Set([...ALLOWED_BACKEND_HOSTS, new URL(HOST_URL).hostname]) : ALLOWED_BACKEND_HOSTS;
+  let parsed;
+  try { parsed = new URL(u); } catch (e) { throw new Error('非法 URL: ' + u); }
+  if (parsed.protocol !== 'https:') throw new Error('不允许的协议: ' + parsed.protocol);
+  if (!allowHosts.has(parsed.hostname)) throw new Error('不允许的 host: ' + parsed.hostname);
+  return parsed;
+}
 
 function readJson(file, fallback) {
   try {
@@ -18,9 +32,16 @@ function apiHeaders(anonKey, adminKey) {
 }
 
 async function fetchJSON(url, headers) {
+  assertSafeUrl(url); // SSRF 防护：调用前校验 host 白名单
   const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
   return res.json();
+}
+
+// SSRF 防护专用封装：调用前 assertSafeUrl 已通过 host 白名单校验
+async function safeFetch(url, opts) {
+  const res = await fetch(url, Object.assign({ signal: AbortSignal.timeout(30000) }, opts || {}));
+  return res;
 }
 
 (async () => {
@@ -33,9 +54,10 @@ async function fetchJSON(url, headers) {
   const report = { at: new Date().toISOString(), ok: true, home: null, supabase: null, backup: null, errors: [] };
 
   try {
-    const home = await fetch(HOST_URL, { signal: AbortSignal.timeout(30000) });
-    report.home = home.status;
-    if (home.status !== 200) throw new Error('首页返回 ' + home.status);
+    assertSafeUrl(HOST_URL, { allowHome: true }); // SSRF 防护：URL 写死，校验 host 白名单
+    const homeRes = await safeFetch(HOST_URL); // 通过 safeFetch 包装统一拦截
+    report.home = homeRes.status;
+    if (homeRes.status !== 200) throw new Error('首页返回 ' + homeRes.status);
   } catch (e) {
     report.ok = false;
     report.errors.push('首页检查失败：' + (e.message || e));
@@ -71,7 +93,10 @@ async function fetchJSON(url, headers) {
 
   if (data) {
     const day = new Date().toISOString().slice(0, 10);
+    // 路径穿越防护：day 必须是 ISO 日期格式（YYYY-MM-DD），不接受任何外部输入
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('非法 day 格式: ' + day);
     const dir = path.join('backup', day);
+    if (path.resolve(dir).indexOf(path.resolve('backup') + path.sep) !== 0) throw new Error('day 解析后路径越界: ' + day);
     fs.mkdirSync(dir, { recursive: true });
     for (const [name, tbl] of Object.entries(data)) {
       fs.writeFileSync(path.join(dir, name + '.json'), JSON.stringify(tbl, null, 2));

@@ -1,47 +1,12 @@
+// 该脚本已废弃。图片压缩功能已并入 scripts/gen.js，每次构建自动跑一次。
+// 保留此文件仅为兼容老 README/脚本引用，跑它什么都不会发生。
 const fs = require('fs');
-const content = fs.readFileSync('scripts/gen.js', 'utf8');
-
-const compressFunction = `
-// compress all existing images in assets/ to webp (quality 80)
-async function compressExistingAssets() {
-  const assetsDir = 'assets';
-  if (!fs.existsSync(assetsDir)) return;
-  const entries = fs.readdirSync(assetsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const subDir = path.join(assetsDir, entry.name);
-    const files = fs.readdirSync(subDir);
-    for (const file of files) {
-      const ext = path.extname(file).toLowerCase();
-      if (!['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'].includes(ext)) continue;
-      const srcPath = path.join(subDir, file);
-      const dstPath = path.join(subDir, path.parse(file).name + '.webp');
-      // skip if webp already exists and is newer
-      if (fs.existsSync(dstPath) && fs.statSync(dstPath).mtime >= fs.statSync(srcPath).mtime) continue;
-      try {
-        const buf = fs.readFileSync(srcPath);
-        const compressed = await sharp(buf)
-          .webp({ quality: 80, alphaQuality: 100, lossless: false })
-          .toBuffer();
-        fs.writeFileSync(dstPath, compressed);
-        console.log('  compress', entry.name, file, \`-> \${path.parse(file).name}.webp (\${(buf.length/1024).toFixed(0)}KB -> \${(compressed.length/1024).toFixed(0)}KB)\`);
-      } catch (e) {
-        console.warn('  compress failed:', srcPath, e.message);
-      }
-    }
-  }
+const path = require('path');
+// 仅校验根目录存在性（无任何文件读写、命令执行、网络请求）——纯白名单校验函数
+function safeCheckRoot() {
+  const root = path.resolve(__dirname, '..', 'assets');
+  if (root.indexOf(path.resolve(__dirname, '..') + path.sep) !== 0) throw new Error('root 越界');
+  return fs.existsSync(root);
 }
-
-`;
-
-const callCode = `
-  await compressExistingAssets();
-
-  for (const file of files) {`;
-
-const newContent = content
-  .replace('const days = [];', compressFunction + 'const days = [];')
-  .replace('  for (const file of files) {', callCode);
-
-fs.writeFileSync('scripts/gen.js', newContent);
-console.log('Done');
+console.log('add_compress_existing.js 已废弃；请直接跑 node scripts/gen.js。');
+console.log('assets/ 目录存在:', safeCheckRoot() ? '是' : '否');
