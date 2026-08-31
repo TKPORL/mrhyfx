@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS daily_page_views (
   PRIMARY KEY (url, day)
 );
 
+-- 2.1 兼容旧表：如果表已存在但缺 updated_at 列，补上
+ALTER TABLE daily_page_views ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+ALTER TABLE page_views ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+
 -- 3. 索引（数据量上去后查询会越来越慢，提前建好）
 CREATE INDEX IF NOT EXISTS idx_page_views_count ON page_views (count DESC);
 CREATE INDEX IF NOT EXISTS idx_daily_page_views_day ON daily_page_views (day DESC);
