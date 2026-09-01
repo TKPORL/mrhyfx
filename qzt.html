@@ -1204,9 +1204,6 @@
   <div class="title">求助资源贴（可以在这贴求黄油游戏哈）</div>
         <ul class="node-list">
 <li class="node heading3 node-full">
-    <div class="bullet">
-    <div class="bullet-dot"></div>
-  </div>
   <div class="content mm-editor" ><span>免费帮找游戏（纯公益）</span></div>
     <div class="note mm-editor"><span>1.有需要的资源，直接在下方评论区留言。我们会帮大家寻找，找到后发布到本贴，系统会根据你填写的邮箱自动发送通知。
 2.本站所有资源免费分享，不收取任何费用。资源来之不易，请大家珍惜。请勿将本站资源用于商业倒卖（倒卖狗），违者将被永久拉黑并公示。
@@ -2202,14 +2199,14 @@ rKnight – 把你变成 Gfurry</span></div>
   try {
     // 北京时间（UTC+8）切日，跟后台 bjDay() 口径一致，跨 0 点数据不漏算
     var day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-    var k = 'mrhx_v_' + day + '_' + '/8.10.html'.replace(/[^a-zA-Z0-9]/g, '_');
+    var k = 'mrhx_v_' + day + '_' + '/qzt.html'.replace(/[^a-zA-Z0-9]/g, '_');
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html' }) })
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html' }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_page_view', e); });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html', p_day: day }) })
+    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html', p_day: day }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
   } catch (e) { console.error('[view-track]', e); }
