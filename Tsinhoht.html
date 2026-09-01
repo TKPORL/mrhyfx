@@ -2567,21 +2567,22 @@ async function loadTopDl() {
       if (!name) return;
       counts[name] = (counts[name] || 0) + 1;
     });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 30);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     if (!sorted.length) {
       box.innerHTML = '<p class="hint" style="margin-top:8px">暂无有效下载记录（游戏名为空）。</p>';
       return;
     }
     const maxCount = sorted[0][1];
     const medals = ['🥇', '🥈', '🥉'];
-    let html = '<div style="margin-top:8px">';
-    sorted.forEach(([name, count], i) => {
+    const PAGE_SIZE = 30;
+    let shown = 0;
+    function rowHtml([name, count], i) {
       const pct = Math.round(count / maxCount * 100);
       const medal = i < 3 ? medals[i] : '';
       const rank = i < 3 ? '' : (i + 1);
       const displayName = name.length > 30 ? name.slice(0, 30) + '…' : name;
       const escName = displayName.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
         + '<div style="width:28px;text-align:center;font-size:' + (i < 3 ? '16px' : '13px') + ';color:' + (i < 3 ? '#e5484d' : '#999') + ';font-weight:600;flex:none">' + (medal || rank) + '</div>'
         + '<div style="flex:1;min-width:0">'
         + '<div style="font-size:13px;font-weight:600;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + name.replace(/"/g, '&quot;') + '">' + escName + '</div>'
@@ -2590,9 +2591,27 @@ async function loadTopDl() {
         + '</div></div>'
         + '<div style="width:44px;text-align:right;font-weight:700;font-size:13px;color:' + (i < 3 ? '#e5484d' : '#666') + ';flex:none">' + count + '</div>'
         + '</div>';
-    });
+    }
+    let html = '<div style="margin-top:8px"><div id="topDlList">';
+    for (let i = 0; i < Math.min(PAGE_SIZE, sorted.length); i++) html += rowHtml(sorted[i], i);
+    html += '</div>';
+    shown = Math.min(PAGE_SIZE, sorted.length);
+    if (shown < sorted.length) {
+      html += '<div style="text-align:center;margin-top:10px"><button type="button" id="topDlMore" style="border:1px solid #ecebe9;background:#fff;color:#666;padding:7px 20px;border-radius:99px;font-size:12.5px;cursor:pointer;font-family:inherit">加载更多（还有 ' + (sorted.length - shown) + ' 款）</button></div>';
+    }
     html += '</div>';
     box.innerHTML = html;
+    const moreBtn = $('topDlMore');
+    if (moreBtn) moreBtn.onclick = function () {
+      const listEl = $('topDlList');
+      let newRows = '';
+      const end = Math.min(shown + PAGE_SIZE, sorted.length);
+      for (let i = shown; i < end; i++) newRows += rowHtml(sorted[i], i);
+      shown = end;
+      listEl.insertAdjacentHTML('beforeend', newRows);
+      if (shown >= sorted.length) moreBtn.remove();
+      else moreBtn.textContent = '加载更多（还有 ' + (sorted.length - shown) + ' 款）';
+    };
   } catch (e) {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
   }
