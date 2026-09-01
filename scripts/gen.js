@@ -366,8 +366,6 @@ const popupHtml = (() => {
 <script>
 (function(){
   var k='mrhx_ann_dismissed';
-  var v=localStorage.getItem(k);
-  if(v){var t=parseInt(v,10);if(Date.now()-t<10800000){var el=document.getElementById('mrhxPopup');if(el)el.style.display='none';return;}}
   var close=function(){localStorage.setItem(k,String(Date.now()));var el=document.getElementById('mrhxPopup');if(el)el.style.display='none';};
   var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
   var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
