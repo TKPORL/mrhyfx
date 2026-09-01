@@ -17,6 +17,7 @@
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp">
 <meta name="google-site-verification" content="VpsDgk3IMraB1pVzxdJKFU9S_2X4q15ShE3z3BLz6pY">
 <meta name="yandex-verification" content="0ad787015695e649">
+<meta name="robots" content="noindex,follow">
 <link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp">
 <style>
@@ -101,8 +102,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   moreBtn.style.marginTop = '6px';
   resBox.appendChild(moreBtn);
   document.getElementById('mrhx-more').onclick = renderMore;
-  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+  if (!q) { countEl.textContent = '（热门推荐）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或浏览下方热门推荐</div>'; document.getElementById('mrhx-more').style.display = 'none'; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
+    if (!q) { _hits = data.slice(0, 8); renderMore(); return; }
     var kw = q.toLowerCase();
     function fuzzyMatch(text, pattern) {
       var t = (text || '').toLowerCase();

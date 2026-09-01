@@ -1449,6 +1449,7 @@ ${indexScript}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>搜索 · ${esc(SITE_NAME)}</title>
 ${seoHead('search.html', '搜索')}
+<meta name="robots" content="noindex,follow">
 <link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 <style>
@@ -1533,8 +1534,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   moreBtn.style.marginTop = '6px';
   resBox.appendChild(moreBtn);
   document.getElementById('mrhx-more').onclick = renderMore;
-  if (!q) { countEl.textContent = '（输入关键词搜索）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+  if (!q) { countEl.textContent = '（热门推荐）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或浏览下方热门推荐</div>'; document.getElementById('mrhx-more').style.display = 'none'; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
+    if (!q) { _hits = data.slice(0, 8); renderMore(); return; }
     var kw = q.toLowerCase();
     function fuzzyMatch(text, pattern) {
       var t = (text || '').toLowerCase();
