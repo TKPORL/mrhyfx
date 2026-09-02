@@ -8,12 +8,15 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
 // SECURITY: 路径穿越防护——所有 assets/<tag> 拼接都走这里，禁止直接 path.join
+// 实现：先用 path.resolve 把 ../ 归一化掉，再校验最终路径必须在 assets/ 之内
 function safeAssetDir(tag) {
   // tag 仅允许中文、数字、点（与 dayTag() 解析输出一致）
   if (!/^[\u4e00-\u9fa5\d.]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
-  const dir = path.join('assets', tag);
-  if (path.resolve(dir).indexOf(path.resolve('assets') + path.sep) !== 0) throw new Error('tag 解析后路径越界: ' + tag);
-  return dir;
+  const rootResolved = path.resolve('assets');
+  const target = path.resolve(rootResolved, tag);
+  const allowed = rootResolved + path.sep;
+  if (target !== rootResolved && target.startsWith(allowed) === false) throw new Error('tag 解析后路径越界: ' + tag);
+  return target;
 }
 
 const POST_DIR = '.';

@@ -26,12 +26,14 @@ function readJson(file, fallback) {
 }
 
 // SECURITY: 路径穿越防护——所有 path.join 都走这里，禁止直接拼接用户输入
+// 实现：先用 path.resolve 把 ../ 归一化掉，再校验最终路径必须在 base 之内
 function safeJoin(base, name, pattern) {
   if (!pattern.test(String(name))) throw new Error('非法路径段: ' + name);
-  const dir = path.join(base, name);
-  const root = path.resolve(base) + path.sep;
-  if (path.resolve(dir).indexOf(root) !== 0) throw new Error('路径越界: ' + name);
-  return dir;
+  const rootResolved = path.resolve(base);
+  const target = path.resolve(rootResolved, name);
+  const allowed = rootResolved + path.sep;
+  if (target !== rootResolved && target.startsWith(allowed) === false) throw new Error('路径越界: ' + name);
+  return target;
 }
 
 function apiHeaders(anonKey, adminKey) {
