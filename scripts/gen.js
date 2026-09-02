@@ -7,6 +7,15 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 
+// SECURITY: 路径穿越防护——所有 assets/<tag> 拼接都走这里，禁止直接 path.join
+function safeAssetDir(tag) {
+  // tag 仅允许中文、数字、点（与 dayTag() 解析输出一致）
+  if (!/^[\u4e00-\u9fa5\d.]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
+  const dir = path.join('assets', tag);
+  if (path.resolve(dir).indexOf(path.resolve('assets') + path.sep) !== 0) throw new Error('tag 解析后路径越界: ' + tag);
+  return dir;
+}
+
 const POST_DIR = '.';
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html' && f !== '404.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -432,12 +441,12 @@ function dayTag(file) {
     const base = `${dot3[1]}.${parseInt(dot3[2] + dot3[3])}`;
     // Prefer longer (more specific) match first, e.g. 8.11pcaz over 8.11
     try {
-      const dirs = fs.readdirSync('assets').filter(d => fs.statSync(path.join('assets', d)).isDirectory());
+      const dirs = fs.readdirSync('assets').filter(d => fs.statSync(safeAssetDir(d)).isDirectory());
       const longer = dirs.filter(d => d.startsWith(base) && d !== base).sort((a, b) => b.length - a.length);
       if (longer.length) return longer[0];
     } catch (e) {}
     // Fall back to exact base match
-    if (fs.existsSync(path.join('assets', base))) return base;
+    if (fs.existsSync(safeAssetDir(base))) return base;
     return base;
   }
   return name;
@@ -468,10 +477,8 @@ async function localize(html, tag) {
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL));
   if (urls.length) {
-    // tag 来自 dayTag() 解析文件名，仅含中文日期或数字，理论安全；显式白名单防止 path.join 路径穿越
-    if (!/^[\u4e00-\u9fa5\d.]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
-    const dir = path.join('assets', tag);
-    if (path.resolve(dir).indexOf(path.resolve('assets') + path.sep) !== 0) throw new Error('tag 解析后路径越界: ' + tag);
+    // SECURITY: tag 走 safeAssetDir，固定白名单正则 + 路径边界校验
+    const dir = safeAssetDir(tag);
     fs.mkdirSync(dir, { recursive: true });
     let n = 0;
     for (const url of urls) {
@@ -685,7 +692,7 @@ for (const file of files) {
     html = await localize(html, tag);
 
     // update local asset refs to .webp if exists
-    const tagDir = path.join('assets', tag);
+    const tagDir = safeAssetDir(tag);
     if (fs.existsSync(tagDir)) {
       const assetFiles = fs.readdirSync(tagDir);
       const webpFiles = new Set(assetFiles.filter(f => f.endsWith('.webp')).map(f => f.replace('.webp', '')));

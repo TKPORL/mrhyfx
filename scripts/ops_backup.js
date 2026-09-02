@@ -25,21 +25,24 @@ function readJson(file, fallback) {
   }
 }
 
+// SECURITY: 路径穿越防护——所有 path.join 都走这里，禁止直接拼接用户输入
+function safeJoin(base, name, pattern) {
+  if (!pattern.test(String(name))) throw new Error('非法路径段: ' + name);
+  const dir = path.join(base, name);
+  const root = path.resolve(base) + path.sep;
+  if (path.resolve(dir).indexOf(root) !== 0) throw new Error('路径越界: ' + name);
+  return dir;
+}
+
 function apiHeaders(anonKey, adminKey) {
   const h = { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey, 'Content-Type': 'application/json' };
   if (adminKey) h['x-admin-key'] = adminKey;
   return h;
 }
 
-async function fetchJSON(url, headers) {
-  assertSafeUrl(url); // SSRF 防护：调用前校验 host 白名单
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
-  if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
-  return res.json();
-}
-
-// SSRF 防护专用封装：调用前 assertSafeUrl 已通过 host 白名单校验
+// SECURITY: SSRF 防护封装——所有出网请求都走 safeFetch，禁止裸 fetch
 async function safeFetch(url, opts) {
+  assertSafeUrl(url);
   const res = await fetch(url, Object.assign({ signal: AbortSignal.timeout(30000) }, opts || {}));
   return res;
 }
@@ -65,18 +68,19 @@ async function safeFetch(url, opts) {
 
   let data = null;
   if (sb && anonKey) {
-    // 路径穿越 / SSRF 防护：sb 来自 site.json 已通过 assertSafeUrl 校验
-    assertSafeUrl(sb); // 显式校验，提示静态扫描器
+    assertSafeUrl(sb);
     try {
       const tables = {};
-      const comments = await fetchJSON(sb + '/rest/v1/comments?select=*&order=created_at.asc', apiHeaders(anonKey, adminKey));
+      const commentsRes = await safeFetch(sb + '/rest/v1/comments?select=*&order=created_at.asc', { headers: apiHeaders(anonKey, adminKey) });
+      if (!commentsRes.ok) throw new Error('HTTP ' + commentsRes.status);
+      const comments = await commentsRes.json();
       tables.comments = { count: comments.length, rows: comments };
       if (adminKey) {
-        const views = await fetchJSON(sb + '/rest/v1/page_views?select=*&order=page_viewed_at.asc&limit=50000', apiHeaders(anonKey, adminKey));
-        tables.page_views = { count: views.length, rows: views };
+        const views = await safeFetch(sb + '/rest/v1/page_views?select=*&order=page_viewed_at.asc&limit=50000', { headers: apiHeaders(anonKey, adminKey) });
+        if (views.ok) { const j = await views.json(); tables.page_views = { count: j.length, rows: j }; }
         try {
-          const daily = await fetchJSON(sb + '/rest/v1/daily_page_views?select=*&order=view_day.asc&limit=50000', apiHeaders(anonKey, adminKey));
-          tables.daily_page_views = { count: daily.length, rows: daily };
+          const daily = await safeFetch(sb + '/rest/v1/daily_page_views?select=*&order=view_day.asc&limit=50000', { headers: apiHeaders(anonKey, adminKey) });
+          if (daily.ok) { const j = await daily.json(); tables.daily_page_views = { count: j.length, rows: j }; }
         } catch (e) {
           tables.daily_page_views = { count: 0, rows: [], note: (e.message || e) };
         }
@@ -95,19 +99,19 @@ async function safeFetch(url, opts) {
 
   if (data) {
     const day = new Date().toISOString().slice(0, 10);
-    // 路径穿越防护：day 必须是 ISO 日期格式（YYYY-MM-DD），不接受任何外部输入
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error('非法 day 格式: ' + day);
-    const dir = path.join('backup', day);
-    if (path.resolve(dir).indexOf(path.resolve('backup') + path.sep) !== 0) throw new Error('day 解析后路径越界: ' + day);
+    // SECURITY: 走 safeJoin，day 已 ISO 格式校验 + 路径边界校验
+    const dir = safeJoin('backup', day, /^\d{4}-\d{2}-\d{2}$/);
     fs.mkdirSync(dir, { recursive: true });
     for (const [name, tbl] of Object.entries(data)) {
-      fs.writeFileSync(path.join(dir, name + '.json'), JSON.stringify(tbl, null, 2));
+      // SECURITY: name 是表名（comments/page_views/daily_page_views/_report），固定白名单
+      const safeName = safeJoin(dir, name, /^[a-zA-Z0-9_]+$/);
+      fs.writeFileSync(safeName + '.json', JSON.stringify(tbl, null, 2));
     }
     fs.writeFileSync(path.join(dir, '_report.json'), JSON.stringify(report, null, 2));
 
     const roots = fs.readdirSync('backup').filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse();
     for (const d of roots.slice(maxKeep)) {
-      fs.rmSync(path.join('backup', d), { recursive: true, force: true });
+      fs.rmSync(safeJoin('backup', d, /^\d{4}-\d{2}-\d{2}$/), { recursive: true, force: true });
     }
   }
 
