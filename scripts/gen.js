@@ -663,6 +663,11 @@ async function compressExistingAssets() {
   }
 }
 
+let HIDDEN = {};
+if (fs.existsSync('hidden.json')) {
+  try { HIDDEN = readJson('hidden.json'); } catch (e) { console.warn('hidden.json 解析失败，忽略'); }
+}
+
 const days = [];
 const searchIndex = [];
 const allGames = [];
@@ -1170,7 +1175,8 @@ html = (function reorderNodes(str) {
 
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
-    days.push({ file: file, gameCount, tag });
+    if (HIDDEN[shortName]) console.log('  (hidden, skipped in index)');
+    else days.push({ file: file, gameCount, tag });
     if (overrides[tag] === undefined || String(overrides[tag]) !== String(computed)) {
       overrides[tag] = computed;
       try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
