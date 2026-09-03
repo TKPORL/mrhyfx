@@ -656,8 +656,11 @@ async function compressExistingAssets() {
       const srcPath = path.resolve(subDirAbs, safeFile);
       const dstName = path.parse(safeFile).name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const dstPath = path.resolve(subDirAbs, dstName + '.webp');
-      if (srcPath.indexOf(assetsRoot + path.sep) !== 0) continue;
-      if (dstPath.indexOf(assetsRoot + path.sep) !== 0) continue;
+      // SECURITY: 边界校验——目标路径相对 assetsRoot 必须落在子树内（startsWith('../' 或以 .. 开  均拦截）
+      const srcRel = path.relative(assetsRoot, srcPath);
+      const dstRel = path.relative(assetsRoot, dstPath);
+      if (srcRel.startsWith('..') || path.isAbsolute(srcRel)) continue;
+      if (dstRel.startsWith('..') || path.isAbsolute(dstRel)) continue;
       if (fs.existsSync(dstPath) && fs.statSync(dstPath).mtime >= fs.statSync(srcPath).mtime) continue;
       try {
         const buf = fs.readFileSync(srcPath);

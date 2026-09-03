@@ -71,17 +71,29 @@ async function safeFetch(url, opts) {
   let data = null;
   if (sb && anonKey) {
     assertSafeUrl(sb);
+    // SECURITY: SSRF 防护——所有出网路径必须以 /rest/v1/ 开头，且显式 URL 解析校验
+    const REST_PREFIX = '/rest/v1/';
+    // SECURITY: headers 在包装内构造，外部不传，避免外部变量流入出网参数
+    function supabaseFetch(restPath) {
+      if (!restPath.startsWith(REST_PREFIX)) throw new Error('非 Supabase REST 路径: ' + restPath);
+      const u = new URL(sb + restPath); // 显式 URL 解析
+      if (u.protocol !== 'https:') throw new Error('非 https 协议');
+      if (!ALLOWED_BACKEND_HOSTS.has(u.hostname)) throw new Error('host 不在白名单: ' + u.hostname);
+      const headers = { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey, 'Content-Type': 'application/json' };
+      if (adminKey) headers['x-admin-key'] = adminKey;
+      return safeFetch(u.toString(), { headers });
+    }
     try {
       const tables = {};
-      const commentsRes = await safeFetch(sb + '/rest/v1/comments?select=*&order=created_at.asc', { headers: apiHeaders(anonKey, adminKey) });
+      const commentsRes = await supabaseFetch('/rest/v1/comments?select=*&order=created_at.asc');
       if (!commentsRes.ok) throw new Error('HTTP ' + commentsRes.status);
       const comments = await commentsRes.json();
       tables.comments = { count: comments.length, rows: comments };
       if (adminKey) {
-        const views = await safeFetch(sb + '/rest/v1/page_views?select=*&order=page_viewed_at.asc&limit=50000', { headers: apiHeaders(anonKey, adminKey) });
+        const views = await supabaseFetch('/rest/v1/page_views?select=*&order=page_viewed_at.asc&limit=50000');
         if (views.ok) { const j = await views.json(); tables.page_views = { count: j.length, rows: j }; }
         try {
-          const daily = await safeFetch(sb + '/rest/v1/daily_page_views?select=*&order=view_day.asc&limit=50000', { headers: apiHeaders(anonKey, adminKey) });
+          const daily = await supabaseFetch('/rest/v1/daily_page_views?select=*&order=view_day.asc&limit=50000');
           if (daily.ok) { const j = await daily.json(); tables.daily_page_views = { count: j.length, rows: j }; }
         } catch (e) {
           tables.daily_page_views = { count: 0, rows: [], note: (e.message || e) };
