@@ -326,7 +326,6 @@ const sharedCss = `<style>
   .mrhx-cinline-form .mrhx-cinline-cancel:hover{color:#e5484d;border-color:#f0b4b6}
   .mrhx-cinline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
-  .mrhx-cinline-to::before{content:'↩ '}
   .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
   .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
   .mrhx-cfbar{text-align:center;margin-top:6px}

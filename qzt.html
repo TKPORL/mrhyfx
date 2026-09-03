@@ -1142,6 +1142,13 @@
   .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
   .mrhx-cpop-ok:hover{background:#c93a3f}
   .mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
+  .mrhx-cfold-wrap{position:relative}
+  .mrhx-cfold-wrap.mrhx-cfolded{max-height:280px;overflow:hidden}
+  .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
+  .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
+  .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
+  .mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
+  .mrhx-cfbar{text-align:center;margin-top:6px}
   .mrhx-cform{margin-top:14px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
   .mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
   .mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
@@ -1167,7 +1174,6 @@
   .mrhx-cinline-form .mrhx-cinline-cancel:hover{color:#e5484d;border-color:#f0b4b6}
   .mrhx-cinline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
-  .mrhx-cinline-to::before{content:'↩ '}
   .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
   .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
@@ -2400,7 +2406,11 @@ rKnight – 把你变成 Gfurry</span></div>
   <!--mrhx-comments-->
 <div class="mrhx-comments" id="mrhx-comments">
   <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div id="mrhx-clist"></div>
+  <div class="mrhx-cfbar" id="mrhx-cfbar" style="display:none"><button type="button" class="mrhx-cfbtn" id="mrhx-cfbar-btn">缩短评论</button></div>
+  <div class="mrhx-cfold-wrap" id="mrhx-cfold-wrap">
+    <div id="mrhx-clist"></div>
+    <div class="mrhx-cfold-mask" id="mrhx-cfold-mask"><button type="button" class="mrhx-cfbtn" id="mrhx-cfold-btn">展开评论</button></div>
+  </div>
   <form id="mrhx-cform" class="mrhx-cform">
     <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
       <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
@@ -2436,6 +2446,34 @@ rKnight – 把你变成 Gfurry</span></div>
   var hpEl = document.getElementById('mrhx-hp');
   var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
   var replyEl = document.getElementById('mrhx-creply');
+  var foldWrap = document.getElementById('mrhx-cfold-wrap');
+  var foldMask = document.getElementById('mrhx-cfold-mask');
+  var foldBtn = document.getElementById('mrhx-cfold-btn');
+  var cfbar = document.getElementById('mrhx-cfbar');
+  var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
+  var folded = true;
+  function applyFold() {
+    if (!foldWrap) return;
+    var need = all.length > 6;
+    if (!need) {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'none';
+      return;
+    }
+    if (folded) {
+      foldWrap.classList.add('mrhx-cfolded');
+      foldMask.classList.add('mrhx-cfold-show');
+      foldBtn.textContent = '展开评论（' + all.length + ' 条）';
+      if (cfbar) cfbar.style.display = 'none';
+    } else {
+      foldWrap.classList.remove('mrhx-cfolded');
+      foldMask.classList.remove('mrhx-cfold-show');
+      if (cfbar) cfbar.style.display = 'block';
+    }
+  }
+  if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
+  if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
   var all = [];
   var popShown = false;
   if (pop) {
@@ -2618,6 +2656,7 @@ rKnight – 把你变成 Gfurry</span></div>
     }
     flatRender();
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
+    applyFold();
   }
   function load() {
     list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>';
