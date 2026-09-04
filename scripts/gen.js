@@ -10,8 +10,9 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFE
 // SECURITY: 路径穿越防护——所有 assets/<tag> 拼接都走这里，禁止直接 path.join
 // 实现：先用 path.resolve 把 ../ 归一化掉，再校验最终路径必须在 assets/ 之内
 function safeAssetDir(tag) {
-  // tag 仅允许中文、数字、点（与 dayTag() 解析输出一致）
-  if (!/^[\u4e00-\u9fa5\d.]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
+  // tag 允许中文、字母、数字、点、下划线、连字符（涵盖如 2026827pc / 2026827pcaz 这类字母后缀；
+  // 路径越界由下方的 path.resolve 二次校验兜底）
+  if (!/^[\u4e00-\u9fa5\w.-]+$/.test(tag)) throw new Error('非法 tag: ' + tag);
   const rootResolved = path.resolve('assets');
   const target = path.resolve(rootResolved, tag);
   const allowed = rootResolved + path.sep;
