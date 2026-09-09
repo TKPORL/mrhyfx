@@ -1491,16 +1491,34 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .sect span{font-size:13px;color:#aaa}
 .result{border:1px solid #ecebe9;border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.result .rt b{font-size:16px;color:#2b2b2b}
+.result .rt a{font-size:16px;color:#2b2b2b;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;padding-bottom:1px}
+.result .rt a:hover{color:#e5484d;border-bottom-color:#e5484d}
 .result .rt .src{font-size:11px;color:#fff;background:#e5484d;border-radius:99px;padding:2px 10px}
 .result .intro{font-size:13px;color:#666;line-height:1.8;margin-bottom:10px;word-break:break-word}
 .result .dl{display:flex;gap:8px;flex-wrap:wrap}
 .result .img{margin-top:10px}
 .result .img img{max-width:100%;border-radius:10px;border:1px solid #ecebe9}
+.result.exact{border-left:3px solid #e5484d}
 .btn-dl{display:inline-flex;align-items:center;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none}
 .btn-dl-m{background:#e5484d;color:#fff}
 .btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
+.empty-box{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:28px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.empty-box h3{font-size:15px;color:#2b2b2b;margin-bottom:8px}
+.empty-box p{font-size:13px;color:#999;margin-bottom:14px}
+.suggest-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.suggest-tag{display:inline-block;background:#faf9f7;border:1px solid #ecebe9;border-radius:9px;padding:6px 14px;font-size:13px;color:#555;text-decoration:none;transition:.2s}
+.suggest-tag:hover{border-color:#e5484d;color:#e5484d;background:#fff}
+.loading-box{text-align:center;padding:40px 0;color:#aaa;font-size:14px}
+.loading-box .spinner{display:inline-block;width:22px;height:22px;border:2.5px solid #ecebe9;border-top-color:#e5484d;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-hist{display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.search-hist span{font-size:12px;color:#bbb}
+.hist-tag{display:inline-block;background:#fff;border:1px solid #ecebe9;border-radius:9px;padding:4px 12px;font-size:12px;color:#888;text-decoration:none;transition:.2s}
+.hist-tag:hover{border-color:#e5484d;color:#e5484d}
+.hist-tag .del{margin-left:4px;font-size:10px;color:#ccc;cursor:pointer}
+.hist-tag .del:hover{color:#e5484d}
+.no-hist{text-align:center;color:#ccc;font-size:12px;padding:10px 0}
 @media (max-width:720px){body{padding-top:75px}.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
 </style>
 </head>
@@ -1530,12 +1548,36 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   var ALL = 30;
   var _hits = [];
   var _page = 0;
-  function rowHtml(g) {
+  var HIST_KEY = 'mrhx_search_hist';
+  var MAX_HIST = 8;
+  function getHist() { try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch(e) { return []; } }
+  function saveHist(kw) {
+    if (!kw) return;
+    var h = getHist().filter(function (v) { return v !== kw; });
+    h.unshift(kw);
+    if (h.length > MAX_HIST) h = h.slice(0, MAX_HIST);
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch(e) {}
+  }
+  function clearHist() { try { localStorage.removeItem(HIST_KEY); } catch(e) {} }
+  function renderHist() {
+    var h = getHist();
+    if (!h.length) return '';
+    var tags = h.map(function (kw) {
+      return '<a class="hist-tag" href="search.html?q=' + encodeURIComponent(kw) + '">' + esc(kw) + '<span class="del" data-kw="' + esc(kw) + '">×</span></a>';
+    }).join('');
+    return '<div class="search-hist"><span>搜索历史</span>' + tags + '<a class="hist-tag" href="javascript:void(0)" id="clear-hist" style="color:#e5484d;border-color:#e5484d">清空</a></div>';
+  }
+  function emptyHtml(kw) {
+    return '<div class="empty-box"><h3>' + (kw ? '没有找到与「' + esc(kw) + '」相关的游戏' : '请使用上方搜索框搜索游戏') + '</h3>' +
+      '<p>' + (kw ? '换个关键词试试，或回到首页浏览' : '返回首页浏览每日分享内容') + '</p>' +
+      '<a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>';
+  }
+  function rowHtml(g, isExact) {
     var dl = (g.links || []).map(function (l) {
       var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result"><div class="rt"><a href="' + esc(g.source) + '.html">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><a href="' + esc(g.url || '') + '">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -1543,7 +1585,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   }
   function renderMore() {
     var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
-    resBox.insertAdjacentHTML('beforeend', slice.map(rowHtml).join(''));
+    resBox.insertAdjacentHTML('beforeend', slice.map(function (g) { return rowHtml(g, g._exact); }).join(''));
     _page++;
     var moreBtn = document.getElementById('mrhx-more');
     if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
@@ -1554,9 +1596,15 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   moreBtn.style.marginTop = '6px';
   resBox.appendChild(moreBtn);
   document.getElementById('mrhx-more').onclick = renderMore;
-  if (!q) { countEl.textContent = '（热门推荐）'; resBox.innerHTML = '<div class="empty">输入关键词搜索全站游戏，或浏览下方热门推荐</div>'; document.getElementById('mrhx-more').style.display = 'none'; }
+  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; document.getElementById('mrhx-more').style.display = 'none'; bindHistClick(); return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
-    if (!q) { _hits = data.slice(0, 8); renderMore(); return; }
+    if (!q) {
+      // Direct access without query - show return to homepage message
+      document.getElementById('mrhx-more').style.display = 'none';
+      bindHistClick();
+      return;
+    }
+    saveHist(q);
     var kw = q.toLowerCase();
     function fuzzyMatch(text, pattern) {
       var t = (text || '').toLowerCase();
@@ -1568,13 +1616,49 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       }
       return pi === p.length;
     }
+    function matchScore(g) {
+      var titleLower = (g.title || '').toLowerCase();
+      var introLower = (g.intro || '').toLowerCase();
+      if (titleLower === kw) return 0;
+      if (titleLower.indexOf(kw) > -1) return 1;
+      if (introLower.indexOf(kw) > -1) return 2;
+      if (titleLower.indexOf(kw.split('').join('%')) > -1) return 3;
+      return 4;
+    }
     _hits = data.filter(function (g) {
       return fuzzyMatch(g.title, kw) || fuzzyMatch(g.intro, kw) || fuzzyMatch(g.plat, kw);
     });
+    if (_hits.length) {
+      _hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
+      _hits.forEach(function (g) { g._exact = matchScore(g) <= 1; });
+    }
     countEl.textContent = '（找到 ' + _hits.length + ' 个）';
-    if (!_hits.length) { resBox.innerHTML = '<div class="empty">没有找到与「' + q + '」相关的游戏</div>'; document.getElementById('mrhx-more').style.display = 'none'; return; }
+    if (!_hits.length) {
+      // Show random recommended games
+      var shuffled = data.slice().sort(function () { return 0.5 - Math.random(); });
+      _hits = shuffled.slice(0, 12);
+      _hits.forEach(function (g) { g._exact = false; });
+      resBox.innerHTML = '<div class="empty-box"><h3>没有找到与「' + esc(kw) + '」相关的游戏</h3><p>为你推荐以下游戏</p></div>';
+      renderMore();
+      return;
+    }
     renderMore();
-  }).catch(function () { resBox.innerHTML = '<div class="empty">搜索索引加载失败</div>'; document.getElementById('mrhx-more').style.display = 'none'; });
+  }).catch(function () { resBox.innerHTML = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>'; document.getElementById('mrhx-more').style.display = 'none'; });
+  function bindHistClick() {
+    var delBtns = document.querySelectorAll('.hist-tag .del');
+    delBtns.forEach(function (el) {
+      el.onclick = function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var kw = el.getAttribute('data-kw');
+        var h = getHist().filter(function (v) { return v !== kw; });
+        try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch(e) {}
+        el.parentElement.remove();
+      };
+    });
+    var clearBtn = document.getElementById('clear-hist');
+    if (clearBtn) clearBtn.onclick = function () { clearHist(); var c = document.querySelector('.search-hist'); if (c) c.remove(); };
+  }
+  bindHistClick();
 })();
 </script>
 </body>
