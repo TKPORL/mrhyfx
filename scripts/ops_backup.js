@@ -43,8 +43,8 @@ function apiHeaders(anonKey, adminKey) {
 }
 
 // SECURITY: SSRF 防护封装——所有出网请求都走 safeFetch，禁止裸 fetch
-async function safeFetch(url, opts) {
-  assertSafeUrl(url);
+async function safeFetch(url, opts, safetyOpts) {
+  assertSafeUrl(url, safetyOpts);
   const res = await fetch(url, Object.assign({ signal: AbortSignal.timeout(30000) }, opts || {}));
   return res;
 }
@@ -60,7 +60,7 @@ async function safeFetch(url, opts) {
 
   try {
     assertSafeUrl(HOST_URL, { allowHome: true }); // SSRF 防护：URL 写死，校验 host 白名单
-    const homeRes = await safeFetch(HOST_URL); // 通过 safeFetch 包装统一拦截
+    const homeRes = await safeFetch(HOST_URL, undefined, { allowHome: true }); // 通过 safeFetch 包装统一拦截
     report.home = homeRes.status;
     if (homeRes.status !== 200) throw new Error('首页返回 ' + homeRes.status);
   } catch (e) {

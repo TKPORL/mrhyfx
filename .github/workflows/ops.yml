@@ -28,7 +28,11 @@ jobs:
           SITE_URL: 'https://tkporl.github.io/mrhyfx/'
         run: |
           node scripts/ops_backup.js
-          echo "report=$(cat backup/health.json)" >> "$GITHUB_OUTPUT"
+          {
+            echo 'report<<EOF'
+            cat backup/health.json
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: 提交备份
         run: |
