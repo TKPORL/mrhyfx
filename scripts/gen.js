@@ -141,24 +141,20 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');
     if (!img) return;
-    var dl = n.querySelector('.mrhx-dl');
-    var hasDl = !!dl;
     var tip = document.createElement('span');
     tip.className = 'img-tip';
-    tip.textContent = hasDl ? '点击图片获取下载链接' : '点击图片查看完整介绍';
+    tip.textContent = '点击图片查看完整介绍';
     n.appendChild(tip);
     var collapseBtn = document.createElement('span');
     collapseBtn.className = 'exp-hint';
     collapseBtn.textContent = '收起 ↑';
     collapseBtn.style.display = 'none';
     n.appendChild(collapseBtn);
-    if (hasDl) n.classList.add('dl-locked');
     img.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
       var on = !n.classList.contains('exp');
       n.classList.toggle('exp', on);
-      if (hasDl) n.classList.add('dl-open');
       collapseBtn.style.display = on ? 'inline-block' : 'none';
     });
     collapseBtn.addEventListener('click', function (e) {
@@ -199,8 +195,6 @@ const sharedCss = `<style>
     .mrhx-bar{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
   }
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .node.dl-locked .mrhx-dl{display:none}
-  .node.dl-locked.dl-open .mrhx-dl{display:flex}
   .mrhx-btn{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
   .mrhx-btn-m{background:#e5484d;color:#fff}
