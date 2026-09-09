@@ -2,6 +2,13 @@
 
 构建 / 工具脚本目录。仓库根 `package.json` 只有 `sharp` 依赖（图片压缩），无 npm scripts。所有脚本直接 `node scripts/<name>.js` 跑。
 
+## ⚠️ 操作红线（2026-09-09 事故教训）
+
+1. **「游戏图片预览目录/」是站长专门放图片的工作目录，绝对不能删除/移动。** 它已加入 `.gitignore`，任何 git 操作（stash/reset/rebase/clean）都不应触碰它。执行 `git stash --include-untracked`、`git reset --hard` 等命令前，先确认工作区没有此目录及其他未跟踪文件。
+2. **重跑 gen.js 后必须核对 qzt.html 游戏数量**：`grep -c '<li class="node heading3"' qzt.html`（应为 72，另有 1 个 node-full 头部节点，合计 73 款）。2026-09-09 曾因「生成 + git 状态混杂」从 73 款丢到 66 款并发布上线。
+3. **幂等性检查**：改完 gen.js 后连续跑 2 次 `node scripts/gen.js`，第二次条目数必须与第一次一致，否则说明解析器有损，禁止提交。
+4. 搜索页 `search_index.json` 每个条目必须有 `url` 字段（帖子页文件名）。丢失会导致搜索结果点击 404。
+
 ## `gen.js`（主构建脚本，92KB）
 
 **做什么**：扫描仓库根的所有 HTML 帖子（白名单除外），重新生成：
