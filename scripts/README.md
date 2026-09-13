@@ -12,6 +12,12 @@
    - **下载按钮层级**：`mrhx-dl` 必须和 `note`（游戏介绍）同层、在 note 之后，**绝不能嵌在 note 内部**——嵌了就会被卡片 CSS 截断隐藏，表现为“只有点图片展开才看到按钮”。自查：`node -e "const fs=require('fs');let n=0;fs.readdirSync('.').filter(f=>/\.html$/.test(f)).forEach(f=>{const h=fs.readFileSync(f,'utf8');const re=/<div class=\"note mm-editor\"[^>]*>([\s\S]*?)<\/div>/g;let m;while((m=re.exec(h)))if(m[1].includes('mrhx-dl'))n++});console.log('嵌套数:',n)"`，结果必须为 0。gen.js 已内置自动解套，但改了模板逻辑后必须重验。
    - **评论区**：打开 qzt.html 确认评论区加载的是 `/qzt.html` 自己的评论（条数与后台一致），不是别的帖子的，也不是空的。
    - **根因提醒**：qzt.html 保留幕布原始结构（节点带 `data-page-node-id`、`<div class="content mm-editor" >` 多一个空格等），gen.js 里任何**精确字符串匹配**的注入/解析代码在 qzt 上会静默失配，导致只有 qzt 出问题而其它帖子正常。写新匹配逻辑时一律用 `[^>]*` 容错属性，不要写死标签。历史上曾因此 qzt 的 72 款游戏全部进不了搜索索引。
+6. **推送前必做：同步检查 + 零丢失验证**（2026-09-13 定型流程；站长通过后台发布的新帖/新游戏/新公告只存在于远端，站长可能忘了自己发过）。固定步骤，缺一不可：
+   1. `git fetch origin main` 后跑 `git rev-list --count HEAD..origin/main`：**不为 0 就必须先同步**，禁止直接 push；
+   2. 同步用 `git rebase origin/main`。生成产物（帖子 HTML / index.html / search_index.json / game_index.json / sitemap.xml / counts.json）冲突时一律取远端版（`git checkout --ours <文件>`），因为下一步会重新生成；手维护文件（site.json / titles.json / pins.json / icons.json / timestamps.json）冲突要人工合并，**不能无脑取一边**（站长的新公告/新标题在里面）；
+   3. 重跑 `node scripts/gen.js` 两遍，第二遍输出必须与第一遍一致（幂等）；
+   4. **零丢失对比**：逐帖提取 `origin/main` 版与本地版的游戏标题集合，线上有而本地没有的 = 事故，禁止 push（参考命令：`git show origin/main:qzt.html` 配合 gen.js 同款正则比对）；同时确认 `counts.json` 里每帖游戏数 = 页面实际节点数；
+   5. 全部通过才 `git push`，推完到 GitHub Actions 盯一眼 gen 工作流是否绿勾。
 
 ## `gen.js`（主构建脚本，92KB）
 
