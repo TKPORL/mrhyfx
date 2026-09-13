@@ -133,26 +133,21 @@ drop policy if exists "comments_insert" on comments;
 
 > 免费额度：GitHub Actions 公共仓库每月免费 2000 分钟，完全够用；QQ 邮箱个人 SMTP 支持免费收发。邮件仅用于通知，访客邮箱只存在 Supabase 数据库里，不会出现在页面代码中。
 
-### 旧版方式（Supabase Edge Function）
+### （已废弃）旧版 Supabase Edge Function 邮件通道
 
-直接在函数里连 SMTP。适合已配置且实测可用的供应商；QQ 邮箱从海外数据中心（如 Supabase 新加坡）发信会被 QQ 静默吞掉，Gmail 新账号从数据中心发信也可能被丢，请以实测为准。
+> ⚠️ 2026-09-13 密钥迁移：前端不再持有 notify-secret，`notify-comment` / `notify-reply` 两个 Edge Function 不再被浏览器调用，已退役。
+> 新评论、站长回复、用户互回复的邮件通知，统一走下面的「数据库触发器 → GitHub Actions」方案，密钥只存在服务端，不进入代码仓库也不下发到网页。
+> 旧密钥 `NOTIFY_SECRET` 曾在公开仓库历史中泄露，**必须作废**：请在 Supabase 后台删除这两个函数或清空其 `NOTIFY_SECRET` 环境变量。
 
-1. Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-reply`，**删掉**编辑器里自动生成的代码，粘贴本仓库 `supabase/functions/notify-reply/index.ts` 里的完整代码 → **Deploy**。
+## 用户评论被回复也通知（#31，与上面同机制）
 
-2. 然后给该函数配置密钥（Edge Functions → 点开函数 → **Settings → Secrets**，或 **Project Settings → Edge Functions → Manage secrets**）：
+普通用户 A 回复了用户 B 的评论时，自动给 B 发一封「XXX 回复了你的评论」邮件。站长回复仍走上面的 send-mail 通道。
 
-| 密钥名 | 示例值 | 说明 |
-|---|---|---|
-| `NOTIFY_SECRET` | `你随便编的一串字符` | 跟后台「邮件通知密钥」填同一个，防止别人乱用你的发信额度 |
-| `SMTP_HOST` | `smtp.qq.com` | 邮箱的 SMTP 服务器地址 |
-| `SMTP_PORT` | `465` | 一般 465（SSL） |
-| `SMTP_USER` | `123456789@qq.com` | 发件邮箱账号 |
-| `SMTP_PASS` | `16 位授权码` | **SMTP 授权码，不是登录密码** |
-| `SMTP_FROM` | `123456789@qq.com` | 发件人邮箱（不填默认用 SMTP_USER） |
-| `SMTP_FROM_NAME` | `黄油站站长` | 邮件里的发件人显示名（可选） |
-| `SITE_NAME` | `Tsinho黄油站` | 邮件标题里的站点名（可选） |
+1. 先完成上面「新评论自动通知站长」的步骤 1–2（app_secret 表里有 github_token / github_repo）。
+2. 打开 Supabase **SQL Editor**，把本仓库 `supabase/upgrade_reply_notify.sql` 贴入运行（可重复执行）。
+3. 仓库已部署 `send-mail.yml`（监听 `notify-reply` 事件），无需额外配置。
 
-3. 后台管理 → 「评论管理」→ 把 `NOTIFY_SECRET` 填到「邮件通知密钥」这一栏。之后后台发布回复时自动发邮件通知对方（GitHub Actions 通道优先，旧版兜底）；不填则回复照常发布、只是不发邮件（状态区会提醒）。
+> 触发器只处理「普通用户的回复」（pid 非空且 is_admin=false），站长回复由后台页面自己触发，不会重复发信。通知失败绝不影响评论入库。
 
 ## 新评论自动通知站长（可选，有人评论后发邮件告诉你）
 
@@ -177,7 +172,7 @@ drop policy if exists "comments_insert" on comments;
 
 ## 访问统计（可选，需额外运行 SQL）
 
-帖子页面自动统计访问次数，仅后台管理可见（不在访客页面显示）。
+帖子页面自动统计访问次数：后台管理可看详细数据，**帖子标题旁也会向访客显示「已被浏览 N 次」**（#30，anon key 直读 page_views，无需额外配置）。
 
 1. 在 Supabase SQL Editor 中运行以下 SQL（管理密钥已填好，直接复制运行即可）：
 

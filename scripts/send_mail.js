@@ -17,7 +17,7 @@ function buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo })
   <div style="background:#ffffff;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.06);overflow:hidden;">
     <div style="padding:24px 22px 0;">
       <div style="font-size:20px;font-weight:700;color:#1d1d1f;">Hi，${esc(toNick)} 👋</div>
-      <div style="margin-top:12px;font-size:16px;line-height:1.7;color:#48484a;">你在「<span style="font-weight:600;color:#1d1d1f;">${esc(postTitle)}</span>」的评论收到了站长 <span style="font-weight:600;color:#e5484d;">${esc(adminNick)}</span> 的回复：</div>
+      <div style="margin-top:12px;font-size:16px;line-height:1.7;color:#48484a;">你在「<span style="font-weight:600;color:#1d1d1f;">${esc(postTitle)}</span>」的评论收到了 <span style="font-weight:600;color:#e5484d;">${esc(adminNick)}</span> 的回复：</div>
     </div>
     <div style="margin:18px 18px 0;padding:16px 18px;background:#fdf0f0;border-left:4px solid #e5484d;border-radius:12px;font-size:16px;line-height:1.7;color:#3a3a3c;">“${nl2br(reply)}”</div>
     <div style="padding:22px 16px 28px;text-align:center;">
@@ -117,7 +117,9 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
   const siteName = process.env.SITE_NAME || 'Tsinho黄油站';
   const adminNick = process.env.MAIL_ADMIN || '站长';
   const toNick = process.env.MAIL_TO_NICK || '朋友';
-  const postTitle = process.env.MAIL_TITLE || '';
+  // 数据库触发器只能传 url 路径（拿不到帖子标题）；若标题是原始 .html 路径则降级为站点名，避免邮件里出现“qzt.html”这种难看文案
+  let postTitle = process.env.MAIL_TITLE || '';
+  if (/\.html$/i.test(postTitle) || postTitle === process.env.MAIL_URL) postTitle = siteName;
   const pageUrl = String(process.env.MAIL_URL || '').replace(/^\//, '');
   const siteUrl = (process.env.SITE_URL || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '/');
   const reply = String(process.env.MAIL_REPLY || '').trim();
@@ -125,7 +127,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
   const text = [
     'Hi ' + toNick + '：',
     '',
-    '你在「' + postTitle + '」的评论收到了站长（' + adminNick + '）的回复：',
+    '你在「' + postTitle + '」的评论收到了（' + adminNick + '）的回复：',
     '',
     '----------------------------------------',
     reply,
@@ -136,7 +138,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
     '（这是一封系统自动发送的通知邮件，请勿直接回复）'
   ].join('\n');
   const url = siteUrl + pageUrl;
-  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo: 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp' });
+  const html = buildHtml({ siteName, adminNick, toNick, postTitle, reply, url, logo: 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp' });
   await smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html });
   console.log('邮件发送成功 -> ' + to);
 })().catch((e) => { console.error('邮件发送失败：' + (e && e.message || e)); process.exit(1); });

@@ -746,10 +746,11 @@ html = (function reorderNodes(str) {
     if (v.enabled && v.url && v.anonKey) {
       const sb = esc(v.url.replace(/\/+$/, ''));
       const key = esc(v.anonKey);
-      const ns = esc(v.notifySecret || '');
+      // 密钥迁移：notifySecret 不再下发到网页（以前每个访客查看源码都能看到）。
+      //   新评论/回复通知改由 Supabase 数据库触发器 → GitHub Actions 完成（supabase/upgrade_notify_comment.sql + upgrade_reply_notify.sql）
       // #39：折叠阈值从 site.json 读（comments.foldThreshold，默认 6），随 MRHXC 配置下发给公共评论脚本
       const fold = Number(v.foldThreshold) > 0 ? Number(v.foldThreshold) : 6;
-      commentBlock = `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${sb}',key:'${key}',ns:'${ns}',path:'/${esc(shortName)}.html',fold:${fold}};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->`;
+      commentBlock = `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${sb}',key:'${key}',path:'/${esc(shortName)}.html',fold:${fold}};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
     html = html.replace(/<button[^>]*class="mrhx-top"[^>]*>[\s\S]*?<\/script>\s*/g, '');
@@ -799,6 +800,29 @@ html = (function reorderNodes(str) {
       ? `本期分享（${dispTitle}）：` + seoNames.slice(0, 8).join('、') + (seoNames.length > 8 ? ` 等 ${seoNames.length} 款` : '') + '。PC+安卓黄油游戏，移动云盘与百度网盘直达下载。'
       : SEO_DESCRIPTION;
     html = html.replace('</head>', `<!--mrhx-seo-->${seoHead(shortName + '.html', dispTitle, { desc: dayDesc, ogImg: firstImg || (CDN_URL + '/logo.webp') })}<!--/mrhx-seo-->\n</head>`);
+
+    // #26：JSON-LD 结构化数据（BlogPosting + 本期游戏列表），帮助搜索引擎理解页面内容
+    {
+      const tsLd = TIMESTAMPS[shortName] ? new Date(TIMESTAMPS[shortName]).toISOString() : null;
+      const ld = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: dispTitle,
+        description: dayDesc,
+        url: SITE_URL + file,
+        isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
+        author: { '@type': 'Organization', name: SITE_AUTHOR },
+        about: games.slice(0, 30).map(g => ({ '@type': 'VideoGame', name: g.title }))
+      };
+      if (firstImg) ld.image = firstImg;
+      if (tsLd) { ld.datePublished = tsLd; ld.dateModified = tsLd; }
+      // </script> 防注入：把 < 转义，JSON 内容不受影响
+      html = html.replace('<!--/mrhx-seo-->', '<script type="application/ld+json">' + JSON.stringify(ld).replace(/</g, '\\u003c') + '</script>\n<!--/mrhx-seo-->');
+    }
+
+    // #30：标题后挂浏览量占位（真实数字由 track.js 从 page_views 拉取；先清旧占位保证幂等）
+    html = html.replace(/<span class="mrhx-views"[^>]*><\/span>/g, '');
+    html = html.replace(/<div class="title">([^<]*)<\/div>/, '<div class="title">$1<span class="mrhx-views" id="mrhx-views"></span></div>');
 
     // 给后台搜索用的「帖子级别」索引：每期帖子的标题 + 所有游戏名 + 帖子正文 intro
     if (!gameIndex[shortName]) {
@@ -1078,6 +1102,30 @@ ${indexScript}
 `;
   fs.writeFileSync('index.html', index);
   console.log('index.html ok (合集模式), days:', days.length);
+
+  // #28：上一期/下一期导航（第二遍：days 已按时间倒序排好，最新在前）。
+  //   求助贴 qzt 不是连载期数，排除在链外也不加导航；隐藏帖不在 days 里自动跳过
+  {
+    const chain = days.filter(d => path.parse(d.file).name !== 'qzt');
+    const navBtn = (href, label, disabled) => disabled
+      ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
+      : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
+    chain.forEach((d, i) => {
+      const older = chain[i + 1];   // 上一期（更早）
+      const newer = chain[i - 1];   // 下一期（更新）
+      const nav = `\n  <!--mrhx-daynav--><div class="mrhx-dl" style="justify-content:space-between;margin-top:18px">` +
+        navBtn(older ? older.file : '', '← 上一期', !older) +
+        navBtn(newer ? newer.file : '', '下一期 →', !newer) +
+        `</div><!--mrhx-daynav-end-->\n  `;
+      let h = fs.readFileSync(d.file, 'utf8');
+      h = h.replace(/<!--mrhx-daynav-->[\s\S]*?<!--mrhx-daynav-end-->\s*/g, '');
+      const anchor = h.indexOf('<!--mrhx-comments-->');
+      if (anchor >= 0) h = h.slice(0, anchor) + nav + h.slice(anchor);
+      else h = h.replace('</body>', nav + '</body>');
+      fs.writeFileSync(d.file, h);
+    });
+    console.log('day-nav ok:', chain.length, 'posts');
+  }
 
   // #32 瘦身：只保留必要字段，简介截前 80 字（当前 250KB，全量简介是体积大头）
   const slimIndex = searchIndex.map(g => ({

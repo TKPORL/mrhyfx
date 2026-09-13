@@ -141,7 +141,7 @@ function smtpSend({ host, port, user, pass, from, fromName, to, subject, text, h
     '（这是一封系统自动发送的通知邮件，请勿直接回复）'
   ].join('\n');
 
-  const html = buildCommentHtml({ siteName, nick, content, url, logo: 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp' });
+  const html = buildCommentHtml({ siteName, nick, content, url, logo: 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp' });
   await smtpSend({ host, port, user, pass, from, fromName, to, subject, text, html });
   console.log('新评论通知邮件发送成功 -> ' + to);
 })().catch((e) => { console.error('邮件发送失败：' + (e && e.message || e)); process.exit(1); });

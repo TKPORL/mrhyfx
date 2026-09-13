@@ -59,3 +59,23 @@
     });
   } catch (x) { console.error('[dl-track]', x) }
 })();
+
+(function () {
+  // #30：拉取本页累计浏览量显示在标题旁（独立于防刷逻辑，达到上限也要能看数字）
+  try {
+    var C = window.MRHXT || {};
+    if (!C.sb || !C.key || !C.path) return;
+    var el = document.getElementById('mrhx-views');
+    if (!el) return;
+    var h = { 'apikey': C.key, 'Authorization': 'Bearer ' + C.key };
+    fetch(C.sb + '/rest/v1/page_views?select=count&url=eq.' + encodeURIComponent(C.path), { headers: h })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.length && typeof d[0].count === 'number') {
+          el.textContent = ' · 已被浏览 ' + d[0].count.toLocaleString() + ' 次';
+          el.style.display = '';
+        } else { el.style.display = 'none'; }
+      })
+      .catch(function () { el.style.display = 'none'; });
+  } catch (e) {}
+})();

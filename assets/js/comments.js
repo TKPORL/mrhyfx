@@ -7,7 +7,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   var C = window.MRHXC || {};
   if (!C.sb || !C.key || !C.path) return;
   document.currentScript.insertAdjacentHTML('beforebegin', MRHX_SKELETON);
-  var SB = C.sb, KEY = C.key, NS = C.ns, PATH = C.path;
+  var SB = C.sb, KEY = C.key, PATH = C.path;
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
@@ -131,13 +131,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
             localStorage.setItem('mrhx_nick', nick);
             localStorage.setItem('mrhx_mail', mail);
             load();
-            if (NS && c.email) {
-              fetch(SB + '/functions/v1/notify-reply', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + KEY, 'notify-secret': NS },
-                body: JSON.stringify({ to: c.email, toNick: c.nick || '朋友', reply: content, adminNick: nick, postTitle: document.title, url: PATH })
-              }).catch(function () {});
-            }
+            // 回复通知：已由 Supabase 触发器自动发邮件（supabase/upgrade_reply_notify.sql），前端不再持有密钥直调
           }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { sendBtn.disabled = false; sendBtn.textContent = '发送'; });
         };
       };
@@ -262,13 +256,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
       form.reset();
       load();
-      if (NS) {
-        fetch(SB + '/functions/v1/notify-comment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + KEY, 'notify-secret': NS },
-          body: JSON.stringify({ nick: nick, content: content, url: PATH })
-        }).catch(function () {});
-      }
+      // 新评论通知站长：已由 Supabase 触发器自动发邮件（supabase/upgrade_notify_comment.sql），前端不再持有密钥直调
     }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   load();
