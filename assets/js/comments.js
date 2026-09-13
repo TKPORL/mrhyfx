@@ -43,11 +43,15 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       if (cfbar) cfbar.style.display = 'block';
     }
   }
-  if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
+  if (foldBtn) foldBtn.onclick = function () {
+    // 「展开评论」：首次展开若后端还有未加载的评论，一次性拉全部；之后展开/收起只切换视图不再请求
+    if (hasMore) { folded = false; fetchPage(true, true); }
+    else { folded = false; applyFold(); }
+  };
   if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
   var all = [];
-  // #22：分页加载，默认每页 200 条，超出部分点「加载更多」再拉（避免大帖一次拉全部越来越慢）
-  var PAGE = 200, offset = 0, hasMore = false, totalKnown = null;
+  // 分页策略：首次只拉 20 条（秒开）；点「展开评论」时一次性拉全部；无「加载更多」按钮
+  var PAGE = 20, offset = 0, hasMore = false, totalKnown = null;
   function totalCount() { return totalKnown != null ? totalKnown : all.length; }
   var popShown = false;
   if (pop) {
@@ -232,41 +236,28 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     flatRender();
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
     applyFold();
-    // #22：「加载更多」按钮放在折叠容器外（foldWrap 之后），不受折叠遮罩遮挡
-    var moreBar = document.getElementById('mrhx-cmorebar');
-    if (!moreBar && foldWrap && foldWrap.parentNode) {
-      moreBar = h('div', 'mrhx-cfbar'); moreBar.id = 'mrhx-cmorebar';
-      foldWrap.parentNode.insertBefore(moreBar, foldWrap.nextSibling);
-    }
-    if (moreBar) {
-      moreBar.textContent = '';
-      moreBar.style.display = hasMore ? 'block' : 'none';
-      if (hasMore) {
-        var mb = h('button', 'mrhx-cfbtn', '加载更多评论');
-        mb.type = 'button';
-        mb.onclick = function () { mb.disabled = true; mb.textContent = '加载中…'; fetchPage(false); };
-        moreBar.appendChild(mb);
-      }
-    }
   }
-  function fetchPage(reset) {
+  function fetchPage(reset, full) {
     if (reset) { list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>'; offset = 0; totalKnown = null; }
-    var q = SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,email,is_admin,pinned,content,created_at&order=created_at.desc&limit=' + PAGE + '&offset=' + offset;
+    var q = SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,email,is_admin,pinned,content,created_at&order=created_at.desc' + (full ? '' : '&limit=' + PAGE + '&offset=' + offset);
     fetch(q, { headers: headers() })
       .then(function (r) {
         if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });
-        var cr = r.headers.get('content-range'); // 形如 0-199/269；CORS 未暴露时为 null
+        var cr = r.headers.get('content-range'); // 形如 0-19/269；CORS 未暴露时为 null
         if (cr) { var tot = parseInt(cr.split('/')[1], 10); if (!isNaN(tot)) totalKnown = tot; }
         return r.json();
       })
       .then(function (d) {
         d = d || [];
-        if (reset) all = d; else all = all.concat(d);
-        offset += d.length;
-        hasMore = totalKnown != null ? all.length < totalKnown : d.length === PAGE;
+        if (full) { all = d; hasMore = false; }
+        else {
+          if (reset) all = d; else all = all.concat(d);
+          offset += d.length;
+          hasMore = totalKnown != null ? all.length < totalKnown : d.length === PAGE;
+        }
         render();
       })
-      .catch(function (e) { if (reset) list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; else { hasMore = false; render(); } });
+      .catch(function (e) { if (reset || full) list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; else render(); });
   }
   function load() {
     fetchPage(true);

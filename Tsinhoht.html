@@ -47,14 +47,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .g-prev figcaption{font-size:10px;color:#999;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g-prev .g-rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .g-prev .g-rm:hover{background:#e5484d}
-.game{cursor:grab;transition:all .2s;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fefefe;position:relative}
+.game{transition:all .2s;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fefefe;position:relative}
 .game:hover{border-color:#d0cec8;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.game.drag{opacity:.4;border-color:#e5484d;box-shadow:0 4px 16px rgba(229,72,77,.15)}
-.game.over{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
 .game.newcard{animation:mrhxPop .5s ease both}
-.game .ghandle{cursor:grab;user-select:none;display:inline-flex;align-items:center;gap:3px;color:#ccc;font-size:14px;margin-right:4px;letter-spacing:-2px;transition:color .2s}
-.game .ghandle:hover{color:#e5484d}
-.game .ghandle:active{cursor:grabbing}
 .game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px}
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d;white-space:nowrap}
 .game .ghead .gbtns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
@@ -957,8 +952,8 @@ function addGameCard(data) {
   const n = box.children.length + 1;
   const d = document.createElement('div');
   d.className = 'game';
-  d.draggable = true;
-  d.innerHTML = `<div class="ghead"><span class="gnum"><span class="ghandle" title="拖动调整顺序">⠿</span>游戏 ${n}</span>
+  // 拖拽已取消（与「移动」按钮功能重叠，且长按选文字会误触发拖动）
+  d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span>
     <div class="gbtns">
       <button class="btn btn-s g-move" type="button">移动</button>
       <button class="btn btn-s g-prevBtn" type="button">预览</button>
@@ -988,7 +983,6 @@ function addGameCard(data) {
   d.querySelector('.g-move').onclick = e => openMove(d, e);
   d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
-  bindDrag(d);
   renum();
   if (!data) {
     d.classList.add('newcard');
@@ -1113,38 +1107,7 @@ function fillCard(card, data) {
   if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
 }
 
-let dragEl = null;
-function bindDrag(card) {
-  const handle = card.querySelector('.ghandle');
-  handle.addEventListener('mousedown', () => { card.draggable = true; });
-  card.addEventListener('dragstart', e => {
-    dragEl = card;
-    card.classList.add('drag');
-    e.dataTransfer.effectAllowed = 'move';
-    try { e.dataTransfer.setData('text/plain', ''); } catch (err) {}
-  });
-  card.addEventListener('dragend', () => { card.classList.remove('drag'); card.draggable = false; dragEl = null; });
-  card.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    card.classList.add('over');
-  });
-  card.addEventListener('dragleave', () => card.classList.remove('over'));
-  card.addEventListener('drop', e => {
-    e.preventDefault();
-    card.classList.remove('over');
-    if (!dragEl || dragEl === card) return;
-    const box = $('gameBox');
-    const children = [...box.children];
-    const from = children.indexOf(dragEl);
-    const to = children.indexOf(card);
-    children.splice(from, 1);
-    children.splice(to, 0, dragEl);
-    children.forEach(c => box.appendChild(c));
-    renum();
-    toast('已调整顺序：' + dragEl.querySelector('.g-name').value.trim() || '游戏 ' + (to + 1));
-  });
-}
+// 拖拽排序已移除：统一用每张卡片的「移动」按钮调整顺序
 function renum() {
   [...$('gameBox').children].forEach((el, i) => {
     el.querySelector('.gnum').textContent = '游戏 ' + (i + 1);
