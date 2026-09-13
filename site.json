@@ -27,7 +27,11 @@
     "enabled": true,
     "url": "https://kydmccknlbpczeqppbtc.supabase.co",
     "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9",
-    "notifySecret": "MyNotify@2026#888"
+    "notifySecret": "MyNotify@2026#888",
+    "foldThreshold": 6
+  },
+  "build": {
+    "excludePosts": ["index.html", "publish.html", "Tsinhoht.html", "search.html", "email-preview.html", "comments-preview.html", "site-preview.html", "jinri.html", "404.html"]
   },
   "seo": {
     "url": "https://tkporl.github.io/mrhyfx/",

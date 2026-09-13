@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm  # #21：有 package-lock.json 时缓存依赖，后续只装新增，省 1-2 分钟
 
       - name: 安装依赖
         run: npm ci

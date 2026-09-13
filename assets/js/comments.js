@@ -21,9 +21,11 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   var cfbar = document.getElementById('mrhx-cfbar');
   var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
   var folded = true;
+  // #39：折叠阈值由页面配置 MRHXC.fold 下发（site.json comments.foldThreshold，默认 6）
+  var FOLD_MIN = (C.fold > 0 ? C.fold : 6);
   function applyFold() {
     if (!foldWrap) return;
-    var need = all.length > 6;
+    var need = all.length > FOLD_MIN;
     if (!need) {
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');

@@ -21,8 +21,6 @@ function safeAssetDir(tag) {
 }
 
 const POST_DIR = '.';
-const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html' && f !== '404.html');
-if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 // 支持命令行传版本号：node scripts/gen.js v2026.8.24（仅 8 位日期格式，先验后用，防止非法参数污染 CDN_URL）
 // 修复 #47 假修复：此前 --verify 会被当成 NEW_TAG，把 CDN_URL 改写成 @--verify 污染源文件
@@ -80,11 +78,17 @@ if (fs.existsSync('site.json')) {
   SITE.comments = Object.assign({}, SITE.comments, s.comments || {});
 }
 
+// #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html'];
+const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
+const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
+if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
+
 const DOWNLOAD_BUTTONS = (SITE.downloadButtons && Array.isArray(SITE.downloadButtons))
   ? SITE.downloadButtons
   : [
-      { name: '百度网盘', pattern: 'pan.baidu.com', cls: 'mrhx-btn-b' },
-      { name: '移动云盘（不限速）', pattern: 'yun.139.com', cls: 'mrhx-btn-m' }
+      { name: '百度网盘', pattern: 'pan.baidu.com', cls: 'mrhx-btn-b', type: 'baidu' },
+      { name: '移动云盘（不限速）', pattern: 'yun.139.com', cls: 'mrhx-btn-m', type: 'mobile' }
     ];
 
 const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
@@ -376,7 +380,9 @@ function rebuildNote(noteHtml) {
     let matched = DOWNLOAD_BUTTONS.find(b => b.pattern && l.url.includes(b.pattern));
     const name = matched ? matched.name : l.label;
     const cls = 'mrhx-btn ' + (matched ? matched.cls : 'mrhx-btn-qk');
-    return `<a class="${cls}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${name}</a>`;
+    // #11：类型标记写进 data-type，统计代码读它而不是猜 class（改样式不断统计）；自定义按钮 type=custom
+    const dtype = matched ? (matched.type || (matched.cls === 'mrhx-btn-m' ? 'mobile' : matched.cls === 'mrhx-btn-b' ? 'baidu' : 'custom')) : 'custom';
+    return `<a class="${cls}" data-type="${dtype}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${name}</a>`;
   }).join('');
   return `<span>${esc(plain)}</span><div class="mrhx-dl">${btns}</div>`;
 }
@@ -615,6 +621,14 @@ for (const file of files) {
 
     html = html.replace(/<a class="mrhx-btn-([a-z-]+)"/g, '<a class="mrhx-btn mrhx-btn-$1"');
 
+    // #11：给已存在的下载按钮补 data-type（历史页面因幂等保护跳过 rebuildNote，按钮不会重建，
+    //   故单独补标；nav 导航按钮不属于下载统计，跳过）
+    html = html.replace(/<a class="mrhx-btn (mrhx-btn-[a-z-]+)"((?:(?!data-type=)[^>])*)>/g, (m, cls, rest) => {
+      if (cls === 'mrhx-btn-nav') return m;
+      const t = cls === 'mrhx-btn-m' ? 'mobile' : cls === 'mrhx-btn-b' ? 'baidu' : 'custom';
+      return `<a class="mrhx-btn ${cls}" data-type="${t}"${rest}>`;
+    });
+
     const pageFallbackPlat = /pcaz|安卓/i.test(tag) ? 'PC+安卓' : (/pc$/i.test(tag) ? 'PC' : '');
 
 html = (function reorderNodes(str) {
@@ -733,7 +747,9 @@ html = (function reorderNodes(str) {
       const sb = esc(v.url.replace(/\/+$/, ''));
       const key = esc(v.anonKey);
       const ns = esc(v.notifySecret || '');
-      commentBlock = `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${sb}',key:'${key}',ns:'${ns}',path:'/${esc(shortName)}.html'};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->`;
+      // #39：折叠阈值从 site.json 读（comments.foldThreshold，默认 6），随 MRHXC 配置下发给公共评论脚本
+      const fold = Number(v.foldThreshold) > 0 ? Number(v.foldThreshold) : 6;
+      commentBlock = `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${sb}',key:'${key}',ns:'${ns}',path:'/${esc(shortName)}.html',fold:${fold}};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
     html = html.replace(/<button[^>]*class="mrhx-top"[^>]*>[\s\S]*?<\/script>\s*/g, '');
