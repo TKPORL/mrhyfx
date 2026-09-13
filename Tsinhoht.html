@@ -795,15 +795,19 @@ function mrhxSmoothScrollTo(targetY, duration) {
   requestAnimationFrame(step);
 }
 var topBtn = $('topBtn');
+var _lastY = 0;
 function _updateTopBtn() {
   var y = window.scrollY || document.documentElement.scrollTop;
   var h = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
   var nearTop = y < 100, nearBottom = h - y < 100;
+  // 方向感知：往下滑提供“去底部↓”，往上滑“回顶部↑”；贴顶强制↓、贴底强制↑。
+  //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+  var dirDown = y >= _lastY; _lastY = y;
   topBtn.classList.toggle('show', y > 10);
-  if (nearTop) {
+  if (nearTop || (!nearBottom && dirDown)) {
     topBtn.textContent = '\u2193';
     topBtn.title = '滚动到底部';
-    topBtn.onclick = function () { mrhxSmoothScrollTo(h + 20, 400); };
+    topBtn.onclick = function () { mrhxSmoothScrollTo(document.documentElement.scrollHeight, 500); };
   } else {
     topBtn.textContent = '\u2191';
     topBtn.title = '滚动到顶部';
@@ -1263,14 +1267,14 @@ function stripNodeList(html, blocks) {
 }
 
 async function buildFormHtml(cards, imagePaths, title, name) {
-  const res = await fetch('8.10.html');
-  if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
+  // 发布壳改用 gen.js 生成的干净骨架（无评论区/统计/导航残留），不再拿 8.10.html 当模板
+  const res = await fetch('assets/template-skeleton.html');
+  if (!res.ok) throw new Error('骨架模板加载失败 HTTP ' + res.status);
   let skeleton = await res.text();
-  // 修复发布中间态 bug：模板 8.10.html 自带评论区路径，不替换会把新帖评论区指到 8.10（显示别的帖评论）。
-  //   兼容两种模板格式：旧内联 var PATH 与新 MRHXC 配置 path
+  // 双保险：若骨架/旧模板里残留评论路径，替换成新帖自己的（兼容旧内联 var PATH 与新 MRHXC 配置 path）
   if (name) {
-    skeleton = skeleton.replace(/var PATH = '\/8\.10\.html'/, `var PATH = '/${name}.html'`);
-    skeleton = skeleton.replace(/path:'\/8\.10\.html'/, `path:'/${name}.html'`);
+    skeleton = skeleton.replace(/var PATH = '[^']*'/, `var PATH = '/${name}.html'`);
+    skeleton = skeleton.replace(/path:'\/[^']*\.html'/, `path:'/${name}.html'`);
   }
   const finalImagePaths = cards.map((c, i) => {
     const selected = imagePaths[i] && imagePaths[i].length ? imagePaths[i] : (c.imgs || '').split('\n');
@@ -2817,13 +2821,13 @@ $('tpl').onclick = async () => {
     show(stH, '正在载入现有页面模板…', 'info');
     const token = $('token').value.trim();
     const repo = $('repo').value.trim();
-    let tplUrl = '8.10.html';
+    let tplUrl = 'assets/template-skeleton.html';
     if (token && repo.includes('/')) {
       try {
         const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
-        const htmlFiles = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'Tsinhoht.html', 'search.html', 'publish.html', 'email-preview.html', 'site-preview.html', 'comments-preview.html'].includes(t.path));
+        const htmlFiles = tree.tree.filter(t => t.type === 'blob' && /\.html$/.test(t.path) && !['index.html', 'Tsinhoht.html', 'search.html', 'publish.html', 'email-preview.html', 'site-preview.html', 'comments-preview.html'].includes(t.path) && !t.path.startsWith('assets/'));
         if (htmlFiles.length) tplUrl = `${RAW_BASE}/${repo}/main/${htmlFiles[0].path}`;
-      } catch (e) { /* fallback to 8.10.html */ }
+      } catch (e) { /* fallback to skeleton */ }
     }
     const res = await fetch(tplUrl);
     if (!res.ok) throw new Error('HTTP ' + res.status);

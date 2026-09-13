@@ -200,13 +200,16 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
     var h = maxScroll();
+    // 方向感知：最近一次是往下滑就提供“去底部↓”，往上滑就“回顶部↑”；贴顶强制↓、贴底强制↑。
+    //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+    var dirDown = y >= lastY; lastY = y;
     var nearTop = y < 100;
     var nearBottom = h - y < 100;
-    if (nearTop) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = toBottom; }
-    else if (nearBottom) { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    if (nearTop || (!nearBottom && dirDown)) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = toBottom; }
     else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     b.classList.add('show');
   }
+  var lastY = 0;
   window.addEventListener('scroll', t, { passive: true });
   t();
 })();
@@ -1113,9 +1116,9 @@ ${indexScript}
   console.log('index.html ok (合集模式), days:', days.length);
 
   // #28：上一期/下一期导航（第二遍：days 已按时间倒序排好，最新在前）。
-  //   求助贴 qzt 不是连载期数，排除在链外也不加导航；隐藏帖不在 days 里自动跳过
+  //   求助贴 qzt 也纳入链（站长要求）；隐藏帖不在 days 里自动跳过
   {
-    const chain = days.filter(d => path.parse(d.file).name !== 'qzt');
+    const chain = days.slice();
     const navBtn = (href, label, disabled) => disabled
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
@@ -1134,6 +1137,38 @@ ${indexScript}
       fs.writeFileSync(d.file, h);
     });
     console.log('day-nav ok:', chain.length, 'posts');
+  }
+
+  // 发布骨架（替代“拿 8.10.html 当模板”）：从最新帖子剥离所有帖子专属内容，
+  //   生成干净的 assets/template-skeleton.html 供后台表单发布取壳。
+  //   骨架里没有评论区/浏览量脚本/导航，gen.js 发布后会重新注入正确路径，从根上消除串帖/按钮嵌套两类中间态 bug
+  {
+    const src = days.length ? days[0].file : null;
+    if (src) {
+      let sk = fs.readFileSync(src, 'utf8');
+      sk = sk.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
+      sk = sk.replace(/<!--view-track-->[\s\S]*?<!--view-track-end-->\s*/g, '');
+      sk = sk.replace(/<!--mrhx-daynav-->[\s\S]*?<!--mrhx-daynav-end-->\s*/g, '');
+      sk = sk.replace(/\s*<!--mrhx-stagger--><style>[\s\S]*?<\/style>\s*/g, '\n');
+      // node-list 含嵌套 ul（image-list），用深度计数找到配对闭合，避免贪婪匹配吞掉 footer/弹窗
+      {
+        const tag = '<ul class="node-list">';
+        const s0 = sk.indexOf(tag);
+        if (s0 >= 0) {
+          let depth = 0, i = s0;
+          for (; i < sk.length; i++) {
+            if (sk.startsWith('<ul', i)) { depth++; i += 2; }
+            else if (sk.startsWith('</ul>', i)) { depth--; i += 4; if (depth === 0) break; }
+          }
+          sk = sk.slice(0, s0) + tag + '\n  </ul>' + sk.slice(i + 5);
+        }
+      }
+      sk = sk.replace(/<div class="title">[\s\S]*?<\/div>/, '<div class="title">新帖子标题</div>');
+      sk = sk.replace(/<title>[^<]*<\/title>/, '<title>发布骨架模板</title>');
+      sk = sk.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->/g, '');
+      fs.writeFileSync('assets/template-skeleton.html', sk);
+      console.log('template-skeleton ok');
+    }
   }
 
   // #32 瘦身：只保留必要字段，简介截前 80 字（当前 250KB，全量简介是体积大头）

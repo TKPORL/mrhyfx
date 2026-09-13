@@ -451,13 +451,16 @@ footer b{color:#e5484d}
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
     var h = maxScroll();
+    // 方向感知：最近一次是往下滑就提供“去底部↓”，往上滑就“回顶部↑”；贴顶强制↓、贴底强制↑。
+    //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+    var dirDown = y >= lastY; lastY = y;
     var nearTop = y < 100;
     var nearBottom = h - y < 100;
-    if (nearTop) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = toBottom; }
-    else if (nearBottom) { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    if (nearTop || (!nearBottom && dirDown)) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = toBottom; }
     else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     b.classList.add('show');
   }
+  var lastY = 0;
   window.addEventListener('scroll', t, { passive: true });
   t();
 })();
