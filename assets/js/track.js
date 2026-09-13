@@ -79,3 +79,22 @@
       .catch(function () { el.style.display = 'none'; });
   } catch (e) {}
 })();
+
+(function () {
+  // 图片加载动效：卡片图未加载完时显示灰色占位+转圈（CSS :has 配合 .mrhx-img-loading），
+  //   加载完成淡入、失败则直接显示 alt，不会永久转圈。不依赖任何配置，所有页面生效。
+  try {
+    function mark(img) {
+      if (img.complete) return; // 已加载/已失败：不加占位态
+      img.classList.add('mrhx-img-loading');
+      img.addEventListener('load', function () { img.classList.remove('mrhx-img-loading'); });
+      img.addEventListener('error', function () { img.classList.remove('mrhx-img-loading'); });
+    }
+    function run() {
+      var imgs = document.querySelectorAll('img.image');
+      for (var i = 0; i < imgs.length; i++) mark(imgs[i]);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+    else run();
+  } catch (e) {}
+})();

@@ -939,7 +939,8 @@ function gameHtml(c, imgPaths) {
   </div>
     
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
-    ${(c.intro || links) ? `<div class="note mm-editor"><span>${esc(c.intro)}</span>${links}</div>` : ''}
+    ${c.intro ? `<div class="note mm-editor"><span>${esc(c.intro)}</span></div>` : ''}
+    ${links}
     ${rows ? `<ul class="image-list">
 ${rows}
   </ul>` : ''}
@@ -1261,10 +1262,16 @@ function stripNodeList(html, blocks) {
   return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 5);
 }
 
-async function buildFormHtml(cards, imagePaths, title) {
+async function buildFormHtml(cards, imagePaths, title, name) {
   const res = await fetch('8.10.html');
   if (!res.ok) throw new Error('模板加载失败 HTTP ' + res.status);
   let skeleton = await res.text();
+  // 修复发布中间态 bug：模板 8.10.html 自带评论区路径，不替换会把新帖评论区指到 8.10（显示别的帖评论）。
+  //   兼容两种模板格式：旧内联 var PATH 与新 MRHXC 配置 path
+  if (name) {
+    skeleton = skeleton.replace(/var PATH = '\/8\.10\.html'/, `var PATH = '/${name}.html'`);
+    skeleton = skeleton.replace(/path:'\/8\.10\.html'/, `path:'/${name}.html'`);
+  }
   const finalImagePaths = cards.map((c, i) => {
     const selected = imagePaths[i] && imagePaths[i].length ? imagePaths[i] : (c.imgs || '').split('\n');
     return [...new Set(selected.map(path => path.trim()).filter(Boolean))];
@@ -2781,7 +2788,7 @@ $('pubForm').onclick = async () => {
     if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
     if (!title) throw new Error('请填写帖子标题');
     const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
-    const htmlContent = await buildFormHtml(cards, imagePaths, $('fTitle').value.trim());
+    const htmlContent = await buildFormHtml(cards, imagePaths, $('fTitle').value.trim(), name);
     await publish(stF, name, title, count, htmlContent);
     await updateTimestamp(repo, token, name).catch(() => {});
     localStorage.removeItem(DRAFT_FORM);
