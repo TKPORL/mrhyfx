@@ -1,0 +1,33 @@
+name: notify-comment
+
+on:
+  repository_dispatch:
+    types: [notify-comment]
+
+concurrency:
+  group: notify-comment-${{ github.event.client_payload.url }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # #46：防止卡死任务无限占用 runner
+    env:
+      COMMENT_NICK: ${{ github.event.client_payload.nick }}
+      COMMENT_EMAIL: ${{ github.event.client_payload.email }}
+      COMMENT_CONTENT: ${{ github.event.client_payload.content }}
+      COMMENT_URL: ${{ github.event.client_payload.url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: 发送邮件
+        env:
+          QQ_SMTP_USER: ${{ secrets.QQ_SMTP_USER }}
+          QQ_SMTP_PASS: ${{ secrets.QQ_SMTP_PASS }}
+          SITE_NAME: ${{ secrets.SITE_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: node scripts/notify_comment_mail.js

@@ -11,6 +11,7 @@ concurrency:
 jobs:
   send:
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # #46：防止卡死任务无限占用 runner
     steps:
       - uses: actions/checkout@v5
 

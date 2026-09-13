@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "gen": "node scripts/gen.js",
+    "backup": "node scripts/ops_backup.js",
+    "verify": "node scripts/gen.js --verify"
+  },
   "dependencies": {
     "sharp": "^0.35.3"
   }

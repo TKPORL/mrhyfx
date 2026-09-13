@@ -24,13 +24,21 @@ const POST_DIR = '.';
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && f !== 'index.html' && f !== 'publish.html' && f !== 'Tsinhoht.html' && f !== 'search.html' && f !== 'email-preview.html' && f !== 'comments-preview.html' && f !== 'site-preview.html' && f !== 'jinri.html' && f !== '404.html');
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
-// 支持命令行传版本号：node scripts/gen.js v2026.8.24
-const NEW_TAG = process.argv[2] || null;
+// 支持命令行传版本号：node scripts/gen.js v2026.8.24（仅 8 位日期格式，先验后用，防止非法参数污染 CDN_URL）
+// 修复 #47 假修复：此前 --verify 会被当成 NEW_TAG，把 CDN_URL 改写成 @--verify 污染源文件
+const ARGS = process.argv.slice(2);
+const VERIFY_ONLY = ARGS.includes('--verify');
+const RAW_TAG = ARGS.find(a => !a.startsWith('--')) || null;
+if (RAW_TAG && RAW_TAG !== 'auto' && !/^\d{8}(?:[-_][\w.-]+)?$/.test(RAW_TAG)) {
+  console.error('非法版本号参数: ' + RAW_TAG + '（应为 8 位日期如 20260912，或 --verify）');
+  process.exit(1);
+}
+const NEW_TAG = VERIFY_ONLY ? null : RAW_TAG;
 if (NEW_TAG && NEW_TAG !== 'auto') {
   const genFile = fs.readFileSync(__filename, 'utf8');
   const updated = genFile.replace(
-    /const CDN_URL = 'https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
-    `const CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
+    /(?:let|const) CDN_URL = 'https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
+    `let CDN_URL = 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
   );
   if (updated !== genFile) {
     fs.writeFileSync(__filename, updated, 'utf8');
@@ -84,33 +92,21 @@ const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
-let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
+// #15：主源换 gcore（jsDelivr 官方中国线路，实测本机最快）；加载失败由 assets/js/cdn-fallback.js 自动换源兼底
+let CDN_URL = 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
 
 // ===== SEO =====
 const SITE_URL = ((SITE.seo && SITE.seo.url) || 'https://tkporl.github.io/mrhyfx/').replace(/\/+$/, '') + '/';
 const SEO_DESCRIPTION = (SITE.seo && SITE.seo.description) ||
   'Tsinho黄油站（Tsinho黄油推荐站·Tsinho工作室）每日更新：PC+安卓双平台黄油游戏分享，AI汉化、官方中文，移动云盘与百度网盘直达下载，支持游戏求助与补档。';
-const SEO_KEYWORDS = (SITE.seo && Array.isArray(SITE.seo.keywords) && SITE.seo.keywords.length)
-  ? SITE.seo.keywords
-  : [
-    // 品牌
-    'Tsinho黄油站', 'Tsinho', 'tsinho', 'TSINHO', 'Tsinho工作室', 'Tsinho黄油推荐站', 'tsinho黄油站', '黄油推荐站',
-    // 品类通用
-    '黄油', '黄油站', '黄油分享', '黄油游戏', '每日黄油分享', '黄油单机', '绅士游戏', '绅士黄油', '绅士游戏下载',
-    '里番游戏', 'ERO游戏', 'eroge', '成人游戏', '18禁游戏', 'R18游戏', '涩涩游戏', 'galgame',
-    // 平台/语言
-    'PC黄油', '安卓黄油', 'PC安卓黄油', 'PC单机黄油', '手机黄油', '安卓手机黄油', '中文黄油', '官中黄油',
-    '官方中文黄油', '汉化黄油', 'AI汉化黄油', 'AI汉化游戏', '生肉黄油',
-    // 类型/玩法
-    'RPG黄油', 'SLG黄油', 'ADV黄油', '动态CG黄油', 'NTR黄油', '像素黄油', '3D黄油',
-    // 搜索意图
-    '黄油下载', '黄油下载站', '黄油网盘下载', '百度网盘黄油', '移动云盘黄油', '免费黄油', '黄油分享网站',
-    '每日更新黄油', '黄油合集', '黄油补档', '黄油求助', '黄油资源', '游戏资源分享', '汉化游戏', '单机游戏', '黄油网站推荐'
-  ];
-function seoHead(file, pageTitle) {
+// #27：meta keywords 搜索引擎早已不用，删除（不再注入）
+function seoHead(file, pageTitle, opts) {
+  // #25：opts.desc —— 帖子页拼本期游戏名；#24：opts.ogImg —— 帖子页/首页用首期游戏封面作分享卡
+  const o = opts || {};
   const t = pageTitle ? `${pageTitle} · ${SITE_NAME}` : `${SITE_NAME} · 每日更新`;
   const url = file ? SITE_URL + file : SITE_URL;
+  const desc = (o.desc || SEO_DESCRIPTION).slice(0, 120);
   const V = (SITE.seo && SITE.seo.verification) || {};
   const verif = [
     V.google && `<meta name="google-site-verification" content="${esc(V.google)}">`,
@@ -120,17 +116,16 @@ function seoHead(file, pageTitle) {
     V.yandex && `<meta name="yandex-verification" content="${esc(V.yandex)}">`
   ].filter(Boolean).join('\n');
   return [
-    `<meta name="description" content="${esc(SEO_DESCRIPTION)}">`,
-    `<meta name="keywords" content="${SEO_KEYWORDS.map(esc).join(',')}">`,
+    `<meta name="description" content="${esc(desc)}">`,
     `<meta name="author" content="${esc(SITE_AUTHOR)}">`,
     `<meta name="robots" content="index,follow">`,
     `<link rel="canonical" href="${url}">`,
     `<meta property="og:type" content="website">`,
     `<meta property="og:site_name" content="${esc(SITE_NAME)}">`,
     `<meta property="og:title" content="${esc(t)}">`,
-    `<meta property="og:description" content="${esc(SEO_DESCRIPTION)}">`,
+    `<meta property="og:description" content="${esc(desc)}">`,
     `<meta property="og:url" content="${url}">`,
-    `<meta property="og:image" content="${CDN_URL}/logo.webp">`,
+    `<meta property="og:image" content="${esc(o.ogImg || (CDN_URL + '/logo.webp'))}">`,
     verif
   ].filter(Boolean).join('\n');
 }
@@ -175,182 +170,34 @@ const newPublish = `<div class="publish" style="display: flex; align-items: cent
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>`;
 
-const sharedCss = `<style>
-  body.narrow{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:120px !important}
-  .mrhx-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;padding:16px 20px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-  .mrhx-bar .mlogo{font-size:21px;font-weight:800;color:#2b2b2b;text-decoration:none;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
-  .mrhx-bar .mlogo span{color:#e5484d}
-  .mrhx-bar .mlogo img.mlogo-img{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
-  .mrhx-bar .bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-  .mrhx-bar .search-row{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-end}
-  .mrhx-bar .mnav{display:flex;gap:8px;flex-wrap:wrap;width:100%;justify-content:flex-end}
-  .mrhx-bar .mnav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-  .mrhx-search{display:flex;align-items:center;gap:5px}
-  .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
-  .mrhx-search input:focus{border-color:#e5484d;background:#fff}
-  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-search button:hover{background:#c93a3f}
-  .mrhx-bar .mnav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
-  @media (min-width:721px){
-    .mrhx-bar{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;border-radius:0 0 14px 14px;border-left:1px solid #ecebe9;border-right:1px solid #ecebe9}
-  }
-  .mrhx-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .mrhx-btn{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
-  .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
-  .mrhx-btn-m{background:#e5484d;color:#fff}
-  .mrhx-btn-m:hover{background:#c93a3f}
-  .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
-  .mrhx-btn-b:hover{background:#d8edde}
-  .mrhx-btn-qk{background:#6366f1;color:#fff}
-  .mrhx-btn-qk:hover{background:#4f46e5}
-  .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
-  .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-  .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
-  .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
-  @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}    .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:12px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
-  .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
-  .node .bullet .bullet-dot{background:#fff}
-  .node.collapsed > .bullet{background-color:#dee0e3}
-  .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
-  .node .content{font-size:14px;font-weight:600;line-height:1.5;word-break:break-word}
-  .node .note{font-size:12px;color:#666;line-height:1.6;margin-top:4px;word-break:break-word;white-space:pre-wrap}
-  .title{font-size:20px;font-weight:700;word-break:break-word;padding-bottom:14px;margin-bottom:14px}
-  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-left:0}
-  body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;padding:0;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
-  body.mrhx-grid2 .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-  body.mrhx-grid2 .node .bullet{display:none}
-  body.mrhx-grid2 .node .image-list{order:-1;margin:0;padding:0;display:block;background:#f4f2ef;overflow:hidden}
-  body.mrhx-grid2 .node .image-list .image-row{margin:0;display:block}
-  body.mrhx-grid2 .node .image-list .image img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#f4f2ef;border-radius:0;cursor:pointer;transition:transform .3s}
-  body.mrhx-grid2 .node:hover .image-list .image img{transform:scale(1.04)}
-  body.mrhx-grid2 .node .content{order:1;margin:12px 14px 0;font-size:14px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  body.mrhx-grid2 .node .note{order:2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:7px 14px 0;font-size:12px;color:#888;line-height:1.65}
-  body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
-  body.mrhx-grid2 .node .mrhx-dl{order:3;margin:8px 14px 12px}
-  body.mrhx-grid2 .node .img-tip{order:4;display:block;margin:0 14px 12px;font-size:11px;color:#aaa;text-align:center}
-  body.mrhx-grid2 .node.exp .img-tip{display:none}
-  body.mrhx-grid2 .node .exp-hint{order:5;display:none;margin:0 14px 12px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;max-width:calc(100% - 28px);cursor:pointer}
-  body.mrhx-grid2 .node .exp-hint:hover{border-color:#e5484d;color:#e5484d}
-  body.mrhx-grid2 .node-full{grid-column:1/-1;display:flex;flex-direction:column}
-  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible}
-  body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
-  .mrhx-plat{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#e5484d;white-space:nowrap}
-  @media (max-width:720px){
-    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
-    .mrhx-bar{padding:12px 14px;gap:10px}
-    .mrhx-bar .mlogo{font-size:17px}
-    .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
-    .mrhx-bar .bar-right{gap:8px}
-    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-    .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
-    .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .mrhx-bar .search-row{width:100%;justify-content:flex-end}
-    .mrhx-search{width:100%}
-    .mrhx-search input{flex:1;width:auto}
-    .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:12px;margin-bottom:12px}
-    .node-list{margin-left:0}
-    .node{padding:12px;border-radius:12px}
-    .node .bullet{display:none}
-    .node .content{font-size:14px}
-    .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
-    body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    body.mrhx-grid2 .node{border-radius:12px}
-    body.mrhx-grid2 .node .content{margin:10px 12px 0}
-    body.mrhx-grid2 .node .note{margin:6px 12px 0;font-size:12px}
-    body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
-    body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}
-    body.mrhx-grid2 .node .exp-hint{margin:0 12px 12px}
-    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
-    .image-list .image{max-width:100% !important}
-  }
-  .mrhx-comments{width:100%;max-width:100%;min-width:0;margin-top:24px;padding-top:16px;border-top:2px solid #ecebe9;box-sizing:border-box}
-  .mrhx-comments *{box-sizing:border-box}
-  .mrhx-comments h2{font-size:17px;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:baseline;gap:8px;font-weight:700}
-  .mrhx-cnum{font-size:12px;color:#aaa;font-weight:400}
-  .mrhx-citem{width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:12px 14px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.2s}
-  .mrhx-citem:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
-  .mrhx-creply-item{width:auto;min-width:0;max-width:100%;box-sizing:border-box;border:1px solid #ecebe9;border-left:3px solid #f0b4b6;border-radius:10px;background:#fdf9f7;box-shadow:0 1px 2px rgba(0,0,0,.02);padding:10px 12px;margin-top:6px}
-  .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 4px 12px rgba(229,72,77,.06)}
-  .mrhx-thread{margin-top:4px;padding-left:0;overflow:hidden}
-  .mrhx-chead{display:flex;align-items:center;gap:6px;margin-bottom:3px;min-width:0}
-  .mrhx-cav{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#fbc4c7,#e5484d);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .mrhx-cmeta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0}
-  .mrhx-cmeta b{font-size:12px;color:#2b2b2b;font-weight:600}
-  .mrhx-replyto{font-size:10px;color:#e58d0a;font-weight:500;white-space:nowrap}
-  .mrhx-cmeta .mrhx-ctime{font-size:10px;color:#b8b2aa}
-  .mrhx-ccontent{font-size:12px;color:#444;line-height:1.6;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;padding-left:28px;margin-top:0}
-  .mrhx-cbar{margin-top:4px;padding-left:28px;display:flex;gap:4px}
-  .mrhx-cbtn{border:1px solid #ecebe9;background:#faf9f7;color:#888;font-size:11px;cursor:pointer;padding:3px 10px;border-radius:99px;transition:.2s}
-  .mrhx-cbtn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  .mrhx-cdel{color:#c93a3f}
-  .mrhx-cdel:hover{color:#fff;background:#e5484d;border-color:#e5484d}
-  .mrhx-cav-admin{background:linear-gradient(135deg,#ff6b3d,#e5484d)}
-  .mrhx-cbadge{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:4px;letter-spacing:.5px}
-  .mrhx-cpin{background:#e58d0a}
-  .mrhx-citem-admin{border-color:#f0b4b6;background:linear-gradient(180deg,#fff,#fff8f7)}
-  .mrhx-cpop{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
-  .mrhx-cpop.show{display:flex}
-  .mrhx-cpop-box{background:#fff;border-radius:14px;max-width:430px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mrhxFade .25s ease both}
-  .mrhx-cpop-box h3{font-size:15px;color:#2b2b2b;margin-bottom:10px}
-  .mrhx-cpop-box p{font-size:13px;color:#555;line-height:1.9}
-  .mrhx-cpop-ok{margin-top:16px;width:100%;border:none;background:#e5484d;color:#fff;padding:10px 0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-  .mrhx-cpop-ok:hover{background:#c93a3f}
-  .mrhx-cempty{font-size:13px;color:#999;padding:14px 4px;text-align:center}
-  .mrhx-cform{margin-top:14px;background:#fff;border:1px solid #ecebe9;border-radius:13px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.04);box-sizing:border-box;overflow:hidden}
-  .mrhx-cform-title{font-size:14px;font-weight:700;color:#2b2b2b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-  .mrhx-cform-title::before{content:'';width:4px;height:14px;border-radius:2px;background:#e5484d}
-  .mrhx-crow{display:flex;gap:10px;margin-bottom:10px}
-  .mrhx-crow input{flex:1;border:1px solid #e2e0dc;border-radius:9px;padding:10px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-width:0;transition:.2s}
-  .mrhx-cform textarea{width:100%;border:1px solid #e2e0dc;border-radius:9px;padding:11px 12px;font-size:13px;font-family:inherit;background:#faf9f7;min-height:82px;resize:vertical;box-sizing:border-box;transition:.2s}
-  .mrhx-cform textarea:focus,.mrhx-crow input:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
-  .mrhx-csub{justify-content:space-between;align-items:center;margin-bottom:0}
-  .mrhx-csub button{border:none;background:#e5484d;color:#fff;padding:10px 26px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-csub button:hover{background:#c93a3f}
-  .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
-  .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  .mrhx-cfold-wrap{position:relative}
-  .mrhx-cfold-wrap.mrhx-cfolded{max-height:280px;overflow:hidden}
-  .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
-  .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
-  .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}
-  .mrhx-cfbtn:hover{background:#fdf3f3;border-color:#e5484d;transform:translateY(-1px)}
-  .mrhx-cinline-form{margin-top:8px;padding:12px;background:#faf9f7;border:1px solid #ecebe9;border-radius:10px;animation:mrhxFade .2s ease both;box-sizing:border-box;overflow:hidden}
-  .mrhx-cinline-form textarea{width:100%;border:1px solid #e2e0dc;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;background:#fff;min-height:60px;resize:vertical;box-sizing:border-box;transition:.2s;margin-bottom:8px}
-  .mrhx-cinline-form textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.08)}
-  .mrhx-cinline-form .mrhx-cinline-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .mrhx-cinline-form .mrhx-cinline-row input{flex:1;min-width:80px;border:1px solid #e2e0dc;border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;background:#fff}
-  .mrhx-cinline-form .mrhx-cinline-row input:focus{outline:none;border-color:#e5484d}
-  .mrhx-cinline-form .mrhx-cinline-send{border:none;background:#e5484d;color:#fff;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
-  .mrhx-cinline-form .mrhx-cinline-send:hover{background:#c93a3f}
-  .mrhx-cinline-form .mrhx-cinline-send:disabled{opacity:.5;cursor:not-allowed}
-  .mrhx-cinline-form .mrhx-cinline-cancel{border:1px solid #ecebe9;background:#fff;color:#888;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
-  .mrhx-cinline-form .mrhx-cinline-cancel:hover{color:#e5484d;border-color:#f0b4b6}
-  .mrhx-cinline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
-  .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
-  .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
-  .mrhx-cfbar{text-align:center;margin-top:6px}
-  @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
-  .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
-  .mrhx-top.show{opacity:1;pointer-events:auto}
-  .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
-  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}
-  :focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:4px}
-  .mrhx-popup[role='dialog']:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
-</style>`;
-
 const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
 <script>
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
+  function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
+  // 修复：懒加载图片会在滚动中不断撑高页面，旧版把目标位置缓存在闭包里，
+  // 首次点击按“旧高度”滚到一半就停。现在点击时实时计算，并在停下后检查是否真到底，没到底自动接着滚
+  function toBottom() {
+    var tries = 0, last = -1;
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    var step = function () {
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var h = maxScroll();
+      if (h - y <= 2 || tries >= 6) return;
+      if (y === last) { tries++; window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); }
+      else { tries = 0; }
+      last = y;
+      setTimeout(step, 350);
+    };
+    setTimeout(step, 350);
+  }
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
-    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var h = maxScroll();
     var nearTop = y < 100;
     var nearBottom = h - y < 100;
-    if (nearTop) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = function () { window.scrollTo({ top: h, behavior: 'smooth' }); }; }
+    if (nearTop) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = toBottom; }
     else if (nearBottom) { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     b.classList.add('show');
@@ -398,40 +245,12 @@ const popupHtml = (() => {
 </style>`;
 })();
 
-const viewScript = (sb, key, path) => `<script>
-(function () {
-  try {
-    // 北京时间（UTC+8）切日，跟后台 bjDay() 口径一致，跨 0 点数据不漏算
-    var day = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-    var k = 'mrhx_v_' + day + '_' + '${path}'.replace(/[^a-zA-Z0-9]/g, '_');
-    if (localStorage.getItem(k)) return;
-    localStorage.setItem(k, '1');
-    var h = { 'apikey': '${key}', 'Authorization': 'Bearer ${key}', 'Content-Type': 'application/json' };
-    fetch('${sb}/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}' }) })
-      .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
-      .catch(function (e) { console.error('[view-track] inc_page_view', e); });
-    fetch('${sb}/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '${path}', p_day: day }) })
-      .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
-      .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
-  } catch (e) { console.error('[view-track]', e); }
-})();
-</script>`;
-
-const dlTrackScript = (sb, key, postUrl) => `<script>
-(function(){
-  var SB='${sb}',K='${key}',POST='${postUrl}';
-  var h={'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'};
-  document.addEventListener('click',function(e){
-    var a=e.target.closest('a.mrhx-btn-m,a.mrhx-btn-b,a.mrhx-btn-qk');
-    if(!a)return;
-    try{
-      var game=a.closest('.node');
-      var name=game?game.querySelector('.content.mm-editor span'):null;
-      fetch(SB+'/rest/v1/download_clicks',{method:'POST',headers:h,body:JSON.stringify({post_url:POST,game_name:name?name.textContent.trim():'',link_url:a.href,link_type:a.classList.contains('mrhx-btn-m')?'mobile':a.classList.contains('mrhx-btn-b')?'baidu':'custom',created_at:new Date().toISOString()})}).then(function(r){if(!r.ok)console.error('[dl-track] HTTP',r.status)}).catch(function(x){console.error('[dl-track]',x)});
-    }catch(x){console.error('[dl-track]',x)}
-  });
-})();
-</script>`;
+// #12：帖子页不再内联重复的统计代码，改为引用公共文件 assets/js/track.js（构建时由 writeSharedAssets 写出）
+// #8：保留注释锚点，重跑时整段替换，不会重复注入
+const viewScript = (sb, key, path) => `<!--view-track-->
+<script>window.MRHXT={sb:'${sb}',key:'${key}',path:'${path}'};</script>
+<script src="assets/js/track.js"></script>
+<!--view-track-end-->`;
 
 const staggered = Array.from({ length: 20 }, (_, i) => `.node:nth-child(${i + 1}){animation-delay:${Math.round(i * 50) / 1000}s}`).join('\n');
 
@@ -462,8 +281,9 @@ function iconTitle(d) {
 }
 
 async function localize(html, tag) {
-  // 先把所有旧 CDN URL 替换成 @main，不需要重新下载
-  html = html.replace(/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main`);
+  // #15：先把所有旧 CDN 链接（任意 jsdelivr 镜像域名/任意 tag）统一改写到主源 @main，不需要重新下载
+  html = html.replace(/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^/"]+/g, `${CDN_URL.replace(/^https:\/\//, '')}`);
+  html = html.replace(/https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@main/g, CDN_URL);
   // 移除幕布导出的内嵌字体（@font-face base64）
   html = html.replace(/@font-face\s*\{[^}]*font-family\s*:\s*['"]?mm-iconfont['"]?;[^}]*\}/g, '');
   html = html.replace(/\.mm-iconfont::before\s*\{[^}]*\}/g, '');
@@ -479,14 +299,17 @@ async function localize(html, tag) {
   });
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
-    .filter(url => !url.includes(CDN_URL));
+    .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url));
   if (urls.length) {
     // SECURITY: tag 走 safeAssetDir，固定白名单正则 + 路径边界校验
     const dir = safeAssetDir(tag);
     fs.mkdirSync(dir, { recursive: true });
-    let n = 0;
-    for (const url of urls) {
-      const name = `img_${String(++n).padStart(2, '0')}.webp`;
+    // #16：5 路并发下载池（原为逐张串行，每张都要等上一张下完+压缩完）；
+    //   文件名按原顺序预分配 img_NN，sharp 压缩在各自任务内完成，结果互不干扰
+    const names = urls.map((_, i) => `img_${String(i + 1).padStart(2, '0')}.webp`);
+    let done = 0;
+    const queue = urls.map((url, idx) => async () => {
+      const name = names[idx];
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           const res = await fetch(url);
@@ -504,10 +327,31 @@ async function localize(html, tag) {
           else await new Promise(r => setTimeout(r, 1500 * attempt));
         }
       }
-    }
+      done++;
+    });
+    let qi = 0;
+    const workers = Array.from({ length: Math.min(5, queue.length) }, async () => {
+      while (qi < queue.length) { const job = queue[qi++]; await job(); }
+    });
+    await Promise.all(workers);
   }
-  html = html.replace(/assets\/[^"\/]+(?=\/)/g, 'assets/' + tag);
-  html = html.replace(/src="assets\//g, `src="${CDN_URL}/assets/`);
+  // #12：公共脚本/样式目录（assets/js、assets/css）不参与帖子图片目录重写，否则会被误改写成 assets/<tag>/
+  html = html.replace(/assets\/(?!js\/|css\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
+  html = html.replace(/src="assets\/(?!js\/|css\/)/g, `src="${CDN_URL}/assets/`);
+  html = html.replace(/href="assets\/(?!js\/|css\/)/g, `href="${CDN_URL}/assets/`);
+  // #13：帖子卡片图懒加载（每帖首图不懒，保证首屏立即出图）
+  // 先清除旧 lazy 标记再重新打（修正历史误标，如首卡被误懒）；logo/favicon 等非卡片图不占豁免名额
+  html = html.replace(/<img\b([^>]*)>/gi, (m, attrs) => {
+    if (!/loading="lazy"/.test(attrs)) return m;
+    return `<img${attrs.replace(/\s*loading="lazy"/g, '').replace(/\s*decoding="async"/g, '')}>`;
+  });
+  let cardIdx = 0;
+  html = html.replace(/<img\b(?![^>]*loading=)([^>]*)>/gi, (m, attrs) => {
+    if (!/class="[^"]*image/.test(attrs)) return m; // 只懒加载游戏卡片图
+    cardIdx++;
+    if (cardIdx <= 1) return m; // 每帖首张卡片图不懒加载
+    return `<img loading="lazy" decoding="async"${attrs}>`;
+  });
   return html.split('crossorigin="anonymous"').join('');
 }
 
@@ -591,12 +435,13 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
+<script src="assets/js/cdn-fallback.js" defer></script>
 </body>
 </html>
 `;
 }
 
-function verify(days, index) {
+function verify(days, index, searchIndex) {
   const errors = [];
   for (const d of days) {
     // skip qzt.html and jinri.html from normal day-page checks (different structure)
@@ -612,7 +457,8 @@ function verify(days, index) {
     const h1Ok = h.includes(`>${esc(disp)}</div>`);
     if (!titleOk && !h1Ok) errors.push(`帖子标题未同步: ${d.file} (期望 ${disp})`);
     if ((isQzt || isJinri) ? false : SITE.comments.enabled && !h.includes('<!--mrhx-comments-->')) errors.push(`评论区注入缺失: ${d.file}`);
-    if ((isQzt || isJinri) ? false : SITE.comments.enabled && !h.includes('inc_page_view')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
+    // #9：qzt/jinri 不再跳过浏览量注入检查；#12 后帖子页改为引用公共 track 脚本
+    if ((isQzt || isJinri) ? false : SITE.comments.enabled && !h.includes('inc_page_view') && !h.includes('assets/js/track.js')) errors.push(`浏览量脚本注入缺失: ${d.file}`);
     [...h.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/g)].forEach(m => {
       const t = m[1].replace(/<[^>]+>/g, '').trim();
       if (/(?:PC\s*\+\s*安卓|PC|安卓){2,}/.test(t)) errors.push(`标题含重复平台标记: ${d.file} → ${t}`);
@@ -622,6 +468,30 @@ function verify(days, index) {
       if (/javascript:/i.test(u) || /[\s"'<>]/.test(u)) errors.push(`非法链接格式: ${d.file} → ${u}`);
     });
   }
+
+  // #9（2026-09-09 事故教训）：全部游戏页/今日页不再跳过数量校验，不足下限直接报错终止发布
+  const qzt = days.find(d => d.file === 'qzt.html');
+  const QZT_MIN = 72; // 2026-09-09 事故后定的下限：丢到 66 款时必须拦截
+  if (!qzt) {
+    errors.push('qzt.html 未进入生成结果（全部游戏页丢失？）');
+  } else if (Number(qzt.gameCount) < QZT_MIN) {
+    errors.push(`qzt.html 游戏数 ${qzt.gameCount} 低于下限 ${QZT_MIN}（疑似节点丢失，禁止发布）`);
+  }
+  // jinri.html 不经 gen.js 生成（files 已排除），做文件级完整性校验
+  if (!fs.existsSync('jinri.html')) {
+    errors.push('jinri.html 文件丢失（今日页）');
+  } else if (!fs.readFileSync('jinri.html', 'utf8').includes('今日合集')) {
+    errors.push('jinri.html 内容异常（缺少「今日合集」标记）');
+  }
+
+  // #10：搜索索引每条必须有非空 url 且指向的帖子文件存在，否则点击搜索结果 404
+  const noUrl = searchIndex.filter(g => !g.url);
+  if (noUrl.length) errors.push(`search_index.json 有 ${noUrl.length} 条缺少 url，如：${noUrl[0].title}`);
+  const urlFiles = new Set(searchIndex.filter(g => g.url).map(g => g.url));
+  for (const u of urlFiles) {
+    if (!fs.existsSync(u)) errors.push(`search_index.json 的 url 指向不存在的文件: ${u}`);
+  }
+
   if (errors.length) {
     console.error('❌ 发布自检未通过:');
     errors.forEach(e => console.error('  - ' + e));
@@ -723,10 +593,18 @@ for (const file of files) {
       const second = m.match(/<link rel="apple-touch-icon"[^>]*>/);
       return first && second ? `${first[0]}\n${second[0]}\n` : m;
     });
-    const viewRe = /(<script>\s*\(function \(\) \{\s*try \{[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*)(?=[\s\S]*?inc_page_view)/g;
-    html = html.replace(viewRe, '');
+    // 锚点清除（本次改造后新格式）
+    html = html.replace(/<!--view-track-->[\s\S]*?<!--view-track-end-->\s*/g, '');
+    // legacy 清除：历史文件里无锚点的旧注入（含 2026825 等重复注入帖子的第二段），全部移除后统一重注入
+    html = html.replace(/<script>\s*\(function \(\) \{\s*try \{[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
 
     html = html.replace(/\n\s*<li class="node">[\s\S]*?<\/li>/g, '');
+
+    // 修复：若下载按钮被误嵌套在 note 内部（幕布粘贴/手改常见），提取到 note 之后同层。
+    //   嵌套时 grid2 卡片 CSS 的行截断会把按钮裁掉，表现为“按钮被隐藏，点图片展开才出现”。
+    //   正则兼容幕布节点的 data-page-node-id 属性；note 内部若另有 </div> 则不动，避免误伤嵌套结构
+    html = html.replace(/<div class="note mm-editor"[^>]*>((?:(?!<\/div>)[\s\S])*?)<div class="mrhx-dl"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g,
+      (m, noteInner, dlInner) => `<div class="note mm-editor">${noteInner}</div>\n    <div class="mrhx-dl">${dlInner}</div>`);
 
     html = html.replace(/<div class="note mm-editor">([\s\S]*?)<\/div>/g,
       (m, inner) => {
@@ -825,7 +703,7 @@ html = (function reorderNodes(str) {
   <div class="mnav">${navPills}</div>
   </div>
 </div>`;
-    const injected = `<!--mrhx-->\n${sharedCss}\n${bar}\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n${bar}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -847,317 +725,37 @@ html = (function reorderNodes(str) {
 <link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
 </head>`);
     html = html.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->/g, '');
-    html = html.replace('</head>', `<!--mrhx-seo-->${seoHead(shortName + '.html', dispTitle)}<!--/mrhx-seo-->\n</head>`);
+    // #24/#25：帖子页 SEO 注入延后到 games 解析之后（见本循环末尾）
 
     const v = SITE.comments;
     let commentBlock = '';
     if (v.enabled && v.url && v.anonKey) {
       const sb = esc(v.url.replace(/\/+$/, ''));
       const key = esc(v.anonKey);
-      commentBlock = `<!--mrhx-comments-->
-<div class="mrhx-comments" id="mrhx-comments">
-  <h2>评论区<span class="mrhx-cnum" id="mrhx-cnum"></span></h2>
-  <div class="mrhx-cfbar" id="mrhx-cfbar" style="display:none"><button type="button" class="mrhx-cfbtn" id="mrhx-cfbar-btn">缩短评论</button></div>
-  <div class="mrhx-cfold-wrap" id="mrhx-cfold-wrap">
-    <div id="mrhx-clist"></div>
-    <div class="mrhx-cfold-mask" id="mrhx-cfold-mask"><button type="button" class="mrhx-cfbtn" id="mrhx-cfold-btn">展开评论</button></div>
-  </div>
-  <form id="mrhx-cform" class="mrhx-cform">
-    <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
-      <label>请不要填写此栏<input type="text" id="mrhx-hp" name="website" tabindex="-1" autocomplete="off"></label>
-    </div>
-    <div class="mrhx-cform-title">💬 发表评论</div>
-    <div class="mrhx-crow">
-      <input type="text" id="mrhx-nick" placeholder="昵称" maxlength="30" required>
-      <input type="email" id="mrhx-mail" placeholder="常用邮箱（站长回复会发到这里）" required>
-    </div>
-    <textarea id="mrhx-ctext" placeholder="友善评论，请支持正版…" maxlength="2000" required></textarea>
-    <div class="mrhx-crow mrhx-csub">
-      <span id="mrhx-creply" class="mrhx-creply"></span>
-      <button type="submit">发表评论</button>
-    </div>
-  </form>
-</div>
-<div class="mrhx-cpop" id="mrhx-cpop" role="dialog" aria-modal="true" aria-labelledby="mrhx-cpop-title">
-  <div class="mrhx-cpop-box">
-    <h3 id="mrhx-cpop-title">邮箱填写提示</h3>
-    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>
-    <button type="button" class="mrhx-cpop-ok" id="mrhx-cpop-ok">知道了</button>
-  </div>
-</div>
-<script>
-(function () {
-  var SB = '${sb}';
-  var KEY = '${key}';
-  var PATH = '/${esc(shortName)}.html';
-  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
-  var list = document.getElementById('mrhx-clist');
-  var form = document.getElementById('mrhx-cform');
-  var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
-  var hpEl = document.getElementById('mrhx-hp');
-  var pop = document.getElementById('mrhx-cpop'), popOk = document.getElementById('mrhx-cpop-ok');
-  var replyEl = document.getElementById('mrhx-creply');
-  var foldWrap = document.getElementById('mrhx-cfold-wrap');
-  var foldMask = document.getElementById('mrhx-cfold-mask');
-  var foldBtn = document.getElementById('mrhx-cfold-btn');
-  var cfbar = document.getElementById('mrhx-cfbar');
-  var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
-  var folded = true;
-  function applyFold() {
-    if (!foldWrap) return;
-    var need = all.length > 6;
-    if (!need) {
-      foldWrap.classList.remove('mrhx-cfolded');
-      foldMask.classList.remove('mrhx-cfold-show');
-      if (cfbar) cfbar.style.display = 'none';
-      return;
-    }
-    if (folded) {
-      foldWrap.classList.add('mrhx-cfolded');
-      foldMask.classList.add('mrhx-cfold-show');
-      foldBtn.textContent = '展开评论（' + all.length + ' 条）';
-      if (cfbar) cfbar.style.display = 'none';
-    } else {
-      foldWrap.classList.remove('mrhx-cfolded');
-      foldMask.classList.remove('mrhx-cfold-show');
-      if (cfbar) cfbar.style.display = 'block';
-    }
-  }
-  if (foldBtn) foldBtn.onclick = function () { folded = false; applyFold(); };
-  if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
-  var all = [];
-  var popShown = false;
-  if (pop) {
-    mailEl.addEventListener('focus', function () { if (!popShown) { popShown = true; pop.classList.add('show'); } });
-    pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('show'); });
-    popOk.addEventListener('click', function () { pop.classList.remove('show'); });
-  }
-  function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
-  function headers() {
-    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
-  }
-  function render() {
-    list.textContent = '';
-    document.getElementById('mrhx-cnum').textContent = all.length ? '（' + all.length + ' 条）' : '';
-    function buildRow(c) {
-      var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
-      var head = h('div', 'mrhx-chead');
-      head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
-      var meta = h('div', 'mrhx-cmeta');
-      meta.appendChild(h('b', '', c.nick || '匿名'));
-      if (c.pid) {
-        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
-        if (parent) meta.appendChild(h('span', 'mrhx-replyto', '回复 @' + (parent.nick || '匿名')));
-      }
-      if (c.is_admin) meta.appendChild(h('span', 'mrhx-cbadge', '站长'));
-      if (c.pinned) meta.appendChild(h('span', 'mrhx-cbadge mrhx-cpin', '置顶'));
-      meta.appendChild(h('span', 'mrhx-ctime', new Date(c.created_at).toLocaleString()));
-      head.appendChild(meta);
-      row.appendChild(head);
-      row.appendChild(h('div', 'mrhx-ccontent', c.content));      var bar = h('div', 'mrhx-cbar');
-      if (!c.pinned) {
-      var rp = h('button', 'mrhx-cbtn', '回复');
-      rp.type = 'button';
-      rp.onclick = function () {
-        var existForm = row.querySelector('.mrhx-cinline-form');
-        if (existForm) { existForm.remove(); return; }
-        document.querySelectorAll('.mrhx-cinline-form').forEach(function(f) { f.remove(); });
-        var iform = document.createElement('div');
-        iform.className = 'mrhx-cinline-form';
-        var ihead = document.createElement('div');
-        ihead.className = 'mrhx-cinline-head';
-        ihead.appendChild(h('span', 'mrhx-cinline-to', '回复 @' + (c.nick || '匿名')));
-        var xBtn = document.createElement('button');
-        xBtn.type = 'button'; xBtn.className = 'mrhx-cinline-x'; xBtn.textContent = '取消';
-        ihead.appendChild(xBtn);
-        iform.appendChild(ihead);
-        var ta = document.createElement('textarea');
-        ta.placeholder = '回复 @' + (c.nick || '匿名') + '…';
-        ta.maxLength = 2000;
-        iform.appendChild(ta);
-        var frow = document.createElement('div');
-        frow.className = 'mrhx-cinline-row';
-        var inick = document.createElement('input');
-        inick.type = 'text'; inick.placeholder = '昵称'; inick.maxLength = 30;
-        inick.value = localStorage.getItem('mrhx_nick') || '';
-        var imail = document.createElement('input');
-        imail.type = 'email'; imail.placeholder = '邮箱'; imail.value = localStorage.getItem('mrhx_mail') || '';
-        var sendBtn = document.createElement('button');
-        sendBtn.type = 'button'; sendBtn.className = 'mrhx-cinline-send'; sendBtn.textContent = '发送';
-        var cancelBtn = document.createElement('button');
-        cancelBtn.type = 'button'; cancelBtn.className = 'mrhx-cinline-cancel'; cancelBtn.textContent = '取消';
-        frow.appendChild(inick); frow.appendChild(imail); frow.appendChild(sendBtn); frow.appendChild(cancelBtn);
-        iform.appendChild(frow);
-        bar.parentNode.insertBefore(iform, bar.nextSibling);
-        ta.focus();
-        imail.addEventListener('focus', function () { if (!popShown) { popShown = true; if (pop) pop.classList.add('show'); } });
-        xBtn.onclick = function () { iform.remove(); };
-        cancelBtn.onclick = function () { iform.remove(); };
-        sendBtn.onclick = function () {
-          var nick = inick.value.trim(), mail = imail.value.trim(), content = ta.value.trim();
-          if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
-          sendBtn.disabled = true; sendBtn.textContent = '发送中…';
-          fetch(SB + '/rest/v1/rpc/guard_comment', {
-            method: 'POST',
-            headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-            body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: c.id })
-          }).then(function (r) {
-            if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
-            if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-            return r.json();
-          }).then(function (d) {
-            if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-            localStorage.setItem('mrhx_nick', nick);
-            localStorage.setItem('mrhx_mail', mail);
-            load();
-          }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { sendBtn.disabled = false; sendBtn.textContent = '发送'; });
-        };
-      };
-      bar.appendChild(rp);
-      }
-      if (ADMIN) {
-        var eb = h('button', 'mrhx-cbtn', '编辑');
-        eb.type = 'button';
-        eb.onclick = function () {
-          var box = row.querySelector('.mrhx-cedit');
-          if (box) { box.style.display = box.style.display === 'none' ? 'block' : 'none'; return; }
-          var wrap = document.createElement('div');
-          wrap.className = 'mrhx-cedit';
-          wrap.style.cssText = 'margin-top:8px;padding:8px;background:#faf9f7;border-radius:8px;border:1px solid #e8e8e8';
-          var ta = document.createElement('textarea');
-          ta.value = c.content;
-          ta.style.cssText = 'width:100%;min-height:50px;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit;resize:vertical';
-          var saveBtn = h('button', 'mrhx-cbtn', '保存');
-          saveBtn.type = 'button';
-          saveBtn.style.cssText = 'margin-top:6px;margin-right:6px;background:#e5484d;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
-          saveBtn.onclick = function () {
-            var val = ta.value.trim();
-            if (!val) { alert('内容不能为空'); return; }
-            saveBtn.disabled = true; saveBtn.textContent = '保存中…';
-            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ content: val }) })
-              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('编辑失败：' + e.message); saveBtn.disabled = false; saveBtn.textContent = '保存'; });
-          };
-          var cancelBtn = h('button', 'mrhx-cbtn', '取消');
-          cancelBtn.type = 'button';
-          cancelBtn.style.cssText = 'margin-top:6px;background:#f0f0f0;color:#666;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
-          cancelBtn.onclick = function () { wrap.style.display = 'none'; };
-          wrap.appendChild(ta);
-          wrap.appendChild(saveBtn);
-          wrap.appendChild(cancelBtn);
-          row.appendChild(wrap);
-        };
-        bar.appendChild(eb);
-        var dl = h('button', 'mrhx-cbtn mrhx-cdel', '删除');
-        dl.type = 'button';
-        dl.onclick = function () {
-          if (!confirm('删除这条评论及其回复？')) return;
-          fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
-            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-            .catch(function (e) { alert('删除失败：' + e.message); });
-        };
-        bar.appendChild(dl);
-        if (!c.pid) {
-          var pin = h('button', 'mrhx-cbtn', c.pinned ? '取消置顶' : '置顶');
-          pin.type = 'button';
-          pin.onclick = function () {
-            fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
-              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + '\\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
-          };
-          bar.appendChild(pin);
-        }
-      }
-      row.appendChild(bar);
-      return row;
-    }
-    function flatRender() {
-      var depthMap = {};
-      function getDepth(c) {
-        if (depthMap[c.id] !== undefined) return depthMap[c.id];
-        if (!c.pid) { depthMap[c.id] = 0; return 0; }
-        var parent = all.filter(function(p) { return p.id === c.pid; })[0];
-        depthMap[c.id] = parent ? getDepth(parent) + 1 : 0;
-        return depthMap[c.id];
-      }
-      all.forEach(function(c) { getDepth(c); });
-      function latestActivity(c) {
-        var latest = c.created_at;
-        all.forEach(function(r) { if (r.pid === c.id && r.created_at > latest) latest = r.created_at; });
-        return latest;
-      }
-      var topLevel = all.filter(function(c) { return !c.pid; })
-        .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a)); });
-      function renderChildren(parentId) {
-        all.filter(function(r) { return r.pid === parentId; })
-          .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
-          .forEach(function(r) {
-            var d = depthMap[r.id] || 1;
-            var row = buildRow(r);
-            row.style.marginLeft = d > 0 ? '20px' : '';
-            list.appendChild(row);
-            renderChildren(r.id);
-          });
-      }
-      topLevel.forEach(function(c) {
-        list.appendChild(buildRow(c));
-        renderChildren(c.id);
-      });
-    }
-    flatRender();
-    if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
-    applyFold();
-  }
-  function load() {
-    list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>';
-    fetch(SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,is_admin,pinned,content,created_at&order=created_at.desc', { headers: headers() })
-      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); }); return r.json(); })
-      .then(function (d) { all = d || []; render(); })
-      .catch(function (e) { list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; });
-  }
-  form.onsubmit = function (e) {
-    e.preventDefault();
-    if (hpEl && hpEl.value) { form.reset(); return; }
-    var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
-    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
-    var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
-    fetch(SB + '/rest/v1/rpc/guard_comment', {
-      method: 'POST',
-      headers: Object.assign(headers(), { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ p_url: PATH, p_nick: nick, p_email: mail, p_content: content, p_pid: null })
-    }).then(function (r) {
-      if (r.status === 404) throw new Error('评论防护服务尚未部署，请联系站长');
-      if (!r.ok) return r.json().then(function (d) { throw new Error((d && (d.message || d.details)) || 'HTTP ' + r.status); });
-      return r.json();
-    }).then(function (d) {
-      if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-      form.reset();
-      load();
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
-  };
-  load();
-})();
-</script>
-<!--mrhx-comments-end-->`;
+      const ns = esc(v.notifySecret || '');
+      commentBlock = `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${sb}',key:'${key}',ns:'${ns}',path:'/${esc(shortName)}.html'};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->`;
     }
     html = html.replace(/<!--mrhx-comments-->[\s\S]*?<!--mrhx-comments-end-->\s*/g, '');
     html = html.replace(/<button[^>]*class="mrhx-top"[^>]*>[\s\S]*?<\/script>\s*/g, '');
-    html = html.replace(/<script>\s*\(function \(\) \{\s*try \{\s*var day = new Date\(\)[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace(/<!--view-track-->[\s\S]*?<!--view-track-end-->\s*/g, '');
+    html = html.replace(/<script>\s*\(function \(\) \{\s*try \{[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
     const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
-    const dt = (v.enabled && v.url && v.anonKey) ? dlTrackScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
-    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${dt ? '\n  ' + dt : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
+    html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  <script src="assets/js/cdn-fallback.js" defer></script>\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
+    // 兼容带 data-page-node-id 属性的节点（qzt 等幕布原始结构），否则这些帖子的游戏全部进不了搜索索引
+    const nodeOpenRe = /<li class="node heading3"[^>]*>/g;
     while (pos < html.length) {
-      const h3 = html.indexOf('<li class="node heading3">', pos);
-      if (h3 < 0) break;
+      nodeOpenRe.lastIndex = pos;
+      const mm = nodeOpenRe.exec(html);
+      if (!mm) break;
+      const h3 = mm.index;
       let depth = 0, i = h3;
       while (i < html.length) {
         if (html.indexOf('<li', i) === i) depth++;
@@ -1167,19 +765,28 @@ html = (function reorderNodes(str) {
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      const title = ((b.match(/<div class="content mm-editor" ><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
-      const intro = (b.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
+      const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
+      const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
-      const plat = (b.match(/<em class="mrhx-plat">([^<]*)<\/em>/) || [])[1] || '';
+      const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
-      return { title, intro, img, links, plat, source: TITLES[shortName] || shortName };
+      // #10：帖子级 url（搜索结果标题跳转用）。缺失会导致点击结果 404/空链接
+      return { title, intro, img, links, plat, url: file, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
     searchIndex.push(...games);
     allGames.push(...games.map(g => ({ ...g, file })));
 
+    // #24/#25：分享卡用本期首游戏封面（无封面回退 logo）；description 拼本期游戏名
+    const firstImg = (games.map(g => g.img).filter(Boolean)[0]) || '';
+    const seoNames = games.map(g => g.title).filter(Boolean);
+    const dayDesc = seoNames.length
+      ? `本期分享（${dispTitle}）：` + seoNames.slice(0, 8).join('、') + (seoNames.length > 8 ? ` 等 ${seoNames.length} 款` : '') + '。PC+安卓黄油游戏，移动云盘与百度网盘直达下载。'
+      : SEO_DESCRIPTION;
+    html = html.replace('</head>', `<!--mrhx-seo-->${seoHead(shortName + '.html', dispTitle, { desc: dayDesc, ogImg: firstImg || (CDN_URL + '/logo.webp') })}<!--/mrhx-seo-->\n</head>`);
+
     // 给后台搜索用的「帖子级别」索引：每期帖子的标题 + 所有游戏名 + 帖子正文 intro
     if (!gameIndex[shortName]) {
-      const postIntro = (html.match(/<div class="note mm-editor"><span>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
+      const postIntro = (html.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       gameIndex[shortName] = {
         title: TITLES[shortName] || shortName,
         games: games.map(g => g.title).filter(Boolean),
@@ -1190,7 +797,8 @@ html = (function reorderNodes(str) {
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
     if (HIDDEN[shortName]) console.log('  (hidden, skipped in index)');
-    else days.push({ file: file, gameCount, tag });
+    // #24：记录每期首游戏封面，供首页分享卡取「最后一期（首页首位）」的封面
+    else days.push({ file: file, gameCount, tag, cover: firstImg || '' });
     if (overrides[tag] === undefined || String(overrides[tag]) !== String(computed)) {
       overrides[tag] = computed;
       try { fs.writeFileSync('counts.json', JSON.stringify(overrides, null, 2) + '\n'); } catch (e) {}
@@ -1245,7 +853,7 @@ html = (function reorderNodes(str) {
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
-    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/]+\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
+    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/]+\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
     return `<a class="post" href="${_pfile}" data-path="/${_pfile}" style="animation-delay:${di * 0.1}s">
@@ -1325,7 +933,7 @@ html = (function reorderNodes(str) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${SITE_NAME} · 每日更新</title>
-${seoHead('', null)}
+${seoHead('', null, { ogImg: (days[0] && days[0].cover) || (CDN_URL + '/logo.webp') })}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
@@ -1447,6 +1055,7 @@ footer b{color:#e5484d}
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
+<script src="assets/js/cdn-fallback.js" defer></script>
 ${indexScript}
 </body>
 </html>
@@ -1454,8 +1063,18 @@ ${indexScript}
   fs.writeFileSync('index.html', index);
   console.log('index.html ok (合集模式), days:', days.length);
 
-  fs.writeFileSync('search_index.json', JSON.stringify(searchIndex));
-  console.log('search_index.json ok, games:', searchIndex.length);
+  // #32 瘦身：只保留必要字段，简介截前 80 字（当前 250KB，全量简介是体积大头）
+  const slimIndex = searchIndex.map(g => ({
+    title: g.title,
+    url: g.url,
+    img: g.img,
+    plat: g.plat,
+    links: g.links,
+    intro: (g.intro || '').slice(0, 80),
+    source: g.source
+  }));
+  fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
+  console.log('search_index.json ok, games:', slimIndex.length);
 
   fs.writeFileSync('game_index.json', JSON.stringify(gameIndex, null, 2));
   console.log('game_index.json ok, posts:', Object.keys(gameIndex).length);
@@ -1661,6 +1280,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   bindHistClick();
 })();
 </script>
+<script src="assets/js/cdn-fallback.js" defer></script>
 </body>
 </html>
 `;
@@ -1686,9 +1306,9 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\nDisallow: /Tsinhoht.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
   console.log('robots.txt ok');
 
-  // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理）
+  // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理；--verify 模式不发布）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {
-    // NEW_TAG 来自命令行，仅允许 YYYYMMDD 格式数字 + 可选短横线后缀，避免 shell 注入
+    // NEW_TAG 已在顶部校验过格式，此处双重保险防 shell 注入
     if (!/^\d{8}(?:[-_][\w.-]+)?$/.test(NEW_TAG)) throw new Error('非法 NEW_TAG: ' + NEW_TAG);
     try {
       execFileSync('git', ['add', '-A'], { stdio: 'inherit' });

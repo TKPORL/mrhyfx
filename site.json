@@ -26,7 +26,8 @@
   "comments": {
     "enabled": true,
     "url": "https://kydmccknlbpczeqppbtc.supabase.co",
-    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
+    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9",
+    "notifySecret": "MyNotify@2026#888"
   },
   "seo": {
     "url": "https://tkporl.github.io/mrhyfx/",

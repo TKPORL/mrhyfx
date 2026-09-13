@@ -12,6 +12,7 @@ concurrency:
 jobs:
   ops:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # #46：防止卡死任务无限占用 runner
     permissions:
       contents: write
     steps:

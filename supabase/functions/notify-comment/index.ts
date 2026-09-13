@@ -1,13 +1,44 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, notify-secret",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+// ⚠️ 已废弃：本函数已被 GitHub Actions 方案替代（.github/workflows/notify-comment.yml + scripts/notify_comment_mail.js）
+// 原由：Supabase 计划外停用 pg_net 的 HTTP POST 功能，改用 GitHub Actions repository_dispatch 触发邮件。
+// 如果你已切换到新方案，可以安全删除本函数和旧的 upgrade_notify_comment.sql。
 
-const json = (data, status = 200) =>
+// CORS：只允许本站调用；服务端调用（数据库触发器/curl）无 Origin 头，放行
+const ALLOWED_ORIGINS = [
+  "https://tkporl.github.io",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+];
+
+function corsHeadersFor(req: Request) {
+  const origin = req.headers.get("Origin") || "";
+  const allow = !origin || ALLOWED_ORIGINS.includes(origin) ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allow || ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, notify-secret",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    ...(allow ? { Vary: "Origin" } : {}),
+  };
+}
+
+// 来源限制：无 Origin/Referer = 非浏览器调用（Supabase pg_net 触发器、curl），放行
+function checkOrigin(req: Request): boolean {
+  const origin = req.headers.get("Origin");
+  if (origin === null) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  const referer = req.headers.get("Referer");
+  if (referer) {
+    try {
+      const r = new URL(referer);
+      if (ALLOWED_ORIGINS.includes(r.protocol + "//" + r.host)) return true;
+    } catch (_) { /* 无效 Referer，继续拒绝 */ }
+  }
+  return false;
+}
+
+const json = (data, status = 200, req: Request) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeadersFor(req), "Content-Type": "application/json" },
   });
 
 const b64 = (s: string) => {
@@ -28,6 +59,19 @@ interface SmtpOpts {
   to: string;
   subject: string;
   text: string;
+}
+
+// #45：SMTP 整体 10 秒超时，避免邮件服务器挂死时函数无限等待
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: number | undefined;
+  const timeout = new Promise<never>((_, rej) => {
+    t = setTimeout(() => rej(new Error(label + "超时(" + ms / 1000 + "s)")), ms) as unknown as number;
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 async function smtpSend(o: SmtpOpts) {
@@ -93,29 +137,34 @@ async function smtpSend(o: SmtpOpts) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeadersFor(req) });
 
   try {
+    // 来源限制：浏览器跨站调用必须是本站
+    if (!checkOrigin(req)) {
+      return json({ ok: false, error: "调用来源不被允许" }, 403, req);
+    }
+
     const secret = req.headers.get("notify-secret") || "";
     const notifySecret = Deno.env.get("NOTIFY_SECRET") || "";
     if (!notifySecret || secret !== notifySecret) {
-      return json({ ok: false, error: "notify-secret 不正确或未配置" }, 401);
+      return json({ ok: false, error: "notify-secret 不正确或未配置" }, 401, req);
     }
 
     const body = await req.json().catch(() => null);
-    if (!body) return json({ ok: false, error: "请求体不是有效 JSON" }, 400);
+    if (!body) return json({ ok: false, error: "请求体不是有效 JSON" }, 400, req);
 
     const nick = String(body.nick || "匿名").trim();
     const content = String(body.content || "").trim();
     const url = String(body.url || "").replace(/^\//, "");
-    if (!content) return json({ ok: false, error: "缺少评论内容" }, 400);
+    if (!content) return json({ ok: false, error: "缺少评论内容" }, 400, req);
 
     const host = Deno.env.get("SMTP_HOST") || "";
     const port = parseInt(Deno.env.get("SMTP_PORT") || "465", 10);
     const user = Deno.env.get("SMTP_USER") || "";
     const pass = Deno.env.get("SMTP_PASS") || "";
     if (!host || !user || !pass) {
-      return json({ ok: false, error: "SMTP 未配置（请设置 SMTP_HOST / SMTP_USER / SMTP_PASS 等密钥）" }, 500);
+      return json({ ok: false, error: "SMTP 未配置（请设置 SMTP_HOST / SMTP_USER / SMTP_PASS 等密钥）" }, 500, req);
     }
 
     const from = Deno.env.get("SMTP_FROM") || user;
@@ -138,9 +187,10 @@ Deno.serve(async (req) => {
       "（这是一封系统自动发送的通知邮件，请勿直接回复）",
     ].join("\n");
 
-    await smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】收到一条新评论", text });
-    return json({ ok: true, smtpHost: host, smtpPort: port, smtpUser: user });
+    await withTimeout(smtpSend({ host, port, user, pass, from, fromName, to, subject: "【" + siteName + "】收到一条新评论", text }), 10000, "SMTP");
+    // 安全：不回传 SMTP 配置（避免泄露发件邮箱）
+    return json({ ok: true }, 200, req);
   } catch (e) {
-    return json({ ok: false, error: String((e && e.message) || e) }, 500);
+    return json({ ok: false, error: String((e && e.message) || e) }, 500, req);
   }
 });

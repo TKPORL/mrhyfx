@@ -1,4 +1,15 @@
-﻿comments-preview.html
+comments-preview.html
 site-preview.html
+email-preview.html
+preview-b.bat
+优化清单.md
+.monkeycode/
+.ohmyagent/
+.workbuddy/
 node_modules/
 游戏图片预览目录/
+# 机密与本地杂物：发布走 git add -A，必须保证以下路径被忽略，防密钥/内部脚本上公开仓库
+GitHub/
+notify-comment/
+supabase/.temp/
+*.log

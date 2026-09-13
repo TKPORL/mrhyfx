@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
 <title>发布中心 · 黄油分享</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
@@ -169,10 +170,33 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 @keyframes mrhxSpin{to{transform:rotate(360deg)}}
 .mrhx-inc{display:inline-block;font-size:12px;font-weight:700;color:#1a7f37;margin-left:4px;vertical-align:middle;animation:mrhxFade .3s ease both;transition:opacity .5s ease}
 .mrhx-inc.hide{opacity:0}
+/* 密码门禁 */
+#gateLock{position:fixed;inset:0;z-index:10000;background:#f5f4f0;display:none;align-items:center;justify-content:center}
+#gateLock.show{display:flex}
+body.gate-pending header.gate-body{display:none!important}
+body.gate-pending .gate-body{display:none!important}
+body.gate-pending main{display:none!important}
+#gateLock .gate-card{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:34px 30px 28px;width:92vw;max-width:360px;box-shadow:0 10px 40px rgba(0,0,0,.08);text-align:center;animation:panelIn .3s ease both}
+#gateLock .gate-card h2{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
+#gateLock .gate-card p{font-size:12px;color:#999;margin-bottom:18px}
+#gateLock input{width:100%;border:1px solid #dedcd6;border-radius:8px;padding:10px 12px;font-size:14px;text-align:center;letter-spacing:2px}
+#gateLock input:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
+#gateLock .gate-err{font-size:12px;color:#c93a3f;margin-top:10px;min-height:16px}
+#gateLock button{margin-top:14px;width:100%;padding:10px;border:none;border-radius:8px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+#gateLock button:hover{background:#c93a3f}
 </style>
 </head>
-<body>
-<header>
+<body class="gate-pending">
+<div id="gateLock">
+  <div class="gate-card">
+    <h2>后台登录</h2>
+    <p>请输入管理密码进入发布中心</p>
+    <input type="password" id="gatePw" placeholder="管理密码" autocomplete="current-password" maxlength="32">
+    <div class="gate-err" id="gateErr"></div>
+    <button type="button" id="gateGo">进入</button>
+  </div>
+</div>
+<header class="gate-body">
   <div class="hwrap">
     <a class="site" href="index.html">黄油<em>分享</em></a>
     <div class="hnav">
@@ -241,7 +265,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <label for="token">GitHub Token（repo 权限）</label>
         <div class="pwwrap">
           <input type="password" id="token" autocomplete="off">
-          <button type="button" class="pw-eye" data-eye="token" title="显示/隐藏">👁</button>
+          <button type="button" class="pw-eye" data-eye="token" title="显示/隐藏" aria-label="显示令牌" aria-pressed="false">👁</button>
         </div>
         <div class="row">
           <label for="rememberToken"><input type="checkbox" id="rememberToken"> 记住 Token</label>
@@ -299,7 +323,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <label>管理密钥（自己在 SQL 里设置的那串自定义密钥，只存本浏览器）</label>
         <div class="pwwrap">
           <input type="password" id="sbSecret" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px">
-          <button type="button" class="pw-eye" data-eye="sbSecret" title="显示/隐藏">👁</button>
+          <button type="button" class="pw-eye" data-eye="sbSecret" title="显示/隐藏" aria-label="显示密钥" aria-pressed="false">👁</button>
         </div>
         <p class="hint">Supabase 浏览器端禁止使用 secret 私钥，所以删除评论改用自编密钥：SQL 里设置一个，这里填同一个，即可删除评论。只存你浏览器，绝不写入网站。</p>
       </div>
@@ -307,7 +331,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
         <label>邮件通知方式（站长回复评论时自动发邮件给用户）</label>
         <div class="pwwrap">
           <input type="password" id="sbNotify" autocomplete="off" style="font-family:Consolas,monospace;font-size:12px" placeholder="旧版 Supabase 通道的 Notify-Secret（选填）">
-          <button type="button" class="pw-eye" data-eye="sbNotify" title="显示/隐藏">👁</button>
+          <button type="button" class="pw-eye" data-eye="sbNotify" title="显示/隐藏" aria-label="显示密钥" aria-pressed="false">👁</button>
         </div>
         <p class="hint">推荐：上面「发布帖子」页签填好 GitHub Token（勾选 repo + workflow 权限）后，本站长回复会自动触发仓库 Actions 用你的 QQ 邮箱发邮件给用户（见 README「站长回复邮件通知」）。此框仅供旧版 Supabase 通道使用：部署 notify-reply 函数并配好 SMTP 后，把 Notify-Secret 填这里（只存本浏览器）。两种方式都不填则回复照常发布、只是不发邮件。</p>
       </div>
@@ -477,6 +501,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
     </div>
   </div>
 </main>
+<div class="gate-body">
 <div class="overlay" id="overlay"></div>
 <div class="modal" id="previewModal">
   <div class="mhead"><h2>实时预览</h2><button type="button" class="modal-close" id="previewClose">×</button></div>
@@ -485,7 +510,42 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 <div class="del-list" id="delList"></div>
 <div class="mrhx-toast" id="toast"></div>
 <button type="button" class="mrhx-top" id="topBtn" title="回到顶部">↑</button>
+</div>
 <script>
+// ===== 密码门禁（防误入，非服务器级防护）=====
+// djb2 hash：避免密码明文直接暴露在源码里
+const GATE_KEY = 'mrhx_gate_ok';
+(function () {
+  function djb2(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+    return h.toString(16);
+  }
+  const PW_HASH = 'e75649f0'; // Tsinho123 的 djb2
+  const lock = document.getElementById('gateLock');
+  const pw = document.getElementById('gatePw');
+  const err = document.getElementById('gateErr');
+  function unlock() {
+    lock.classList.remove('show');
+    document.body.classList.remove('gate-pending');
+  }
+  function tryPw() {
+    const v = pw.value;
+    if (djb2(v) === PW_HASH) {
+      localStorage.setItem(GATE_KEY, PW_HASH);
+      unlock();
+    } else {
+      err.textContent = '密码不正确，请重试';
+      pw.value = '';
+      pw.focus();
+    }
+  }
+  if (localStorage.getItem(GATE_KEY) === PW_HASH) { unlock(); return; }
+  lock.classList.add('show');
+  document.getElementById('gateGo').onclick = tryPw;
+  pw.onkeydown = e => { if (e.key === 'Enter') tryPw(); };
+  setTimeout(() => pw.focus(), 100);
+})();
 const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
 const REPO_KEY = 'mrhx_repo_v1';
@@ -1848,6 +1908,9 @@ document.addEventListener('click', function (e) {
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
   btn.textContent = show ? '🙈' : '👁';
+  // #33：屏幕阅读器能听到当前状态，而不是只有一个 emoji
+  btn.setAttribute('aria-label', show ? '隐藏' : '显示');
+  btn.setAttribute('aria-pressed', String(show));
 });
 
 const sbBase = () => ($('sbUrl').value.trim() || '').replace(/\/+$/, '');

@@ -17,8 +17,10 @@
 - `scripts/gen.js` — 生成器（本地化图片、注入页头/按钮/动效/评论区、生成首页）
 - `scripts/parse.js` — 解析幕布 HTML 生成 games.json
 - `scripts/send_mail.js` — 邮件发送脚本（GitHub Actions 里用 QQ SMTP 发「站长回复」通知，零依赖）
+- `scripts/notify_comment_mail.js` — 新评论通知站长邮件脚本（数据库触发 → GitHub Actions → QQ SMTP）
 - `.github/workflows/gen.yml` — 每次推送自动运行 gen.js 并提交生成结果
 - `.github/workflows/send-mail.yml` — 后台回复评论时被 GitHub Actions 触发，走 QQ SMTP 发邮件通知
+- `.github/workflows/notify-comment.yml` — 新评论通知站长邮件（Supabase 触发器 dispatch 到 GitHub Actions）
 
 ## 更新方法（方式一：后台管理，推荐）
 
@@ -154,20 +156,22 @@ drop policy if exists "comments_insert" on comments;
 
 ## 新评论自动通知站长（可选，有人评论后发邮件告诉你）
 
-有人在你站点发了新评论，系统自动发一封邮件到你的邮箱：包含**有人评论了 + 评论内容 + 帖子链接**。实现方式：数据库触发器自动调用 Edge Function（服务端触发，不暴露任何密钥给浏览器，也不会漏通知）。
+有人在你站点发了新评论，系统自动发一封邮件到你的邮箱：包含**有人评论了 + 评论内容 + 帖子链接**。实现方式：数据库触发器 → GitHub Actions dispatch → QQ SMTP 发邮件（服务端触发，不暴露任何密钥给浏览器，也不会漏通知）。
 
-1. Supabase 控制台 → 左侧 **Edge Functions** → **Create a new function**：函数名填 `notify-comment`，粘入本仓库 `supabase/functions/notify-comment/index.ts` 的完整代码 → **Deploy**。
+1. 生成 GitHub Personal Access Token：GitHub → Settings → Developer settings → Personal access tokens → **Tokens (classic)** → Generate new token，勾选 **repo** 权限。
 
-2. 给该函数配置密钥（同 notify-reply 一套即可参考上表）：`NOTIFY_SECRET`、`SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASS`；可选 `ADMIN_EMAIL`（不填则通知发到 `SMTP_USER` 发件邮箱，即复用现有收发邮箱）。
+2. 在 Supabase SQL Editor 中运行以下两行，把 token 和仓库名填进去：
 
-3. 打开 Supabase **SQL Editor**，把本仓库 `supabase/upgrade_notify_comment.sql` 的代码贴入：
-   - 先按文件顶部注释把 SQL 里的 `你的anon公钥` 替换成 site.json 里的 anonKey 值；
-   - 单独运行这一行把 `你的NOTIFY_SECRET` 换成你在第 2 步配置的 `NOTIFY_SECRET`：
-     ```sql
-     insert into app_secret(name, value) values ('notify_secret', '你的NOTIFY_SECRET')
-     on conflict (name) do update set value = excluded.value;
-     ```
-   - 再运行整段 SQL 创建触发器即可（一次性配置，永久有效）。密钥存在数据库服务端配置表中（RLS 锁死，浏览器读不到），不进入代码仓库。
+   ```sql
+   insert into app_secret(name, value) values ('github_token', 'ghp_你的token');
+   insert into app_secret(name, value) values ('github_repo', 'TKPORL/mrhyfx');
+   on conflict (name) do update set value = excluded.value;
+   ```
+   （密钥存在数据库服务端配置表中，RLS 锁死，浏览器读不到，不进入代码仓库）
+
+3. 打开 Supabase **SQL Editor**，把本仓库 `supabase/upgrade_notify_comment.sql` 的代码贴入运行。先按文件顶部注释把 `你的anon公钥` 替换成 site.json 里的 anonKey 值，然后点 **Run** 即可（一次性配置，永久有效）。
+
+4. 确保 GitHub 仓库 Settings → Secrets 已配置：`ADMIN_EMAIL`（你的收件邮箱）、`QQ_SMTP_USER`、`QQ_SMTP_PASS`、`SITE_NAME`（已有则跳过）。
 
 > 运行后每有人评论一条，你的邮箱会收到一封「【站点名】收到一条新评论」的邮件。
 
