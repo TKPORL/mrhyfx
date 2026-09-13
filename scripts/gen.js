@@ -36,7 +36,7 @@ if (NEW_TAG && NEW_TAG !== 'auto') {
   const genFile = fs.readFileSync(__filename, 'utf8');
   const updated = genFile.replace(
     /(?:let|const) CDN_URL = 'https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^']+'/,
-    `let CDN_URL = 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
+    `let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@${NEW_TAG}'`
   );
   if (updated !== genFile) {
     fs.writeFileSync(__filename, updated, 'utf8');
@@ -96,8 +96,9 @@ const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
-// #15：主源换 gcore（jsDelivr 官方中国线路，实测本机最快）；加载失败由 assets/js/cdn-fallback.js 自动换源兼底
-let CDN_URL = 'https://gcore.jsdelivr.net/gh/TKPORL/mrhyfx@main';
+// 图片域名统一用 cdn.jsdelivr.net（站长实测：新上传图偶有缓存延迟但可用；gcore 等镜像在站长网络下反而不可靠）。
+//   历史页面里残留的其他 jsdelivr 镜像域名会被 localize 统一改写回主域
+let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
 
 // ===== SEO =====
@@ -323,8 +324,6 @@ async function localize(html, tag) {
             .webp({ quality: 80, alphaQuality: 100, lossless: false })
             .toBuffer();
           fs.writeFileSync(path.join(dir, name), compressed);
-          // #14：新图同步生成 480px 缩略图（失败不阻断，卡片引用处有回退）
-          try { await sharp(path.join(dir, name)).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 78 }).toFile(path.join(dir, 't_' + name)); } catch (e) {}
           html = html.split(url).join(`${CDN_URL}/assets/${tag}/${name}`);
           console.log('  img', tag, name, `(${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
           break;
@@ -443,7 +442,6 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
-<script src="assets/js/cdn-fallback.js" defer></script>
 </body>
 </html>
 `;
@@ -555,35 +553,8 @@ async function compressExistingAssets() {
   }
 }
 
-// #14：卡片图 480px 缩略图（t_ 前缀）。卡片展示宽 ≤300px，480 足够 2x 屏；
-//   实测卡片换缩略图后全站封面体积 60.3MB→20.8MB（-66%）。原图保留供 og:image 用。
-async function makeThumb(srcAbs, dstAbs) {
-  try {
-    const meta = await sharp(srcAbs).metadata();
-    if (!meta.width || meta.width <= 480) return false;
-    await sharp(srcAbs).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 78 }).toFile(dstAbs);
-    return true;
-  } catch (e) { return false; }
-}
-async function ensureAllThumbs() {
-  const assetsDir = 'assets';
-  if (!fs.existsSync(assetsDir)) return;
-  let made = 0, skipped = 0;
-  for (const entry of fs.readdirSync(assetsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const safeEntry = path.basename(entry.name);
-    if (!safeEntry || safeEntry.includes('..') || safeEntry === 'js' || safeEntry === 'css') continue;
-    const subDir = path.resolve(assetsDir, safeEntry);
-    for (const file of fs.readdirSync(subDir)) {
-      if (!file.endsWith('.webp') || file.startsWith('t_')) continue;
-      const srcAbs = path.resolve(subDir, file);
-      const dstAbs = path.resolve(subDir, 't_' + file);
-      if (fs.existsSync(dstAbs)) { skipped++; continue; }
-      if (await makeThumb(srcAbs, dstAbs)) made++;
-    }
-  }
-  if (made || skipped) console.log('thumbnails: 新生成', made, '跳过已有', skipped);
-}
+// （已撤销 #14 缩略图生成：站长要求图片恢复直连原图；t_ 文件已从仓库删除）
+async function makeThumb() { return false; }
 
 let HIDDEN = {};
 if (fs.existsSync('hidden.json')) {
@@ -597,7 +568,6 @@ const allGames = [];
 const gameIndex = {};
 (async () => {
     await compressExistingAssets();
-    await ensureAllThumbs();  // #14：先补齐全部缩略图，后面卡片才能安全引用 t_ 版本
 
 for (const file of files) {
     let html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
@@ -794,7 +764,7 @@ html = (function reorderNodes(str) {
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
-    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  <script src="assets/js/cdn-fallback.js" defer></script>\n  </body>`);
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
     const searchBlocks = [];
     let pos = 0;
@@ -817,7 +787,7 @@ html = (function reorderNodes(str) {
       const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       const img0 = (b.match(/src="([^"]+)"/) || [])[1] || '';
-      // #14：重跑时源文件已是 t_ 缩略图引用，这里统一还原原图，保证 og:image/搜索索引永远用大图（幂等）
+      // 历史页面可能残留 t_ 缩略图引用（#14 已撤销），统一还原原图
       const img = img0.replace(/\/t_([^/"?]+\.webp)$/, '/$1');
       const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
@@ -868,16 +838,9 @@ html = (function reorderNodes(str) {
       };
     }
 
-    // #14：卡片图（class 含 image）改引用 480px 缩略图 t_ 版本；缩略图不存在则保留原图。
-    //   放在 games 提取之后：og:image 与搜索索引的 img 保持原图大图，只有展示用卡片走缩略图
-    html = html.replace(/<img\b[^>]*>/g, (m) => {
-      if (!/class="[^"]*\bimage\b/.test(m)) return m;
-      const sm = m.match(/src="(https:\/\/[^"]*\/assets\/([^/"]+)\/([^/"]+\.webp))"/);
-      if (!sm || sm[3].startsWith('t_')) return m;
-      let tdir; try { tdir = safeAssetDir(sm[2]); } catch (e) { return m; }
-      if (!fs.existsSync(path.join(tdir, 't_' + sm[3]))) return m;
-      return m.replace(sm[1], sm[1].slice(0, sm[1].length - sm[3].length) + 't_' + sm[3]);
-    });
+    // （已撤销 #14 缩略图：站长要求图片全部恢复直连原图，不用 t_ 加速层）
+    // 源文件里可能残留历史 t_ 引用，统一还原成原图（幂等）
+    html = html.replace(/(src="https:\/\/[^"]*\/assets\/[^"]*?)\/t_([^/"]+\.webp")/g, '$1/$2');
 
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');
@@ -941,7 +904,9 @@ html = (function reorderNodes(str) {
     const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/]+\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
-    return `<a class="post" href="${_pfile}" data-path="/${_pfile}" style="animation-delay:${di * 0.1}s">
+    // 修复：分页后每页卡片重新触发入场动画，旧逻辑按全局序号递增延迟（第2页延迟长达 2.4s，看起来像空页）；
+    //   改为按页内序号（每页最多 24 张），延迟封顶 1 秒内
+    return `<a class="post" href="${_pfile}" data-path="/${_pfile}" style="animation-delay:${((di % 24) * 0.04).toFixed(2)}s">
   <div class="date">${badge}</div>
   <div class="info">
     <div class="ptitle">${esc(disp)}${pinned ? ` <span class="pinb">置顶</span>` : ''}</div>
@@ -1140,7 +1105,6 @@ footer b{color:#e5484d}
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
-<script src="assets/js/cdn-fallback.js" defer></script>
 ${indexScript}
 </body>
 </html>
@@ -1389,7 +1353,6 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   bindHistClick();
 })();
 </script>
-<script src="assets/js/cdn-fallback.js" defer></script>
 </body>
 </html>
 `;
