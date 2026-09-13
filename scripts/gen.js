@@ -323,6 +323,8 @@ async function localize(html, tag) {
             .webp({ quality: 80, alphaQuality: 100, lossless: false })
             .toBuffer();
           fs.writeFileSync(path.join(dir, name), compressed);
+          // #14：新图同步生成 480px 缩略图（失败不阻断，卡片引用处有回退）
+          try { await sharp(path.join(dir, name)).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 78 }).toFile(path.join(dir, 't_' + name)); } catch (e) {}
           html = html.split(url).join(`${CDN_URL}/assets/${tag}/${name}`);
           console.log('  img', tag, name, `(${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
           break;
@@ -553,6 +555,36 @@ async function compressExistingAssets() {
   }
 }
 
+// #14：卡片图 480px 缩略图（t_ 前缀）。卡片展示宽 ≤300px，480 足够 2x 屏；
+//   实测卡片换缩略图后全站封面体积 60.3MB→20.8MB（-66%）。原图保留供 og:image 用。
+async function makeThumb(srcAbs, dstAbs) {
+  try {
+    const meta = await sharp(srcAbs).metadata();
+    if (!meta.width || meta.width <= 480) return false;
+    await sharp(srcAbs).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 78 }).toFile(dstAbs);
+    return true;
+  } catch (e) { return false; }
+}
+async function ensureAllThumbs() {
+  const assetsDir = 'assets';
+  if (!fs.existsSync(assetsDir)) return;
+  let made = 0, skipped = 0;
+  for (const entry of fs.readdirSync(assetsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const safeEntry = path.basename(entry.name);
+    if (!safeEntry || safeEntry.includes('..') || safeEntry === 'js' || safeEntry === 'css') continue;
+    const subDir = path.resolve(assetsDir, safeEntry);
+    for (const file of fs.readdirSync(subDir)) {
+      if (!file.endsWith('.webp') || file.startsWith('t_')) continue;
+      const srcAbs = path.resolve(subDir, file);
+      const dstAbs = path.resolve(subDir, 't_' + file);
+      if (fs.existsSync(dstAbs)) { skipped++; continue; }
+      if (await makeThumb(srcAbs, dstAbs)) made++;
+    }
+  }
+  if (made || skipped) console.log('thumbnails: 新生成', made, '跳过已有', skipped);
+}
+
 let HIDDEN = {};
 if (fs.existsSync('hidden.json')) {
   try { HIDDEN = readJson('hidden.json'); } catch (e) { console.warn('hidden.json 解析失败，忽略'); }
@@ -565,6 +597,7 @@ const allGames = [];
 const gameIndex = {};
 (async () => {
     await compressExistingAssets();
+    await ensureAllThumbs();  // #14：先补齐全部缩略图，后面卡片才能安全引用 t_ 版本
 
 for (const file of files) {
     let html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
@@ -593,8 +626,7 @@ for (const file of files) {
     }
 
 
-    const iconRe = /(?:<link rel="icon"[^>]*>\s*<link rel="apple-touch-icon"[^>]*>\s*)+/g;
-    html = html.replace(iconRe, (m) => {
+    const iconRe = /(?:<link rel="icon"[^>]*>\s*<link rel="apple-touch-icon"[^>]*>\s*)+/g;    html = html.replace(iconRe, (m) => {
       const first = m.match(/<link rel="icon"[^>]*>/);
       const second = m.match(/<link rel="apple-touch-icon"[^>]*>/);
       return first && second ? `${first[0]}\n${second[0]}\n` : m;
@@ -784,7 +816,9 @@ html = (function reorderNodes(str) {
     const games = searchBlocks.map(b => {
       const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
-      const img = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      const img0 = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      // #14：重跑时源文件已是 t_ 缩略图引用，这里统一还原原图，保证 og:image/搜索索引永远用大图（幂等）
+      const img = img0.replace(/\/t_([^/"?]+\.webp)$/, '/$1');
       const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
       // #10：帖子级 url（搜索结果标题跳转用）。缺失会导致点击结果 404/空链接
@@ -833,6 +867,17 @@ html = (function reorderNodes(str) {
         intro: postIntro.replace(/<[^>]+>/g, '').trim()
       };
     }
+
+    // #14：卡片图（class 含 image）改引用 480px 缩略图 t_ 版本；缩略图不存在则保留原图。
+    //   放在 games 提取之后：og:image 与搜索索引的 img 保持原图大图，只有展示用卡片走缩略图
+    html = html.replace(/<img\b[^>]*>/g, (m) => {
+      if (!/class="[^"]*\bimage\b/.test(m)) return m;
+      const sm = m.match(/src="(https:\/\/[^"]*\/assets\/([^/"]+)\/([^/"]+\.webp))"/);
+      if (!sm || sm[3].startsWith('t_')) return m;
+      let tdir; try { tdir = safeAssetDir(sm[2]); } catch (e) { return m; }
+      if (!fs.existsSync(path.join(tdir, 't_' + sm[3]))) return m;
+      return m.replace(sm[1], sm[1].slice(0, sm[1].length - sm[3].length) + 't_' + sm[3]);
+    });
 
     fs.writeFileSync(POST_DIR + '/' + file, html);
     console.log('day page ok:', POST_DIR + '/' + file, '(' + gameCount + ' 款游戏)');

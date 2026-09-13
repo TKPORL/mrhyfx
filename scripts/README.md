@@ -38,6 +38,7 @@ node scripts/gen.js
 - ✅ 会被覆盖：所有帖子 HTML（`8.10.html` / `2026825.html` 等）、`index.html`、`search.html`、所有 `*.json` 和 `sitemap.xml`
 - ❌ 不会覆盖：`titles.json` / `counts.json` / `timestamps.json` / `pins.json` / `icons.json`（手维护，gen.js 只读）
 - ❌ 不会覆盖：`assets/` 下的图片、`supabase/` 下的 `*.sql` 文件
+- 📌 缩略图（#14）：`assets/<tag>/t_xxx.webp` 是卡片展示用的 480px 缩略图，由 gen.js 自动生成（已存在则跳过）；原图保留供 og:image/搜索索引用。不要手动删 t_ 文件，也不要手动新建
 - ⚠️ 公共代码文件（手维护，改样式/评论/统计逻辑只改这里，不要改帖子页内联代码）：`assets/css/site.css`、`assets/js/comments.js`、`assets/js/track.js`、`assets/js/cdn-fallback.js`（#15 图片加载失败自动换源兜底）
 - 📌 CDN 主源：`gcore.jsdelivr.net`（jsDelivr 官方中国线路）。换主源只需改 gen.js 顶部 `CDN_URL`；历史旧域名链接会在重跑时自动统一改写
 
