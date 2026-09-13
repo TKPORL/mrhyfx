@@ -1507,21 +1507,33 @@
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
-  // 修复：懒加载图片会在滚动中不断撑高页面，旧版把目标位置缓存在闭包里，
-  // 首次点击按“旧高度”滚到一半就停。现在点击时实时计算，并在停下后检查是否真到底，没到底自动接着滚
+  // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
+  //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
+  //   改为自绘逐帧滚动：每帧实时取最新页高、速度从慢到快，页面被撑高也无缝跟进，不经过浏览器 smooth 动画不会停顿；
+  //   用户滚轮/触摸/键盘打断时自动停止
   function toBottom() {
-    var tries = 0, last = -1;
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-    var step = function () {
+    if (b._auto) return;
+    b._auto = true;
+    var stop = function () {
+      b._auto = false;
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchstart', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    var v = 0;
+    var frame = function () {
+      if (!b._auto) return;
       var y = window.scrollY || document.documentElement.scrollTop;
       var h = maxScroll();
-      if (h - y <= 2 || tries >= 6) return;
-      if (y === last) { tries++; window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); }
-      else { tries = 0; }
-      last = y;
-      setTimeout(step, 350);
+      if (h - y <= 2) { stop(); return; }
+      v = Math.min(v + 2.5, 120);
+      window.scrollTo(0, Math.min(y + v, h));
+      requestAnimationFrame(frame);
     };
-    setTimeout(step, 350);
+    requestAnimationFrame(frame);
   }
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
