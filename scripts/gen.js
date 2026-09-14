@@ -432,7 +432,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
   .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
   .mrhx-search button:hover{background:#c93a3f}
   nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  @media (max-width:720px){body{padding-top:105px}.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}}
+  @media (max-width:720px){body{padding-top:105px}.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}.sect{gap:6px}.dyx-btn{padding:4px 11px;font-size:11px;margin-left:6px}}
 </style>
 <link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
 <link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
@@ -1018,8 +1018,8 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
-  .upd-note{font-size:12.5px;color:#999;margin:-14px 0 20px;padding-left:4px;line-height:1.7}
-  .dyx-btn{display:inline-flex;align-items:center;margin:-10px 0 20px 4px;padding:7px 16px;border-radius:99px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:.2s}
+  .upd-note{font-size:12.5px;color:#999;margin:-14px 0 16px;padding-left:4px;line-height:1.7}
+  .dyx-btn{display:inline-flex;align-items:center;padding:5px 14px;border-radius:99px;background:#e5484d;color:#fff;font-size:12px;font-weight:600;text-decoration:none;transition:.2s;white-space:nowrap;margin-left:8px}
   .dyx-btn:hover{background:#c93a3f;transform:translateY(-1px);box-shadow:0 4px 12px rgba(229,72,77,.35)}
   .pcmt{color:#e58d0a}
   .pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
@@ -1028,10 +1028,10 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
   .pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
   .pg.off{opacity:.35;cursor:default}
   .pginfo{font-size:12px;color:#999;margin-left:6px}
-.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
-.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
+.sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
 .sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
-.sect span{font-size:13px;color:#aaa}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
 .post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .55s ease both}
 .post:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
 .date{flex-shrink:0;width:62px;height:62px;border-radius:12px;background:#e5484d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;transition:.25s}
@@ -1106,9 +1106,7 @@ footer b{color:#e5484d}
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
-  <a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站 · 全部游戏一页直达（推荐）</a>
-  <a class="dyx-btn" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer" style="background:#e5484d;color:#fff;border-color:#e5484d">全部黄油（1w+）</a>
-  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span></div>
+  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站</a><a class="dyx-btn" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer" style="background:#e5484d;color:#fff;border-color:#e5484d">全部黄油（2w+）</a></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
 <footer>${SITE_FOOTER}</footer>
@@ -1227,10 +1225,10 @@ header{background:#fff;border-bottom:1px solid #ecebe9;position:fixed;top:0;left
 .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-search button:hover{background:#c93a3f}
 main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
-.sect{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
-.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px}
+.sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
 .sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
-.sect span{font-size:13px;color:#aaa}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
 .result{border:1px solid #ecebe9;border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .result .rt a{font-size:16px;color:#2b2b2b;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;padding-bottom:1px}

@@ -43,7 +43,7 @@
   .node.collapsed > .bullet .bullet-dot{background-color:rgb(100,106,115)}
   .node .content{font-size:14px;font-weight:600;line-height:1.5;word-break:break-word}
   .node .note{font-size:12px;color:#666;line-height:1.6;margin-top:4px;word-break:break-word;white-space:pre-wrap}
-  .title{font-size:20px;font-weight:700;word-break:break-word;padding-bottom:14px;margin-bottom:14px}
+  .title{font-size:20px;font-weight:700;word-break:break-word;padding-bottom:6px;margin-bottom:10px}
   .mrhx-views{font-size:12px;font-weight:400;color:#999;margin-left:8px;white-space:nowrap}
   body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-left:0}
   body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;padding:0;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
@@ -88,7 +88,7 @@
     .mrhx-bar .mnav{flex-wrap:nowrap;overflow:visible;width:100%;justify-content:flex-end}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:12px;margin-bottom:12px}
+    .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:4px;margin-bottom:10px}
     .node-list{margin-left:0}
     .node{padding:12px;border-radius:12px}
     .node .bullet{display:none}
