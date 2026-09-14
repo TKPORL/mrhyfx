@@ -46,6 +46,8 @@ h1{font-size:18px;margin-bottom:4px}
 .detail-box .close{position:absolute;top:14px;right:16px;border:none;background:#f4f2ef;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#666}
 .detail-box .close:hover{background:#e5484d;color:#fff}
 .detail-box h2{font-size:15px;margin-bottom:12px;color:#2b2b2b}
+.detail-box .from{font-size:12px;color:#999;margin-bottom:10px;line-height:1.5}
+.detail-box .from b{color:#e5484d;font-weight:600}
 .detail-box .text{font-size:14px;line-height:1.9;color:#444;white-space:pre-wrap;word-break:break-word}
 .detail-box .back{margin-top:18px;width:100%;border:none;background:#e5484d;color:#fff;padding:11px 0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
 .detail-box .back:hover{background:#c93a3f}
@@ -68,8 +70,9 @@ h1{font-size:18px;margin-bottom:4px}
   <div class="detail-box">
     <button class="close" id="dClose" aria-label="关闭">×</button>
     <h2>游戏介绍</h2>
+    <div class="from" id="dFrom"></div>
     <div class="text" id="dText"></div>
-    <button class="back" id="dBack">← 返回游戏列表</button>
+    <button class="back" id="dBack">返回游戏列表</button>
   </div>
 </div>
 
@@ -105,6 +108,7 @@ function render(){
   });
 }
 function openDetail(x){
+  document.getElementById('dFrom').innerHTML='来自《<b>'+esc(x.name)+'</b>》';
   document.getElementById('dText').textContent=x.intro;
   document.getElementById('detail').classList.add('show');
 }
