@@ -470,7 +470,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="${CDN_URL}/favicon.webp?v=3" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="ac9ce9ba350526f00ad5f9c02e3dfb94.png" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
@@ -1123,7 +1123,7 @@ footer b{color:#e5484d}
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="${CDN_URL}/favicon.webp?v=3" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="ac9ce9ba350526f00ad5f9c02e3dfb94.png" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
