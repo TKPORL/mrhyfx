@@ -79,7 +79,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', '卡片布局原型.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -1131,9 +1131,9 @@ ${indexScript}
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
     const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`).join('\n    ');
-    const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-dl" style="justify-content:space-between;align-items:center;gap:8px;margin-top:18px">` +
+    const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
-      `<div class="mrhx-dl" style="margin:0;gap:6px">${navMid}</div>` +
+      `<div class="mrhx-navmid">${navMid}</div>` +
       navBtn(newer ? newer.file : '', '下一期 →', !newer) +
       `</div><!--mrhx-daynav-end-->\n  `;
     const injectNav = (file, nav) => {

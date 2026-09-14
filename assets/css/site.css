@@ -29,6 +29,10 @@
   .mrhx-btn-qk:hover{background:#4f46e5}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  /* 底部导航行：上一期 | 官网 全部黄油 解压教程 | 下一期，三段一行 */
+  .mrhx-navrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:nowrap}
+  .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;white-space:nowrap}
+  .mrhx-navmid{display:flex;gap:6px;flex:1;justify-content:center;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}    .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:12px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
@@ -70,15 +74,16 @@
   .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
   @keyframes mrhxSpin{to{transform:rotate(360deg)}}
   @media (max-width:720px){
-    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:104px !important}
-    .mrhx-bar{padding:12px 14px;gap:10px}
+    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:116px !important}
+    .mrhx-bar{padding:10px 14px;gap:8px;flex-wrap:wrap}
     .mrhx-bar .mlogo{font-size:17px}
-    .mrhx-bar .mlogo img.mlogo-img{width:100px;height:auto}
-    .mrhx-bar .bar-right{gap:8px}
-    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+    .mrhx-bar .mlogo img.mlogo-img{width:88px;height:auto}
+    /* 手机端顶栏改两行：第一行 logo+搜索框，第二行导航胶囊整行左滑（bar-right 拆散重排，不再挤在 logo 右侧被裁切） */
+    .mrhx-bar .bar-right{display:contents}
+    .mrhx-bar .search-row{flex:1;width:auto;justify-content:flex-end}
+    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;justify-content:flex-start}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .mrhx-bar .search-row{width:100%;justify-content:flex-end}
     .mrhx-search{width:100%}
     .mrhx-search input{flex:1;width:auto}
     .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:12px;margin-bottom:12px}
@@ -87,6 +92,12 @@
     .node .bullet{display:none}
     .node .content{font-size:14px}
     .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
+    /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
+    .mrhx-navrow{gap:6px}
+    .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
+    .mrhx-navmid{justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .mrhx-navmid::-webkit-scrollbar{display:none}
+    .mrhx-navmid .mrhx-btn-nav{flex:0 0 auto;padding:7px 11px;font-size:12px}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     body.mrhx-grid2 .node{border-radius:12px}
     body.mrhx-grid2 .node .content{margin:10px 12px 0}

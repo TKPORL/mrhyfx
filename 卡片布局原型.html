@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卡片布局原型（试验页，不影响线上）</title>
+<style>
+/* ===== 原型专用样式，验证满意后再并入 gen.js 正式模板 ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#f6f5f2;color:#2b2b2b;max-width:900px;margin:0 auto;padding:24px 16px}
+h1{font-size:18px;margin-bottom:4px}
+.note{font-size:12px;color:#999;margin-bottom:18px;line-height:1.6}
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar button{border:1px solid #e5e6e8;background:#fff;border-radius:99px;padding:6px 14px;font-size:13px;cursor:pointer}
+.toolbar button.on{background:#e5484d;color:#fff;border-color:#e5484d}
+
+/* 网格：桌面3列，手机2列 */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:720px){.grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+/* 卡片：flex 纵向 + 等高，彻底消除“同行短卡片下方留白” */
+.card{display:flex;flex-direction:column;background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
+.card:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+
+/* 关键①：封面统一 4:3 裁切，object-fit:cover —— 不管原图什么比例都整齐 */
+.cover{width:100%;aspect-ratio:4/3;overflow:hidden;background:#f4f2ef;cursor:pointer;position:relative;flex-shrink:0}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.card:hover .cover img{transform:scale(1.04)}
+
+/* 关键②：正文 flex:1 撑满，把下载行推到卡片底部对齐（margin-top:auto） */
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}
+.title{font-size:14px;font-weight:700;line-height:1.45;display:flex;align-items:flex-start;flex-wrap:wrap;gap:5px}
+.plat{display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:#fff;background:#e5484d;white-space:nowrap}
+.desc{font-size:12px;color:#888;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dls{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.dl{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
+.dl:hover{background:#c93a3f;transform:translateY(-1px)}
+.dl.b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+.dl.b:hover{background:#d8edde}
+.hint{font-size:11px;color:#bbb;text-align:center;margin-top:2px}
+
+/* 详情浮层：只显示介绍，无图片无标题，带返回按钮 */
+.detail{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:999}
+.detail.show{display:flex}
+.detail-box{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:24px 26px;position:relative}
+.detail-box .close{position:absolute;top:14px;right:16px;border:none;background:#f4f2ef;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#666}
+.detail-box .close:hover{background:#e5484d;color:#fff}
+.detail-box h2{font-size:15px;margin-bottom:12px;color:#2b2b2b}
+.detail-box .text{font-size:14px;line-height:1.9;color:#444;white-space:pre-wrap;word-break:break-word}
+.detail-box .back{margin-top:18px;width:100%;border:none;background:#e5484d;color:#fff;padding:11px 0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.detail-box .back:hover{background:#c93a3f}
+</style>
+</head>
+<body>
+<h1> 卡片布局原型</h1>
+<p class="note">这是一个独立试验页，<b>不影响线上任何帖子</b>。核心改动：<br>
+① 所有封面统一裁成 4:3（object-fit:cover），不管原图比例都整齐；<br>
+② 卡片等高，下载按钮永远对齐底部，短卡片下方<b>不再留白</b>；<br>
+③ 点封面 → 只看<b>介绍文字</b>（无图无标题），带返回按钮。<br>
+下面可切换列数看效果。</p>
+<div class="toolbar">
+  <button data-col="3" class="on">每行 3 个</button>
+  <button data-col="2">每行 2 个</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<div class="detail" id="detail">
+  <div class="detail-box">
+    <button class="close" id="dClose" aria-label="关闭">×</button>
+    <h2>游戏介绍</h2>
+    <div class="text" id="dText"></div>
+    <button class="back" id="dBack">← 返回游戏列表</button>
+  </div>
+</div>
+
+<script>
+var GAMES = [
+ {name:"和色色的老婆从早到晚黏糊糊的发情生活",plat:"PC",intro:"【更新/互动SLG/3D作品/动态/官中版/存档】和色色的老婆从早到晚黏糊糊的发情生活 えっちな嫁ちゃんと朝から晩までとろとろ発情生活 V1.2.1 +【PC 2.40G】【C169888】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/ln7pu6j9dw.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"女王老婆游戏：艾米丽",plat:"PC",intro:"【新作/欧美3D/动态/官中步兵版】女王老婆游戏 – 艾米丽 Femdom Wife Game – Emily v0.25【PC 12.40G】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/5bvsfnh7qe.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"乡村狂想曲",plat:"PC",intro:"[国产RPG/纯爱后宫/动态/内容DLC合并/STEAM官中/步兵/国语配音/全回想存档/场景录制视频] 乡村狂想曲 VillageRhapsody V1.7.4 - [1.30G]",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/g3cf91w6lz.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"精灵魔女外传",plat:"PC",intro:"【更新/动作ACT/像素动态/官中步兵版】精灵魔女外传 Spirit Witch's Gaiden Ver1.23【PC 780M】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/azbsvcrd2i.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"}]},
+ {name:"诅咒铠甲2：灵魔女传奇",plat:"PC",intro:"【更新/爆款RPG/拘束调教/动态/官中步兵版/存档/Steam+补丁】诅咒铠甲2：灵魔女传奇 呪いの鎧II v7.26 +【PC 3.80G】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/iyo87jik4f.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"罗马的奴隶",plat:"PC",intro:"【更新/欧美3D/调教模拟/动态/官中步兵版】罗马的奴隶 Slaves of Rome v2.8.6 STEAM【PC 6.20G】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/8xhahlxxh8.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"娜卡拉 Nakara",plat:"PC",intro:"【更新/日式ACT/逆推/像素动态/官中步兵版/存档】娜卡拉 Nakara【H版黑暗欺骗】v1.1.2 +【PC 620M】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/3ojqbv49u6.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"艾梅莉亚与色色触手迷宫",plat:"PC",intro:"【更新/爆款RPG/调教露出/官中步兵版/存档/Steam+全回想】艾梅莉亚与色色触手迷宫 Amelia and the Erotic Tentacle Trap Dungeon V1.45【PC 3.20G】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/cqn094evc3.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]},
+ {name:"肉壶村-痴女村",plat:"PC",intro:"【更新/日式ARPG/像素动态/生肉/存档/V260906版++攻略】肉壶村-痴女村-肉壺村-bitch village-【PC 80M】",img:"https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/2026913pc/e6onv0rznn.webp",links:[{t:"m",u:"#",l:"移动云盘（不限速）"},{t:"b",u:"#",l:"百度网盘"}]}
+];
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function render(){
+  var g=document.getElementById('grid');
+  g.innerHTML=GAMES.map(function(x,i){
+    return '<div class="card">'+
+      '<div class="cover" data-i="'+i+'"><img src="'+esc(x.img)+'" alt="'+esc(x.name)+'" loading="lazy"></div>'+
+      '<div class="body">'+
+        '<div class="title">'+esc(x.name)+(x.plat?'<span class="plat">'+esc(x.plat)+'</span>':'')+'</div>'+
+        '<div class="desc">'+esc(x.intro)+'</div>'+
+        '<div class="dls">'+x.links.map(function(l){return '<a class="dl'+(l.t==='b'?' b':'')+'" href="'+esc(l.u)+'">'+esc(l.l)+'</a>'}).join('')+'</div>'+
+        '<div class="hint">点击封面查看完整介绍</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  [].forEach.call(g.querySelectorAll('.cover'),function(c){
+    c.onclick=function(){openDetail(GAMES[+c.getAttribute('data-i')])};
+  });
+}
+function openDetail(x){
+  document.getElementById('dText').textContent=x.intro;
+  document.getElementById('detail').classList.add('show');
+}
+function closeDetail(){document.getElementById('detail').classList.remove('show')}
+document.getElementById('dClose').onclick=closeDetail;
+document.getElementById('dBack').onclick=closeDetail;
+document.getElementById('detail').addEventListener('click',function(e){if(e.target===this)closeDetail()});
+[].forEach.call(document.querySelectorAll('.toolbar button'),function(b){
+  b.onclick=function(){
+    [].forEach.call(document.querySelectorAll('.toolbar button'),function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    document.getElementById('grid').style.gridTemplateColumns='repeat('+b.getAttribute('data-col')+',1fr)';
+  };
+});
+render();
+</script>
+</body>
+</html>
