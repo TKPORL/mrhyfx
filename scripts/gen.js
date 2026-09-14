@@ -137,6 +137,19 @@ function seoHead(file, pageTitle, opts) {
 
 const nodeExpandScript = `<!--mrhx-expand--><script>
 (function () {
+  // 创建模态框容器
+  var modal = document.createElement('div');
+  modal.className = 'mrhx-detail';
+  modal.innerHTML = '<div class="mrhx-detail-box"><button class="mrhx-detail-close">✕</button><h2></h2><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button class="mrhx-detail-back">返回</button></div>';
+  document.body.appendChild(modal);
+  var box = modal.querySelector('.mrhx-detail-box');
+  var h2 = box.querySelector('h2');
+  var from = box.querySelector('.mrhx-detail-from');
+  var text = box.querySelector('.mrhx-detail-text');
+  function closeModal() { modal.classList.remove('show'); }
+  modal.addEventListener('click', function(e) { if (e.target === modal || e.target === box.querySelector('.mrhx-detail-close') || e.target === box.querySelector('.mrhx-detail-back')) closeModal(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');
@@ -145,23 +158,40 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     tip.className = 'img-tip';
     tip.textContent = '点击图片查看完整介绍';
     n.appendChild(tip);
-    var collapseBtn = document.createElement('span');
-    collapseBtn.className = 'exp-hint';
-    collapseBtn.textContent = '收起 ↑';
-    collapseBtn.style.display = 'none';
-    n.appendChild(collapseBtn);
+    // 提取游戏名（从 content 的 em.mrhx-plat 前的文本）
+    var contentEl = n.querySelector('.content');
+    var gameName = '';
+    var gamePlat = '';
+    if (contentEl) {
+      var em = contentEl.querySelector('.mrhx-plat');
+      gamePlat = em ? em.textContent.trim() : '';
+      var clone = contentEl.cloneNode(true);
+      var emInClone = clone.querySelector('.mrhx-plat');
+      if (emInClone) emInClone.remove();
+      gameName = clone.textContent.replace(/\s+/g, ' ').trim();
+    }
+    // 提取来源（从 note 或 content）
+    var noteEl = n.querySelector('.note');
+    var fromText = '';
+    if (noteEl) {
+      var noteClone = noteEl.cloneNode(true);
+      noteClone.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+      fromText = noteClone.textContent.replace(/\s+/g, ' ').trim();
+    }
     img.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      var on = !n.classList.contains('exp');
-      n.classList.toggle('exp', on);
-      collapseBtn.style.display = on ? 'inline-block' : 'none';
-    });
-    collapseBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      n.classList.remove('exp');
-      collapseBtn.style.display = 'none';
+      h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
+      from.innerHTML = fromText ? '<b>游戏介绍：</b> ' + fromText.replace(/</g, '&lt;') : '';
+      text.textContent = gamePlat || '';
+      // note 区域的游戏描述放到弹窗正文
+      if (noteEl) {
+        var noteDesc = noteEl.cloneNode(true);
+        noteDesc.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+        var descText = noteDesc.textContent.replace(/\s+/g, ' ').trim();
+        if (descText) text.textContent = descText;
+      }
+      modal.classList.add('show');
     });
   });
 })();
@@ -434,13 +464,13 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bo
   nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   @media (max-width:720px){body{padding-top:105px}.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}.sect{gap:6px}.dyx-btn{padding:4px 11px;font-size:11px;margin-left:6px}}
 </style>
-<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
+<link rel="icon" href="${CDN_URL}/favicon.webp?v=2" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp?v=2">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp?v=2" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
@@ -718,7 +748,7 @@ html = (function reorderNodes(str) {
     const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
     const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <a class="mlogo" href="index.html"><img src="${CDN_URL}/logo.webp?v=2" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
@@ -747,8 +777,8 @@ html = (function reorderNodes(str) {
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
-    html = html.replace('</head>', (html.includes('rel="icon" href="' + CDN_URL + '/favicon.webp"')) ? '</head>' : `<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
+    html = html.replace('</head>', (html.includes('rel="icon" href="' + CDN_URL + '/favicon.webp')) ? '</head>' : `<link rel="icon" href="${CDN_URL}/favicon.webp?v=2" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp?v=2">
 </head>`);
     html = html.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->/g, '');
     // #24/#25：帖子页 SEO 注入延后到 games 解析之后（见本循环末尾）
@@ -1087,13 +1117,13 @@ footer b{color:#e5484d}
   .g-title{font-size:13px}
 }
 </style>
-<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
+<link rel="icon" href="${CDN_URL}/favicon.webp?v=2" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp?v=2">
 </head>
 <body>
 <header>
   <div class="hwrap">
-    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp" alt="Tsinho黄油推荐站" class="site-logo"></a>
+    <a class="site" href="index.html"><img src="${CDN_URL}/logo.webp?v=2" alt="Tsinho黄油推荐站" class="site-logo"></a>
     <div class="site-header-right">
       <form class="mrhx-search" action="search.html" method="get" role="search">
       <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
@@ -1210,8 +1240,8 @@ ${indexScript}
 <title>搜索 · ${esc(SITE_NAME)}</title>
 ${seoHead('search.html', '搜索')}
 <meta name="robots" content="noindex,follow">
-<link rel="icon" href="${CDN_URL}/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp">
+<link rel="icon" href="${CDN_URL}/favicon.webp?v=2" type="image/webp">
+<link rel="apple-touch-icon" href="${CDN_URL}/favicon.webp?v=2">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:85px}

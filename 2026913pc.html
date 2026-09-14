@@ -1003,8 +1003,8 @@
       <link rel="icon" href="favicon.jpg" type="image/jpeg">
 <link rel="apple-touch-icon" href="apple-touch-icon.jpg">
 
-<link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp" type="image/webp">
-<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp">
+<link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp?v=2" type="image/webp">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/favicon.webp?v=2">
 <!--mrhx-seo--><meta name="description" content="本期分享（9月13号黄油（PC））：和色色的老婆从早到晚黏糊糊的发情生活、女王老婆游戏：艾米丽、乡村狂想曲、精灵魔女外传、诅咒铠甲2：灵魔女传奇、罗马的奴隶、娜卡拉 Nakara、艾梅莉亚与色色触手迷宫 等 23 款。PC+安卓黄油游戏，移">
 <meta name="author" content="Tsinho">
 <meta name="robots" content="index,follow">
@@ -1023,7 +1023,7 @@
   <!--mrhx-->
 <link rel="stylesheet" href="assets/css/site.css">
 <div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
+  <a class="mlogo" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp?v=2" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
   <div class="bar-right">
   <div class="search-row">
   <form class="mrhx-search" action="search.html" method="get">
@@ -1522,6 +1522,19 @@
 <script src="assets/js/track.js"></script>
 <!--view-track-end--><!--mrhx-expand--><script>
 (function () {
+  // 创建模态框容器
+  var modal = document.createElement('div');
+  modal.className = 'mrhx-detail';
+  modal.innerHTML = '<div class="mrhx-detail-box"><button class="mrhx-detail-close">✕</button><h2></h2><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button class="mrhx-detail-back">返回</button></div>';
+  document.body.appendChild(modal);
+  var box = modal.querySelector('.mrhx-detail-box');
+  var h2 = box.querySelector('h2');
+  var from = box.querySelector('.mrhx-detail-from');
+  var text = box.querySelector('.mrhx-detail-text');
+  function closeModal() { modal.classList.remove('show'); }
+  modal.addEventListener('click', function(e) { if (e.target === modal || e.target === box.querySelector('.mrhx-detail-close') || e.target === box.querySelector('.mrhx-detail-back')) closeModal(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');
@@ -1530,23 +1543,40 @@
     tip.className = 'img-tip';
     tip.textContent = '点击图片查看完整介绍';
     n.appendChild(tip);
-    var collapseBtn = document.createElement('span');
-    collapseBtn.className = 'exp-hint';
-    collapseBtn.textContent = '收起 ↑';
-    collapseBtn.style.display = 'none';
-    n.appendChild(collapseBtn);
+    // 提取游戏名（从 content 的 em.mrhx-plat 前的文本）
+    var contentEl = n.querySelector('.content');
+    var gameName = '';
+    var gamePlat = '';
+    if (contentEl) {
+      var em = contentEl.querySelector('.mrhx-plat');
+      gamePlat = em ? em.textContent.trim() : '';
+      var clone = contentEl.cloneNode(true);
+      var emInClone = clone.querySelector('.mrhx-plat');
+      if (emInClone) emInClone.remove();
+      gameName = clone.textContent.replace(/s+/g, ' ').trim();
+    }
+    // 提取来源（从 note 或 content）
+    var noteEl = n.querySelector('.note');
+    var fromText = '';
+    if (noteEl) {
+      var noteClone = noteEl.cloneNode(true);
+      noteClone.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+      fromText = noteClone.textContent.replace(/s+/g, ' ').trim();
+    }
     img.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      var on = !n.classList.contains('exp');
-      n.classList.toggle('exp', on);
-      collapseBtn.style.display = on ? 'inline-block' : 'none';
-    });
-    collapseBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      n.classList.remove('exp');
-      collapseBtn.style.display = 'none';
+      h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
+      from.innerHTML = fromText ? '<b>游戏介绍：</b> ' + fromText.replace(/</g, '&lt;') : '';
+      text.textContent = gamePlat || '';
+      // note 区域的游戏描述放到弹窗正文
+      if (noteEl) {
+        var noteDesc = noteEl.cloneNode(true);
+        noteDesc.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+        var descText = noteDesc.textContent.replace(/s+/g, ' ').trim();
+        if (descText) text.textContent = descText;
+      }
+      modal.classList.add('show');
     });
   });
 })();
