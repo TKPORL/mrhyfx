@@ -78,14 +78,16 @@
     .mrhx-bar{padding:10px 14px;gap:8px;flex-wrap:wrap}
     .mrhx-bar .mlogo{font-size:17px}
     .mrhx-bar .mlogo img.mlogo-img{width:88px;height:auto}
-    /* 手机端顶栏改两行：第一行 logo+搜索框，第二行导航胶囊整行左滑（bar-right 拆散重排，不再挤在 logo 右侧被裁切） */
+    /* 手机端顶栏两行：第一行 logo+搜索（搜索按钮只留放大镜图标），第二行导航胶囊靠右整行完整显示 */
     .mrhx-bar .bar-right{display:contents}
     .mrhx-bar .search-row{flex:1;width:auto;justify-content:flex-end}
-    .mrhx-bar .mnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;justify-content:flex-start}
+    .mrhx-search{width:auto;flex:0 1 auto;max-width:100%}
+    .mrhx-search input{flex:1;width:auto;min-width:0}
+    /* 搜索按钮只留放大镜图标（内联 SVG 白色，不依赖盒模型/字体） */
+    .mrhx-search button{width:30px;height:26px;padding:0;font-size:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='6'/%3E%3Cline x1='15' y1='15' x2='20' y2='20'/%3E%3C/svg%3E");background-size:14px;background-position:center;background-repeat:no-repeat}
+    .mrhx-bar .mnav{flex-wrap:nowrap;overflow:visible;width:100%;justify-content:flex-end}
     .mrhx-bar .mnav a{padding:5px 10px;font-size:12px;white-space:nowrap}
     .mrhx-bar .mnav::-webkit-scrollbar{display:none}
-    .mrhx-search{width:100%}
-    .mrhx-search input{flex:1;width:auto}
     .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:12px;margin-bottom:12px}
     .node-list{margin-left:0}
     .node{padding:12px;border-radius:12px}
@@ -183,4 +185,11 @@
   .mrhx-top:hover{transform:translateY(-3px);background:#c93a3f}
   @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}}
   :focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:4px}
+  /* 触屏设备：禁用 hover 上浮/放大（触摸后 hover 态会残留，吸底按钮上浮会被白色遮罩裁切） */
+  @media (hover:none){
+    .mrhx-btn:hover,.mrhx-bar .mnav a:hover,.mrhx-cbtn:hover,.mrhx-cfbtn:hover,.mrhx-top:hover{transform:none !important;box-shadow:none !important}
+    .node:hover{transform:none !important}
+    body.mrhx-grid2 .node:hover{transform:none !important}
+    body.mrhx-grid2 .node:hover .image-list .image img{transform:none !important}
+  }
   .mrhx-popup[role='dialog']:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
