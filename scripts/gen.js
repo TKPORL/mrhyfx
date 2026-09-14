@@ -471,7 +471,8 @@ function verify(days, index, searchIndex) {
     const ref = `href="${esc(path.basename(d.file))}"`;
     if (!index.includes(ref)) errors.push(`首页缺少帖子链接: ${d.file}`);
     const h = fs.readFileSync(d.file, 'utf8');
-    if ((isQzt || isJinri) ? false : !h.includes('<li class="node"') && !h.includes('暂无')) errors.push(`帖子正文缺失节点: ${d.file}`);
+    // 正文节点校验：按游戏节点（heading3）数判断，不能用 '<li class="node"' 子串（带属性的节点不匹配）
+    if ((isQzt || isJinri) ? false : Number(d.gameCount) > 0 && !/class="node heading3/.test(h)) errors.push(`帖子正文缺失游戏节点: ${d.file}`);
     if (Number(d.gameCount) > 0 && !index.includes(`共 ${d.gameCount} 款游戏`)) errors.push(`首页游戏数与实际不符: ${d.file} (${d.gameCount})`);
     const disp = TITLES[path.parse(d.file).name] || path.parse(d.file).name;
     const titleOk = h.includes(`<title>${esc(disp)} · ${esc(SITE_NAME)}</title>`);
@@ -712,13 +713,7 @@ html = (function reorderNodes(str) {
 
     html = html.replace(PUBLISH_RE, newPublish);
 
-    const extrasNodes = `<li class="node">
-    <div class="content mm-editor" ><div class="mrhx-grid">
-    ${NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`).join('\n    ')}
-  </div></div>
-  </li>`;
-    const lastLi = html.lastIndexOf('</li>');
-    html = html.slice(0, lastLi + 5) + '\n' + extrasNodes + html.slice(lastLi + 5);
+    // #51：官网/全部黄油/解压教程不再以卡片形式塞进游戏列表，改放到底部「上一期/下一期」行中间（见第二遍 daynav 注入）
 
     const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
       `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
@@ -1127,28 +1122,36 @@ ${indexScript}
   fs.writeFileSync('index.html', index);
   console.log('index.html ok (合集模式), days:', days.length);
 
-  // #28：上一期/下一期导航（第二遍：days 已按时间倒序排好，最新在前）。
-  //   求助贴 qzt 也纳入链（站长要求）；隐藏帖不在 days 里自动跳过
+  // #28/#50/#51：底部导航行 =「← 上一期 ｜ 官网 全部黄油 解压教程 ｜ 下一期 →」。
+  //   链序与首页一致（days 已按置顶在前+时间倒序）。求助贴 qzt 置顶且不是期数：上一期置灰、下一期指向最新一期；
+  //   普通期帖之间按期数互链（上一期=更早一期，下一期=更新一期，不含 qzt）
   {
-    const chain = days.slice();
+    const chain = days.filter(d => path.parse(d.file).name !== 'qzt');
     const navBtn = (href, label, disabled) => disabled
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
-    chain.forEach((d, i) => {
-      const older = chain[i + 1];   // 上一期（更早）
-      const newer = chain[i - 1];   // 下一期（更新）
-      const nav = `\n  <!--mrhx-daynav--><div class="mrhx-dl" style="justify-content:space-between;margin-top:18px">` +
-        navBtn(older ? older.file : '', '← 上一期', !older) +
-        navBtn(newer ? newer.file : '', '下一期 →', !newer) +
-        `</div><!--mrhx-daynav-end-->\n  `;
-      let h = fs.readFileSync(d.file, 'utf8');
+    const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`).join('\n    ');
+    const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-dl" style="justify-content:space-between;align-items:center;gap:8px;margin-top:18px">` +
+      navBtn(older ? older.file : '', '← 上一期', !older) +
+      `<div class="mrhx-dl" style="margin:0;gap:6px">${navMid}</div>` +
+      navBtn(newer ? newer.file : '', '下一期 →', !newer) +
+      `</div><!--mrhx-daynav-end-->\n  `;
+    const injectNav = (file, nav) => {
+      let h = fs.readFileSync(file, 'utf8');
       h = h.replace(/<!--mrhx-daynav-->[\s\S]*?<!--mrhx-daynav-end-->\s*/g, '');
       const anchor = h.indexOf('<!--mrhx-comments-->');
       if (anchor >= 0) h = h.slice(0, anchor) + nav + h.slice(anchor);
       else h = h.replace('</body>', nav + '</body>');
-      fs.writeFileSync(d.file, h);
+      fs.writeFileSync(file, h);
+    };
+    const qztDay = days.find(d => path.parse(d.file).name === 'qzt');
+    chain.forEach((d, i) => {
+      // 链首期帖的上一期 = 置顶求助贴（与首页序一致：qzt 第一、期帖接在后面）
+      const older = i === 0 ? (qztDay || null) : chain[i + 1];
+      injectNav(d.file, mkNav(older, chain[i - 1]));
     });
-    console.log('day-nav ok:', chain.length, 'posts');
+    if (qztDay) injectNav(qztDay.file, mkNav(null, chain[0]));
+    console.log('day-nav ok:', chain.length + (qztDay ? 1 : 0), 'posts');
   }
 
   // 发布骨架（替代“拿 8.10.html 当模板”）：从最新帖子剥离所有帖子专属内容，

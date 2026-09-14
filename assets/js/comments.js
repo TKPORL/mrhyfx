@@ -61,7 +61,8 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   }
   function h(tag, cls, text) { var d = document.createElement(tag); if (cls) d.className = cls; if (text) d.textContent = text; return d; }
   function headers() {
-    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+    // Prefer: count=exact 让 PostgREST 在 content-range 里返回真实总数（不带则尾部是 *，前端只能显示已加载数）
+    return { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json', 'Prefer': 'count=exact' };
   }
   function render() {
     list.textContent = '';
@@ -239,7 +240,8 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   }
   function fetchPage(reset, full) {
     if (reset) { list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>'; offset = 0; totalKnown = null; }
-    var q = SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,email,is_admin,pinned,content,created_at&order=created_at.desc' + (full ? '' : '&limit=' + PAGE + '&offset=' + offset);
+    // 排序：置顶永远第一（折叠态也可见不被截断），其余按时间倒序
+    var q = SB + '/rest/v1/comments?url=eq.' + encodeURIComponent(PATH) + '&select=id,pid,nick,email,is_admin,pinned,content,created_at&order=pinned.desc,created_at.desc' + (full ? '' : '&limit=' + PAGE + '&offset=' + offset);
     fetch(q, { headers: headers() })
       .then(function (r) {
         if (!r.ok) return r.text().then(function (t) { throw new Error('HTTP ' + r.status + (t ? '：' + t.slice(0, 200) : '')); });

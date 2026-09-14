@@ -33,13 +33,20 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;color:#2b2b2b}
   #postSearch{padding:8px 14px;border-radius:10px;border:1px solid #e9e6e2;font-size:13px;font-family:inherit;background:#faf9f7;outline:none;transition:.2s;color:#333}
   #postSearch:focus{border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
 .field{margin-bottom:14px;position:relative;transition:all .2s}
-.field.act{padding-left:12px;border-left:3px solid #e5484d;border-radius:6px;background:linear-gradient(90deg,rgba(229,72,77,.05),transparent);transition:all .25s}
+.field.act{border-radius:6px;background:linear-gradient(90deg,rgba(229,72,77,.05),transparent);box-shadow:inset 3px 0 0 #e5484d;transition:background .25s,box-shadow .25s}
+/* #52：聚焦态只用颜色/角标提示，不加 padding/border（旧版 padding-left+border-left 会把框撑宽，看起来像“放大”，影响长按选字复制） */
 .field.act label{color:#e5484d}
 .field.act::after{content:'编辑中';position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;color:#fff;background:#e5484d;border-radius:99px;padding:2px 8px;z-index:2;letter-spacing:.5px}
 .field.act input,.field.act textarea{border-color:#e0a8a9}
 label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;letter-spacing:.3px}
 input[type=text],input[type=password],input[type=number],textarea{width:100%;border:1px solid #dedcd6;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:all .2s}
 input:focus,textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
+/* #53：自定义选择图片按钮（替代丑的原生 file input） */
+.filebtn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px dashed #d8d5cf;border-radius:9px;background:#faf9f7;color:#666;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;user-select:none}
+.filebtn:hover{border-color:#e5484d;color:#e5484d;background:#fdf3f3}
+.filebtn:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
+.filebtn .fb-name{font-weight:400;font-size:12px;color:#999}
+.filebtn:hover .fb-name{color:#e5484d}
 textarea{resize:vertical;font-size:13px;line-height:1.6}
 .g-prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .g-prev figure{margin:0;position:relative;width:86px;border:1px solid #e8e6e0;border-radius:8px;overflow:hidden;background:#faf9f7;animation:mrhxFade .3s ease both}
@@ -962,7 +969,8 @@ function addGameCard(data) {
   <div class="field"><label>游戏名称</label><input type="text" class="g-name"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
-    <input type="file" class="g-files" accept="image/*" multiple>
+    <input type="file" class="g-files" accept="image/*" multiple hidden>
+    <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
     <textarea class="g-imgs"></textarea>
     <div class="g-prev"></div>
@@ -980,6 +988,10 @@ function addGameCard(data) {
   d.querySelector('.del').onclick = () => { removeCard(d); };
   const fileInput = d.querySelector('.g-files');
   fileInput.addEventListener('change', () => previewFiles(fileInput));
+  // #53：自定义选择按钮（原生 input 隐藏），点击/回车触发文件选择
+  const fb = d.querySelector('.filebtn');
+  fb.onclick = () => fileInput.click();
+  fb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
   d.querySelector('.g-move').onclick = e => openMove(d, e);
   d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
@@ -1071,6 +1083,9 @@ function previewFiles(input) {
     if (!seen.has(key)) { seen.add(key); unique.items.add(f); }
   });
   input.files = unique.files;
+  // #53：同步自定义按钮上的已选文件名提示
+  const fbName = input.parentElement.querySelector('.fb-name');
+  if (fbName) fbName.textContent = unique.files.length ? '  已选 ' + unique.files.length + ' 张' : '';
   const prev = input.parentElement.querySelector('.g-prev');
   prev.innerHTML = '';
   [...input.files].forEach((f, i) => {
