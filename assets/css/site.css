@@ -68,7 +68,7 @@
   /* 图片加载动效（JS 给未加载完的卡片图加 .mrhx-img-loading）：按原比例灰色占位 + 转圈，
      加载完成淡入；失败/无 JS 则图正常显示，不会永久转圈 */
   .image-row{position:relative}
-  .image-row img.image{transition:opacity .35s ease}
+  .image-row img.image{transition:opacity .35s ease;max-width:100%;height:auto}
   .image-row img.image.mrhx-img-loading{opacity:0}
   .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background:#f4f2ef;pointer-events:none}
   .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}

@@ -2,7 +2,7 @@
  * 唯一真相在本文件；由 scripts/gen.js 旧评论模板逐字迁移而来。
  * 页面在引用本文件之前内联配置：window.MRHXC = { sb, key, ns, path }；
  * 评论区 DOM 骨架（MRHX_SKELETON）由本脚本注入到自身标签之前。 */
-var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrhx-comments\">\n  <h2>评论区<span class=\"mrhx-cnum\" id=\"mrhx-cnum\"></span></h2>\n  <div class=\"mrhx-cfbar\" id=\"mrhx-cfbar\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfbar-btn\">缩短评论</button></div>\n  <div class=\"mrhx-cfold-wrap\" id=\"mrhx-cfold-wrap\">\n    <div id=\"mrhx-clist\"></div>\n    <div class=\"mrhx-cfold-mask\" id=\"mrhx-cfold-mask\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfold-btn\">展开评论</button></div>\n  </div>\n  <form id=\"mrhx-cform\" class=\"mrhx-cform\">\n    <div style=\"position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden\" aria-hidden=\"true\">\n      <label>请不要填写此栏<input type=\"text\" id=\"mrhx-hp\" name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label>\n    </div>\n    <div class=\"mrhx-cform-title\">💬 发表评论</div>\n    <div class=\"mrhx-crow\">\n      <input type=\"text\" id=\"mrhx-nick\" placeholder=\"昵称\" maxlength=\"30\" required>\n      <input type=\"email\" id=\"mrhx-mail\" placeholder=\"常用邮箱（站长回复会发到这里）\" required>\n    </div>\n    <textarea id=\"mrhx-ctext\" placeholder=\"友善评论，请支持正版…\" maxlength=\"2000\" required></textarea>\n    <div class=\"mrhx-crow mrhx-csub\">\n      <span id=\"mrhx-creply\" class=\"mrhx-creply\"></span>\n      <button type=\"submit\">发表评论</button>\n    </div>\n  </form>\n</div>\n<div class=\"mrhx-cpop\" id=\"mrhx-cpop\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mrhx-cpop-title\">\n  <div class=\"mrhx-cpop-box\">\n    <h3 id=\"mrhx-cpop-title\">邮箱填写提示</h3>\n    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>\n    <button type=\"button\" class=\"mrhx-cpop-ok\" id=\"mrhx-cpop-ok\">知道了</button>\n  </div>\n</div>";
+var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrhx-comments\">\n  <h2>评论区<span class=\"mrhx-cnum\" id=\"mrhx-cnum\"></span></h2>\n  <div class=\"mrhx-cfbar\" id=\"mrhx-cfbar\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfbar-btn\">缩短评论</button></div>\n  <div class=\"mrhx-cfold-wrap\" id=\"mrhx-cfold-wrap\">\n    <div id=\"mrhx-clist\"></div>\n    <div class=\"mrhx-cfold-mask\" id=\"mrhx-cfold-mask\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfold-btn\">展开评论</button></div>\n  </div>\n  <div class=\"mrhx-cmore-wrap\" id=\"mrhx-cmore-wrap\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cmore-btn\">加载更多评论</button></div>\n  <form id=\"mrhx-cform\" class=\"mrhx-cform\">\n    <div style=\"position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden\" aria-hidden=\"true\">\n      <label>请不要填写此栏<input type=\"text\" id=\"mrhx-hp\" name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label>\n    </div>\n    <div class=\"mrhx-cform-title\">💬 发表评论</div>\n    <div class=\"mrhx-crow\">\n      <input type=\"text\" id=\"mrhx-nick\" placeholder=\"昵称\" maxlength=\"30\" required>\n      <input type=\"email\" id=\"mrhx-mail\" placeholder=\"常用邮箱（站长回复会发到这里）\" required>\n    </div>\n    <textarea id=\"mrhx-ctext\" placeholder=\"友善评论，请支持正版…\" maxlength=\"2000\" required></textarea>\n    <div class=\"mrhx-crow mrhx-csub\">\n      <span id=\"mrhx-creply\" class=\"mrhx-creply\"></span>\n      <button type=\"submit\">发表评论</button>\n    </div>\n  </form>\n</div>\n<div class=\"mrhx-cpop\" id=\"mrhx-cpop\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mrhx-cpop-title\">\n  <div class=\"mrhx-cpop-box\">\n    <h3 id=\"mrhx-cpop-title\">邮箱填写提示</h3>\n    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>\n    <button type=\"button\" class=\"mrhx-cpop-ok\" id=\"mrhx-cpop-ok\">知道了</button>\n  </div>\n</div>";
 (function () {
   var C = window.MRHXC || {};
   if (!C.sb || !C.key || !C.path) return;
@@ -20,6 +20,8 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   var foldBtn = document.getElementById('mrhx-cfold-btn');
   var cfbar = document.getElementById('mrhx-cfbar');
   var cfbarBtn = document.getElementById('mrhx-cfbar-btn');
+  var moreWrap = document.getElementById('mrhx-cmore-wrap');
+  var moreBtnEl = document.getElementById('mrhx-cmore-btn');
   var folded = true;
   // #39：折叠阈值由页面配置 MRHXC.fold 下发（site.json comments.foldThreshold，默认 6）
   var FOLD_MIN = (C.fold > 0 ? C.fold : 6);
@@ -30,6 +32,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');
       if (cfbar) cfbar.style.display = 'none';
+      if (moreWrap) moreWrap.style.display = 'none';
       return;
     }
     if (folded) {
@@ -37,13 +40,23 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       foldMask.classList.add('mrhx-cfold-show');
       foldBtn.textContent = '展开评论（' + totalCount() + ' 条）';
       if (cfbar) cfbar.style.display = 'none';
+      if (moreWrap) moreWrap.style.display = 'none';
     } else {
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');
+      // 顶部 cfbar 只显示「缩短评论」
       if (cfbar) {
         cfbar.style.display = 'block';
-        // 同一个跟随按钮两段式：还有未加载→「加载更多评论」；已全量→「缩短评论」
-        if (cfbarBtn) { cfbarBtn.disabled = false; cfbarBtn.textContent = hasMore ? '加载更多评论' : '缩短评论'; }
+        if (cfbarBtn) { cfbarBtn.disabled = false; cfbarBtn.textContent = '缩短评论'; }
+      }
+      // 底部 more-wrap：还有未加载→「加载更多评论」；已全量→隐藏
+      if (moreWrap) {
+        if (hasMore) {
+          moreWrap.style.display = 'block';
+          if (moreBtnEl) { moreBtnEl.disabled = false; moreBtnEl.textContent = '加载更多评论'; }
+        } else {
+          moreWrap.style.display = 'none';
+        }
       }
     }
   }
@@ -52,11 +65,13 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     folded = false; applyFold();
   };
   if (cfbarBtn) cfbarBtn.onclick = function () {
-    if (hasMore) {
-      // 第二段：一次性拉全部
-      cfbarBtn.disabled = true; cfbarBtn.textContent = '加载中…';
-      fetchPage(true, true);
-    } else { folded = true; applyFold(); }
+    // 顶部按钮只有「缩短评论」功能
+    folded = true; applyFold();
+  };
+  if (moreBtnEl) moreBtnEl.onclick = function () {
+    // 底部按钮：一次性拉全部
+    moreBtnEl.disabled = true; moreBtnEl.textContent = '加载中…';
+    fetchPage(true, true);
   };
   var all = [];
   // 两段式分页：首次拉 20 条（秒开）；展开后点「加载更多评论」一次拉全部

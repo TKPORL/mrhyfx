@@ -759,7 +759,7 @@ html = (function reorderNodes(str) {
   <div class="mnav">${navPills}</div>
   </div>
 </div>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n${bar}\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
