@@ -33,9 +33,9 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;color:#2b2b2b}
   #postSearch{padding:8px 14px;border-radius:10px;border:1px solid #e9e6e2;font-size:13px;font-family:inherit;background:#faf9f7;outline:none;transition:.2s;color:#333}
   #postSearch:focus{border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
 .field{margin-bottom:14px;position:relative;transition:all .2s}
-.field.act{border-radius:6px;background:linear-gradient(90deg,rgba(229,72,77,.05),transparent);box-shadow:inset 3px 0 0 #e5484d;transition:background .25s,box-shadow .25s}
-/* #52：聚焦态只用颜色/角标提示，不加 padding/border（旧版 padding-left+border-left 会把框撑宽，看起来像“放大”，影响长按选字复制） */
-.field.act label{color:#e5484d}
+.field.act{transition:background .25s}
+/* #52：聚焦态只变色（label 红、输入框边框粉、角标），不加左条/背景/padding——旧版 inset 红条会压在 label 文字上造成“重叠”观感 */
+.field.act label{color:#e5484d;font-weight:700}
 .field.act::after{content:'编辑中';position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;color:#fff;background:#e5484d;border-radius:99px;padding:2px 8px;z-index:2;letter-spacing:.5px}
 .field.act input,.field.act textarea{border-color:#e0a8a9}
 label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;letter-spacing:.3px}

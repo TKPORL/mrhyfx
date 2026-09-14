@@ -163,7 +163,9 @@
   .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
   .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
   .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
-  .mrhx-cfbar{text-align:center;margin-top:6px}
+  .mrhx-cfbar{text-align:center;margin-top:6px;position:sticky;bottom:10px;z-index:50;pointer-events:none}
+  /* 展开后「缩短评论/加载更多」按钮吸底跟随：评论区很长时不用滚回底部才能点；按钮本体可点，周围透明区域不拦截页面点击 */
+  .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
   .mrhx-top{position:fixed;right:20px;bottom:24px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e5484d;color:#fff;font-size:20px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(229,72,77,.4);opacity:0;pointer-events:none;transition:.3s;line-height:1}
   .mrhx-top.show{opacity:1;pointer-events:auto}

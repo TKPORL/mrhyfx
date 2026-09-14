@@ -40,17 +40,26 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     } else {
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');
-      if (cfbar) cfbar.style.display = 'block';
+      if (cfbar) {
+        cfbar.style.display = 'block';
+        // 同一个跟随按钮两段式：还有未加载→「加载更多评论」；已全量→「缩短评论」
+        if (cfbarBtn) { cfbarBtn.disabled = false; cfbarBtn.textContent = hasMore ? '加载更多评论' : '缩短评论'; }
+      }
     }
   }
   if (foldBtn) foldBtn.onclick = function () {
-    // 「展开评论」：首次展开若后端还有未加载的评论，一次性拉全部；之后展开/收起只切换视图不再请求
-    if (hasMore) { folded = false; fetchPage(true, true); }
-    else { folded = false; applyFold(); }
+    // 两段式：展开只先展示已加载的 20 条（不拉全部），全部数据由下方「加载更多」按钮拉
+    folded = false; applyFold();
   };
-  if (cfbarBtn) cfbarBtn.onclick = function () { folded = true; applyFold(); };
+  if (cfbarBtn) cfbarBtn.onclick = function () {
+    if (hasMore) {
+      // 第二段：一次性拉全部
+      cfbarBtn.disabled = true; cfbarBtn.textContent = '加载中…';
+      fetchPage(true, true);
+    } else { folded = true; applyFold(); }
+  };
   var all = [];
-  // 分页策略：首次只拉 20 条（秒开）；点「展开评论」时一次性拉全部；无「加载更多」按钮
+  // 两段式分页：首次拉 20 条（秒开）；展开后点「加载更多评论」一次拉全部
   var PAGE = 20, offset = 0, hasMore = false, totalKnown = null;
   function totalCount() { return totalKnown != null ? totalKnown : all.length; }
   var popShown = false;
