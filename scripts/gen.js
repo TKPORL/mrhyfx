@@ -182,7 +182,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
       e.preventDefault();
       e.stopPropagation();
       h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
-      from.innerHTML = fromText ? '<b>游戏介绍：</b> ' + fromText.replace(/</g, '&lt;') : '';
+      from.innerHTML = '<b>游戏介绍</b>';
       text.textContent = gamePlat || '';
       // note 区域的游戏描述放到弹窗正文
       if (noteEl) {
