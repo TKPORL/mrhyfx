@@ -30,7 +30,17 @@
     "foldThreshold": 6
   },
   "build": {
-    "excludePosts": ["index.html", "publish.html", "Tsinhoht.html", "search.html", "email-preview.html", "comments-preview.html", "site-preview.html", "jinri.html", "404.html"]
+    "excludePosts": [
+      "index.html",
+      "publish.html",
+      "Tsinhoht.html",
+      "search.html",
+      "email-preview.html",
+      "comments-preview.html",
+      "site-preview.html",
+      "jinri.html",
+      "404.html"
+    ]
   },
   "seo": {
     "url": "https://tkporl.github.io/mrhyfx/",
@@ -41,5 +51,9 @@
       "sogou": "",
       "yandex": "0ad787015695e649"
     }
+  },
+  "imgbed": {
+    "enabled": true,
+    "baseUrl": "https://tsinho-cloudflare-imgbed.pages.dev"
   }
 }
