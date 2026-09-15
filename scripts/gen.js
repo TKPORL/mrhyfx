@@ -1206,7 +1206,9 @@ ${indexScript}
             if (sk.startsWith('<ul', i)) { depth++; i += 2; }
             else if (sk.startsWith('</ul>', i)) { depth--; i += 4; if (depth === 0) break; }
           }
-          sk = sk.slice(0, s0) + tag + '\n  </ul>' + sk.slice(i + 5);
+          // i 停在 `</ul>` 的 `>` 上（循环里 i += 4 后 break），所以要从 i+1 切片；
+          // 写成 i+5 会多吞掉后面的 4 个字符，把 `</ul> <div class="publish"` 切成 `</ul>v class="publish"`
+          sk = sk.slice(0, s0) + tag + '\n  </ul>' + sk.slice(i + 1);
         }
       }
       sk = sk.replace(/<div class="title">[\s\S]*?<\/div>/, '<div class="title">新帖子标题</div>');

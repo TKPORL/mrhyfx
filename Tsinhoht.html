@@ -1241,7 +1241,9 @@ function stripNodeList(html, blocks) {
     if (html.startsWith('<ul', i)) { depth++; i += 2; }
     else if (html.startsWith('</ul>', i)) { depth--; i += 4; if (depth === 0) break; }
   }
-  return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 5);
+  // i 停在 `</ul>` 的 `>` 上（循环里 i += 4 后 break），必须从 i+1 切片；
+  // i+5 会多吞 4 个字符，让发布出来的帖子收尾变成 `</ul>ass="publish" ...`（浏览器把标签当正文显示）
+  return html.slice(0, start + tag.length) + '\n' + blocks + '\n  </ul>' + html.slice(i + 1);
 }
 
 async function buildFormHtml(cards, imagePaths, title, name) {
