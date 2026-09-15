@@ -36,11 +36,30 @@ jobs:
           git add -A
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "chore: 自动生成首页与每日页"
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && exit 0
-            sleep 3
+          # #49：并发推送冲突自愈（旧逻辑固定 sleep 3s + 无冲突策略，后台"帖子+timestamps 两连推"必撞车，
+          #   且 rebase 卡在帖子页冲突直接报红）。新逻辑：
+          #   1) 常规路径 fetch+rebase，成功即 push（HEAD:main 兼容 actions/checkout 的分离头指针）；
+          #   2) rebase 冲突 → 放弃本地生成结果，reset 到远端最新，重跑 gen.js 基于最新内容再生成一遍再提交
+          #      （生成物是确定性的，"以最新输入重新生成"永远等价于手工选边，且不会丢任何帖子）；
+          #   3) 重试间随机退避拉开窗口；6 次兜底后仍失败才报红（真·异常，需人工看）。
+          ok=0
+          for i in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then ok=1; break; fi
+            else
+              git rebase --abort 2>/dev/null || true
+              git reset --hard origin/main
+              node scripts/gen.js
+              git add -A
+              if git diff --cached --quiet; then echo "远端已含等价生成结果，无需重复提交"; ok=1; break; fi
+              git commit -m "chore: 自动生成首页与每日页（自愈重试 $i）"
+            fi
+            sleep $(( RANDOM % 5 + 2 ))
           done
-          git rebase --abort 2>/dev/null || true
-          git reset --hard origin/main 2>/dev/null || true
-          echo "❌ 自动生成提交推送上限重试仍未成功"
-          exit 1
+          if [ "$ok" != "1" ]; then
+            git rebase --abort 2>/dev/null || true
+            git reset --hard origin/main 2>/dev/null || true
+            echo "❌ 自动生成提交推送重试仍未成功"
+            exit 1
+          fi
