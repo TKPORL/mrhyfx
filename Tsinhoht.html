@@ -143,6 +143,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 #status.err,#statusC.err,#statusM.err,#statusL.err,#statusS.err{background:#fdf1f1;color:#c93a3f;border:1px solid #f0b4b6}
 #status.info,#statusC.info,#statusM.info,#statusL.info,#statusS.info{background:#eef4fd;color:#1a5fb4;border:1px solid #bcd3f0}
 #status.warn,#statusC.warn,#statusM.warn,#statusL.warn,#statusS.warn{background:#fff8e6;color:#9a6700;border:1px solid #eedd9e}
+#imgbedStatus.show{display:block;padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-top:6px}
+#imgbedStatus.ok{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+#imgbedStatus.err{background:#fdf1f1;color:#c93a3f;border:1px solid #f0b4b6}
+#imgbedStatus.info{background:#eef4fd;color:#1a5fb4;border:1px solid #bcd3f0}
 .warn{margin-top:12px;font-size:12px;color:#999;line-height:1.7;border-top:1px solid #f0eee8;padding-top:12px}
 .stat-overview{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .stat-box{flex:1;min-width:110px;background:#fff;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;text-align:center;transition:all .2s}
@@ -279,11 +283,33 @@ body.gate-pending main{display:none!important}
         <label>仓库（默认 TKPORL/mrhyfx）</label>
         <input type="text" id="repo" value="TKPORL/mrhyfx">
       </div>
+      <div class="field" style="border-top:1px solid #eee;padding-top:12px;margin-top:6px">
+        <label>图片存储位置</label>
+        <div class="row" style="gap:14px">
+          <label><input type="radio" name="imgTarget" id="imgTargetGithub" value="github"> 存 GitHub 仓库（原方式）</label>
+          <label><input type="radio" name="imgTarget" id="imgTargetBed" value="imgbed"> 传图床（自动转链）</label>
+        </div>
+        <p class="hint">选「传图床」时，发布的游戏封面图会自动上传到你的 CloudImg 图床（自动压缩、HEIC→WebP），页面直接引用图床链接，图片不再占用仓库空间、也不走 GitHub Pages 流量。换设备后需重新填一次地址和密钥。</p>
+        <div id="imgbedCfg" style="display:none;margin-top:10px">
+          <label>图床地址（形如 https://xxx.rf.gd/api.php?action=upload）</label>
+          <input type="text" id="imgbedUrl" autocomplete="off" placeholder="https://你的图床域名/api.php?action=upload">
+          <label style="margin-top:8px;display:block">图床 API 密钥</label>
+          <div class="pwwrap">
+            <input type="password" id="imgbedKey" autocomplete="off">
+            <button type="button" class="pw-eye" data-eye="imgbedKey" title="显示/隐藏" aria-label="显示密钥" aria-pressed="false">👁</button>
+          </div>
+          <div class="row" style="margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap">
+            <label><input type="checkbox" id="rememberImgbed"> 记住（仅本机浏览器明文保存）</label>
+            <button type="button" class="btn btn-s" id="testImgbed">测试连接</button>
+          </div>
+          <div id="imgbedStatus" style="margin-top:6px"></div>
+        </div>
+      </div>
       <div class="row">
         <button type="button" class="btn btn-p" id="pubForm">发布</button>
       </div>
       <div id="status"></div>
-      <p class="warn">注意：Token 是你的 GitHub 密钥，只用于向你的仓库提交文件，请勿外泄。发布后刷新如看不到更新请 Ctrl+F5 强刷。</p>
+      <p class="warn">注意：Token 和图床密钥是你的凭据，只保存在本机浏览器、只用于向你的仓库/图床提交，不会写进仓库源码，请勿外泄。发布后刷新如看不到更新请 Ctrl+F5 强刷。</p>
     </div>
   </div>
 
@@ -552,6 +578,10 @@ const $ = id => document.getElementById(id);
 const TOKEN_KEY = 'mrhx_token_v1';
 const REPO_KEY = 'mrhx_repo_v1';
 const RAW_BASE = 'https://raw.githubusercontent.com';
+// 图床（CloudImg）配置：模式 github/imgbed，仅存本机浏览器，绝不写进仓库源码
+const IMGBED_MODE_KEY = 'mrhx_imgbed_mode_v1';
+const IMGBED_URL_KEY  = 'mrhx_imgbed_url_v1';
+const IMGBED_KEY_KEY  = 'mrhx_imgbed_key_v1';
 
 function show(el, msg, type) {
   el.textContent = msg;
@@ -581,6 +611,59 @@ $('clearToken').addEventListener('click', () => {
   toast('Token 已从输入框和浏览器存储中清除');
 });
 $('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
+
+// ===== 图床设置框：加载 / 保存 / 显隐 / 测试 =====
+(function initImgbed() {
+  const bedRadio = $('imgTargetBed'), ghRadio = $('imgTargetGithub'), cfgBox = $('imgbedCfg');
+  const urlEl = $('imgbedUrl'), keyEl = $('imgbedKey'), rememberEl = $('rememberImgbed'), testBtn = $('testImgbed');
+  function refreshCfgShow() { cfgBox.style.display = bedRadio.checked ? '' : 'none'; }
+  function saveImgbed() {
+    const primary = rememberEl.checked ? localStorage : sessionStorage;
+    const secondary = rememberEl.checked ? sessionStorage : localStorage;
+    const u = urlEl.value.trim(), k = keyEl.value.trim();
+    if (u) primary.setItem(IMGBED_URL_KEY, u); else primary.removeItem(IMGBED_URL_KEY);
+    if (k) primary.setItem(IMGBED_KEY_KEY, k); else primary.removeItem(IMGBED_KEY_KEY);
+    secondary.removeItem(IMGBED_URL_KEY); secondary.removeItem(IMGBED_KEY_KEY);
+  }
+  // 载入（localStorage 优先，其次 sessionStorage）
+  urlEl.value = localStorage.getItem(IMGBED_URL_KEY) || sessionStorage.getItem(IMGBED_URL_KEY) || '';
+  keyEl.value = localStorage.getItem(IMGBED_KEY_KEY) || sessionStorage.getItem(IMGBED_KEY_KEY) || '';
+  const savedMode = localStorage.getItem(IMGBED_MODE_KEY) === 'imgbed' ? 'imgbed' : 'github';
+  (savedMode === 'imgbed' ? bedRadio : ghRadio).checked = true;
+  rememberEl.checked = !!localStorage.getItem(IMGBED_URL_KEY);
+  refreshCfgShow();
+  [ghRadio, bedRadio].forEach(r => r.addEventListener('change', () => {
+    localStorage.setItem(IMGBED_MODE_KEY, bedRadio.checked ? 'imgbed' : 'github');
+    refreshCfgShow();
+  }));
+  urlEl.addEventListener('input', saveImgbed);
+  keyEl.addEventListener('input', saveImgbed);
+  rememberEl.addEventListener('change', saveImgbed);
+  testBtn.onclick = async () => {
+    const u = urlEl.value.trim(), k = keyEl.value.trim();
+    if (!u || !k) { show($('imgbedStatus'), '先填图床地址和密钥', 'err'); return; }
+    show($('imgbedStatus'), '正在测试连接…', 'info');
+    testBtn.disabled = true;
+    try {
+      // 只带密钥、不带文件的探测请求：图床先校验密钥再查文件，
+      // 返回「API 密钥无效」= 地址通但密钥错；返回「没有文件被上传」= 地址和密钥都对。全程不产生图片。
+      const fd = new FormData();
+      fd.append('api_key', k);
+      const res = await fetch(u, { method: 'POST', body: fd });
+      const text = await res.text();
+      let json; try { json = JSON.parse(text); } catch { throw new Error('返回非 JSON，地址可能不对（HTTP ' + res.status + '）'); }
+      if (res.status === 403 || (json.msg || '').indexOf('密钥') >= 0) {
+        show($('imgbedStatus'), '✕ 地址能连通，但密钥无效', 'err');
+      } else if ((json.msg || '').indexOf('没有文件') >= 0 || json.status === 'error') {
+        show($('imgbedStatus'), '✓ 连接成功，密钥有效（返回「' + (json.msg || 'ok') + '」属正常探测响应）', 'ok');
+      } else {
+        show($('imgbedStatus'), '✕ 响应异常：' + JSON.stringify(json).slice(0, 160), 'err');
+      }
+    } catch (e) {
+      show($('imgbedStatus'), '✕ ' + e.message, 'err');
+    } finally { testBtn.disabled = false; }
+  };
+})();
 
 const TAB_KEY = 'mrhx_active_tab';
 const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
@@ -1205,9 +1288,45 @@ function fileToBase64(f) {
   });
 }
 
+function imgbedGetCfg() {
+  return {
+    mode: localStorage.getItem(IMGBED_MODE_KEY) === 'imgbed' ? 'imgbed' : 'github',
+    url:  (localStorage.getItem(IMGBED_URL_KEY) || '').trim(),
+    key:  (localStorage.getItem(IMGBED_KEY_KEY) || '').trim()
+  };
+}
+
+// 上传单张图到图床，成功返回绝对 URL 字符串
+async function imgbedUploadOne(file, cfg, statusEl) {
+  const fd = new FormData();
+  fd.append('image', file, file.name);
+  fd.append('api_key', cfg.key); // 用表单字段而非自定义头，避免 CORS 预检
+  let res;
+  try {
+    res = await fetch(cfg.url, { method: 'POST', body: fd });
+  } catch (e) {
+    throw new Error('无法连接图床（网络或地址错误）：' + file.name);
+  }
+  let json;
+  const text = await res.text();
+  try { json = JSON.parse(text); }
+  catch { throw new Error('图床返回非 JSON（HTTP ' + res.status + '），地址可能填错：' + text.slice(0, 120)); }
+  if (!json.status || json.status !== 'success') {
+    throw new Error('图床拒绝（' + (json.msg || '未知错误') + '）：' + file.name);
+  }
+  return json.data.url;
+}
+
 async function uploadGameImages(repo, token, name, cards, statusEl) {
+  const cfg = imgbedGetCfg();
+  const useBed = cfg.mode === 'imgbed';
+  if (useBed && (!cfg.url || !cfg.key)) {
+    throw new Error('已选「传图床」，但图床地址或密钥未填写（见上方图片存储位置设置）');
+  }
   const paths = [];
   const usedNames = new Set();
+  let done = 0;
+  const totalFiles = cards.reduce((n, c) => n + c.files.length, 0);
   for (const c of cards) {
     const cardPaths = [];
     const seenFiles = new Set();
@@ -1215,6 +1334,14 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
       const fileKey = [f.name, f.size, f.lastModified, f.type].join('\u0000');
       if (seenFiles.has(fileKey)) continue;
       seenFiles.add(fileKey);
+      if (useBed) {
+        // 图床模式：直接传文件，拿回绝对 URL；服务端自动命名+压缩/转格式
+        if (statusEl && totalFiles) show(statusEl, '正在上传图床 ' + (done + 1) + '/' + totalFiles + '：' + f.name, 'info');
+        const url = await imgbedUploadOne(f, cfg, statusEl);
+        done++;
+        cardPaths.push(url);
+        continue;
+      }
       const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
       const raw = randomAlnum(10);
       let rawName = raw + '.' + ext;
