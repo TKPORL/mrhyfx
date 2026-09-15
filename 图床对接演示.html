@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图床对接演示 · 方案一（全局开关）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", system-ui, sans-serif; background: #faf8f6; color: #333; line-height: 1.7; padding: 32px 16px 80px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .sub { color: #888; font-size: 14px; margin-bottom: 24px; }
+  .card { background: #fff; border: 1px solid #eee6df; border-radius: 14px; padding: 22px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.03); }
+  .card h2 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .n { background: #7c5cff; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .card .desc { color: #999; font-size: 13px; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: #666; margin: 12px 0 4px; }
+  input[type=text], input[type=password] { width: 100%; padding: 9px 12px; border: 1px solid #e5ded7; border-radius: 8px; font-size: 14px; background: #fdfcfb; }
+  input:focus { outline: none; border-color: #7c5cff; }
+  .row { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .chk { font-size: 13px; color: #666; display: flex; align-items: center; gap: 5px; }
+  button { border: none; border-radius: 8px; padding: 9px 18px; font-size: 14px; cursor: pointer; }
+  .btn-p { background: #7c5cff; color: #fff; }
+  .btn-p:hover { background: #6a4ae6; }
+  .btn-p:disabled { background: #c9bdf5; cursor: not-allowed; }
+  .btn-s { background: #f1eee9; color: #555; }
+  .hint { font-size: 12px; color: #aaa; margin-top: 10px; }
+  .out { margin-top: 16px; border-radius: 10px; padding: 14px 16px; font-size: 13px; display: none; white-space: pre-wrap; word-break: break-all; }
+  .out.ok { display: block; background: #edf7ed; border: 1px solid #cbe6cb; color: #2c6e2c; }
+  .out.err { display: block; background: #fdeeee; border: 1px solid #f2caca; color: #a33; }
+  .out img { display: block; margin: 10px 0; max-width: 320px; border-radius: 8px; border: 1px solid #ddd; }
+  .linkbox { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .linkbox code { flex: 1; min-width: 260px; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 6px 10px; font-size: 12px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+  .sim { border: 1px dashed #d8cfc5; border-radius: 10px; padding: 14px 16px; font-size: 13px; background: #fdfcfa; }
+  .sim h3 { font-size: 13px; margin-bottom: 8px; color: #666; }
+  .pill { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 20px; margin-left: 6px; vertical-align: 1px; }
+  .pill.gh { background: #f0eeff; color: #6a4ae6; }
+  .pill.bed { background: #e9f6ef; color: #2c7a4b; }
+  .flow { margin-top: 10px; padding: 10px 12px; background: #f7f4ff; border-radius: 8px; font-size: 13px; color: #5b4a99; }
+  .mock-field { border: 1px solid #eee6df; border-radius: 8px; padding: 10px 12px; margin-top: 8px; background: #fdfcfb; }
+  .mock-field .lb { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .filebtn { display: inline-block; background: #f1eee9; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #555; }
+  .bar { height: 6px; border-radius: 3px; background: #eee; margin-top: 6px; overflow: hidden; display: none; }
+  .bar i { display: block; height: 100%; width: 0; background: #7c5cff; transition: width .3s; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>图床对接演示 <span style="font-size:13px;color:#7c5cff;font-weight:normal">方案一：全局开关，二选一</span></h1>
+  <p class="sub">这不是截图假演示 —— 下面的「真实测试」按钮会真的往你的图床传一张图。密码只存在你这台电脑的浏览器里，本文件不含任何密码。</p>
+
+  <div class="card">
+    <h2><span class="n">1</span>图床设置（以后会出现在后台 GitHub Token 下方，长这样）</h2>
+    <p class="desc">规则只有一条：<b>这两格留空 = 一切照旧走 GitHub；填上 = 新发布的图全部自动传图床。</b>不用开关按钮，填没填就是开关。</p>
+    <label>图床地址</label>
+    <input type="text" id="bedUrl" value="https://tsinho-cloudflare-imgbed.pages.dev" placeholder="例如 https://tsinho-cloudflare-imgbed.pages.dev">
+    <label>访问密码（就是你在 Cloudflare 里设的那个）</label>
+    <input type="password" id="bedPass" placeholder="留空则不启用图床">
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="bedRemember" checked> 记住密码（只存本机浏览器，换电脑要重新填）</label>
+      <button class="btn-p" id="btnTest">🚀 真实测试：生成一张图传上去</button>
+    </div>
+    <div class="bar" id="bar"><i id="barIn"></i></div>
+    <div class="out" id="out"></div>
+    <p class="hint">测试图由本页面现场生成（不是本地文件、不占空间），上传成功后会在下面直接显示它从图床加载回来的样子 —— 传 + 取，一条链路全验。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span>发帖时是什么体验</h2>
+    <p class="desc">发布界面和你现在一模一样，唯一的区别是每张图片卡下面多了行小字，告诉你这批图会去哪：</p>
+    <div class="two">
+      <div class="sim">
+        <h3>没配图床时（现状）<span class="pill gh">GitHub 模式</span></h3>
+        <div class="mock-field"><div class="lb">封面图片（二选一：上传文件 或 粘贴 URL）</div>
+          <span class="filebtn">📁 选择图片</span> 已选 3 张
+          <div class="flow">图片将保存到 GitHub 仓库 assets 目录，经 jsDelivr 显示</div>
+        </div>
+      </div>
+      <div class="sim">
+        <h3>配了图床后（新）<span class="pill bed">图床模式</span></h3>
+        <div class="mock-field"><div class="lb">封面图片（二选一：上传文件 或 粘贴 URL）</div>
+          <span class="filebtn">📁 选择图片</span> 已选 3 张
+          <div class="flow" style="background:#e9f6ef;color:#2c7a4b">图片将自动上传到你的图床 tsinho-cloudflare-imgbed.pages.dev，不再进入 GitHub 仓库</div>
+        </div>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:14px">点「发布」后自动完成：选图 → 逐张传图床 → 拿回链接 → 写进帖子。你要做的操作和现在<b>完全一样</b>，一张图都不用手动搬。想反悔？把设置清空，立刻回到 GitHub 模式，两边互不影响。</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span>这个演示 ≠ 最终改造范围</h2>
+    <p class="desc" style="margin-bottom:6px">看完满意的话，真改动就三个文件、四处：</p>
+    <div class="flow" style="background:#f7f4ff;color:#5b4a99">
+      ① 后台配置区：加图床地址 + 密码两格（就是上面这块）<br>
+      ② 后台上传函数：填了图床 → 走图床；没填 → 走现在的 GitHub，自动判断<br>
+      ③ 首页生成脚本 gen.js：豁免图床链接，别把它们又下载回 GitHub 仓库<br>
+      ④ 首页封面提取：兼容图床直链（不然新帖在首页没缩略图）
+    </div>
+    <p class="hint">网站里已有的几千张老图<b>一张都不动</b>，照常显示。老图搬家是以后的独立步骤，随时可做可不做。</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var KEY_U = 'demo_bed_url', KEY_P = 'demo_bed_pass';
+  try {
+    var su = localStorage.getItem(KEY_U), sp = localStorage.getItem(KEY_P);
+    if (su) $('bedUrl').value = su;
+    if (sp) $('bedPass').value = sp;
+  } catch (e) {}
+
+  function save() {
+    try {
+      if ($('bedRemember').checked) {
+        localStorage.setItem(KEY_U, $('bedUrl').value.trim());
+        localStorage.setItem(KEY_P, $('bedPass').value);
+      } else {
+        localStorage.removeItem(KEY_U); localStorage.removeItem(KEY_P);
+      }
+    } catch (e) {}
+  }
+  ['bedUrl', 'bedPass'].forEach(function (id) { $(id).addEventListener('input', save); });
+  $('bedRemember').addEventListener('change', save);
+
+  function out(html, ok) {
+    var o = $('out');
+    o.className = 'out ' + (ok ? 'ok' : 'err');
+    o.innerHTML = html;
+  }
+
+  function makeTestImage() {
+    return new Promise(function (res, rej) {
+      var c = document.createElement('canvas');
+      c.width = 360; c.height = 180;
+      var x = c.getContext('2d');
+      x.fillStyle = '#7c5cff'; x.fillRect(0, 0, 360, 180);
+      x.fillStyle = '#fff'; x.font = 'bold 26px "Microsoft YaHei"';
+      x.textAlign = 'center'; x.fillText('图床对接测试', 180, 78);
+      x.font = '14px "Microsoft YaHei"'; x.fillStyle = '#e6defc';
+      x.fillText(new Date().toLocaleString('zh-CN'), 180, 112);
+      x.fillText('WorkBuddy 演示图片', 180, 136);
+      c.toBlob(function (b) {
+        if (!b) return rej(new Error('图片生成失败'));
+        res(new File([b], 'imgbed-demo-' + Date.now() + '.png', { type: 'image/png' }));
+      }, 'image/png');
+    });
+  }
+
+  $('btnTest').onclick = function () {
+    var base = $('bedUrl').value.trim().replace(/\/+$/, '');
+    var pass = $('bedPass').value;
+    if (!base) return out('请先填图床地址。', false);
+    if (!pass) return out('还没填访问密码 —— 填上才能真实测试。<br>（这也印证了规则：密码留空 = 不启用图床。）', false);
+    var btn = this; btn.disabled = true;
+    $('bar').style.display = 'block'; $('barIn').style.width = '15%';
+    out('正在生成测试图…', true);
+    makeTestImage().then(function (file) {
+      $('barIn').style.width = '45%';
+      out('测试图已生成（' + (file.size / 1024).toFixed(0) + ' KB），正在上传到图床…', true);
+      var fd = new FormData();
+      fd.append('file', file);
+      var ctrl = new AbortController();
+      var timer = setTimeout(function () { ctrl.abort(); }, 60000);
+      return fetch(base + '/upload?authCode=' + encodeURIComponent(pass), {
+        method: 'POST', body: fd, signal: ctrl.signal
+      }).then(function (r) {
+        clearTimeout(timer);
+        return r.text().then(function (t) { return { status: r.status, text: t }; });
+      });
+    }).then(function (r) {
+      $('barIn').style.width = '80%';
+      var j = null;
+      try { j = JSON.parse(r.text); } catch (e) {}
+      if (r.status !== 200 || !Array.isArray(j) || !j[0] || !j[0].src) {
+        out('❌ 上传失败（HTTP ' + r.status + '）<br>图床返回：' + r.text.replace(/</g, '&lt;') +
+          '<br>常见原因：密码不对 / 地址写错 / 图床服务没起来。', false);
+        return;
+      }
+      var full = base + j[0].src;
+      out('✅ <b>上传成功！</b>这就是真实对接后的效果 —— 帖子页里的图片链接长这样：<div class="linkbox"><code id="linkTxt">' + full.replace(/</g, '&lt;') + '</code><button class="btn-s" id="btnCopy">复制链接</button><a class="btn-s" style="text-decoration:none" href="' + full.replace(/"/g, '%22') + '" target="_blank" rel="noopener">新窗口打开</a></div>下面是这张图<b>从图床加载回来</b>的显示效果（和访客在你网站上看到图片是同一条路）：', true);
+      var img = new Image();
+      img.onload = function () {
+        $('barIn').style.width = '100%';
+        var o = $('out');
+        o.appendChild(img);
+        var tip = document.createElement('div');
+        tip.style.marginTop = '6px';
+        tip.innerHTML = '✔ 图片从图床正常显示。以后发的每张帖，图片都是这个待遇，全自动，无感知。';
+        o.appendChild(tip);
+        setTimeout(function () { $('bar').style.display = 'none'; }, 900);
+      };
+      img.onerror = function () {
+        out('⚠️ 上传成功了，但图片外链加载失败 —— 需要排查图床的文件访问权限设置。链接：' + full.replace(/</g, '&lt;'), false);
+      };
+      img.src = full;
+      var cp = document.getElementById('btnCopy');
+      if (cp) cp.onclick = function () {
+        var t = document.getElementById('linkTxt').textContent;
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { cp.textContent = '已复制 ✓'; setTimeout(function () { cp.textContent = '复制链接'; }, 1500); });
+        else { cp.textContent = '请手动复制'; }
+      };
+    }).catch(function (e) {
+      out('❌ 请求出错：' + (e && e.name === 'AbortError' ? '60 秒超时，图床没响应' : (e && e.message) || e) +
+        '<br>如果是网络问题，换个时间再试；如果是 CORS 报错，把这个页面截图发我。', false);
+    }).finally ? (btn.disabled = false, null) : null;
+    // finally 兼容写法
+    Promise.resolve().then(function () { setTimeout(function () { btn.disabled = false; }, 100); });
+  };
+})();
+</script>
+</body>
+</html>

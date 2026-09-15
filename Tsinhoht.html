@@ -279,6 +279,33 @@ body.gate-pending main{display:none!important}
         <label>仓库（默认 TKPORL/mrhyfx）</label>
         <input type="text" id="repo" value="TKPORL/mrhyfx">
       </div>
+      <div class="field" style="border-top:1px dashed #e9e6e2;padding-top:14px">
+        <label style="font-weight:600">图片上传模式</label>
+        <div class="row" style="gap:10px;margin:8px 0 4px">
+          <label class="imgmode-opt" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:8px 14px;border:1px solid #e9e6e2;border-radius:8px;flex:1;min-width:150px">
+            <input type="radio" name="imgmode" value="github" id="imgModeGh"> GitHub 仓库（现状）
+          </label>
+          <label class="imgmode-opt" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:8px 14px;border:1px solid #e9e6e2;border-radius:8px;flex:1;min-width:150px">
+            <input type="radio" name="imgmode" value="imgbed" id="imgModeBed"> 自建图床
+          </label>
+        </div>
+        <div id="imgBedCfg" style="display:none">
+          <label>图床地址</label>
+          <input type="text" id="imgBedUrl" placeholder="https://xxx.pages.dev">
+          <label style="margin-top:8px">图床访问密码</label>
+          <div class="pwwrap">
+            <input type="password" id="imgBedPass" autocomplete="off">
+            <button type="button" class="pw-eye" data-eye="imgBedPass" title="显示/隐藏" aria-label="显示密码" aria-pressed="false">👁</button>
+          </div>
+          <div class="row">
+            <button type="button" class="btn btn-s" id="imgBedTest">测试上传</button>
+          </div>
+          <p class="hint">密码只保存在这台电脑的浏览器里，不会上传或写进网站文件。选图床模式后，新发布的图片直接传到图床、不再进 GitHub 仓库；切回 GitHub 模式随时可以，互不影响。已有帖子的图片不受任何影响。</p>
+          <p class="hint">提示：首次选择图床模式或改完密码后，请点一次「测试上传」确认图床可通；「保存配置到站点」会把图床地址（不含密码）写入 site.json，供首页生成脚本识别图床直链。</p>
+          <div class="row"><button type="button" class="btn btn-s" id="imgBedSaveSite">保存配置到站点（site.json）</button></div>
+        </div>
+        <p id="imgModeWarn" class="warn" style="display:none"></p>
+      </div>
       <div class="row">
         <button type="button" class="btn btn-p" id="pubForm">发布</button>
       </div>
@@ -581,6 +608,101 @@ $('clearToken').addEventListener('click', () => {
   toast('Token 已从输入框和浏览器存储中清除');
 });
 $('repo').addEventListener('input', () => localStorage.setItem(REPO_KEY, $('repo').value.trim()));
+
+// ===== 图片上传模式：GitHub 仓库 / 自建图床（二选一，全局生效） =====
+const IMGMODE_KEY = 'mrhx_imgmode';
+const IMGBED_URL_KEY = 'mrhx_imgbed_url';
+const IMGBED_PASS_KEY = 'mrhx_imgbed_pass';
+function bedCfg() {
+  // 返回 null = GitHub 模式；返回 {base, pass} = 图床模式（校验不过直接抛错，发布时能看见原因）
+  if (localStorage.getItem(IMGMODE_KEY) !== 'imgbed') return null;
+  const base = (localStorage.getItem(IMGBED_URL_KEY) || '').trim().replace(/\/+$/, '');
+  const pass = localStorage.getItem(IMGBED_PASS_KEY) || '';
+  if (!base) throw new Error('图床模式已启用，但还没填图床地址');
+  if (!/^https?:\/\//.test(base)) throw new Error('图床地址要以 https:// 开头');
+  if (!pass) throw new Error('图床模式已启用，但还没填图床密码');
+  return { base, pass };
+}
+async function uploadToImgBed(file, base, pass, statusEl, label) {
+  const fd = new FormData();
+  fd.append('file', file);
+  let res;
+  try {
+    res = await fetch(base + '/upload?authCode=' + encodeURIComponent(pass), { method: 'POST', body: fd });
+  } catch (e) {
+    throw new Error('图床连不上（' + base + '）：' + (e.message || e) + '。检查网络或图床服务是否正常');
+  }
+  const text = await res.text();
+  let j = null;
+  try { j = JSON.parse(text); } catch (e) {}
+  if (res.status === 401 || res.status === 403) throw new Error('图床密码不对（HTTP ' + res.status + '），请到图床后台确认访问密码');
+  if (!res.ok || !Array.isArray(j) || !j[0] || !j[0].src) {
+    throw new Error('图床上传失败（HTTP ' + res.status + '）：' + text.slice(0, 200));
+  }
+  const url = base + j[0].src;
+  if (statusEl) show(statusEl, `[${label || '图床'}] ${file.name} → ${url} ✓`, 'ok');
+  return url;
+}
+function syncImgModeUI() {
+  const isBed = localStorage.getItem(IMGMODE_KEY) === 'imgbed';
+  $('imgModeGh').checked = !isBed;
+  $('imgModeBed').checked = isBed;
+  $('imgBedCfg').style.display = isBed ? '' : 'none';
+  document.querySelectorAll('.imgmode-opt').forEach(l => {
+    const on = l.querySelector('input').checked;
+    l.style.borderColor = on ? '#7c5cff' : '#e9e6e2';
+    l.style.background = on ? '#f7f4ff' : '';
+  });
+  const warn = $('imgModeWarn');
+  if (isBed) {
+    warn.style.display = '';
+    warn.textContent = '当前：新发布的图片将上传到自建图床，不再进入 GitHub 仓库（已有帖子不受影响）。';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+$('imgModeGh').addEventListener('change', () => { localStorage.setItem(IMGMODE_KEY, 'github'); syncImgModeUI(); });
+$('imgModeBed').addEventListener('change', () => { localStorage.setItem(IMGMODE_KEY, 'imgbed'); syncImgModeUI(); });
+$('imgBedUrl').value = localStorage.getItem(IMGBED_URL_KEY) || '';
+$('imgBedPass').value = localStorage.getItem(IMGBED_PASS_KEY) || '';
+$('imgBedUrl').addEventListener('input', () => localStorage.setItem(IMGBED_URL_KEY, $('imgBedUrl').value.trim()));
+$('imgBedPass').addEventListener('input', () => localStorage.setItem(IMGBED_PASS_KEY, $('imgBedPass').value));
+$('imgBedTest').onclick = async () => {
+  const btn = $('imgBedTest'); btn.disabled = true;
+  try {
+    // 现场生成一张小测试图（不读本地文件、不留痕）
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const x = c.getContext('2d'); x.fillStyle = '#7c5cff'; x.fillRect(0, 0, 64, 64);
+    const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+    const f = new File([blob], 'imgbed-test.png', { type: 'image/png' });
+    const { base, pass } = bedCfg();
+    const url = await uploadToImgBed(f, base, pass, stF, '图床测试');
+    const ok = await new Promise(r => { const im = new Image(); im.onload = () => r(true); im.onerror = () => r(false); im.src = url; });
+    if (!ok) throw new Error('上传成功了，但外链打不开：' + url);
+    show(stF, '图床测试通过 ✓ 上传与外链都正常：' + url, 'ok');
+  } catch (e) {
+    show(stF, '图床测试失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+};
+$('imgBedSaveSite').onclick = async () => {
+  const btn = $('imgBedSaveSite'); btn.disabled = true;
+  try {
+    const token = $('token').value.trim(), repo = $('repo').value.trim();
+    if (!token) throw new Error('请先填写 GitHub Token（写入 site.json 需要提交到仓库）');
+    if (!repo || !repo.includes('/')) throw new Error('仓库格式应为 用户名/仓库名');
+    const base = $('imgBedUrl').value.trim().replace(/\/+$/, '');
+    if (!/^https?:\/\/.+/.test(base)) throw new Error('图床地址格式不对，应类似 https://xxx.pages.dev');
+    const cur = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+    const site = (cur && typeof cur === 'object') ? cur : {};
+    site.imgbed = { enabled: true, baseUrl: base };  // 只写地址，绝不写密码
+    await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
+      '更新站点设置: 图床地址', stF, 'site.json');
+    show(stF, '已把图床地址写入 site.json（不含密码），首页生成脚本会识别图床直链 ✓', 'ok');
+  } catch (e) {
+    show(stF, '保存失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+};
+syncImgModeUI();
 
 const TAB_KEY = 'mrhx_active_tab';
 const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
@@ -1206,6 +1328,7 @@ function fileToBase64(f) {
 }
 
 async function uploadGameImages(repo, token, name, cards, statusEl) {
+  const bed = bedCfg();   // null=GitHub 模式；配置不完整会直接抛错（发布时可见原因）
   const paths = [];
   const usedNames = new Set();
   for (const c of cards) {
@@ -1215,6 +1338,12 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
       const fileKey = [f.name, f.size, f.lastModified, f.type].join('\u0000');
       if (seenFiles.has(fileKey)) continue;
       seenFiles.add(fileKey);
+      if (bed) {
+        // 图床模式：直接传图床，帖子记完整外链
+        const url = await uploadToImgBed(f, bed.base, bed.pass, statusEl, '图床');
+        cardPaths.push(url);
+        continue;
+      }
       const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
       const raw = randomAlnum(10);
       let rawName = raw + '.' + ext;
@@ -1532,6 +1661,8 @@ function renderPosts(filteredPosts) {
     const tag = p.path.replace(/\.html$/, '');
     const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
     const isPinned = pins.indexOf(tag) !== -1;
+    // 图床模式发布的帖子没有 assets 目录图片（imgCount=0），标题栏若也缺则不能显示误导性的"图片0张"
+    const imgLabel = imgCount > 0 ? ('图片' + imgCount + '张') : '图片走外链';
     let displayTitle = titles[tag];
     if (!displayTitle) {
       const m = tag.match(/(\d+)[月\.](\d+)(.*)/);
@@ -1543,7 +1674,7 @@ function renderPosts(filteredPosts) {
       }
     }
     const viewPath = '/' + encodeURIComponent(tag + '.html');
-    const statLine = `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : '图片' + imgCount + '张'} · 访问 ${views[viewPath] || 0} 次`;
+    const statLine = `${esc(p.path)} · ${counts[tag] ? '共' + counts[tag] + '款' : imgLabel} · 访问 ${views[viewPath] || 0} 次`;
     return `<div class="game">
   <div class="ghead"><span class="gnum">${esc(displayTitle)}${isPinned ? ' <span class="mbadge" style="background:#e58d0a">置顶</span>' : ''}</span><span style="font-size:12px;color:#aaa">${statLine}</span></div>
   <div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">

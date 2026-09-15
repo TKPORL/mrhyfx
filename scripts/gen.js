@@ -79,7 +79,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', '卡片布局原型.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -99,6 +99,17 @@ const SITE_AUTHOR = 'Tsinho';
 // 图片域名统一用 cdn.jsdelivr.net（站长实测：新上传图偶有缓存延迟但可用；gcore 等镜像在站长网络下反而不可靠）。
 //   历史页面里残留的其他 jsdelivr 镜像域名会被 localize 统一改写回主域
 let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
+// 自建图床（CloudFlare-ImgBed）直链：帖子发布时若走图床模式，图片 src 是图床完整外链。
+//   这些链接必须原样保留，不能被 localize 当外链下载回 GitHub 仓库（等于白搬），也不能被改写成 jsDelivr。
+//   域名从 site.json 的 imgbed.baseUrl 读（后台「保存配置到站点」写入）；额外兜底内置当前已知图床域名，防止漏配。
+const IMGBED_BASES = new Set();
+if (SITE.imgbed && SITE.imgbed.baseUrl) IMGBED_BASES.add(String(SITE.imgbed.baseUrl).replace(/\/+$/, ''));
+IMGBED_BASES.add('https://tsinho-cloudflare-imgbed.pages.dev');
+IMGBED_BASES.add('https://cloudflare-imgbed-e3b.pages.dev');
+function isImgBedUrl(u) {
+  for (const b of IMGBED_BASES) if (b && u.startsWith(b + '/')) return true;
+  return false;
+}
 const GRID2_POSTS = new Set(files.map(f => path.parse(f).name));
 
 // ===== SEO =====
@@ -349,7 +360,7 @@ async function localize(html, tag) {
   });
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
-    .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url));
+    .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url) && !isImgBedUrl(url));
   if (urls.length) {
     // SECURITY: tag 走 safeAssetDir，固定白名单正则 + 路径边界校验
     const dir = safeAssetDir(tag);
@@ -944,7 +955,9 @@ html = (function reorderNodes(str) {
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
     const dayHtml = fs.readFileSync(d.file, 'utf8');
-    const covers = [...new Set([...dayHtml.matchAll(/src="(https:\/\/(?:cdn|gcore|fastly|testingcf)\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/]+\/assets\/[^"]+)"/g)].map(m => m[1]))].slice(0, 5)
+    // 封面来源：站内 assets（jsDelivr 直链）+ 自建图床直链（图床模式发布的帖子）
+    const _bedRe = [...IMGBED_BASES].map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    const covers = [...new Set([...dayHtml.matchAll(new RegExp('src="(https:\\/\\/(?:cdn|gcore|fastly|testingcf)\\.jsdelivr\\.net\\/gh\\/TKPORL\\/mrhyfx@[^\\/]+\\/assets\\/[^"]+|(?:' + _bedRe + ')\\/[^"]+)', 'g'))].map(m => m[1]))].slice(0, 5)
       .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
     // 修复：分页后每页卡片重新触发入场动画，旧逻辑按全局序号递增延迟（第2页延迟长达 2.4s，看起来像空页）；
