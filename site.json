@@ -10,6 +10,8 @@
     "title": "【公告】",
     "lines": [
       "收藏防迷路 · 公益无付费",
+      "通知：两盘与贴吧账号均已被举报封禁，度盘已新注册。",
+      "移动已提交客服工单等待回复，移动账号存有2万多款游戏合计3000TB，之前自费855元扩容至4800TB。公益分享无盈利，新移动账号已无力再次购买大容量空间了，同时现手机号被持续恶意轰炸，我想暂停休息两天，现状望各位理解。",
       "一、游戏求助",
       "求游戏可在任意文章评论区留言",
       "所有求助的游戏将发布至「求助贴」",
@@ -19,41 +21,12 @@
       "站长QQ：1709156212",
       "⚠️服务器在国外，图片加载慢请开VPN",
       "觉得不错帮忙推广一下，感谢！",
-      "注:两盘+贴吧号都被举报封禁了，现只有度盘重新注册，移动的客服说需要等几天给答复，移动我不想用新号发，因为之前全部游戏都在移动 里面都2万多个游戏了加起来共3000TB 我之前因为没空间就花了855买了4800TB的空间，现在新号没有那么多G可以用，加上我没有盈利没资金，所以无法再次公益去买空间了，我现在手机号还一直在被轰炸.....哎......",
       "-Tsinho黄油站-"
     ]
   },
   "comments": {
-    "enabled": true,
-    "url": "https://kydmccknlbpczeqppbtc.supabase.co",
-    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9",
-    "foldThreshold": 6
-  },
-  "build": {
-    "excludePosts": [
-      "index.html",
-      "publish.html",
-      "Tsinhoht.html",
-      "search.html",
-      "email-preview.html",
-      "comments-preview.html",
-      "site-preview.html",
-      "jinri.html",
-      "404.html"
-    ]
-  },
-  "seo": {
-    "url": "https://tkporl.github.io/mrhyfx/",
-    "verification": {
-      "google": "VpsDgk3IMraB1pVzxdJKFU9S_2X4q15ShE3z3BLz6pY",
-      "bing": "",
-      "baidu": "",
-      "sogou": "",
-      "yandex": "0ad787015695e649"
-    }
-  },
-  "imgbed": {
-    "enabled": true,
-    "baseUrl": "https://tsinho-cloudflare-imgbed.pages.dev"
+    "enabled": false,
+    "url": "",
+    "anonKey": ""
   }
 }
