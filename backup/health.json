@@ -1,10 +1,10 @@
 {
-  "at": "2026-09-17T08:53:15.319Z",
+  "at": "2026-09-18T08:28:35.348Z",
   "ok": true,
   "home": 200,
-  "supabase": "ok",
-  "backup": {
-    "comments": 344
-  },
-  "errors": []
+  "supabase": null,
+  "backup": null,
+  "errors": [
+    "未配置 site.json 中的 comments.url/anonKey，跳过评论备份"
+  ]
 }
