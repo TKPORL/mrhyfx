@@ -78,6 +78,21 @@ if (fs.existsSync('site.json')) {
   SITE.comments = Object.assign({}, SITE.comments, s.comments || {});
 }
 
+// 配置「半开」守卫（2026-09-18 事故防御）
+// 事故复盘：site.json 被残缺版本覆盖后 comments 变成 enabled=false 且 url/anonKey 全空，
+//   生成脚本按配置正常移除了全站评论区与统计脚本，而 verify() 的注入校验里带了
+//   `SITE.comments.enabled &&` 前置条件被自身短路，导致全程零报错、静默发布了无评论区的页面。
+// 此处拦截「以为开着评论、实际缺地址或密钥」的状态，避免同类配置损坏再次静默扩散。
+{
+  const c = SITE.comments || {};
+  if (c.enabled && (!c.url || !c.anonKey)) {
+    console.error('❌ site.json 的 comments 配置不完整，已中止生成：');
+    console.error('   enabled=' + c.enabled + '，url=' + (c.url ? '已填' : '空') + '，anonKey=' + (c.anonKey ? '已填' : '空'));
+    console.error('   继续生成会把全站评论区与统计脚本一并移除。请先补全配置（或把三项同时清空以表示不启用）。');
+    process.exit(1);
+  }
+}
+
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
 const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);

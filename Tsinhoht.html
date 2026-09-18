@@ -684,6 +684,24 @@ $('imgBedTest').onclick = async () => {
     show(stF, '图床测试失败：' + (e && e.message ? e.message : e), 'err');
   } finally { btn.disabled = false; }
 };
+// 读取线上 site.json：带缓存穿透参数 + 最多 3 次重试。
+// 重要约定：读不到时返回 null，调用方【必须】中止保存——绝不能用空对象回写，
+// 否则 comments / build / seo / imgbed 等段会被整体覆盖丢失。
+// （2026-09-18 事故根因：连续保存站点设置时 raw 读取失败，空基准回写导致全站评论区与统计脚本消失）
+async function readSiteJson(repo) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(`${RAW_BASE}/${repo}/main/site.json?t=${Date.now()}_${i}`, { cache: 'no-store' });
+      if (r.ok) {
+        const j = await r.json();
+        if (j && typeof j === 'object' && !Array.isArray(j)) return j;
+      }
+    } catch (e) { /* 读取失败：进入重试 */ }
+    if (i < 2) await new Promise(res => setTimeout(res, 400));
+  }
+  return null;
+}
+
 $('imgBedSaveSite').onclick = async () => {
   const btn = $('imgBedSaveSite'); btn.disabled = true;
   try {
@@ -692,8 +710,8 @@ $('imgBedSaveSite').onclick = async () => {
     if (!repo || !repo.includes('/')) throw new Error('仓库格式应为 用户名/仓库名');
     const base = $('imgBedUrl').value.trim().replace(/\/+$/, '');
     if (!/^https?:\/\/.+/.test(base)) throw new Error('图床地址格式不对，应类似 https://xxx.pages.dev');
-    const cur = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
-    const site = (cur && typeof cur === 'object') ? cur : {};
+    const site = await readSiteJson(repo);
+    if (!site) throw new Error('读取线上 site.json 失败（网络或缓存问题），已中止保存以免覆盖站点配置，请稍后重试');
     site.imgbed = { enabled: true, baseUrl: base };  // 只写地址，绝不写密码
     await putFile(repo, token, 'site.json', btoa(unescape(encodeURIComponent(JSON.stringify(site, null, 2) + '\n'))),
       '更新站点设置: 图床地址', stF, 'site.json');
@@ -1965,7 +1983,8 @@ const stSITE = $('statusSite');
 async function loadSite() {
   const repo = $('repo').value.trim();
   try {
-    const s = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null) || {};
+    const s = await readSiteJson(repo);
+    if (!s) throw new Error('读取线上 site.json 失败（网络或缓存问题），请点「重新读取」后再修改，以免用空表单覆盖站点配置');
     const site = s.site || {};
     $('siteName').value = site.name || 'Tsinho黄油推荐站';
     $('siteLogoEm').value = site.logoEm || '推荐站';
@@ -1985,9 +2004,8 @@ $('saveSite').onclick = async () => {
     const token = $('token').value.trim();
     const repo = $('repo').value.trim();
     if (!token) throw new Error('请先填写 Token');
-    let site = {};
-    const cur = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
-    if (cur && typeof cur === 'object') site = cur;
+    const site = await readSiteJson(repo);
+    if (!site) throw new Error('读取线上 site.json 失败（网络或缓存问题），已中止保存以免覆盖站点配置，请稍后重试');
     site.site = {
       name: $('siteName').value.trim() || 'Tsinho黄油推荐站',
       logoEm: $('siteLogoEm').value.trim() || '推荐站',
@@ -2827,9 +2845,8 @@ async function saveSiteComments(enabled) {
   const repo = $('repo').value.trim();
   if (!token) throw new Error('请先填写 GitHub Token');
   if (enabled && (!sbBase() || !$('sbAnon').value.trim())) throw new Error('请填写 Project URL 和 anon 公钥');
-  let site = {};
-  const raw = await fetch(`${RAW_BASE}/${repo}/main/site.json`).then(r => r.ok ? r.json() : null).catch(() => null);
-  if (raw && typeof raw === 'object') site = raw;
+  const site = await readSiteJson(repo);
+  if (!site) throw new Error('读取线上 site.json 失败（网络或缓存问题），已中止保存以免覆盖站点配置，请稍后重试');
   site.comments = {
     enabled: enabled,
     url: enabled ? sbBase() : (site.comments && site.comments.url) || '',

@@ -28,8 +28,36 @@
     ]
   },
   "comments": {
-    "enabled": false,
-    "url": "",
-    "anonKey": ""
+    "enabled": true,
+    "url": "https://kydmccknlbpczeqppbtc.supabase.co",
+    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9",
+    "foldThreshold": 6
+  },
+  "build": {
+    "excludePosts": [
+      "index.html",
+      "publish.html",
+      "Tsinhoht.html",
+      "search.html",
+      "email-preview.html",
+      "comments-preview.html",
+      "site-preview.html",
+      "jinri.html",
+      "404.html"
+    ]
+  },
+  "seo": {
+    "url": "https://tkporl.github.io/mrhyfx/",
+    "verification": {
+      "google": "VpsDgk3IMraB1pVzxdJKFU9S_2X4q15ShE3z3BLz6pY",
+      "bing": "",
+      "baidu": "",
+      "sogou": "",
+      "yandex": "0ad787015695e649"
+    }
+  },
+  "imgbed": {
+    "enabled": true,
+    "baseUrl": "https://tsinho-cloudflare-imgbed.pages.dev"
   }
 }
