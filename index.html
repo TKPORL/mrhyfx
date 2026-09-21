@@ -19,21 +19,51 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
-.site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
-.site em{font-style:normal;color:#e5484d}
-.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
-.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
-.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
-nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
+.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+.hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
+.hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
+.hd-bar .menu{display:flex;align-items:center;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:6px 9px;border-radius:7px;white-space:nowrap;transition:color .18s ease,background .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,.12s,.12s}
+.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.08s,.08s}
+.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.04s,.04s}
+.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s}
+.hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3}
+.hd-bar .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+.hd-bar .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
+.hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
+.hd-bar .icon-btn:hover svg{stroke:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"]{background:#e5484d;border-color:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"] svg{stroke:#fff}
+.hd-bar .icon-btn:hover .dot{fill:#e5484d}
+.hd-bar .more-btn[aria-expanded="true"] .dot{fill:#fff}
+.hd-bar .more-btn{transition:opacity .3s cubic-bezier(.2,.8,.2,1) .24s,transform .3s cubic-bezier(.2,.8,.2,1) .24s,width .3s cubic-bezier(.2,.8,.2,1) .24s,border-width .3s ease .24s,visibility 0s linear 0s}
+.hd-bar .dot{transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.hd-bar .more-btn[aria-expanded="true"] .dot-1{transform:translateX(5.5px) rotate(45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-3{transform:translateX(-5.5px) rotate(-45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-2{transform:scale(0);opacity:0}
+.nav-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open{grid-template-rows:1fr}
+.nav-drop>div{overflow:hidden;min-height:0}
+.nav-drop .drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open .drop-inner{opacity:1;transform:translateY(0)}
+.nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
+.nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
+.nav-drop .search-row input::placeholder{color:#b4b2a9}
+.nav-drop .search-row .go{width:34px;height:34px;border-radius:9px;border:none;background:#e5484d;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.nav-drop .search-row .go:hover{background:#c93a3f}
+.nav-drop .search-row .go svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round}
+.nav-drop .search-row .x{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;cursor:pointer;color:#888;font:inherit;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.nav-drop .search-row .x:hover{border-color:#f0b4b6;color:#e5484d}
+.nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
+.nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
+.nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (min-width:541px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+@media (max-width:540px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+@media (max-width:720px){header{padding:10px 14px 0}.hd-bar{padding:7px 12px;gap:10px}.hd-bar .logo img{width:100px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
+@media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
@@ -87,15 +117,6 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px}
-  .site{font-size:17px}
-  .site img.site-logo{width:100px;height:auto}
-  .site small{display:none}
-  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
-  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
-  nav::-webkit-scrollbar{display:none}
-  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
-  .mrhx-search input{flex:1;width:auto}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}
@@ -114,16 +135,52 @@ footer b{color:#e5484d}
 </head>
 <body>
 <header>
-  <div class="hwrap">
-    <a class="site" href="index.html"><img src="eaffbcd6d2ab070b24071cff8b189ccf.png" alt="Tsinho黄油推荐站" class="site-logo"></a>
-    <div class="site-header-right">
-      <form class="mrhx-search" action="search.html" method="get" role="search">
-      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-      <button type="submit">搜索</button>
-    </form>
-      <nav><a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a><a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a><a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></nav>
+<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
+    <a href="tutorial.html">解压教程</a>
+    <a href="tools.html">游戏工具</a>
+  </nav>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
     </div>
   </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <nav class="drop-menu" aria-label="站点导航">
+        <a href="index.html">首页</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
+        <a href="tutorial.html">解压教程</a>
+        <a href="tools.html">游戏工具</a>
+      </nav>
+    </div>
+  </div>
+</div>
 </header>
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>750</b> 款游戏资源</div>
@@ -551,5 +608,6 @@ footer b{color:#e5484d}
 })();
 </script>
 
+<script src="assets/js/nav.js"></script>
 </body>
 </html>

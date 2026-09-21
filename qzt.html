@@ -1023,21 +1023,55 @@
   <!--mrhx-->
 <link rel="stylesheet" href="assets/css/site.css">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
-<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
-  <div class="bar-right">
-  <div class="search-row">
-  <form class="mrhx-search" action="search.html" method="get">
-    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-    <button type="submit">搜索</button>
-  </form>
-  </div>
-  <div class="mnav"><a href="index.html">首页</a>
-    <a href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
+<header>
+<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
     <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
-    <a href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></div>
+    <a href="tutorial.html">解压教程</a>
+    <a href="tools.html">游戏工具</a>
+  </nav>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+    </button>
   </div>
 </div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <nav class="drop-menu" aria-label="站点导航">
+        <a href="index.html">首页</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
+        <a href="tutorial.html">解压教程</a>
+        <a href="tools.html">游戏工具</a>
+      </nav>
+    </div>
+  </div>
+</div>
+</header>
+<script src="assets/js/nav.js"></script>
 <!--mrhx-end-->
   <div class="title">求助贴-可在此贴求游戏<span class="mrhx-views" id="mrhx-views"></span></div>
         <ul class="node-list">
@@ -2798,7 +2832,7 @@ v0.11.0
   
   <!--mrhx-daynav--><div class="mrhx-navrow"><span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">← 上一期</span><div class="mrhx-navmid"><a class="mrhx-btn mrhx-btn-nav" href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
     <a class="mrhx-btn mrhx-btn-nav" href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer">全部黄油</a>
-    <a class="mrhx-btn mrhx-btn-nav" href="https://yun.139.com/shareweb/#/w/i/2wFGs9i5mE1mr" target="_blank" rel="noreferrer">解压教程</a></div><a class="mrhx-btn mrhx-btn-nav" href="2026920pcaz.html">下一期 →</a></div><!--mrhx-daynav-end-->
+    <a class="mrhx-btn mrhx-btn-nav" href="tutorial.html">解压教程</a></div><a class="mrhx-btn mrhx-btn-nav" href="2026920pcaz.html">下一期 →</a></div><!--mrhx-daynav-end-->
   <!--mrhx-comments-->
 <script>window.MRHXC={sb:'https://kydmccknlbpczeqppbtc.supabase.co',key:'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',path:'/qzt.html',fold:6};</script>
 <script src="assets/js/comments.js"></script>
