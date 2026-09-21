@@ -51,7 +51,7 @@
   .nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   @media (min-width:541px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
   @media (max-width:540px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
-  @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}
+  @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}.mrhx-detail{animation:none}}
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
   .mrhx-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
@@ -69,6 +69,7 @@
   .mrhx-navmid{display:flex;gap:6px;flex:1;justify-content:center;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
   .mrhx-grid .mrhx-btn{justify-content:center;text-align:center}
+  @keyframes mrhxDimIn{from{opacity:0}to{opacity:1}}
   @keyframes mrhxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}    .node{animation:mrhxFade .5s ease both;position:relative;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:12px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);list-style:none;transition:border-color .2s,box-shadow .2s}
   .node:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
   .node .bullet{background:#e5484d;box-shadow:0 1px 3px rgba(229,72,77,.3)}
@@ -104,6 +105,9 @@
   .image-row{position:relative}
   .image-row img.image{transition:opacity .35s ease;max-width:100%;height:auto}
   .image-row img.image.mrhx-img-loading{opacity:0}
+  /* 可点开的游戏卡图片：现在是可聚焦的触发元素（键盘 Enter/空格 也能打开弹窗） */
+  .image-row img.image[role="button"]{cursor:pointer}
+  .image-row img.image:focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:6px}
   .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background:#f4f2ef;pointer-events:none}
   .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
   @keyframes mrhxSpin{to{transform:rotate(360deg)}}
@@ -221,9 +225,11 @@
   }
   .mrhx-popup[role='dialog']:focus-visible{outline:2px solid #e5484d;outline-offset:2px}
   /* 游戏介绍弹窗（卡片布局原型） */
-  .mrhx-detail{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:9998;animation:mrhxFade .2s ease both}
+  .mrhx-detail{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:9998;animation:mrhxDimIn .2s ease both}
   .mrhx-detail.show{display:flex}
-  .mrhx-detail-box{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:24px 26px;position:relative;animation:mrhxFade .25s ease both}
+  /* 「卡片弹出」：弹窗的位移与缩放由 gen.js 注入的脚本按触发卡片位置逐帧设置（FLIP），
+     所以这里不能给 box 加 animation，否则会盖掉脚本写进去的 transform，变成从屏幕中央凭空出现 */
+  .mrhx-detail-box{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:24px 26px;position:relative}
   .mrhx-detail-box .mrhx-detail-close{position:absolute;top:14px;right:16px;border:none;background:#f4f2ef;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;transition:.2s}
   .mrhx-detail-box .mrhx-detail-close:hover{background:#e5484d;color:#fff}
   .mrhx-detail-box h2{font-size:15px;margin-bottom:12px;color:#2b2b2b}
