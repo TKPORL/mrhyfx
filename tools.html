@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>游戏工具 · Tsinho黄油站</title>
+<meta name="description" content="Tsinho黄油站游戏工具合集：joi、RPGMPlugin、吉里吉里2、Tyranor 模拟器，游戏一键汉化工具、万能改游戏数据、一键改后缀、一键汉化+改数据、自动解压工具、无损屏幕放大、转区工具与 RPG 三件套运行库下载。">
+<meta name="author" content="Tsinho">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://tkporl.github.io/mrhyfx/tools.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tsinho黄油站">
+<meta property="og:title" content="游戏工具 · Tsinho黄油站">
+<meta property="og:description" content="Tsinho黄油站游戏工具合集：模拟器、汉化与改数据工具、解压工具、转区工具下载。">
+<meta property="og:url" content="https://tkporl.github.io/mrhyfx/tools.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/img_02.webp">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
+.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+.logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
+.logo img{width:118px;height:auto;border-radius:8px;display:block}
+.menu{display:flex;align-items:center;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.menu a{font-size:13px;color:#555;text-decoration:none;padding:6px 9px;border-radius:7px;white-space:nowrap;transition:color .18s ease,background .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.menu a:nth-child(1){transition-delay:0s,0s,.12s,.12s}
+.menu a:nth-child(2){transition-delay:0s,0s,.08s,.08s}
+.menu a:nth-child(3){transition-delay:0s,0s,.04s,.04s}
+.menu a:nth-child(4){transition-delay:0s,0s,0s,0s}
+.menu a:hover{color:#e5484d;background:#fdf3f3}
+.menu a.on{color:#e5484d;background:#fdf3f3}
+.acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
+.icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
+.icon-btn:hover svg{stroke:#e5484d}
+.icon-btn[aria-expanded="true"]{background:#e5484d;border-color:#e5484d}
+.icon-btn[aria-expanded="true"] svg{stroke:#fff}
+.icon-btn:hover .dot{fill:#e5484d}
+.more-btn[aria-expanded="true"] .dot{fill:#fff}
+.more-btn{transition:opacity .3s cubic-bezier(.2,.8,.2,1) .24s,transform .3s cubic-bezier(.2,.8,.2,1) .24s,width .3s cubic-bezier(.2,.8,.2,1) .24s,border-width .3s ease .24s,visibility 0s linear 0s}
+.dot{transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.more-btn[aria-expanded="true"] .dot-1{transform:translateX(5.5px) rotate(45deg) scaleX(2.8)}
+.more-btn[aria-expanded="true"] .dot-3{transform:translateX(-5.5px) rotate(-45deg) scaleX(2.8)}
+.more-btn[aria-expanded="true"] .dot-2{transform:scale(0);opacity:0}
+.drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
+.drop.open{grid-template-rows:1fr}
+.drop>div{overflow:hidden;min-height:0}
+.drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.drop.open .drop-inner{opacity:1;transform:translateY(0)}
+.search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
+.search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
+.search-row input::placeholder{color:#b4b2a9}
+.search-row .go{width:34px;height:34px;border-radius:9px;border:none;background:#e5484d;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.search-row .go:hover{background:#c93a3f}
+.search-row .go svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round}
+.search-row .x{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;cursor:pointer;color:#888;font:inherit;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.search-row .x:hover{border-color:#f0b4b6;color:#e5484d}
+.drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
+.drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
+.drop-menu a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (min-width:541px){
+  .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}
+}
+@media (prefers-reduced-motion: reduce){
+  .dot,.drop,.drop-inner,.more-btn,.menu,.menu a{transition:none}
+}
+@keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap;line-height:1.7}
+.upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+.sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
+.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
+.tut-list{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;margin-bottom:28px;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tut-item{display:flex;align-items:center;gap:14px;padding:15px 20px;border-bottom:1px solid #f4f3f1}
+.tut-item:last-child{border-bottom:none}
+.tut-ext{flex-shrink:0;min-width:92px;text-align:center;font-size:12px;font-weight:600;color:#e5484d;background:#fdf1f1;border-radius:99px;padding:5px 12px;letter-spacing:.3px}
+.tut-txt{font-size:14px;color:#444;line-height:1.65}
+.tut-card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:28px;font-size:14px;color:#444;line-height:1.9;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tut-card p+p{margin-top:4px}
+.tut-key{font-size:17px;font-weight:700;color:#e5484d;margin-bottom:6px}
+.tut-note{font-size:13px;color:#888;line-height:1.75}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer b{color:#e5484d}
+.tool-list{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;margin-bottom:28px;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tool-item{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f4f3f1;flex-wrap:wrap}
+.tool-item:last-child{border-bottom:none}
+.tool-name{flex:1;min-width:130px;font-size:14px;font-weight:600;color:#2b2b2b;line-height:1.5}
+.tool-name small{display:block;font-size:12px;font-weight:400;color:#999;margin-top:3px}
+.tool-acts{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tool-dl{display:inline-flex;align-items:center;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s;white-space:nowrap}
+.tool-dl:hover{background:#c93a3f;transform:translateY(-1px)}
+.tool-dl.alt{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+.tool-dl.alt:hover{background:#d7eddd}
+.tool-tip{width:100%;font-size:12.5px;color:#7a6a4a;line-height:1.75;background:#fdf9f0;border-left:3px solid #e58d0a;border-radius:8px;padding:9px 13px;margin-top:2px}
+.tool-tip b{color:#8a6a1a}
+.tool-dl.dead{background:#f0eeec;color:#b4b2a9;border:1px solid #e4e2de}
+.tool-dl.dead:hover{background:#f0eeec;transform:none}
+.tool-tag-bad{font-size:11.5px;color:#a32d2d;background:#fcebeb;border:1px solid #f7c1c1;border-radius:99px;padding:3px 9px;white-space:nowrap}
+@media (max-width:540px){
+  .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}
+  .menu a{opacity:0;transform:translateX(22px)}
+  .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}
+  .menu a:nth-child(2){transition-delay:0s,0s,.04s,.04s}
+  .menu a:nth-child(3){transition-delay:0s,0s,.08s,.08s}
+  .menu a:nth-child(4){transition-delay:0s,0s,.12s,.12s}
+  .drop-menu{flex-wrap:wrap}
+  .drop-menu a{flex:1 1 auto;text-align:center}
+}
+@media (max-width:720px){
+  header{padding:10px 14px 0}
+  .hd-bar{padding:7px 12px;min-height:52px;gap:10px}
+  .logo img{width:100px}
+  .icon-btn{width:34px;height:34px}
+  .drop-menu a{font-size:13px;padding:8px 10px}
+  main{padding:18px 14px 32px}
+  .upd{padding:12px 14px;font-size:13px}
+  .sect h2{font-size:17px}
+  .tut-item{gap:10px;padding:13px 14px}
+  .tut-ext{min-width:76px;font-size:11.5px;padding:4px 9px}
+  .tut-txt{font-size:13px}
+  .tut-card{padding:15px 14px;font-size:13px}
+  .tut-key{font-size:16px}
+}
+</style>
+<link rel="icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/65ce15938559e6db9958d99b29e617c1.png?v=1">
+</head>
+<body>
+<header>
+  <div class="hd-bar">
+    <a class="logo" href="index.html"><img src="eaffbcd6d2ab070b24071cff8b189ccf.png" alt="Tsinho黄油站"></a>
+    <nav class="menu" aria-label="主导航">
+      <a href="index.html">首页</a>
+      <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer" class="ext">全部黄油</a>
+      <a href="tutorial.html">解压教程</a>
+      <a href="tools.html" class="on" aria-current="page">游戏工具</a>
+    </nav>
+    <div class="acts">
+      <button type="button" class="icon-btn search-btn" id="searchBtn" aria-label="搜索游戏" aria-expanded="false" aria-controls="searchDrop">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+      </button>
+      <button type="button" class="icon-btn more-btn" id="moreBtn" aria-label="更多导航" aria-expanded="false" aria-controls="moreDrop">
+        <svg viewBox="0 0 24 24" style="stroke:none">
+          <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+          <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+          <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="drop" id="searchDrop">
+    <div>
+      <div class="drop-inner">
+        <form class="search-row" action="search.html" method="get" role="search">
+          <input type="text" name="q" id="searchInput" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+          <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+          <button class="x" type="button" id="searchClose" aria-label="关闭搜索">×</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="drop" id="moreDrop">
+    <div>
+      <div class="drop-inner">
+        <nav class="drop-menu" aria-label="站点导航">
+          <a href="index.html">首页</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2uR1zzgWrrPy9" target="_blank" rel="noreferrer" class="ext">全部黄油</a>
+          <a href="tutorial.html">解压教程</a>
+          <a href="tools.html" class="on" aria-current="page">游戏工具</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="upd"><span class="tag">游戏工具</span>模拟器、汉化与改数据、解压、转区等常用工具，均为网络整理</div>
+
+  <div class="sect"><h2>模拟器</h2></div>
+  <div class="tool-list">
+    <div class="tool-item">
+      <div class="tool-name">joi模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1yTkJMf6sCaC_SN-L2Shtbg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">RPGMPlugin模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1WyuHlcWBArFrZURU2jdy3g?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">Kirikiroid2模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1-xd4xv-UbSgDaTB9ZGl_3w?pwd=839m" target="_blank" rel="noreferrer">安卓版</a>
+        <a class="tool-dl alt" href="https://apps.apple.com/cn/app/xp3player/id1064060287" target="_blank" rel="noreferrer">iOS 版</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">Tyranor模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1I7mdvy9C4wVzhc01GIT6VA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">Winlator模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1YN7GW3eZLwgTVy4hr5lh5w?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">ONScripter模拟器</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1r4vr-0aqdAF6Odn9v9fz6g?pwd=839m" target="_blank" rel="noreferrer">安卓版</a>
+        <a class="tool-dl alt" href="https://apps.apple.com/cn/app/onsplayer/id1388250129" target="_blank" rel="noreferrer">iOS 版</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">rpg三件套2<small>提示 RPGVXAce RTP is required to run this game 时使用</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1mcs0sMEv1vmAbfwUqnmkFw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+      <div class="tool-tip"><b>若提示「无法定位程序输入点 HuizhiCheck 于动态链接库」：</b>把原启动程序 ynzz.exe 删除，dxgi.dll 删除，再把 ynzz.exe.huizhi_bak 改成 ynzz.exe。</div>
+    </div>
+  </div>
+
+  <div class="sect"><h2>汉化 · 改数据</h2></div>
+  <div class="tool-list">
+    <div class="tool-item">
+      <div class="tool-name">游戏一键汉化工具</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1LhhjIJ6-JO1Klxuaegi61A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+        <a class="tool-dl alt" href="https://www.bilibili.com/video/BV1rb421J7oJ/" target="_blank" rel="noreferrer">教程视频</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">万能改游戏数据</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1Cv58OXxnyLTXKLN1jmLV9A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">一键汉化 + 改数据<small>PC 版 PCmtool.zip ／ 安卓版 AZmtool.zip</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/19JtI7UrVsgoEilecvsOUQw?pwd=839m" target="_blank" rel="noreferrer">PC 版</a>
+        <a class="tool-dl" href="https://pan.baidu.com/s/1OkpGJQbv14Hy7_lGQnhxpg?pwd=839m" target="_blank" rel="noreferrer">安卓版</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">一键改后缀工具<small>JPG 图片转 ZIP 压缩包工具</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1dBPgAiNgFyi9ocmUq5fH3A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sect"><h2>解压工具</h2></div>
+  <div class="tool-list">
+    <div class="tool-item">
+      <div class="tool-name">自动解压工具 · 无需设置</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1o6-7b_d1TEc7kPjVpP24Yw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">自动解压工具</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1QvV97b4z0JeXe_pQeZVVPg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sect"><h2>运行库</h2></div>
+  <div class="tool-list">
+    <div class="tool-item">
+      <div class="tool-name">Visual C++ 运行库（x64）<small>解决「缺少 dll / 0xc000007b」等运行库问题，64 位</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1gUNpaVAkj3_JFs3ow8YY7g?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">Visual C++ 运行库（x86）<small>32 位运行库，建议与 x64 一并安装</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/13yoRnYlTkPKLOYSNNk0McA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">DirectX 运行库<small>老游戏常需的 DirectX 9.0c 组件（联网安装器）</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1PtPWrCKZOw7In5s2qRj2Og?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sect"><h2>其他工具</h2></div>
+  <div class="tool-list">
+    <div class="tool-item">
+      <div class="tool-name">转区工具</div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1Us1Dcfj8oUCV8EsV79Z-Hw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+      </div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-name">无损屏幕放大工具</div>
+      <div class="tool-acts">
+        <a class="tool-dl dead" href="index.html">链接已失效</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+<footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<script>
+(function () {
+  var searchBtn = document.getElementById('searchBtn');
+  var moreBtn = document.getElementById('moreBtn');
+  var searchDrop = document.getElementById('searchDrop');
+  var moreDrop = document.getElementById('moreDrop');
+  var searchInput = document.getElementById('searchInput');
+  var searchClose = document.getElementById('searchClose');
+  function setSearch(open) {
+    searchDrop.classList.toggle('open', open);
+    searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) { setTimeout(function () { searchInput.focus(); }, 60); }
+  }
+  function setMore(open) {
+    moreDrop.classList.toggle('open', open);
+    moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function closeAll() { setSearch(false); setMore(false); }
+  searchBtn.addEventListener('click', function () {
+    var open = !searchDrop.classList.contains('open');
+    closeAll();
+    setSearch(open);
+  });
+  moreBtn.addEventListener('click', function () {
+    var open = !moreDrop.classList.contains('open');
+    closeAll();
+    setMore(open);
+  });
+  searchClose.addEventListener('click', function () {
+    setSearch(false);
+    searchBtn.focus();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var wasSearch = searchDrop.classList.contains('open');
+      closeAll();
+      if (wasSearch) { searchBtn.focus(); } else { moreBtn.focus(); }
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('header')) { closeAll(); }
+  });
+  var mq = window.matchMedia('(min-width: 541px)');
+  function onBreakpoint(e) {
+    if (e.matches) { setMore(false); }
+  }
+  if (mq.addEventListener) { mq.addEventListener('change', onBreakpoint); }
+  else if (mq.addListener) { mq.addListener(onBreakpoint); }
+})();
+</script>
+</body>
+</html>

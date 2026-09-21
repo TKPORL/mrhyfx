@@ -38,7 +38,10 @@
       "comments-preview.html",
       "site-preview.html",
       "jinri.html",
-      "404.html"
+      "404.html",
+      "tutorial.html",
+      "tools.html",
+      "导航栏原型.html"
     ]
   },
   "seo": {
