@@ -206,24 +206,32 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
       '</div>';
   }
+  function setMore(show) {
+    var b = document.getElementById('mrhx-more');
+    if (b) b.style.display = show ? '' : 'none';
+  }
   function renderMore() {
     var slice = _hits.slice(_page * ALL, (_page + 1) * ALL);
     resBox.insertAdjacentHTML('beforeend', slice.map(function (g) { return rowHtml(g, g._exact); }).join(''));
+    // 「加载更多」必须始终待在列表最下面：新结果是用 beforeend 追加的，
+    // 所以每轮渲染完要把按钮重新挪到末尾，否则点一次它就被顶到上面去了
+    resBox.appendChild(moreWrap);
     _page++;
-    var moreBtn = document.getElementById('mrhx-more');
-    if (moreBtn) moreBtn.style.display = (_page * ALL < _hits.length) ? '' : 'none';
+    setMore(_page * ALL < _hits.length);
   }
-  var moreBtn = document.createElement('div');
-  moreBtn.innerHTML = '<button id="mrhx-more" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
-  moreBtn.style.textAlign = 'center';
-  moreBtn.style.marginTop = '6px';
-  resBox.appendChild(moreBtn);
+  var moreWrap = document.createElement('div');
+  moreWrap.innerHTML = '<button id="mrhx-more" type="button" class="btn-dl btn-dl-m" style="border:none;cursor:pointer;padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600">加载更多</button>';
+  moreWrap.style.textAlign = 'center';
+  moreWrap.style.marginTop = '6px';
+  moreWrap.style.marginBottom = '6px';
+  resBox.appendChild(moreWrap);
   document.getElementById('mrhx-more').onclick = renderMore;
-  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; document.getElementById('mrhx-more').style.display = 'none'; bindHistClick(); return; }
+  setMore(false);
+  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     if (!q) {
       // Direct access without query - show return to homepage message
-      document.getElementById('mrhx-more').style.display = 'none';
+      setMore(false);
       bindHistClick();
       return;
     }
@@ -266,7 +274,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       return;
     }
     renderMore();
-  }).catch(function () { resBox.innerHTML = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>'; document.getElementById('mrhx-more').style.display = 'none'; });
+  }).catch(function () { resBox.innerHTML = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>'; setMore(false); });
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
     delBtns.forEach(function (el) {
