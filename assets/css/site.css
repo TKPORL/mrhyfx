@@ -6,9 +6,10 @@
   body{margin:0}
   body.narrow{max-width:900px !important;margin:0 auto !important;padding:0 20px 40px !important}
   /* ===== 全站统一顶部导航（与 scripts/gen.js 的 NAV_CSS 保持一致，改一处要同步改另一边）===== */
-  /* 帖子页左右留白已由 body.narrow 提供，header 不再加左右内边距，导航才能和正文左右对齐；
-     background:#fff 让滚动时正文不会从导航上下那两条空隙里透出来 */
-  header{position:sticky;top:0;z-index:20;padding:10px 0 12px;background:#fff}
+  /* 帖子页左右留白由 body.narrow 提供，header 只留上下间距，保证导航与正文左右对齐。
+     header 本身保持透明——只有那条 .hd-bar 是实体 UI，滚动时正文从它下面穿过，
+     这样才是「悬浮」；给 header 加背景色会变成一整条白色横带把正文挡住。 */
+  header{position:sticky;top:0;z-index:20;padding:10px 0 12px}
   .hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
   .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
   .hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
