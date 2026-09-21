@@ -1,8 +1,14 @@
 /* Tsinho黄油站 公共样式（#12：从帖子页内联 <style> 抽成公共文件，走浏览器缓存）。
    唯一真相在仓库文件 assets/css/site.css；帖子页通过 <link rel="stylesheet" href="assets/css/site.css"> 引用。 */
-  body.narrow{max-width:900px !important;margin-left:auto !important;margin-right:auto !important;padding-left:24px !important;padding-right:24px !important;padding-top:20px !important}
+  /* 帖子页原始模板自带 body{margin:50px 20px}（老式固定顶栏时代的遗留）。它会让整个导航下移 50px，
+     且 sticky 无法越过含块上边界 → 导航永远回不到顶部。这里把 margin 归零，
+     左右留白与底部留白改由本文件负责。 */
+  body{margin:0}
+  body.narrow{max-width:900px !important;margin:0 auto !important;padding:0 20px 40px !important}
   /* ===== 全站统一顶部导航（与 scripts/gen.js 的 NAV_CSS 保持一致，改一处要同步改另一边）===== */
-  header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
+  /* 帖子页左右留白已由 body.narrow 提供，header 不再加左右内边距，导航才能和正文左右对齐；
+     background:#fff 让滚动时正文不会从导航上下那两条空隙里透出来 */
+  header{position:sticky;top:0;z-index:20;padding:10px 0 12px;background:#fff}
   .hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
   .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
   .hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
@@ -102,7 +108,12 @@
   .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
   @keyframes mrhxSpin{to{transform:rotate(360deg)}}
   @media (max-width:720px){
-    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-top:16px !important}
+    body.narrow{padding-left:12px !important;padding-right:12px !important;padding-bottom:28px !important}
+    header{padding:10px 0 10px}
+    .hd-bar{padding:7px 12px;gap:10px}
+    .hd-bar .logo img{width:100px}
+    .hd-bar .icon-btn{width:34px;height:34px}
+    .nav-drop .drop-menu a{font-size:13px;padding:8px 10px}
     .title{font-size:18px;line-height:28px;min-height:28px;padding-bottom:4px;margin-bottom:10px}
     .node-list{margin-left:0}
     .node{padding:12px;border-radius:12px}

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const sharp = require('sharp');
 const { execSync } = require('child_process');
 
@@ -55,6 +56,15 @@ if (fs.existsSync('links.json')) {
   NAV = Object.entries(readJson('links.json'))
     .map(([label, url]) => ({ label, url }));
 }
+
+// 静态资源版本号：取文件内容的 md5 前 8 位，拼进 <link>/<script> 的查询串。
+// 作用：改了站点样式或导航脚本后，访客浏览器不会继续吃旧缓存（否则要等 Pages 缓存过期才生效）。
+const assetVer = rel => {
+  try { return crypto.createHash('md5').update(fs.readFileSync(rel)).digest('hex').slice(0, 8); }
+  catch (e) { return '1'; }
+};
+const CSS_VER = assetVer('assets/css/site.css');
+const NAVJS_VER = assetVer('assets/js/nav.js');
 
 // ===================== 全站统一顶部导航（2026-09-21 改版）=====================
 // 形态：宽屏把菜单项铺开；窄屏（≤540px）收进「更多」按钮，点开在导航栏下方展开；
@@ -593,7 +603,7 @@ ${navHeaderHtml('')}
 <main>
   <p>暂无分享，敬请期待</p>
 </main>
-<script src="assets/js/nav.js"></script>
+<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
@@ -859,7 +869,7 @@ html = (function reorderNodes(str) {
     const bar = `<header>
 ${navHeaderHtml('')}
 </header>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js"></script>\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -1217,7 +1227,7 @@ ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
-<script src="assets/js/nav.js"></script>
+<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 </body>
 </html>
 `;
@@ -1368,7 +1378,7 @@ ${navHeaderHtml('', 'q')}
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res" aria-busy="false"></div>
 </main>
-<script src="assets/js/nav.js"></script>
+<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
