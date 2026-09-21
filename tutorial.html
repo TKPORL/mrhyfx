@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -22,13 +22,13 @@ header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
 .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
 .logo img{width:118px;height:auto;border-radius:8px;display:block}
 .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-.menu a{font-size:13px;color:#555;text-decoration:none;padding:6px 9px;border-radius:7px;white-space:nowrap;transition:color .18s ease,background .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
-.menu a:nth-child(1){transition-delay:0s,0s,.12s,.12s}
-.menu a:nth-child(2){transition-delay:0s,0s,.08s,.08s}
-.menu a:nth-child(3){transition-delay:0s,0s,.04s,.04s}
-.menu a:nth-child(4){transition-delay:0s,0s,0s,0s}
-.menu a:hover{color:#e5484d;background:#fdf3f3}
-.menu a.on{color:#e5484d;background:#fdf3f3}
+.menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
+.menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
+.menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
+.menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
+.menu a:hover{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
+.menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
 .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
 .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
 .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
@@ -60,7 +60,7 @@ header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
 .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
 .drop-menu a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-@media (min-width:541px){
+@media (min-width:681px){
   .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}
 }
 @media (prefers-reduced-motion: reduce){
@@ -100,7 +100,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .tut-list.wide .tut-ext{min-width:176px;text-align:left}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
-@media (max-width:540px){
+@media (max-width:680px){
   .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}
   .menu a{opacity:0;transform:translateX(22px)}
   .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}

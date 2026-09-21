@@ -13,15 +13,16 @@
   .hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
   .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
   .hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
-  /* 菜单项在可用宽度里自动铺开（space-evenly）：窗口变宽时逐级拉开、变窄时自动收拢，
-     hover 高亮仍是紧贴文字的圆角块。字号保持 13px 不变——不靠缩小文字塞布局，见手册「响应式布局」 */
+  /* 菜单项是带边框的胶囊按钮，在可用宽度里自动铺开（space-evenly）：窗口变宽时逐级拉开、
+     变窄时自动收拢；hover/当前页为红边浅红底。字号保持 13px 不变——不靠缩小文字塞布局，见手册「响应式布局」。
+     胶囊最小总宽约 424px，断点相应从 540 提到 680 */
   .hd-bar .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-  .hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:6px 9px;border-radius:7px;white-space:nowrap;transition:color .18s ease,background .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
-  .hd-bar .menu a:nth-child(1){transition-delay:0s,0s,.12s,.12s}
-  .hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.08s,.08s}
-  .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.04s,.04s}
-  .hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s}
-  .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3}
+  .hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+  .hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
+  .hd-bar .menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
+  .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
+  .hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
+  .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
   .hd-bar .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
   .hd-bar .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
   .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
@@ -52,8 +53,8 @@
   .nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
   .nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
   .nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  @media (min-width:541px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
-  @media (max-width:540px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+  @media (min-width:681px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+  @media (max-width:680px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
   @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}.mrhx-detail{animation:none}}
   .mrhx-dl{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .mrhx-btn{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
