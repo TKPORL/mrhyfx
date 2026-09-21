@@ -66,6 +66,15 @@ const assetVer = rel => {
 const CSS_VER = assetVer('assets/css/site.css');
 const NAVJS_VER = assetVer('assets/js/nav.js');
 
+// ===================== 站点图标资源（2026-09-21 从 jsDelivr 迁到自建图床）=====================
+// 两处唯一真相都在这里：以后要再换图标，只改这两行，全站页面由 gen.js 重新生成时统一切换。
+const SITE_LOGO_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790006138392_eaffbcd6d2ab070b24071cff8b189ccf.png';
+const SITE_ICON_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790006049139_65ce15938559e6db9958d99b29e617c1.png';
+const SITE_ICON_TAGS = `<link rel="icon" href="${SITE_ICON_IMG}" type="image/png">
+<link rel="apple-touch-icon" href="${SITE_ICON_IMG}">`;
+// 历史遗留的图标声明（本地 favicon.jpg / 旧 CDN 的 favicon.webp、ac9ce9ba、65ce…）统一按这个正则清掉再重注入
+const ICON_TAG_RE = /[ \t]*<link rel="(?:icon|apple-touch-icon)"[^>]*>\r?\n?/g;
+
 // ===================== 全站统一顶部导航（2026-09-21 改版）=====================
 // 形态：宽屏把菜单项铺开；窄屏（≤540px）收进「更多」按钮，点开在导航栏下方展开；
 //   搜索点图标就地展开输入行。交互脚本在 assets/js/nav.js，样式在两处：
@@ -133,7 +142,7 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}`;
 
 const navHeaderHtml = (current, inputId) => `<div class="hd-bar">
-  <a class="logo" href="index.html"><img src="${CDN_URL}/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="${esc(SITE_NAME)}"></a>
+  <a class="logo" href="index.html"><img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}"></a>
   <nav class="menu" aria-label="主导航">
 ${navLinksHtml('    ', current)}
   </nav>
@@ -704,8 +713,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 ${NAV_CSS}
 @media (max-width:720px){.sect{gap:6px}.dyx-btn{padding:4px 11px;font-size:11px;margin-left:6px}}
 </style>
-<link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
-<link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
+${SITE_ICON_TAGS}
 </head>
 <body>
 <header>
@@ -998,13 +1006,14 @@ ${navHeaderHtml('')}
     const dispTitle = TITLES[shortName] || shortName;
     html = html.replace(/<div class="title">[\s\S]*?<\/div>/, `<div class="title">${esc(dispTitle)}</div>`);
     html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(dispTitle)} · ${esc(SITE_NAME)}</title>`);
-    // 帖子页：把历史遗留的旧 CDN 图标（favicon.webp / ac9ce9ba png）统一替换为新标签图标
-    html = html.replace(/<link rel="icon" href="https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^"]*?\/(?:favicon\.webp|ac9ce9ba350526f00ad5f9c02e3dfb94\.png)\?v=\d+"(?: type="image\/(?:webp|png)")?>\s*<link rel="apple-touch-icon" href="https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^"]*?\/(?:favicon\.webp|ac9ce9ba350526f00ad5f9c02e3dfb94\.png)\?v=\d+">/g,
-      `<link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">\n<link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">`);
-    html = html.replace('</head>', (html.includes('rel="icon" href="' + CDN_URL + '/65ce15938559e6db9958d99b29e617c1.png') ? '</head>' : `<link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
-<link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
-</head>`));
-    html = html.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->/g, '');
+    // 帖子页：图标声明全站统一 —— 先把页里所有历史图标声明清掉（本地 favicon.jpg、
+    //   旧 CDN 的 favicon.webp / ac9ce9ba / 65ce…），再在 </head> 前注入图床版的一对。
+    //   先删后插是幂等的：重复运行结果一致，也不会出现两份图标。
+    html = html.replace(ICON_TAG_RE, '');
+    html = html.replace('</head>', `${SITE_ICON_TAGS}\n</head>`);
+    // 清掉旧的 SEO 块时把它的换行一起吃掉：否则每生成一次就多留一个空行，
+    // 长期跑会让帖子页头部空行无限增长（图标块紧跟在它后面，表现最明显）
+    html = html.replace(/<!--mrhx-seo-->[\s\S]*?<!--\/mrhx-seo-->\r?\n?/g, '');
     // #24/#25：帖子页 SEO 注入延后到 games 解析之后（见本循环末尾）
 
     const v = SITE.comments;
@@ -1320,8 +1329,7 @@ footer b{color:#e5484d}
   .g-title{font-size:13px}
 }
 </style>
-<link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
-<link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
+${SITE_ICON_TAGS}
 </head>
 <body>
 <header>
@@ -1437,8 +1445,7 @@ ${indexScript}
 <title>搜索 · ${esc(SITE_NAME)}</title>
 ${seoHead('search.html', '搜索')}
 <meta name="robots" content="noindex,follow">
-<link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
-<link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
+${SITE_ICON_TAGS}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
