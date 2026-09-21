@@ -56,6 +56,113 @@ if (fs.existsSync('links.json')) {
     .map(([label, url]) => ({ label, url }));
 }
 
+// ===================== 全站统一顶部导航（2026-09-21 改版）=====================
+// 形态：宽屏把菜单项铺开；窄屏（≤540px）收进「更多」按钮，点开在导航栏下方展开；
+//   搜索点图标就地展开输入行。交互脚本在 assets/js/nav.js，样式在两处：
+//   首页/搜索页模板内联 NAV_CSS，帖子页走 assets/css/site.css。
+// 菜单项顺序固定：首页 → 全部黄油 → 解压教程 → 游戏工具。
+//   「全部黄油」沿用 links.json（后台可改地址），后两项是站内页。
+const NAV_BREAKPOINT = 540;
+const NAV_MENU = (() => {
+  const all = NAV.find(n => n.label === '全部黄油');
+  const items = [{ label: '首页', url: 'index.html' }];
+  if (all) items.push({ label: '全部黄油', url: all.url });
+  items.push({ label: '解压教程', url: 'tutorial.html' });
+  items.push({ label: '游戏工具', url: 'tools.html' });
+  return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
+})();
+
+const navLinksHtml = (indent, current) => NAV_MENU.map(n =>
+  `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${esc(n.label)}</a>`
+).join('\n');
+
+const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
+.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+.hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
+.hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
+.hd-bar .menu{display:flex;align-items:center;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:6px 9px;border-radius:7px;white-space:nowrap;transition:color .18s ease,background .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,.12s,.12s}
+.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.08s,.08s}
+.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.04s,.04s}
+.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s}
+.hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3}
+.hd-bar .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
+.hd-bar .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
+.hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
+.hd-bar .icon-btn:hover svg{stroke:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"]{background:#e5484d;border-color:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"] svg{stroke:#fff}
+.hd-bar .icon-btn:hover .dot{fill:#e5484d}
+.hd-bar .more-btn[aria-expanded="true"] .dot{fill:#fff}
+.hd-bar .more-btn{transition:opacity .3s cubic-bezier(.2,.8,.2,1) .24s,transform .3s cubic-bezier(.2,.8,.2,1) .24s,width .3s cubic-bezier(.2,.8,.2,1) .24s,border-width .3s ease .24s,visibility 0s linear 0s}
+.hd-bar .dot{transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.hd-bar .more-btn[aria-expanded="true"] .dot-1{transform:translateX(5.5px) rotate(45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-3{transform:translateX(-5.5px) rotate(-45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-2{transform:scale(0);opacity:0}
+.nav-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open{grid-template-rows:1fr}
+.nav-drop>div{overflow:hidden;min-height:0}
+.nav-drop .drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open .drop-inner{opacity:1;transform:translateY(0)}
+.nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
+.nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
+.nav-drop .search-row input::placeholder{color:#b4b2a9}
+.nav-drop .search-row .go{width:34px;height:34px;border-radius:9px;border:none;background:#e5484d;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.nav-drop .search-row .go:hover{background:#c93a3f}
+.nav-drop .search-row .go svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round}
+.nav-drop .search-row .x{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;cursor:pointer;color:#888;font:inherit;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.nav-drop .search-row .x:hover{border-color:#f0b4b6;color:#e5484d}
+.nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
+.nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
+.nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (min-width:541px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+@media (max-width:540px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+@media (max-width:720px){header{padding:10px 14px 0}.hd-bar{padding:7px 12px;gap:10px}.hd-bar .logo img{width:100px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
+@media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}`;
+
+const navHeaderHtml = (current, inputId) => `<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="${CDN_URL}/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="${esc(SITE_NAME)}"></a>
+  <nav class="menu" aria-label="主导航">
+${navLinksHtml('    ', current)}
+  </nav>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q"${inputId ? ` id="${inputId}"` : ''} placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <nav class="drop-menu" aria-label="站点导航">
+${navLinksHtml('        ', current)}
+      </nav>
+    </div>
+  </div>
+</div>`;
+
 let TIMESTAMPS = {};
 if (fs.existsSync('timestamps.json')) TIMESTAMPS = readJson('timestamps.json');
 
@@ -472,43 +579,21 @@ function emptyIndex(navLinks) {
 <title>${SITE_NAME} · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:115px}
-header{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ecebe9;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-  .hwrap{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px}
-  .site{font-size:19px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
-  .site img.site-logo{width:120px;height:auto;border-radius:8px;vertical-align:middle;display:inline-block}
-  .site em{font-style:normal;color:#e5484d}
-  .site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
-  .site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-  nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  nav a{padding:6px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7}
-  .mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
-  .mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:130px;outline:none;transition:.2s}
-  .mrhx-search input:focus{border-color:#e5484d;background:#fff}
-  .mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-  .mrhx-search button:hover{background:#c93a3f}
-  nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  @media (max-width:720px){body{padding-top:105px}.hwrap{padding:12px 14px}nav{gap:6px}nav a{padding:5px 10px;font-size:12px}.site img.site-logo{width:90px;height:auto}.mrhx-search input{width:90px}.sect{gap:6px}.dyx-btn{padding:4px 11px;font-size:11px;margin-left:6px}}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+${NAV_CSS}
+@media (max-width:720px){.sect{gap:6px}.dyx-btn{padding:4px 11px;font-size:11px;margin-left:6px}}
 </style>
 <link rel="icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1" type="image/png">
 <link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
 </head>
 <body>
 <header>
-  <div class="hwrap">
-    <a class="site" href="index.html"><img src="eaffbcd6d2ab070b24071cff8b189ccf.png" alt="Tsinho黄油推荐站" class="site-logo"></a>
-    <div class="site-header-right">
-      <form class="mrhx-search" action="search.html" method="get" role="search">
-      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-      <button type="submit">搜索</button>
-    </form>
-      <nav>${navLinks}</nav>
-    </div>
-  </div>
+${navHeaderHtml('')}
 </header>
 <main>
   <p>暂无分享，敬请期待</p>
 </main>
+<script src="assets/js/nav.js"></script>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
@@ -771,21 +856,10 @@ html = (function reorderNodes(str) {
 
     // #51：官网/全部黄油/解压教程不再以卡片形式塞进游戏列表，改放到底部「上一期/下一期」行中间（见第二遍 daynav 注入）
 
-    const navPills = [`<a href="index.html">首页</a>`, ...NAV.map(n =>
-      `<a href="${esc(n.url)}" target="_blank" rel="noreferrer">${n.label}</a>`)].join('\n    ');
-    const bar = `<div class="mrhx-bar">
-  <a class="mlogo" href="index.html"><img src="${CDN_URL}/eaffbcd6d2ab070b24071cff8b189ccf.png?v=1" alt="Tsinho黄油推荐站" class="mlogo-img"></a>
-  <div class="bar-right">
-  <div class="search-row">
-  <form class="mrhx-search" action="search.html" method="get">
-    <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-    <button type="submit">搜索</button>
-  </form>
-  </div>
-  <div class="mnav">${navPills}</div>
-  </div>
-</div>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<!--mrhx-end-->`;
+    const bar = `<header>
+${navHeaderHtml('')}
+</header>`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js"></script>\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -1058,21 +1132,7 @@ ${seoHead('', null, { ogImg: (days[0] && days[0].cover) || (CDN_URL + '/logo.web
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:1px solid #ecebe9;position:sticky;top:0;z-index:10}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:20px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none;flex-shrink:0}
-.site img.site-logo{width:140px;height:auto;border-radius:10px;vertical-align:middle;display:inline-block}
-.site em{font-style:normal;color:#e5484d}
-.site small{font-size:11px;font-weight:400;color:#999;display:block;letter-spacing:0}
-.site-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex:1;min-width:0}
-nav{width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-nav a{padding:7px 14px;border-radius:99px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ecebe9;background:#faf9f7;transition:.2s}
-.mrhx-search{display:flex;align-items:center;gap:5px;width:100%;justify-content:flex-end}
-.mrhx-search input{padding:5px 10px;border:1px solid #e2e0dc;border-radius:99px;font-size:12px;font-family:inherit;background:#faf9f7;color:#333;width:140px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
-nav a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3;transform:translateY(-1px)}
+${NAV_CSS}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
@@ -1126,15 +1186,6 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:720px){
-  .hwrap{padding:12px 14px;gap:10px}
-  .site{font-size:17px}
-  .site img.site-logo{width:100px;height:auto}
-  .site small{display:none}
-  nav{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:2px}
-  nav a{padding:5px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
-  nav::-webkit-scrollbar{display:none}
-  .mrhx-search{order:3;width:100%;margin-left:0;justify-content:flex-end}
-  .mrhx-search input{flex:1;width:auto}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .post{flex-wrap:wrap;gap:12px;padding:14px}
@@ -1153,16 +1204,7 @@ footer b{color:#e5484d}
 </head>
 <body>
 <header>
-  <div class="hwrap">
-    <a class="site" href="index.html"><img src="eaffbcd6d2ab070b24071cff8b189ccf.png" alt="Tsinho黄油推荐站" class="site-logo"></a>
-    <div class="site-header-right">
-      <form class="mrhx-search" action="search.html" method="get" role="search">
-      <input type="text" name="q" placeholder="搜索游戏…" autocomplete="off">
-      <button type="submit">搜索</button>
-    </form>
-      <nav>${navLinks}</nav>
-    </div>
-  </div>
+${navHeaderHtml('')}
 </header>
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
@@ -1175,6 +1217,7 @@ ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
+<script src="assets/js/nav.js"></script>
 </body>
 </html>
 `;
@@ -1189,7 +1232,7 @@ ${indexScript}
     const navBtn = (href, label, disabled) => disabled
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
-    const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}" target="_blank" rel="noreferrer">${esc(n.label)}</a>`).join('\n    ');
+    const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}"${/^https?:/i.test(n.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(n.label)}</a>`).join('\n    ');
     const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
       `<div class="mrhx-navmid">${navMid}</div>` +
@@ -1277,16 +1320,8 @@ ${seoHead('search.html', '搜索')}
 <link rel="apple-touch-icon" href="${CDN_URL}/65ce15938559e6db9958d99b29e617c1.png?v=1">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;padding-top:85px}
-header{background:#fff;border-bottom:1px solid #ecebe9;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,.04)}
-.hwrap{max-width:900px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px}
-.site{font-size:21px;font-weight:800;letter-spacing:1px;color:#2b2b2b;text-decoration:none}
-.site em{font-style:normal;color:#e5484d}
-.mrhx-search{display:flex;align-items:center;gap:5px;margin-left:auto}
-.mrhx-search input{padding:6px 12px;border:1px solid #e2e0dc;border-radius:99px;font-size:13px;font-family:inherit;background:#faf9f7;color:#333;width:180px;outline:none;transition:.2s}
-.mrhx-search input:focus{border-color:#e5484d;background:#fff}
-.mrhx-search button{border:none;background:#e5484d;color:#fff;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
-.mrhx-search button:hover{background:#c93a3f}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+${NAV_CSS}
 main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
@@ -1322,23 +1357,18 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .hist-tag .del{margin-left:4px;font-size:10px;color:#ccc;cursor:pointer}
 .hist-tag .del:hover{color:#e5484d}
 .no-hist{text-align:center;color:#ccc;font-size:12px;padding:10px 0}
-@media (max-width:720px){body{padding-top:75px}.hwrap{padding:12px 14px}.mrhx-search input{width:110px}main{padding:18px 14px 32px}}
+@media (max-width:720px){main{padding:18px 14px 32px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="hwrap">
-    <a class="site" href="index.html">${SITE_NAME.replace(SITE_LOGO_EM, '<em>' + SITE_LOGO_EM + '</em>')}</a>
-    <form class="mrhx-search" action="search.html" method="get" role="search">
-      <input type="text" name="q" id="q" placeholder="搜索游戏…" autocomplete="off">
-      <button type="submit">搜索</button>
-    </form>
-  </div>
+${navHeaderHtml('', 'q')}
 </header>
 <main>
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res" aria-busy="false"></div>
 </main>
+<script src="assets/js/nav.js"></script>
 <footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
