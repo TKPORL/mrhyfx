@@ -66,11 +66,12 @@ const assetVer = rel => {
 const CSS_VER = assetVer('assets/css/site.css');
 const NAVJS_VER = assetVer('assets/js/nav.js');
 
-// ===================== 站点图标资源（2026-09-21 从 jsDelivr 迁到自建图床）=====================
+// ===================== 站点图标资源（2026-09-22 迁到图床 WebP）=====================
 // 两处唯一真相都在这里：以后要再换图标，只改这两行，全站页面由 gen.js 重新生成时统一切换。
-const SITE_LOGO_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790006138392_eaffbcd6d2ab070b24071cff8b189ccf.png';
-const SITE_ICON_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790006049139_65ce15938559e6db9958d99b29e617c1.png';
-const SITE_ICON_TAGS = `<link rel="icon" href="${SITE_ICON_IMG}" type="image/png">
+// 注意：图床走 Telegram 渠道会把 PNG 转成 JPEG（透明丢、变黑底），WebP 不会被转——图标必须用 WebP 直链。
+const SITE_LOGO_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp';
+const SITE_ICON_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp';
+const SITE_ICON_TAGS = `<link rel="icon" href="${SITE_ICON_IMG}" type="image/webp">
 <link rel="apple-touch-icon" href="${SITE_ICON_IMG}">`;
 // 历史遗留的图标声明（本地 favicon.jpg / 旧 CDN 的 favicon.webp、ac9ce9ba、65ce…）统一按这个正则清掉再重注入
 const ICON_TAG_RE = /[ \t]*<link rel="(?:icon|apple-touch-icon)"[^>]*>\r?\n?/g;
