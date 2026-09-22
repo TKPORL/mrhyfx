@@ -1557,6 +1557,8 @@ async function updateTimestamp(repo, token, name) {
   const raw = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : null).catch(() => null);
   if (raw === null) throw new Error('读取线上 timestamps.json 失败，已取消保存，请重试');
   if (raw && typeof raw === 'object') obj = raw;
+  // 编辑旧帖：已有时间戳就保留原值，帖子在首页的位置不动（2026-09-23 站长明确要求）
+  if (obj[name]) return;
   obj[name] = new Date().toISOString();
   await putFile(repo, token, 'timestamps.json', btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
     '发布: 更新timestamps.json', null, '');
