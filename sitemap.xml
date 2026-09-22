@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://tkporl.github.io/mrhyfx/</loc><lastmod>2026-09-22</lastmod><priority>1.0</priority></url>
-  <url><loc>https://tkporl.github.io/mrhyfx/qzt.html</loc><lastmod>2026-09-22</lastmod><priority>0.6</priority></url>
-  <url><loc>https://tkporl.github.io/mrhyfx/8.1.1.html</loc><lastmod>2026-09-22</lastmod><priority>0.6</priority></url>
+  <url><loc>https://tkporl.github.io/mrhyfx/qzt.html</loc><lastmod>2026-09-20</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/2026922pcaz.html</loc><lastmod>2026-09-22</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/2026920pcaz.html</loc><lastmod>2026-09-20</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/2026914pc.html</loc><lastmod>2026-09-14</lastmod><priority>0.6</priority></url>
@@ -30,6 +29,7 @@
   <url><loc>https://tkporl.github.io/mrhyfx/8.17pc.html</loc><lastmod>2026-08-17</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/8.12pcaz.html</loc><lastmod>2026-08-12</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/8.12PC.html</loc><lastmod>2026-08-12</lastmod><priority>0.6</priority></url>
+  <url><loc>https://tkporl.github.io/mrhyfx/8.1.1.html</loc><lastmod>2026-08-11</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/8.11.html</loc><lastmod>2026-08-11</lastmod><priority>0.6</priority></url>
   <url><loc>https://tkporl.github.io/mrhyfx/8.10.html</loc><lastmod>2026-08-11</lastmod><priority>0.6</priority></url>
 </urlset>
