@@ -58,6 +58,6 @@
   },
   "imgbed": {
     "enabled": true,
-    "baseUrl": "https://tsinho-cloudflare-imgbed.pages.dev"
+    "baseUrl": "https://cloudflare-imgbed-e3b.pages.dev"
   }
 }
