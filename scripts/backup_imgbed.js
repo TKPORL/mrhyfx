@@ -25,7 +25,9 @@ const IMGBED_BASES = [
 ];
 
 async function fetchList(base) {
-  const r = await fetch(`${base}/api/manage/list`);
+  const auth = process.env.IMGBED_AUTHCODE || '';
+  if (!auth) throw new Error('缺少图床管理密码（仓库 Secret: IMGBED_AUTHCODE）');
+  const r = await fetch(`${base}/api/manage/list?authCode=${encodeURIComponent(auth)}`);
   if (!r.ok) throw new Error(`列表接口 HTTP ${r.status}`);
   const j = await r.json();
   return (j.files || []).map((f) => f.name);
@@ -52,7 +54,7 @@ async function main() {
     }
   }
   if (!base) {
-    console.error('\n图床列表取不到（多半是 KV 额度还没恢复）。明早 8 点后再跑一次就行。');
+    console.error('\n图床列表取不到（检查 Secret IMGBED_AUTHCODE 是否已配置、密码是否正确）。');
     process.exit(1);
   }
   console.log(`\n图床 ${base} 共 ${names.length} 张\n`);
