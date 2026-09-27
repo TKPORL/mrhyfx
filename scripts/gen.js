@@ -922,10 +922,11 @@ for (const file of files) {
       // assets/<tag>/<hash>.webp（404），且 URL 已不含 /file/、上面的正则匹配不到，坏产物被固化。
       // 识别「路径不是 assets/imgbed/ 但文件名是备份去重名」的引用，改回正确路径。
       const _validImgbed = new Set(Object.values(IMGBED_MAP));
+      // 不限定 src= 前缀：坏引用还出现在 meta og:image content、JSON-LD "image"、onerror 单引号 URL、多行 img 里
       html = html.replace(
-        /(src=")(https:\/\/[^"]*?\/assets\/)(?!imgbed\/|js\/|css\/)([^"\/]+\.webp)(")/g,
-        (m, pre, host, fname, post) =>
-          _validImgbed.has(fname) ? `${pre}${CDN_URL}/assets/imgbed/${fname}${post}` : m
+        /(https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/'"\s]+\/)assets\/(?!imgbed\/|js\/|css\/)(?:[^"'\/\s)]+\/)?([^"'\/\s)]+\.webp)/g,
+        (m, host, fname) =>
+          _validImgbed.has(fname) ? `${host}assets/imgbed/${fname}` : m
       );
     }
 
