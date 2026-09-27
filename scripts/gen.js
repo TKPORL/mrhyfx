@@ -902,6 +902,18 @@ for (const file of files) {
       }
     }
 
+    // 图床图直换 GitHub(jsDelivr) 备份源（2026-09-27 用户要求）：有备份映射的图床直链直接改写为 jsDelivr，
+    // 彻底不耗图床 KV 额度；无备份的图保持原样（继续走图床 + onerror 兜底）。
+    if (Object.keys(IMGBED_MAP).length) {
+      html = html.replace(
+        /(<img\b[^>]*?\bsrc=")https:\/\/[^"]*?\/file\/([^"?]+\.[A-Za-z0-9]+)("[^>]*?>)/g,
+        (m, pre, fname, post) => {
+          const local = IMGBED_MAP[fname] || IMGBED_MAP[fname.split('/').pop()];
+          return local ? `${pre}${CDN_URL}/assets/imgbed/${local}${post}` : m;
+        }
+      );
+    }
+
     html = await localize(html, tag);
     // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
     html = injectImgFallback(html);
