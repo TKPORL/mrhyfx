@@ -630,6 +630,30 @@ function bedCfg() {
 // 目的：同一台电脑上同一张图重复发布（改顺序、改标题、发布失败后重试）不再重传一遍。
 const BED_CACHE_KEY = 'mrhx_imgbed_uploaded_v1';
 const BED_CACHE_MAX = 2000;
+// 旧图床域名自动迁移（2026-09-27）：域名切换 tsinho.us.ci 后，浏览器 localStorage 里残留的旧地址
+// 会让新发布的帖子继续产出旧域名直链（绕过 CF 缓存、消耗 KV 额度）。打开后台时自动纠正一次。
+(function migrateImgbedUrl() {
+  const LEGACY = ['https://cloudflare-imgbed-e3b.pages.dev', 'https://tsinho-cloudflare-imgbed.pages.dev'];
+  const NEXT = 'https://tsinho.us.ci';
+  const cur = (localStorage.getItem(IMGBED_URL_KEY) || '').trim().replace(/\/+$/, '');
+  if (LEGACY.includes(cur)) {
+    localStorage.setItem(IMGBED_URL_KEY, NEXT);
+    const el = document.getElementById('imgBedUrl');
+    if (el) el.value = NEXT;
+    try {
+      const cache = JSON.parse(localStorage.getItem(BED_CACHE_KEY) || '{}');
+      let n = 0;
+      for (const k in cache) {
+        if (typeof cache[k] === 'string' && LEGACY.some(l => cache[k].startsWith(l))) {
+          cache[k] = NEXT + '/' + cache[k].split('/').slice(3).join('/');
+          n++;
+        }
+      }
+      if (n) localStorage.setItem(BED_CACHE_KEY, JSON.stringify(cache));
+    } catch (e) { /* 缓存坏了不影响主流程，发布时会重新上传 */ }
+    console.warn('[图床] 检测到旧图床地址，已自动切换为 ' + NEXT + '（图片复用缓存已同步更新）');
+  }
+})();
 function bedFileKey(f) { return [f.name, f.size, f.lastModified, f.type].join('|'); }
 function bedCacheGet(f) {
   try {

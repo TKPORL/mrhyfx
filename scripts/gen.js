@@ -885,10 +885,20 @@ const gameIndex = {};
     await compressExistingAssets();
 
 for (const file of files) {
-    let html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
+    let     html = fs.readFileSync(POST_DIR + '/' + file, 'utf8');
     const computed = (html.match(/<li class="node[^"]*heading/g) || []).length;
     const tag = dayTag(file);
     const gameCount = overrides[tag] !== undefined ? overrides[tag] : computed;
+
+    // 图床域名归一化：后台发布器用的地址存在浏览器 localStorage，浏览器没更新时新帖会继续产出旧域名直链，
+    // 直连旧域名会绕过 CF 缓存消耗 KV 额度。生成时统一改写为 site.json 的 baseUrl（2026-09-27 加）。
+    if (SITE.imgbed && SITE.imgbed.baseUrl) {
+      const _curBase = String(SITE.imgbed.baseUrl).replace(/\/+$/, '');
+      for (const _b of IMGBED_BASES) {
+        if (_b === _curBase) continue;
+        html = html.split(_b + '/file/').join(_curBase + '/file/');
+      }
+    }
 
     html = await localize(html, tag);
     // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
