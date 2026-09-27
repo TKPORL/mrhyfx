@@ -31,7 +31,7 @@ jobs:
       - name: 备份图床图片（压缩 quality 65 + 按内容去重）
         run: node scripts/backup_imgbed.js
         env:
-          IMGBED_AUTHCODE: ${{ secrets.IMGBED_AUTHCODE }}
+          IMGBED_TOKEN: ${{ secrets.IMGBED_TOKEN }}
 
       - name: 提交备份
         run: |

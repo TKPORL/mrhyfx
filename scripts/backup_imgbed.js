@@ -24,13 +24,26 @@ const IMGBED_BASES = [
   'https://cloudflare-imgbed-e3b.pages.dev',
 ];
 
-async function fetchList(base) {
-  const auth = process.env.IMGBED_AUTHCODE || '';
-  if (!auth) throw new Error('缺少图床管理密码（仓库 Secret: IMGBED_AUTHCODE）');
-  const r = await fetch(`${base}/api/manage/list?authCode=${encodeURIComponent(auth)}`);
-  if (!r.ok) throw new Error(`列表接口 HTTP ${r.status}`);
-  const j = await r.json();
-  return (j.files || []).map((f) => f.name);
+async function fetchList(base, token) {
+  // manage/list 需要管理员 API Token（Authorization: Bearer），登录密码(authCode)无效
+  const out = [];
+  let start = 0;
+  const COUNT = 500;
+  while (true) {
+    const r = await fetch(
+      `${base}/api/manage/list?start=${start}&count=${COUNT}&recursive=true`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!r.ok) throw new Error(`列表接口 HTTP ${r.status}`);
+    const j = await r.json();
+    const batch = (j.files || [])
+      .map((f) => f.name || f.key)
+      .filter(Boolean);
+    out.push(...batch);
+    start += batch.length;
+    if (!batch.length || out.length >= (j.totalCount || 0)) break;
+  }
+  return out;
 }
 
 async function main() {
@@ -41,9 +54,14 @@ async function main() {
 
   let base = null;
   let names = [];
+  const token = process.env.IMGBED_TOKEN || '';
+  if (!token) {
+    console.error('\n缺少图床 API Token（仓库 Secret: IMGBED_TOKEN，图床后台「API 令牌」创建，需 list 权限）');
+    process.exit(1);
+  }
   for (const b of IMGBED_BASES) {
     try {
-      const n = await fetchList(b);
+      const n = await fetchList(b, token);
       if (n && n.length) {
         base = b;
         names = n;
@@ -54,7 +72,7 @@ async function main() {
     }
   }
   if (!base) {
-    console.error('\n图床列表取不到（检查 Secret IMGBED_AUTHCODE 是否已配置、密码是否正确）。');
+    console.error('\n图床列表取不到（检查 Secret IMGBED_TOKEN 是否已配置、Token 是否有效且含 list 权限）。');
     process.exit(1);
   }
   console.log(`\n图床 ${base} 共 ${names.length} 张\n`);
@@ -68,7 +86,9 @@ async function main() {
       continue;
     }
     try {
-      const r = await fetch(`${base}/file/${encodeURIComponent(name)}`);
+      const r = await fetch(
+        `${base}/file/${name.split('/').map(encodeURIComponent).join('/')}`
+      );
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const buf = Buffer.from(await r.arrayBuffer());
       const webp = await sharp(buf)
