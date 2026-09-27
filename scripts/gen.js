@@ -902,8 +902,14 @@ for (const file of files) {
       }
     }
 
+    html = await localize(html, tag);
+    // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
+    html = injectImgFallback(html);
+
     // 图床图直换 GitHub(jsDelivr) 备份源（2026-09-27 用户要求）：有备份映射的图床直链直接改写为 jsDelivr，
     // 彻底不耗图床 KV 额度；无备份的图保持原样（继续走图床 + onerror 兜底）。
+    // 注意必须放在 localize 之后：localize 会把 assets/<目录>/ 重写为本帖 tag 目录（第 683 行），
+    // 若替换在前，生成的 assets/imgbed/ 会被改写成 assets/<tag>/ 导致 404（2026-09-27 踩过）。
     if (Object.keys(IMGBED_MAP).length) {
       html = html.replace(
         /(<img\b[^>]*?\bsrc=")https:\/\/[^"]*?\/file\/([^"?]+\.[A-Za-z0-9]+)("[^>]*?>)/g,
@@ -913,10 +919,6 @@ for (const file of files) {
         }
       );
     }
-
-    html = await localize(html, tag);
-    // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
-    html = injectImgFallback(html);
 
     // update local asset refs to .webp if exists
     const tagDir = safeAssetDir(tag);
