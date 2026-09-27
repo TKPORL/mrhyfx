@@ -264,12 +264,14 @@ try {
 
 function injectImgFallback(html) {
   if (!Object.keys(IMGBED_MAP).length) return html;
-  // 匹配图床直链 /file/xxx.webp 与 /file/子目录/xxx.webp
+  // 匹配图床直链 /file/xxx.webp 与 /file/子目录/xxx.webp；
+  // fname 捕获 /file/ 之后整段（可含子目录），与 _map.json 的键（backup_imgbed.js 列出的 name，含目录）对齐。
+  // 2026-09-27 修复：原正则只取最后一段文件名，按目录归类的图（后台 uploadFolder）全部查不到映射、漏兜底。
   return html.replace(
-    /<img\b([^>]*?)\bsrc="(https:\/\/[^"]*?\/file\/(?:[^"\/]+\/)?([^"\/]+\.[A-Za-z0-9]+))"([^>]*?)>/g,
+    /<img\b([^>]*?)\bsrc="(https:\/\/[^"]*?\/file\/([^"?]+\.[A-Za-z0-9]+))"([^>]*?)>/g,
     (m, pre, url, fname, post) => {
       if (/onerror=/i.test(pre + post)) return m; // 已经有兜底就别重复加
-      const local = IMGBED_MAP[fname];
+      const local = IMGBED_MAP[fname] || IMGBED_MAP[fname.split('/').pop()];
       if (!local) return m; // 这张图还没备份过，跳过
       const fb = `${CDN_URL}/assets/imgbed/${local}`;
       return `<img${pre}src="${url}" onerror="this.onerror=null;this.src='${fb}'"${post}>`;
