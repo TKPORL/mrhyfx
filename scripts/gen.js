@@ -69,8 +69,8 @@ const NAVJS_VER = assetVer('assets/js/nav.js');
 // ===================== 站点图标资源（2026-09-22 迁到图床 WebP）=====================
 // 两处唯一真相都在这里：以后要再换图标，只改这两行，全站页面由 gen.js 重新生成时统一切换。
 // 注意：图床走 Telegram 渠道会把 PNG 转成 JPEG（透明丢、变黑底），WebP 不会被转——图标必须用 WebP 直链。
-const SITE_LOGO_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp';
-const SITE_ICON_IMG = 'https://cloudflare-imgbed-e3b.pages.dev/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp';
+const SITE_LOGO_IMG = 'https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp';
+const SITE_ICON_IMG = 'https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp';
 const SITE_ICON_TAGS = `<link rel="icon" href="${SITE_ICON_IMG}" type="image/webp">
 <link rel="apple-touch-icon" href="${SITE_ICON_IMG}">`;
 // 历史遗留的图标声明（本地 favicon.jpg / 旧 CDN 的 favicon.webp、ac9ce9ba、65ce…）统一按这个正则清掉再重注入
@@ -247,7 +247,35 @@ let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
 const IMGBED_BASES = new Set();
 if (SITE.imgbed && SITE.imgbed.baseUrl) IMGBED_BASES.add(String(SITE.imgbed.baseUrl).replace(/\/+$/, ''));
 IMGBED_BASES.add('https://tsinho-cloudflare-imgbed.pages.dev');
+IMGBED_BASES.add('https://tsinho.us.ci');
 IMGBED_BASES.add('https://cloudflare-imgbed-e3b.pages.dev');
+
+// ===== 图床兜底：图床打不开时，浏览器自动换 GitHub(jsDelivr) 里的备份图 =====
+//   映射表由 scripts/backup_imgbed.js 生成：图床文件名 -> assets/imgbed/ 下去重后的文件名
+const IMGBED_MAP_FILE = path.join('assets', 'imgbed', '_map.json');
+let IMGBED_MAP = {};
+try {
+  if (fs.existsSync(IMGBED_MAP_FILE)) {
+    IMGBED_MAP = JSON.parse(fs.readFileSync(IMGBED_MAP_FILE, 'utf8'));
+  }
+} catch (e) {
+  IMGBED_MAP = {};
+}
+
+function injectImgFallback(html) {
+  if (!Object.keys(IMGBED_MAP).length) return html;
+  // 匹配图床直链 /file/xxx.webp 与 /file/子目录/xxx.webp
+  return html.replace(
+    /<img\b([^>]*?)\bsrc="(https:\/\/[^"]*?\/file\/(?:[^"\/]+\/)?([^"\/]+\.[A-Za-z0-9]+))"([^>]*?)>/g,
+    (m, pre, url, fname, post) => {
+      if (/onerror=/i.test(pre + post)) return m; // 已经有兜底就别重复加
+      const local = IMGBED_MAP[fname];
+      if (!local) return m; // 这张图还没备份过，跳过
+      const fb = `${CDN_URL}/assets/imgbed/${local}`;
+      return `<img${pre}src="${url}" onerror="this.onerror=null;this.src='${fb}'"${post}>`;
+    }
+  );
+}
 function isImgBedUrl(u) {
   for (const b of IMGBED_BASES) if (b && u.startsWith(b + '/')) return true;
   return false;
@@ -630,7 +658,7 @@ async function localize(html, tag) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const buf = Buffer.from(await res.arrayBuffer());
           const compressed = await sharp(buf)
-            .webp({ quality: 80, alphaQuality: 100, lossless: false })
+            .webp({ quality: 50, alphaQuality: 100, lossless: false })
             .toBuffer();
           fs.writeFileSync(path.join(dir, name), compressed);
           html = html.split(url).join(`${CDN_URL}/assets/${tag}/${name}`);
@@ -829,7 +857,7 @@ async function compressExistingAssets() {
       try {
         const buf = fs.readFileSync(srcPath);
         const compressed = await sharp(buf)
-          .webp({ quality: 80, alphaQuality: 100, lossless: false })
+          .webp({ quality: 50, alphaQuality: 100, lossless: false })
           .toBuffer();
         fs.writeFileSync(dstPath, compressed);
         console.log('  compress', safeEntry, safeFile, `-> ${dstName}.webp (${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
@@ -863,6 +891,8 @@ for (const file of files) {
     const gameCount = overrides[tag] !== undefined ? overrides[tag] : computed;
 
     html = await localize(html, tag);
+    // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
+    html = injectImgFallback(html);
 
     // update local asset refs to .webp if exists
     const tagDir = safeAssetDir(tag);
@@ -1353,7 +1383,8 @@ ${indexScript}
 </body>
 </html>
 `;
-  fs.writeFileSync('index.html', index);
+  // 首页缩略图同样加图床兜底
+  fs.writeFileSync('index.html', injectImgFallback(index));
   console.log('index.html ok (合集模式), days:', days.length);
 
   // #28/#50/#51：底部导航行 =「← 上一期 ｜ 官网 全部黄油 解压教程 ｜ 下一期 →」。

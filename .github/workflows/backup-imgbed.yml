@@ -1,0 +1,61 @@
+name: backup-imgbed
+
+# 每天把图床里的图片备份一份到仓库 assets/imgbed/
+# 备份后的图会通过 jsDelivr 访问，图床抽风时网页自动切过去（gen.js 注入 onerror）
+on:
+  schedule:
+    - cron: '17 3 * * *'   # UTC 03:17 = 北京时间 11:17（在 Cloudflare KV 每日额度重置之后）
+  workflow_dispatch:       # 也可以手动点一下立刻跑
+
+concurrency:
+  group: backup-imgbed
+  cancel-in-progress: true
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 备份图床图片（压缩 quality 65 + 按内容去重）
+        run: node scripts/backup_imgbed.js
+
+      - name: 提交备份
+        run: |
+          git config user.name "mrhx-bot"
+          git config user.email "mrhx-bot@users.noreply.github.com"
+          git add assets/imgbed
+          if git diff --cached --quiet; then echo "没有新增图片，跳过提交"; exit 0; fi
+          git commit -m "chore: 备份图床图片到 assets/imgbed"
+          ok=0
+          for i in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then ok=1; break; fi
+            else
+              git rebase --abort 2>/dev/null || true
+              git reset --hard origin/main
+              node scripts/backup_imgbed.js
+              git add assets/imgbed
+              git diff --cached --quiet && continue
+              git commit -m "chore: 备份图床图片（自愈重试 $i）"
+            fi
+            sleep $(( RANDOM % 5 + 2 ))
+          done
+          if [ "$ok" != "1" ]; then
+            git rebase --abort 2>/dev/null || true
+            git reset --hard origin/main 2>/dev/null || true
+            echo "备份推送失败"
+            exit 1
+          fi
