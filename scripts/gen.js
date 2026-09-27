@@ -918,6 +918,15 @@ for (const file of files) {
           return local ? `${pre}${CDN_URL}/assets/imgbed/${local}${post}` : m;
         }
       );
+      // 自愈：修复历史坏产物。2026-09-27 替换时序 bug 曾把 assets/imgbed/<hash>.webp 重写成
+      // assets/<tag>/<hash>.webp（404），且 URL 已不含 /file/、上面的正则匹配不到，坏产物被固化。
+      // 识别「路径不是 assets/imgbed/ 但文件名是备份去重名」的引用，改回正确路径。
+      const _validImgbed = new Set(Object.values(IMGBED_MAP));
+      html = html.replace(
+        /(src=")(https:\/\/[^"]*?\/assets\/)(?!imgbed\/|js\/|css\/)([^"\/]+\.webp)(")/g,
+        (m, pre, host, fname, post) =>
+          _validImgbed.has(fname) ? `${pre}${CDN_URL}/assets/imgbed/${fname}${post}` : m
+      );
     }
 
     // update local asset refs to .webp if exists
