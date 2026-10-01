@@ -663,7 +663,7 @@ async function localize(html, tag) {
   });
 
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
-    .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url) && !isImgBedUrl(url));
+    .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url) && !url.includes('tkporl.github.io/mrhyfx') && !isImgBedUrl(url));
   if (urls.length) {
     // SECURITY: tag 走 safeAssetDir，固定白名单正则 + 路径边界校验
     const dir = safeAssetDir(tag);
