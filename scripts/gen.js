@@ -291,8 +291,8 @@ function injectJsdelivrFallback(html) {
     /(<img\b[^>]*?\bsrc=")https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/"]+(\/assets\/[^"]+)("[^>]*?>)/g,
     (m, pre, path, post) => {
       if (/onerror=/i.test(pre + post)) return m; // 已有兜底（如图床→imgbed）就别覆盖
-      // pre 已含 <img 和 src="，替换时两者都不能再写（2026-10-01 双 <img、双 src= 各踩过一次）
-      return `${pre}https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path}" onerror="this.onerror=null;this.src='https://tkporl.github.io/mrhyfx${path}'"${post}>`;
+      // pre 已含 <img 和 src="，post 已含 src 闭引号"和结尾 >——都不能再写（2026-10-01 双<img/双src/双> 各踩过一次）
+      return `${pre}https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path}" onerror="this.onerror=null;this.src='https://tkporl.github.io/mrhyfx${path}'${post}`;
     }
   );
 }
