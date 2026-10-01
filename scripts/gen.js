@@ -1322,7 +1322,8 @@ ${navHeaderHtml('')}
     const title = path.parse(d.file).name;
     const disp = TITLES[title] || title;
     const pinned = PINS.indexOf(title) !== -1;
-    const plat = /安卓/.test(title) ? 'PC + 安卓' : /PC/i.test(title) ? 'PC' : '';
+    // 平台标签按「显示标题」判断（标题含"安卓"即 PC+安卓）；用文件名判断是错的——pcaz 里恰好含 "pc"、永远不含"安卓"（2026-10-01 用户反馈全显示 PC）
+    const plat = /安卓/.test(disp) ? 'PC+安卓' : /PC/i.test(disp) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
     const dateD3 = title.match(/^(\d+)\.(\d+)\.(\d+)/);
     const dateN = !dateD3 ? title.match(/(\d+)\.(\d+)/) : null;
