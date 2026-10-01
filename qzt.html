@@ -1018,7 +1018,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=6a715b2f">
+<link rel="stylesheet" href="assets/css/site.css?v=1">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -1066,19 +1066,20 @@
   </div>
 </div>
 </header>
-<script src="assets/js/nav.js?v=8f905e56"></script>
+<script src="assets/js/nav.js?v=1"></script>
 <!--mrhx-end-->
   <div class="title">求助贴-可在此贴求游戏<span class="mrhx-views" id="mrhx-views"></span></div>
         <ul class="node-list">
-<li class="node heading3 node-full">
-    <div class="bullet">
-    <div class="bullet-dot"></div>
-  </div>
+
+  <li class="node heading3 node-full">
   <div class="content mm-editor" ><span>免费帮找游戏（纯公益）</span></div>
     <div class="note mm-editor"><span>1.有需要的资源，直接在下方评论区留言。我们会帮大家寻找，找到后发布到本贴，系统会根据你填写的邮箱自动发送通知。
 2.本站所有资源免费分享，不收取任何费用。资源来之不易，请大家珍惜。请勿将本站资源用于商业倒卖（倒卖狗），违者将被永久拉黑并公示。
 感谢理解与支持！</span></div>
-  </li><li class="node heading3">
+  </li><!--qzt-fold-->
+  <div class="qzt-fold-box"><button type="button" class="qzt-fold-btn" id="qzt-fold-btn" data-label="展开更早的游戏（102 个）">展开更早的游戏（102 个）</button></div>
+  <div id="qzt-fold-zone" hidden>
+  <li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -2995,7 +2996,9 @@ PS：1.20步兵 1.21骑兵 1.20安卓不清楚
 静子 (CV：芒穗果)
 在危急时刻总会伸出援手，在公在私都相处了很久的上司。
 是彼此信赖的”战友”和”挚友”般的关系但是，面对你投向她的纯粹关心，她心中的界限正在逐渐崩塌。</span></div>
-  </li><li class="node heading3">
+  </li>
+  </div>
+  <!--/qzt-fold--><li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -4234,8 +4237,7 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
   </ul>
     <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1hbpu56WLdQE3tt3Jd9cbAw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
     <div class="note mm-editor"><span>新作[互动RPG/触摸抚摸] 直到清晨来临 朝が来るまで。 AI汉化版 [PC 810M]</span></div>
-  </li>
-  </ul> <div class="publish" style="display: flex; align-items: center; justify-content: center;">
+  </li></ul> <div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
@@ -4496,6 +4498,21 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
 })();
 </script>
 
+    <!--qzt-fold-assets--><style>
+.qzt-fold-box{margin:18px 0;text-align:center}
+.qzt-fold-btn{display:inline-block;padding:8px 24px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;user-select:none;font-family:inherit}
+.qzt-fold-btn:hover{background:#fae8e6}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('qzt-fold-btn'),f=document.getElementById('qzt-fold-zone');
+  if(!b||!f)return;
+  b.addEventListener('click',function(){
+    if(f.hasAttribute('hidden')){f.removeAttribute('hidden');b.textContent='收起更早的游戏';}
+    else{f.setAttribute('hidden','');b.textContent=b.getAttribute('data-label');}
+  });
+});
+</script><!--/qzt-fold-assets-->
   </body>
     </html>
   

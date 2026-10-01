@@ -881,6 +881,85 @@ if (fs.existsSync('hidden.json')) {
 const days = [];
 const searchIndex = [];
 const allGames = [];
+
+// qzt.html 求助贴折叠（2026-10-01 加）：游戏按月涨 100+，单页长期会膨胀到几千条。
+// 条目本身没有日期信息（新游戏由后台追加在列表末尾），因此按「新旧段」折叠：
+// 说明卡（node-full）永远展开，尾部最新 N 个展开，中间老游戏收进 hidden 容器，点横幅展开、展开才加载图。
+// 幂等：上次生成的折叠结构用 <!--qzt-fold--> 注释标记包裹，重建前先整体剥掉（同图标/SEO 先删后插模式）。
+const QZT_FOLD_KEEP = 40;
+function qztSplitCards(inner) {
+  // 与 reorderNodes 同款配对扫描（li 开头用容错正则，qzt 幕布结构属性不固定）
+  const blocks = [];
+  let pos = 0;
+  while (pos < inner.length) {
+    const m = inner.slice(pos).match(/<li class="node heading3[^"]*">/);
+    const h3 = m ? pos + m.index : -1;
+    if (h3 < 0) { blocks.push(inner.slice(pos)); break; }
+    if (h3 > pos) blocks.push(inner.slice(pos, h3));
+    let depth = 1, i = h3 + m[0].length;
+    while (i < inner.length) {
+      if (inner.indexOf('<ul class="image-list">', i) === i) {
+        const uEnd = inner.indexOf('</ul>', i + 22);
+        if (uEnd >= 0) { i = uEnd + 5; continue; }
+      }
+      if (inner.indexOf('<li', i) === i) depth++;
+      if (inner.indexOf('</li>', i) === i) { depth--; if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } i += 5; continue; }
+      i++;
+    }
+    if (i >= inner.length) { blocks.push(inner.slice(h3)); break; }
+  }
+  return blocks;
+}
+// 剥掉上次的折叠壳（横幅 + hidden 开闭壳），卡片流还原为纯净结构——必须在 reorderNodes 之前跑，
+// 否则 reorder 会把折叠壳切成散段混进卡片流，导致重建时计数错乱（2026-10-01 踩过）。
+function foldUnwrap(html) {
+  html = html.replace(/<div class="qzt-fold-box">[\s\S]*?<\/div>\s*/g, '');
+  html = html.replace(/<div id="qzt-fold-zone" hidden>\s*/g, '');
+  html = html.replace(/\n\s*<\/div>\s*<!--\/qzt-fold-->\s*/g, '');
+  return html;
+}
+// 重建折叠：输入必须是纯净卡片流（foldUnwrap + reorderNodes 之后），天然幂等
+function foldQzt(html) {
+  const start = html.indexOf('<ul class="node-list">');
+  if (start < 0) return html;
+  const end = html.lastIndexOf('</ul>');
+  if (end < start) return html;
+  const prefix = html.slice(0, start + 21);
+  const inner = html.slice(start + 21, end);
+  const suffix = html.slice(end);
+  const blocks = qztSplitCards(inner);
+  const lead = [];
+  const cards = [];
+  for (const b of blocks) {
+    if (/<li class="node heading3/.test(b)) cards.push(b);
+    else lead.push(b);
+  }
+  if (cards.length <= QZT_FOLD_KEEP + 1) return html; // 数量少不值得折叠
+  const midCount = cards.length - QZT_FOLD_KEEP;
+  const mid = cards.slice(1, 1 + midCount);           // 跳过第 1 张说明卡，其后到倒数 KEEP 张折叠
+  const tail = cards.slice(1 + midCount);
+  const label = `展开更早的游戏（${mid.length} 个）`;
+  return prefix + lead.join('') + cards[0]
+    + `<!--qzt-fold-->\n  <div class="qzt-fold-box"><button type="button" class="qzt-fold-btn" id="qzt-fold-btn" data-label="${label}">${label}</button></div>\n  <div id="qzt-fold-zone" hidden>\n  `
+    + mid.join('') + '\n  </div>\n  <!--/qzt-fold-->'
+    + tail.join('') + suffix;
+}
+const QZT_FOLD_ASSETS = `<style>
+.qzt-fold-box{margin:18px 0;text-align:center}
+.qzt-fold-btn{display:inline-block;padding:8px 24px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;user-select:none;font-family:inherit}
+.qzt-fold-btn:hover{background:#fae8e6}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('qzt-fold-btn'),f=document.getElementById('qzt-fold-zone');
+  if(!b||!f)return;
+  b.addEventListener('click',function(){
+    if(f.hasAttribute('hidden')){f.removeAttribute('hidden');b.textContent='收起更早的游戏';}
+    else{f.setAttribute('hidden','');b.textContent=b.getAttribute('data-label');}
+  });
+});
+</script>`;
+
 // 后台搜索用的「帖子级别」索引：key=短文件名（如 "8.10"），value={title,games,intro}
 const gameIndex = {};
 (async () => {
@@ -1046,7 +1125,10 @@ html = (function reorderNodes(str) {
     });
     blocks = blocks.filter(b => b.trim().length > 0);
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
-  })(html);
+  })(foldUnwrap(html));
+
+    // qzt.html：折叠壳已在上面 foldUnwrap 预处理（reorder 前），此处重建折叠
+    if (file === 'qzt.html') html = foldQzt(html);
 
     html = html.replace(PUBLISH_RE, newPublish);
 
@@ -1105,6 +1187,12 @@ ${navHeaderHtml('')}
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
+
+    // qzt 折叠横幅样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
+    if (file === 'qzt.html') {
+      html = html.replace(/<!--qzt-fold-assets-->[\s\S]*?<!--\/qzt-fold-assets-->\s*/g, '');
+      html = html.replace('</body>', `  <!--qzt-fold-assets-->${QZT_FOLD_ASSETS}<!--/qzt-fold-assets-->\n  </body>`);
+    }
 
     const searchBlocks = [];
     let pos = 0;
