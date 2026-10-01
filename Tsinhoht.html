@@ -1105,16 +1105,30 @@ function attachDraft() {
     toast('草稿已清空');
   };
 }
-$('exportForm').onclick = () => {
-  const data = collectDraft();
+$('exportForm').onclick = async () => {
   saveDraft();
+  const data = collectDraft();
+  // 图片文件转 data URL 内嵌进导出文件（File 对象存不进 JSON，刷新即丢——2026-10-01 用户要求导出含图、导入原位恢复）
+  const box = $('gameBox');
+  let imgCount = 0;
+  for (let i = 0; i < box.children.length; i++) {
+    const el = box.children[i];
+    const files = [...el.querySelector('.g-files').files];
+    const filesData = [];
+    for (const f of files) {
+      const du = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
+      filesData.push({ name: f.name, type: f.type || 'image/webp', data: du });
+      imgCount++;
+    }
+    if (data.form.cards[i]) data.form.cards[i].filesData = filesData;
+  }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'mrhx-draft-' + new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19) + '.json';
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('已导出数据文件，可在其他设备导入');
+  toast(imgCount ? `已导出数据（含 ${imgCount} 张图片）` : '已导出数据（无图片）');
 };
 $('importForm').onclick = () => $('importFile').click();
 $('importFile').addEventListener('change', e => {
@@ -1127,7 +1141,30 @@ $('importFile').addEventListener('change', e => {
       if (d.form) {
         $('fName').value = d.form.name || ''; $('fTitle').value = d.form.title || ''; $('fCount').value = d.form.count || '';
         $('gameBox').innerHTML = '';
-        (d.form.cards || []).forEach(c => addGameCard(c));
+        const cardEls = (d.form.cards || []).map(c => addGameCard(c));
+        // 图片文件原位恢复：data URL → File 塞回 .g-files 并重绘缩略图（配合导出含图功能）
+        let imgCount = 0;
+        (d.form.cards || []).forEach((c, i) => {
+          if (!c.filesData || !c.filesData.length || !cardEls[i]) return;
+          const dt = new DataTransfer();
+          c.filesData.forEach(f => {
+            try {
+              const [meta, b64] = f.data.split(',');
+              const mime = (meta.match(/data:([^;]+)/) || [])[1] || f.type || 'image/webp';
+              const bin = atob(b64);
+              const arr = new Uint8Array(bin.length);
+              for (let j = 0; j < bin.length; j++) arr[j] = bin.charCodeAt(j);
+              dt.items.add(new File([arr], f.name, { type: mime }));
+              imgCount++;
+            } catch (e) { console.warn('图片恢复失败:', f.name, e); }
+          });
+          if (dt.files.length) {
+            const fi = cardEls[i].querySelector('.g-files');
+            fi.files = dt.files;
+            previewFiles(fi);
+          }
+        });
+        toast(imgCount ? `导入成功！已恢复 ${imgCount} 张图片` : '导入成功！');
       }
       if (d.html) {
         $('hName').value = d.html.name || ''; $('hTitle').value = d.html.title || ''; $('html').value = d.html.content || '';
