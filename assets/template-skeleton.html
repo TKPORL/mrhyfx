@@ -1288,6 +1288,21 @@
 })();
 </script>
 
+    <!--qzt-fold-assets--><style>
+.qzt-fold-box{margin:18px 0;text-align:center}
+.qzt-fold-btn{display:inline-block;padding:8px 24px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;user-select:none;font-family:inherit}
+.qzt-fold-btn:hover{background:#fae8e6}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('qzt-fold-btn'),f=document.getElementById('qzt-fold-zone');
+  if(!b||!f)return;
+  b.addEventListener('click',function(){
+    if(f.hasAttribute('hidden')){f.removeAttribute('hidden');b.textContent='收起更早的游戏';}
+    else{f.setAttribute('hidden','');b.textContent=b.getAttribute('data-label');}
+  });
+});
+</script><!--/qzt-fold-assets-->
   </body>
     </html>
   
