@@ -1298,6 +1298,7 @@ function addGameCard(data) {
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
     <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
+    <div class="filebtn upnow" role="button" tabindex="0" title="把已选图片立刻上传并转成链接，之后刷新也不会丢">立即上传转链接</div>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
     <textarea class="g-imgs"></textarea>
     <div class="g-prev"></div>
@@ -1319,6 +1320,10 @@ function addGameCard(data) {
   const fb = d.querySelector('.filebtn');
   fb.onclick = () => fileInput.click();
   fb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
+  // 立即上传转链接：不等发布，图片先传上去转成外链，刷新/关机都不会丢
+  const upnow = d.querySelector('.upnow');
+  upnow.onclick = () => uploadCardNow(d);
+  upnow.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uploadCardNow(d); } };
   d.querySelector('.g-move').onclick = e => openMove(d, e);
   d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
@@ -1603,6 +1608,58 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
     paths.push(cardPaths);
   }
   return paths;
+}
+
+// 立即上传转链接（2026-10-01 用户要求）：卡片选完图可立刻上传（GitHub 仓库或图床，按当前模式），
+// 成功后外链填进 .g-imgs（进草稿持久化）并清空文件选择，刷新/关机都不会丢。
+async function uploadCardNow(card) {
+  let bed = null;
+  try { bed = bedCfg(); } catch (e) { toast(e.message); return; }
+  const files = [...card.querySelector('.g-files').files];
+  if (!files.length) { toast('这张卡片还没有选择图片'); return; }
+  const name = $('fName').value.trim();
+  if (!name) { toast('请先在「基本信息」里填文件名（图片要按它归档）'); return; }
+  const ta = card.querySelector('.g-imgs');
+  const lines = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const st = $('status');
+  try {
+    if (bed) await show(st, '', 'info');
+    for (const f of files) {
+      if (bed) {
+        const cached = bedCacheGet(f);
+        let url = cached || await uploadToImgBed(f, bed.base, bed.pass, st, '立即上传', bedFolder(name));
+        if (!cached) bedCacheSet(f, url);
+        lines.push(/^https?:\/\//.test(url) ? url : bed.base + url);
+      } else {
+        const token = $('token').value.trim(), repo = $('repo').value.trim();
+        if (!token) { toast('GitHub 模式需要先填 Token'); return; }
+        if (!repo) { toast('GitHub 模式需要先填仓库名'); return; }
+        const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
+        const rawName = randomAlnum(10) + '.' + ext;
+        const b64 = await fileToBase64(f);
+        await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, st, '图片');
+        lines.push('https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName);
+      }
+    }
+  } catch (e) {
+    show(st, '立即上传失败：' + e.message + '（已选图片还在，可直接重试）', 'err');
+    return;
+  }
+  ta.value = lines.join('\n');
+  // 文件已转链接：清空文件选择（避免发布时重复上传），预览区改显示链接缩略图
+  card.querySelector('.g-files').value = '';
+  const fbName = card.querySelector('.fb-name');
+  if (fbName) fbName.textContent = '';
+  const prev = card.querySelector('.g-prev');
+  prev.innerHTML = '';
+  lines.forEach(u => {
+    const fig = document.createElement('figure');
+    const img = document.createElement('img'); img.src = u; img.alt = '已上传';
+    const cap = document.createElement('figcaption'); cap.textContent = '已上传 ✓';
+    fig.appendChild(img); fig.appendChild(cap); prev.appendChild(fig);
+  });
+  saveDraft();
+  show(st, '已上传 ' + files.length + ' 张并转为链接（已进草稿，刷新也不会丢）', 'ok');
 }
 
 function stripNodeList(html, blocks) {
