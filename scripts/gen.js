@@ -278,6 +278,24 @@ function injectImgFallback(html) {
     }
   );
 }
+// jsDelivr 国内被墙/污染时封面全裂（2026-10-01 访客反馈）：给 jsDelivr gh 图链注入 onerror，
+// 失败自动切 GitHub Pages 同路径（访客能打开网站 = Pages 域名在其网络下可达，图片就在仓库里）
+function injectJsdelivrFallback(html) {
+  // 情况1：2026-09-27「图床→imgbed」时代的旧 onerror——主链换成 jsDelivr 后它指向 jsDelivr 自身，兜底失效，重写为 Pages
+  html = html.replace(
+    /(<img\b[^>]*?\bsrc="https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/"]+)(\/assets\/[^"]+)("[^>]*?onerror="this\.onerror=null;this\.src=')https:\/\/cdn\.jsdelivr\.net[^']*('")/g,
+    (m, head, path, mid, tail) => `${head}${path}${mid}https://tkporl.github.io/mrhyfx${path}${tail}`
+  );
+  // 情况2：无 onerror 的 jsDelivr 图链，注入 Pages 兜底
+  return html.replace(
+    /(<img\b[^>]*?\bsrc=")https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/"]+(\/assets\/[^"]+)("[^>]*?>)/g,
+    (m, pre, path, post) => {
+      if (/onerror=/i.test(pre + post)) return m; // 已有兜底（如图床→imgbed）就别覆盖
+      // pre 已含 <img 和 src="，替换时两者都不能再写（2026-10-01 双 <img、双 src= 各踩过一次）
+      return `${pre}https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path}" onerror="this.onerror=null;this.src='https://tkporl.github.io/mrhyfx${path}'"${post}>`;
+    }
+  );
+}
 function isImgBedUrl(u) {
   for (const b of IMGBED_BASES) if (b && u.startsWith(b + '/')) return true;
   return false;
@@ -970,7 +988,7 @@ for (const file of files) {
 
     html = await localize(html, tag);
     // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
-    html = injectImgFallback(html);
+    html = injectJsdelivrFallback(html);
 
     // 图床图直换 GitHub(jsDelivr) 备份源（2026-09-27 用户要求）：有备份映射的图床直链直接改写为 jsDelivr，
     // 彻底不耗图床 KV 额度；无备份的图保持原样（继续走图床 + onerror 兜底）。
@@ -1495,7 +1513,7 @@ ${indexScript}
 </html>
 `;
   // 首页缩略图同样加图床兜底
-  fs.writeFileSync('index.html', injectImgFallback(index));
+  fs.writeFileSync('index.html', injectJsdelivrFallback(injectImgFallback(index)));
   console.log('index.html ok (合集模式), days:', days.length);
 
   // #28/#50/#51：底部导航行 =「← 上一期 ｜ 官网 全部黄油 解压教程 ｜ 下一期 →」。
