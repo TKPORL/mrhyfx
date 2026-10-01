@@ -2423,7 +2423,7 @@ async function loadComments() {
     let all = [];
     let offset = 0;
     while (true) {
-      const url = `${base}/rest/v1/comments?select=*&order=created_at.desc&limit=${PAGE_SIZE}&offset=${offset}`;
+      const url = `${base}/rest/v1/comments?select=*&order=created_at.desc,id.desc&limit=${PAGE_SIZE}&offset=${offset}`;
       console.log('[comments] fetching:', url);
       const res = await fetch(url, { headers: sbHeaders() });
       console.log('[comments] response status:', res.status, res.ok);
@@ -2486,13 +2486,17 @@ async function loadComments() {
       parents.sort(function(a, b) {
         return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a));
       });
+      // 回复列表拍平为线性时间线（多级回复不再树形嵌套导致时间乱序），从晚到早（最新在最上面）
+      function collectDesc(pid, out) {
+        all.filter(function (c) { return (c.pid || null) === pid; }).forEach(function (c) { out.push(c); collectDesc(c.id, out); });
+      }
       function addReplies(pid, container) {
-        all.filter(function (c) { return (c.pid || null) === pid; })
-          .sort(function (a, b) { return b.created_at.localeCompare(a.created_at); })
-          .forEach(function (c) {
-            container.insertAdjacentHTML('beforeend', renderComment(c, true));
-            addReplies(c.id, container);
-          });
+        var flat = [];
+        collectDesc(pid, flat);
+        flat.sort(function (a, b) { return b.created_at.localeCompare(a.created_at); });
+        flat.forEach(function (c) {
+          container.insertAdjacentHTML('beforeend', renderComment(c, true));
+        });
       }
       var frag = '';
       parents.forEach(function (p) {
@@ -2509,7 +2513,9 @@ async function loadComments() {
           addReplies(p.id, wrap);
         }
       });
-      [...box.querySelectorAll('[data-dcid]')].forEach(b => {
+      // 绑定评论操作事件（参数化根元素：初次绑 box；回复后局部重建的容器也复用）
+      const bindCommentActions = (rootEl) => {
+      [...rootEl.querySelectorAll('[data-dcid]')].forEach(b => {
         b.onclick = () => {
           if (b.dataset.pid) {
             delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该条回复（不影响其所在楼层）');
@@ -2518,7 +2524,7 @@ async function loadComments() {
           delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该评论及其全部回复');
         };
       });
-      [...box.querySelectorAll('[data-pin]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-pin]')].forEach(b => {
         b.onclick = async () => {
           const admin = $('sbSecret').value.trim();
           if (!admin) { show(stC, '请先填写管理密钥', 'err'); return; }
@@ -2538,16 +2544,16 @@ async function loadComments() {
           } finally { b.disabled = false; }
         };
       });
-      [...box.querySelectorAll('[data-rp]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-rp]')].forEach(b => {
         b.onclick = () => {
           const el = $('rbox-' + b.dataset.rp);
           el.style.display = el.style.display === 'none' ? 'block' : 'none';
         };
       });
-      [...box.querySelectorAll('[data-cancel]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-cancel]')].forEach(b => {
         b.onclick = () => { $('rbox-' + b.dataset.cancel).style.display = 'none'; };
       });
-      [...box.querySelectorAll('[data-send]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-send]')].forEach(b => {
         b.onclick = async () => {
           const id = b.dataset.send;
           const nick = $('rn-' + id).value.trim();
@@ -2560,29 +2566,41 @@ async function loadComments() {
           try {
             const res = await fetch(`${sbBase()}/rest/v1/comments`, {
               method: 'POST',
-              headers: Object.assign(sbHeaders(), { 'Prefer': 'return=minimal', 'x-admin-key': admin }),
+              headers: Object.assign(sbHeaders(), { 'Prefer': 'return=representation', 'x-admin-key': admin }),
               body: JSON.stringify({ url: b.dataset.rurl, pid: b.dataset.rtop || null, nick: nick, email: email, content: content, is_admin: true })
             });
             if (res.status === 400) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || '内容未通过检查'); }
             if (!res.ok) throw new Error('HTTP ' + res.status);
+            let newC = null;
+            try { const arr = await res.json(); newC = arr && arr[0]; } catch (_) {}
             localStorage.setItem('mrhx_admin_nick', nick);
             localStorage.setItem('mrhx_admin_email', email);
             sendReplyMail(b.dataset.rurl, b.dataset.mail, b.dataset.tonick, content, nick);
+            // 就地插入新回复，不整列表刷新（滚动位置与未发送的输入都不受影响，可连续回复）
+            if (newC) all.push(newC);
+            const myCwrap = b.closest('.cwrap');
+            let wrap = myCwrap ? myCwrap.parentElement.closest('.creply-wrap') : null;
+            if (!wrap && myCwrap) {
+              const nx = myCwrap.nextElementSibling;
+              if (nx && nx.classList && nx.classList.contains('creply-wrap')) wrap = nx;
+              else { wrap = document.createElement('div'); wrap.className = 'creply-wrap'; wrap.dataset.rparent = id; myCwrap.after(wrap); }
+            }
+            if (wrap) { wrap.innerHTML = ''; addReplies(wrap.dataset.rparent || id, wrap); bindCommentActions(wrap); }
             $('rbox-' + id).style.display = 'none';
-            show(stC, '站长回复已发布，刷新帖子页面即可看到（带「站长」徽章）。', 'ok');
-            loadComments();
+            $('rc-' + id).value = '';
+            show(stC, '回复已发布并插入列表，可继续回复其他人。', 'ok');
           } catch (e) {
             show(stC, '回复失败：' + e.message, 'err');
           }
         };
       });
-      [...box.querySelectorAll('[data-edit]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-edit]')].forEach(b => {
         b.onclick = () => { const el = $('eb-' + b.dataset.edit); el.style.display = el.style.display === 'none' ? 'block' : 'none'; };
       });
-      [...box.querySelectorAll('[data-canceledit]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-canceledit]')].forEach(b => {
         b.onclick = () => { $('eb-' + b.dataset.canceledit).style.display = 'none'; };
       });
-      [...box.querySelectorAll('[data-savedit]')].forEach(b => {
+      [...rootEl.querySelectorAll('[data-savedit]')].forEach(b => {
         b.onclick = async () => {
           const id = b.dataset.savedit;
           const content = $('ec-' + id).value.trim();
@@ -2604,6 +2622,8 @@ async function loadComments() {
           } finally { b.disabled = false; }
         };
       });
+      };
+      bindCommentActions(box);
     }
     show(stC, '共 ' + all.length + ' 条评论', 'ok');
   } catch (e) {

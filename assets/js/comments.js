@@ -242,16 +242,20 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       }
       var topLevel = all.filter(function(c) { return !c.pid; })
         .sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || latestActivity(b).localeCompare(latestActivity(a)); });
+      // 回复拍平为线性时间线（多级回复不再树形嵌套乱序），从早到晚
+      function collectDesc(pid, out) {
+        all.filter(function(r) { return r.pid === pid; }).forEach(function(r) { out.push(r); collectDesc(r.id, out); });
+      }
       function renderChildren(parentId) {
-        all.filter(function(r) { return r.pid === parentId; })
-          .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
-          .forEach(function(r) {
-            var d = depthMap[r.id] || 1;
-            var row = buildRow(r);
-            row.style.marginLeft = d > 0 ? '20px' : '';
-            list.appendChild(row);
-            renderChildren(r.id);
-          });
+        var flat = [];
+        collectDesc(parentId, flat);
+        flat.sort(function(a, b) { return a.created_at.localeCompare(b.created_at); });
+        flat.forEach(function(r) {
+          var d = depthMap[r.id] || 1;
+          var row = buildRow(r);
+          row.style.marginLeft = d > 0 ? '20px' : '';
+          list.appendChild(row);
+        });
       }
       topLevel.forEach(function(c) {
         list.appendChild(buildRow(c));
