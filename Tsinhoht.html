@@ -224,6 +224,7 @@ body.gate-pending main{display:none!important}
     <div class="editbar" id="editBar"></div>
     <div class="draftbar" id="draftBar">
       <span>已自动保存的未发布草稿（<b id="draftTime"></b>）已恢复。上传的图片文件需重新选择，图片 URL、文字、链接都已保留。</span>
+      <button type="button" class="btn btn-s" id="recoverImgs" style="display:none">找回已上传的图片</button>
       <button type="button" class="btn btn-s" id="clearFormDraft">清空表单草稿</button>
     </div>
     <div class="card">
@@ -1091,19 +1092,88 @@ function restoreDraft() {
       $('html').value = d.content || '';
     }
   } catch (e) { /* ignore */ }
+  restoreCardImages();
+}
+// ===== 草稿图片持久化（IndexedDB）：File 对象 localStorage 存不了，改存 IndexedDB，刷新/关机不丢（2026-10-01）=====
+let _idbP = null;
+function idb() {
+  if (!_idbP) _idbP = new Promise((res, rej) => {
+    const r = indexedDB.open('mrhx_draft_imgs', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('imgs');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  return _idbP;
+}
+async function idbSet(k, v) { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+async function idbGet(k) { const db = await idb(); return new Promise((res, rej) => { const q = db.transaction('imgs', 'readonly').objectStore('imgs').get(k); q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error); }); }
+async function idbClear() { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').clear(); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+// 卡片图片按其在 gameBox 中的顺序号存取（与草稿 cards 顺序一致）
+async function saveCardImages() {
+  try {
+    const box = $('gameBox');
+    for (let i = 0; i < box.children.length; i++) {
+      await idbSet('card_' + i, [...box.children[i].querySelector('.g-files').files]);
+    }
+  } catch (e) { console.warn('图片持久化失败', e); }
+}
+async function restoreCardImages() {
+  try {
+    const box = $('gameBox');
+    for (let i = 0; i < box.children.length; i++) {
+      const files = await idbGet('card_' + i);
+      if (!files || !files.length) continue;
+      const dt = new DataTransfer();
+      files.forEach(f => dt.items.add(f));
+      const fi = box.children[i].querySelector('.g-files');
+      fi.files = dt.files;
+      previewFiles(fi);
+    }
+  } catch (e) { console.warn('图片恢复失败', e); }
+}
+// 一次性找回：本次已上传到仓库的图片（按上传顺序），按草稿各卡的图片数量切分回填 .g-imgs
+async function recoverUploadedImgs() {
+  const RECOVER_URLS = ["assets/2026101pcaz/co43grk8im.webp","assets/2026101pcaz/av0bz8q304.jpg","assets/2026101pcaz/ncxr9i9904.webp","assets/2026101pcaz/h7hcc5gh9v.webp","assets/2026101pcaz/8iaddkvb10.webp","assets/2026101pcaz/fh334x6q19.webp","assets/2026101pcaz/hao5ev1hc4.webp","assets/2026101pcaz/h8gplatwrs.webp","assets/2026101pcaz/6pbqo5x3k1.webp","assets/2026101pcaz/16fk3753lt.webp","assets/2026101pcaz/coq4veynw1.jpg","assets/2026101pcaz/dfuo3x5jlh.jpg","assets/2026101pcaz/9gc11zoqpm.webp","assets/2026101pcaz/pv6p6igs50.webp","assets/2026101pcaz/vjmtohp345.jpg","assets/2026101pcaz/nv0v9e29nf.jpg","assets/2026101pcaz/zchr1q7xln.webp","assets/2026101pcaz/xfr1mj60vg.webp","assets/2026101pcaz/mwci6pu7d4.webp","assets/2026101pcaz/9xu5zissag.jpg","assets/2026101pcaz/k3mi3gq12g.webp","assets/2026101pcaz/zpxhtski2u.jpg","assets/2026101pcaz/4ycvochjx8.jpg","assets/2026101pcaz/cm82ini0x9.jpg","assets/2026101pcaz/ba8hms3si9.webp","assets/2026101pcaz/hdj3oq6yal.jpg","assets/2026101pcaz/zheanc8z40.webp","assets/2026101pcaz/kjk1wcr7zp.jpg","assets/2026101pcaz/dbnikqcub1.jpg","assets/2026101pcaz/b2yqx38c2j.jpg","assets/2026101pcaz/gvfi4pe9p4.jpg","assets/2026101pcaz/e37e0gkrfi.jpg","assets/2026101pcaz/3jzcdt3jkx.webp","assets/2026101pcaz/r5njicas4x.jpg","assets/2026101pcaz/w3ba7yq7tz.webp","assets/2026101pcaz/1i88dfd7w2.jpg","assets/2026101pcaz/m6l5t3sirq.jpg","assets/2026101pcaz/12c45d2vkg.jpg","assets/2026101pcaz/mc8vfd7otz.jpg","assets/2026101pcaz/q9n95xxz9h.jpg","assets/2026101pcaz/fd2p3llkc3.webp","assets/2026101pcaz/j5n9sb00ub.webp","assets/2026101pcaz/9kymyv5v1r.jpg","assets/2026101pcaz/1r9r0akvxt.webp","assets/2026101pcaz/64l6ls0jt7.webp","assets/2026101pcaz/32syym7y81.webp","assets/2026101pcaz/ar02dt85eo.webp","assets/2026101pcaz/f62yzob8ju.webp","assets/2026101pcaz/v2slv281cv.webp","assets/2026101pcaz/qgn4fh0x9j.webp","assets/2026101pcaz/xh5co3sill.webp","assets/2026101pcaz/tuntalr69j.jpg","assets/2026101pcaz/sndnmhl7rn.jpg","assets/2026101pcaz/kc5ecgydsq.webp","assets/2026101pcaz/8twi9o3sou.webp","assets/2026101pcaz/vcbo6aixm6.jpg","assets/2026101pcaz/02k214kcrh.jpg","assets/2026101pcaz/woy0dtm9tt.webp","assets/2026101pcaz/9xv3pwwpzy.webp","assets/2026101pcaz/apbv8cocl3.webp","assets/2026101pcaz/udfwo9sb7n.jpg","assets/2026101pcaz/g0zq9fhpq1.webp","assets/2026101pcaz/z8zzjsuf99.jpg","assets/2026101pcaz/apnq3qefhr.jpg","assets/2026101pcaz/uqd9rvp56v.jpg","assets/2026101pcaz/5kpm2w23gg.webp","assets/2026101pcaz/x9vwsbh2gr.jpg","assets/2026101pcaz/poyjjgquhr.webp","assets/2026101pcaz/0etv6mc5rl.jpg","assets/2026101pcaz/k2445xbhng.jpg","assets/2026101pcaz/wfy89ualox.jpg","assets/2026101pcaz/ltbd4o7vgm.jpg","assets/2026101pcaz/kx49rpefpu.jpg","assets/2026101pcaz/g0xuxh6mpz.webp","assets/2026101pcaz/g1vggtcja7.jpg","assets/2026101pcaz/c511sc9zsh.webp","assets/2026101pcaz/dk7631r41g.jpg"];
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_FORM) || '{}'); } catch (e) {}
+  const cards = (d && d.form && d.form.cards) || [];
+  const counts = cards.map(c => (c.files || []).length);
+  const total = counts.reduce((a, b) => a + b, 0);
+  if (!total) { toast('草稿里没有图片记录，无法找回'); return; }
+  if (RECOVER_URLS.length < total) { toast('仓库里只有 ' + RECOVER_URLS.length + ' 张，草稿需要 ' + total + ' 张，数量不足，请截图给我'); return; }
+  const box = $('gameBox');
+  let idx = 0;
+  for (let i = 0; i < box.children.length && i < counts.length; i++) {
+    const n = counts[i];
+    if (n > 0) {
+      box.children[i].querySelector('.g-imgs').value = RECOVER_URLS.slice(idx, idx + n).map(p => 'https://tkporl.github.io/mrhyfx/' + p).join('\n');
+      idx += n;
+    }
+  }
+  saveDraft();
+  toast('已按草稿顺序自动回填 ' + idx + ' 个图片链接到各卡片，检查后直接点发布');
 }
 function attachDraft() {
   ['fName', 'fTitle', 'fCount'].forEach(id => $(id).addEventListener('input', saveDraft));
   ['hName', 'hTitle', 'html'].forEach(id => $(id).addEventListener('input', saveDraft));
   const box = $('gameBox');
   box.addEventListener('input', saveDraft);
-  box.addEventListener('change', e => { if (e.target.classList.contains('g-files')) { previewFiles(e.target); saveDraft(); } });
+  box.addEventListener('change', e => { if (e.target.classList.contains('g-files')) { previewFiles(e.target); saveDraft(); saveCardImages(); } });
   $('clearFormDraft').onclick = () => {
     localStorage.removeItem(DRAFT_FORM);
     localStorage.removeItem(DRAFT_HTML);
+    idbClear();
     $('draftBar').classList.remove('show');
     toast('草稿已清空');
   };
+  // 找回按钮：仅在草稿卡片带图片记录（files 字段非空）时显示
+  (async () => {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_FORM) || '{}');
+      const hasImgs = (d.form && d.form.cards || []).some(c => (c.files || []).length);
+      if (hasImgs) { const b = $('recoverImgs'); b.style.display = ''; b.onclick = recoverUploadedImgs; }
+    } catch (e) {}
+  })();
 }
 $('exportForm').onclick = async () => {
   saveDraft();
@@ -1714,6 +1784,7 @@ async function publish(statusEl, name, title, count, htmlContent) {
   }
   await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
+  try { idbClear(); } catch (e) {} // 发布成功，清掉暂存的草稿图片
 }
 
 async function apiGet(repo, token, path) {
