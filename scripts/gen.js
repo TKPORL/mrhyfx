@@ -699,8 +699,9 @@ async function localize(html, tag) {
     });
     await Promise.all(workers);
   }
-  // #12：公共脚本/样式目录（assets/js、assets/css）不参与帖子图片目录重写，否则会被误改写成 assets/<tag>/
-  html = html.replace(/assets\/(?!js\/|css\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
+  // #12：公共脚本/样式目录（assets/js、assets/css）与图床备份目录（assets/imgbed）不参与帖子图片目录重写，
+  //   否则会被误改写成 assets/<tag>/（imgbed 备份图全 404，2026-10-01 老帖图全裂事故根因）
+  html = html.replace(/assets\/(?!js\/|css\/|imgbed\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
   html = html.replace(/src="assets\/(?!js\/|css\/)/g, `src="${CDN_URL}/assets/`);
   html = html.replace(/href="assets\/(?!js\/|css\/)/g, `href="${CDN_URL}/assets/`);
   // #13：帖子卡片图懒加载（每帖首图不懒，保证首屏立即出图）
