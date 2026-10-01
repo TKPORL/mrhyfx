@@ -281,20 +281,22 @@ function injectImgFallback(html) {
 // jsDelivr 国内被墙/污染时封面全裂（2026-10-01 访客反馈）：给 jsDelivr gh 图链注入 onerror，
 // 失败自动切 GitHub Pages 同路径（访客能打开网站 = Pages 域名在其网络下可达，图片就在仓库里）
 function injectJsdelivrFallback(html) {
-  // 情况1：2026-09-27「图床→imgbed」时代的旧 onerror——主链换成 jsDelivr 后它指向 jsDelivr 自身，兜底失效，重写为 Pages
+  // 2026-10-01 定稿：jsDelivr 在国内反复被墙/挂起（访客图全裂+无限转圈），主链直接换成 GitHub Pages
+  // （访客能打开网站 = Pages 域名在其网络下可达，图片就在仓库里），jsDelivr 降级为 onerror 备用源。
+  // 情况1：src 仍是 jsDelivr（无论有无旧 onerror）——主链改 Pages，onerror 统一切 jsDelivr
   html = html.replace(
-    /(<img\b[^>]*?\bsrc="https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/"]+)(\/assets\/[^"]+)("[^>]*?onerror="this\.onerror=null;this\.src=')https:\/\/cdn\.jsdelivr\.net[^']*('")/g,
-    (m, head, path, mid, tail) => `${head}${path}${mid}https://tkporl.github.io/mrhyfx${path}${tail}`
-  );
-  // 情况2：无 onerror 的 jsDelivr 图链，注入 Pages 兜底
-  return html.replace(
     /(<img\b[^>]*?\bsrc=")https:\/\/cdn\.jsdelivr\.net\/gh\/TKPORL\/mrhyfx@[^\/"]+(\/assets\/[^"]+)("[^>]*?>)/g,
     (m, pre, path, post) => {
-      if (/onerror=/i.test(pre + post)) return m; // 已有兜底（如图床→imgbed）就别覆盖
       // pre 已含 <img 和 src="，post 已含 src 闭引号"和结尾 >——都不能再写（2026-10-01 双<img/双src/双> 各踩过一次）
-      return `${pre}https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path}" onerror="this.onerror=null;this.src='https://tkporl.github.io/mrhyfx${path}'${post}`;
+      return `${pre}https://tkporl.github.io/mrhyfx${path}" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path}'${post}`;
     }
   );
+  // 情况2：src 已是 Pages 但 onerror 还指向 Pages（上一版兜底产物）——把 onerror 反转为 jsDelivr
+  html = html.replace(
+    /(<img\b[^>]*?\bsrc="https:\/\/tkporl\.github\.io\/mrhyfx)(\/assets\/[^"]+)("[^>]*?onerror="this\.onerror=null;this\.src=')https:\/\/tkporl\.github\.io\/mrhyfx(\/assets\/[^']*)(')/g,
+    (m, head, path, mid, path2, tail) => `${head}${path}${mid}https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main${path2}'${tail}`
+  );
+  return html;
 }
 function isImgBedUrl(u) {
   for (const b of IMGBED_BASES) if (b && u.startsWith(b + '/')) return true;
