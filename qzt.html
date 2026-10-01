@@ -1070,16 +1070,12 @@
 <!--mrhx-end-->
   <div class="title">求助贴-可在此贴求游戏<span class="mrhx-views" id="mrhx-views"></span></div>
         <ul class="node-list">
-
-  <li class="node heading3 node-full">
+<li class="node heading3 node-full">
   <div class="content mm-editor" ><span>免费帮找游戏（纯公益）</span></div>
     <div class="note mm-editor"><span>1.有需要的资源，直接在下方评论区留言。我们会帮大家寻找，找到后发布到本贴，系统会根据你填写的邮箱自动发送通知。
 2.本站所有资源免费分享，不收取任何费用。资源来之不易，请大家珍惜。请勿将本站资源用于商业倒卖（倒卖狗），违者将被永久拉黑并公示。
 感谢理解与支持！</span></div>
-  </li><!--qzt-fold-->
-  <div class="qzt-fold-box"><button type="button" class="qzt-fold-btn" id="qzt-fold-btn" data-label="展开更早的游戏（102 个）">展开更早的游戏（102 个）</button></div>
-  <div id="qzt-fold-zone" hidden>
-  <li class="node heading3">
+  </li><li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -2996,9 +2992,7 @@ PS：1.20步兵 1.21骑兵 1.20安卓不清楚
 静子 (CV：芒穗果)
 在危急时刻总会伸出援手，在公在私都相处了很久的上司。
 是彼此信赖的”战友”和”挚友”般的关系但是，面对你投向她的纯粹关心，她心中的界限正在逐渐崩塌。</span></div>
-  </li>
-  </div>
-  <!--/qzt-fold--><li class="node heading3">
+  </li><li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -4237,7 +4231,10 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
   </ul>
     <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1hbpu56WLdQE3tt3Jd9cbAw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
     <div class="note mm-editor"><span>新作[互动RPG/触摸抚摸] 直到清晨来临 朝が来るまで。 AI汉化版 [PC 810M]</span></div>
-  </li></ul> <div class="publish" style="display: flex; align-items: center; justify-content: center;">
+  </li>
+  </ul>
+  <!--qzt-pager--><nav class="qzt-pager" id="qztPager" hidden></nav><!--/qzt-pager-->
+  <div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
@@ -4498,21 +4495,47 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
 })();
 </script>
 
-    <!--qzt-fold-assets--><style>
-.qzt-fold-box{margin:18px 0;text-align:center}
-.qzt-fold-btn{display:inline-block;padding:8px 24px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;user-select:none;font-family:inherit}
-.qzt-fold-btn:hover{background:#fae8e6}
+    <!--qzt-page-assets--><style>
+.qzt-pager{margin:22px 0 8px;text-align:center}
+.qzt-pager button{display:inline-block;min-width:34px;padding:6px 10px;margin:0 3px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;font-family:inherit}
+.qzt-pager button.on{background:#a33;color:#fff;border-color:#a33}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-  var b=document.getElementById('qzt-fold-btn'),f=document.getElementById('qzt-fold-zone');
-  if(!b||!f)return;
-  b.addEventListener('click',function(){
-    if(f.hasAttribute('hidden')){f.removeAttribute('hidden');b.textContent='收起更早的游戏';}
-    else{f.setAttribute('hidden','');b.textContent=b.getAttribute('data-label');}
+  var ul=document.querySelector('ul.node-list'); if(!ul) return;
+  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
+  var P=50, n=Math.ceil(lis.length/P); if(n<2) return;
+  var bar=document.getElementById('qztPager'); if(!bar) return;
+  bar.removeAttribute('hidden');
+  var cur=-1, btns=[];
+  function show(p){
+    if(p===cur) return;
+    cur=p;
+    lis.forEach(function(li,i){
+      var on=Math.floor(i/P)===p;
+      li.style.display=on?'':'none';
+      Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+        if(on){ if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); } }
+        else if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+      });
+    });
+    for(var j=0;j<btns.length;j++) btns[j].className=(j===p?'on':'');
+    var m=location.hash.match(/p(\d+)/);
+    if(!m || parseInt(m[1],10)!==p+1) location.hash='p'+(p+1);
+  }
+  for(var i=0;i<n;i++)(function(p){
+    var b=document.createElement('button'); b.type='button'; b.textContent=String(p+1);
+    b.addEventListener('click',function(){ show(p); window.scrollTo({top:0,behavior:'smooth'}); });
+    bar.appendChild(b); btns.push(b);
+  })(i);
+  var h=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
+  show(h>=1&&h<=n?h-1:0);
+  window.addEventListener('hashchange',function(){
+    var x=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
+    if(x>=1&&x<=n&&x-1!==cur) show(x-1);
   });
 });
-</script><!--/qzt-fold-assets-->
+</script><!--/qzt-page-assets-->
   </body>
     </html>
   

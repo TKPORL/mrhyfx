@@ -882,80 +882,67 @@ const days = [];
 const searchIndex = [];
 const allGames = [];
 
-// qzt.html 求助贴折叠（2026-10-01 加）：游戏按月涨 100+，单页长期会膨胀到几千条。
-// 条目本身没有日期信息（新游戏由后台追加在列表末尾），因此按「新旧段」折叠：
-// 说明卡（node-full）永远展开，尾部最新 N 个展开，中间老游戏收进 hidden 容器，点横幅展开、展开才加载图。
-// 幂等：上次生成的折叠结构用 <!--qzt-fold--> 注释标记包裹，重建前先整体剥掉（同图标/SEO 先删后插模式）。
-const QZT_FOLD_KEEP = 40;
-function qztSplitCards(inner) {
-  // 与 reorderNodes 同款配对扫描（li 开头用容错正则，qzt 幕布结构属性不固定）
-  const blocks = [];
-  let pos = 0;
-  while (pos < inner.length) {
-    const m = inner.slice(pos).match(/<li class="node heading3[^"]*">/);
-    const h3 = m ? pos + m.index : -1;
-    if (h3 < 0) { blocks.push(inner.slice(pos)); break; }
-    if (h3 > pos) blocks.push(inner.slice(pos, h3));
-    let depth = 1, i = h3 + m[0].length;
-    while (i < inner.length) {
-      if (inner.indexOf('<ul class="image-list">', i) === i) {
-        const uEnd = inner.indexOf('</ul>', i + 22);
-        if (uEnd >= 0) { i = uEnd + 5; continue; }
-      }
-      if (inner.indexOf('<li', i) === i) depth++;
-      if (inner.indexOf('</li>', i) === i) { depth--; if (depth === 0) { blocks.push(inner.slice(h3, i + 5)); pos = i + 5; break; } i += 5; continue; }
-      i++;
-    }
-    if (i >= inner.length) { blocks.push(inner.slice(h3)); break; }
-  }
-  return blocks;
-}
-// 剥掉上次的折叠壳（横幅 + hidden 开闭壳），卡片流还原为纯净结构——必须在 reorderNodes 之前跑，
-// 否则 reorder 会把折叠壳切成散段混进卡片流，导致重建时计数错乱（2026-10-01 踩过）。
-function foldUnwrap(html) {
+// qzt.html 求助贴分页（2026-10-01 用户定稿：一页 50 条，替代此前的折叠方案）。
+// 单文件 JS 分页：卡片全在页面里（SEO/搜索索引不受影响），脚本按每 50 张一组切换显示；
+// 非当前页的 img 把 src 暂存 data-src 并清空，翻到才加载（display:none 挡不住非 lazy img 发请求，必须清 src）。
+// 幂等：页码栏与样式脚本都用注释标记先删后插；DOM 不包壳，reorderNodes 输入输出无痕。
+const QZT_PAGE_SIZE = 50;
+function qztUnwrapPager(html) {
+  // 兼容清理：2026-10-01 短暂上线过的折叠壳（横幅 + hidden 容器），剥掉还原成纯净卡片流
   html = html.replace(/<div class="qzt-fold-box">[\s\S]*?<\/div>\s*/g, '');
   html = html.replace(/<div id="qzt-fold-zone" hidden>\s*/g, '');
   html = html.replace(/\n\s*<\/div>\s*<!--\/qzt-fold-->\s*/g, '');
+  html = html.replace(/<!--qzt-fold-assets-->[\s\S]*?<!--\/qzt-fold-assets-->\s*/g, '');
+  // 分页壳剥除（先删后插）
+  html = html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
+  html = html.replace(/<!--qzt-page-assets-->[\s\S]*?<!--\/qzt-page-assets-->\s*/g, '');
   return html;
 }
-// 重建折叠：输入必须是纯净卡片流（foldUnwrap + reorderNodes 之后），天然幂等
-function foldQzt(html) {
-  const start = html.indexOf('<ul class="node-list">');
-  if (start < 0) return html;
+function qztInjectPager(html) {
   const end = html.lastIndexOf('</ul>');
-  if (end < start) return html;
-  const prefix = html.slice(0, start + 21);
-  const inner = html.slice(start + 21, end);
-  const suffix = html.slice(end);
-  const blocks = qztSplitCards(inner);
-  const lead = [];
-  const cards = [];
-  for (const b of blocks) {
-    if (/<li class="node heading3/.test(b)) cards.push(b);
-    else lead.push(b);
-  }
-  if (cards.length <= QZT_FOLD_KEEP + 1) return html; // 数量少不值得折叠
-  const midCount = cards.length - QZT_FOLD_KEEP;
-  const mid = cards.slice(1, 1 + midCount);           // 跳过第 1 张说明卡，其后到倒数 KEEP 张折叠
-  const tail = cards.slice(1 + midCount);
-  const label = `展开更早的游戏（${mid.length} 个）`;
-  return prefix + lead.join('') + cards[0]
-    + `<!--qzt-fold-->\n  <div class="qzt-fold-box"><button type="button" class="qzt-fold-btn" id="qzt-fold-btn" data-label="${label}">${label}</button></div>\n  <div id="qzt-fold-zone" hidden>\n  `
-    + mid.join('') + '\n  </div>\n  <!--/qzt-fold-->'
-    + tail.join('') + suffix;
+  if (end < 0) return html;
+  return html.slice(0, end + 5)
+    + '\n  <!--qzt-pager--><nav class="qzt-pager" id="qztPager" hidden></nav><!--/qzt-pager-->'
+    + html.slice(end + 5);
 }
-const QZT_FOLD_ASSETS = `<style>
-.qzt-fold-box{margin:18px 0;text-align:center}
-.qzt-fold-btn{display:inline-block;padding:8px 24px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;user-select:none;font-family:inherit}
-.qzt-fold-btn:hover{background:#fae8e6}
+const QZT_PAGE_ASSETS = `<style>
+.qzt-pager{margin:22px 0 8px;text-align:center}
+.qzt-pager button{display:inline-block;min-width:34px;padding:6px 10px;margin:0 3px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;font-family:inherit}
+.qzt-pager button.on{background:#a33;color:#fff;border-color:#a33}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-  var b=document.getElementById('qzt-fold-btn'),f=document.getElementById('qzt-fold-zone');
-  if(!b||!f)return;
-  b.addEventListener('click',function(){
-    if(f.hasAttribute('hidden')){f.removeAttribute('hidden');b.textContent='收起更早的游戏';}
-    else{f.setAttribute('hidden','');b.textContent=b.getAttribute('data-label');}
+  var ul=document.querySelector('ul.node-list'); if(!ul) return;
+  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
+  var P=${QZT_PAGE_SIZE}, n=Math.ceil(lis.length/P); if(n<2) return;
+  var bar=document.getElementById('qztPager'); if(!bar) return;
+  bar.removeAttribute('hidden');
+  var cur=-1, btns=[];
+  function show(p){
+    if(p===cur) return;
+    cur=p;
+    lis.forEach(function(li,i){
+      var on=Math.floor(i/P)===p;
+      li.style.display=on?'':'none';
+      Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+        if(on){ if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); } }
+        else if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+      });
+    });
+    for(var j=0;j<btns.length;j++) btns[j].className=(j===p?'on':'');
+    var m=location.hash.match(/p(\\d+)/);
+    if(!m || parseInt(m[1],10)!==p+1) location.hash='p'+(p+1);
+  }
+  for(var i=0;i<n;i++)(function(p){
+    var b=document.createElement('button'); b.type='button'; b.textContent=String(p+1);
+    b.addEventListener('click',function(){ show(p); window.scrollTo({top:0,behavior:'smooth'}); });
+    bar.appendChild(b); btns.push(b);
+  })(i);
+  var h=parseInt((location.hash.match(/p(\\d+)/)||[])[1],10);
+  show(h>=1&&h<=n?h-1:0);
+  window.addEventListener('hashchange',function(){
+    var x=parseInt((location.hash.match(/p(\\d+)/)||[])[1],10);
+    if(x>=1&&x<=n&&x-1!==cur) show(x-1);
   });
 });
 </script>`;
@@ -1125,10 +1112,10 @@ html = (function reorderNodes(str) {
     });
     blocks = blocks.filter(b => b.trim().length > 0);
     return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
-  })(foldUnwrap(html));
+  })(file === 'qzt.html' ? qztUnwrapPager(html) : html);
 
-    // qzt.html：折叠壳已在上面 foldUnwrap 预处理（reorder 前），此处重建折叠
-    if (file === 'qzt.html') html = foldQzt(html);
+    // qzt.html：卡片壳已剥净，此处注入页码栏（DOM 不包壳，reorder 无痕）
+    if (file === 'qzt.html') html = qztInjectPager(html);
 
     html = html.replace(PUBLISH_RE, newPublish);
 
@@ -1188,10 +1175,10 @@ ${navHeaderHtml('')}
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
-    // qzt 折叠横幅样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
+    // qzt 分页样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
     if (file === 'qzt.html') {
-      html = html.replace(/<!--qzt-fold-assets-->[\s\S]*?<!--\/qzt-fold-assets-->\s*/g, '');
-      html = html.replace('</body>', `  <!--qzt-fold-assets-->${QZT_FOLD_ASSETS}<!--/qzt-fold-assets-->\n  </body>`);
+      html = html.replace(/<!--qzt-page-assets-->[\s\S]*?<!--\/qzt-page-assets-->\s*/g, '');
+      html = html.replace('</body>', `  <!--qzt-page-assets-->${QZT_PAGE_ASSETS}<!--/qzt-page-assets-->\n  </body>`);
     }
 
     const searchBlocks = [];
