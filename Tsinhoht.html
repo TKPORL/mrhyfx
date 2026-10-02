@@ -1615,7 +1615,7 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
 // GitHub 模式上传的是原图 jpg/png；bot 部署时 gen.js 会在服务器生成同名 .webp 压缩版。
 // 轮询检测 webp 就绪后，把卡片里这张图的链接自动替换为 webp（每 60 秒查一次，最多 8 次），查不到就保留原图链接。
 function scheduleWebpUpgrade(card, url) {
-  if (!/\.(jpe?g|png)$/i.test(url)) return;
+  if (!/\.(jpe?g|png|gif|bmp|tiff)$/i.test(url)) return;
   const webpUrl = url.replace(/\.[a-z0-9]+$/i, '.webp');
   let tries = 0;
   const tick = async () => {
