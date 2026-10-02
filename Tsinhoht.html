@@ -1639,6 +1639,22 @@ function scheduleWebpUpgrade(card, url) {
   setTimeout(tick, 90000);
 }
 
+// 浏览器端压缩：Canvas 重编码为 webp（质量 0.82），上传即压缩版、卡片链接直接是 .webp。
+// 返回 null 表示浏览器不支持 webp 导出（旧 Safari）或动图 gif（canvas 只能取第一帧）→ 调用方回退原格式。
+async function fileToWebpBase64(f) {
+  if (f.type === 'image/gif') return null;
+  const url = URL.createObjectURL(f);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('图片解码失败')); i.src = url; });
+    const cv = document.createElement('canvas');
+    cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    const data = cv.toDataURL('image/webp', 0.82);
+    if (!data.startsWith('data:image/webp')) return null;
+    return data.split(',')[1];
+  } finally { URL.revokeObjectURL(url); }
+}
+
 async function uploadCardNow(card) {
   let bed = null;
   try { bed = bedCfg(); } catch (e) { toast(e.message); return; }
@@ -1661,13 +1677,15 @@ async function uploadCardNow(card) {
         const token = $('token').value.trim(), repo = $('repo').value.trim();
         if (!token) { toast('GitHub 模式需要先填 Token'); return; }
         if (!repo) { toast('GitHub 模式需要先填仓库名'); return; }
-        const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
-        const rawName = randomAlnum(10) + '.' + ext;
-        const b64 = await fileToBase64(f);
+        // 优先浏览器端转 webp（上传即压缩版，链接直接 .webp）；不支持或动图回退原格式 + 轮询升级兜底
+        const webpB64 = await fileToWebpBase64(f);
+        let b64, rawName;
+        if (webpB64) { b64 = webpB64; rawName = randomAlnum(10) + '.webp'; }
+        else { const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png'; rawName = randomAlnum(10) + '.' + ext; b64 = await fileToBase64(f); }
         await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, st, '图片');
         const pageUrl = 'https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName;
         lines.push(pageUrl);
-        scheduleWebpUpgrade(card, pageUrl);
+        if (!webpB64) scheduleWebpUpgrade(card, pageUrl);
       }
     }
   } catch (e) {
