@@ -1593,17 +1593,27 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
         cardPaths.push(url);
         continue;
       }
-      const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
       const raw = randomAlnum(10);
-      let rawName = raw + '.' + ext;
+      // 与「立即上传」一致：浏览器端优先转 webp（发布后直接是压缩版完整链接）；动图/不支持回退原格式
+      const webpB64 = await fileToWebpBase64(f);
+      let b64, rawName;
+      if (webpB64) { rawName = raw + '.webp'; b64 = webpB64; }
+      else {
+        const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png';
+        rawName = raw + '.' + ext;
+        while (usedNames.has(rawName)) {
+          const dot = rawName.lastIndexOf('.');
+          rawName = rawName.slice(0, dot) + '_' + rawName.slice(dot);
+        }
+        b64 = await fileToBase64(f);
+      }
       while (usedNames.has(rawName)) {
         const dot = rawName.lastIndexOf('.');
         rawName = rawName.slice(0, dot) + '_' + rawName.slice(dot);
       }
       usedNames.add(rawName);
-      const b64 = await fileToBase64(f);
       await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, statusEl, '图片');
-      cardPaths.push(`assets/${name}/${rawName}`);
+      cardPaths.push('https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName);
     }
     paths.push(cardPaths);
   }
