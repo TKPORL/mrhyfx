@@ -1612,6 +1612,33 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
 
 // 立即上传转链接（2026-10-01 用户要求）：卡片选完图可立刻上传（GitHub 仓库或图床，按当前模式），
 // 成功后外链填进 .g-imgs（进草稿持久化）并清空文件选择，刷新/关机都不会丢。
+// GitHub 模式上传的是原图 jpg/png；bot 部署时 gen.js 会在服务器生成同名 .webp 压缩版。
+// 轮询检测 webp 就绪后，把卡片里这张图的链接自动替换为 webp（每 60 秒查一次，最多 8 次），查不到就保留原图链接。
+function scheduleWebpUpgrade(card, url) {
+  if (!/\.(jpe?g|png)$/i.test(url)) return;
+  const webpUrl = url.replace(/\.[a-z0-9]+$/i, '.webp');
+  let tries = 0;
+  const tick = async () => {
+    tries++;
+    try {
+      const r = await fetch(webpUrl, { method: 'HEAD' });
+      if (r.ok) {
+        const ta = card.querySelector('.g-imgs');
+        if (ta && (ta.value || '').includes(url)) {
+          ta.value = ta.value.split('\n').map(l => l.trim() === url ? webpUrl : l).join('\n');
+          const prev = card.querySelector('.g-prev');
+          if (prev) prev.querySelectorAll('img').forEach(im => { if (im.src === url) im.src = webpUrl; });
+          saveDraft();
+          show($('status'), '压缩版已生成：图片链接已自动换成 webp（体积更小）', 'ok');
+        }
+        return;
+      }
+    } catch (_) {}
+    if (tries < 8) setTimeout(tick, 60000);
+  };
+  setTimeout(tick, 90000);
+}
+
 async function uploadCardNow(card) {
   let bed = null;
   try { bed = bedCfg(); } catch (e) { toast(e.message); return; }
@@ -1638,7 +1665,9 @@ async function uploadCardNow(card) {
         const rawName = randomAlnum(10) + '.' + ext;
         const b64 = await fileToBase64(f);
         await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, st, '图片');
-        lines.push('https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName);
+        const pageUrl = 'https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName;
+        lines.push(pageUrl);
+        scheduleWebpUpgrade(card, pageUrl);
       }
     }
   } catch (e) {
