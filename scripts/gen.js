@@ -959,6 +959,8 @@ function qztUnwrapPager(html) {
   return html;
 }
 function qztInjectPager(html) {
+  // 先删掉上次注入的分页栏副本（幂等——否则每次跑生成器都追加一条，2026-10-03 曾堆到 3 条）
+  html = html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
   const end = html.lastIndexOf('</ul>');
   if (end < 0) return html;
   return html.slice(0, end + 5)
@@ -1233,6 +1235,8 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
+    // 页脚：先删上次注入的全部副本再插一份（幂等——否则每次跑生成器都累积一份，2026-10-03 曾堆到 5 份）
+    html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
     html = html.replace('</body>', `  <footer class="mrhx-foot">${disclaimerFoot()}</footer>\n  </body>`);
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
