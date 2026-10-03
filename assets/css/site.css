@@ -247,3 +247,22 @@
   @media (hover:none){
     .mrhx-detail-box .mrhx-detail-close:hover,.mrhx-detail-box .mrhx-detail-back:hover{transform:none !important}
   }
+
+/* 手机端：更多菜单改为左侧抽屉（与 gen.js 的 NAV_CSS 同一份，改一处必须同步另一处） */
+@media (max-width:680px){
+  /* 手机端：「更多」菜单改为左侧抽屉（2026-10-03 用户定稿，替代原来横排展开的 drop-menu） */
+  .nav-mask{position:fixed;inset:0;background:rgba(20,18,17,.34);opacity:0;pointer-events:none;transition:opacity .28s ease;z-index:40}
+  .nav-mask.open{opacity:1;pointer-events:auto}
+  #mrhxMoreDrop{position:fixed;inset:0;z-index:41;display:block;opacity:0;pointer-events:none;transition:opacity .28s ease}
+  #mrhxMoreDrop.open{opacity:1;pointer-events:auto}
+  #mrhxMoreDrop>div{overflow:visible;height:100%}
+  #mrhxMoreDrop .drop-inner{position:absolute;top:0;left:0;bottom:0;width:272px;margin:0;border:0;border-right:1px solid #ecebe9;border-radius:0 14px 14px 0;box-shadow:6px 0 28px rgba(0,0,0,.12);padding:0;display:flex;flex-direction:column;overflow:hidden;opacity:1;transform:translateX(-102%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  #mrhxMoreDrop.open .drop-inner{transform:none}
+  #mrhxMoreDrop .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f0eeec;flex-shrink:0}
+  #mrhxMoreDrop .drawer-head img{width:104px;border-radius:8px;display:block}
+  #mrhxMoreDrop .drawer-close{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;color:#666;font:inherit;font-size:18px;line-height:1;cursor:pointer;flex-shrink:0}
+  #mrhxMoreDrop .drawer-close:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+  #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:2px;padding:10px;overflow-y:auto;flex:1}
+  #mrhxMoreDrop .drop-menu a{flex:0 0 auto;font-size:15px;font-weight:600;color:#3a3a3a;background:transparent;border:0;padding:13px 14px;border-radius:10px;text-align:left}
+  #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;color:#e5484d}
+}

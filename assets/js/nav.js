@@ -9,6 +9,8 @@
 
   var searchInput = searchDrop.querySelector('input');
   var searchClose = searchDrop.querySelector('[data-nav-close]');
+  var navMask = document.getElementById('mrhxNavMask');
+  var drawerClose = moreDrop.querySelector('.drawer-close');
 
   function setSearch(open) {
     searchDrop.classList.toggle('open', open);
@@ -21,6 +23,11 @@
   function setMore(open) {
     moreDrop.classList.toggle('open', open);
     moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (navMask) navMask.classList.toggle('open', open);
+    // 抽屉打开时锁住背景滚动（窄屏抽屉是全屏面板）
+    if (window.matchMedia('(max-width: 680px)').matches) {
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
   }
 
   function closeAll() { setSearch(false); setMore(false); }
@@ -44,6 +51,17 @@
     });
   }
 
+  if (drawerClose) {
+    drawerClose.addEventListener('click', function () {
+      setMore(false);
+      moreBtn.focus();
+    });
+  }
+
+  if (navMask) {
+    navMask.addEventListener('click', function () { setMore(false); });
+  }
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       var wasSearch = searchDrop.classList.contains('open');
@@ -57,9 +75,9 @@
     if (!inside) { closeAll(); }
   });
 
-  // 跨断点时收起「更多」面板，避免按钮隐藏后菜单悬空
-  var mq = window.matchMedia('(min-width: 541px)');
-  function onBreakpoint(e) { if (e.matches) { setMore(false); } }
+  // 跨断点时收起「更多」面板，避免按钮隐藏后菜单悬空 / 抽屉遮罩残留
+  var mq = window.matchMedia('(min-width: 681px)');
+  function onBreakpoint(e) { if (e.matches) { setMore(false); document.body.style.overflow = ''; } }
   if (mq.addEventListener) { mq.addEventListener('change', onBreakpoint); }
   else if (mq.addListener) { mq.addListener(onBreakpoint); }
 })();
