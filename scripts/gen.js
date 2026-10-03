@@ -94,9 +94,8 @@ const NAV_MENU = (() => {
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
-// skipHome：抽屉菜单不重复列「首页」（logo 已可回首页），桌面横排仍保留
-const navLinksHtml = (indent, current, skipHome) => NAV_MENU
-  .filter(n => !(skipHome && n.url === 'index.html'))
+// 桌面横排与手机抽屉共用同一份菜单（首页在最上）
+const navLinksHtml = (indent, current) => NAV_MENU
   .map(n =>
     `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${esc(n.label)}</a>`
   ).join('\n');
@@ -203,7 +202,7 @@ ${navLinksHtml('    ', current)}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <nav class="drop-menu" aria-label="站点导航">
-${navLinksHtml('        ', current, true)}
+${navLinksHtml('        ', current)}
       </nav>
     </div>
   </div>
