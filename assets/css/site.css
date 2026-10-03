@@ -265,6 +265,10 @@
   #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
   #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
-  #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
-  #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
 }
+
+/* 免责声明页脚（与 gen.js 内联 NAV_CSS 同一份，改一处必须同步另一处） */
+footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;line-height:1.7}
+footer .disc-link,footer a{color:#e5484d;text-decoration:none}
+footer .disc-link:hover{text-decoration:underline}
+footer .foot-mail{font-size:13.5px;font-weight:600}

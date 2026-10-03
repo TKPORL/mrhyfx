@@ -388,6 +388,7 @@ body.gate-pending main{display:none!important}
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <h2>访问统计</h2>
+          <p id="mrhxCacheTip" class="hint" style="display:none;margin:0 0 8px"></p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-s" id="refreshStats">刷新</button>
         </div>
@@ -852,9 +853,63 @@ function withRefresh(btnId, loadFn, contentId) {
 // 统计模块联动刷新：记录旧值 → 全部加载 → 对比 → 显示增量
 const STAT_IDS = ['statTodayViews', 'statTodayCommentCount', 'statTodayDlCount', 'statTotalViews', 'statTotalPosts', 'statAvgViews', 'statDlClickCount'];
 let _statsRefreshing = false;
+// 后台统计提速（2026-10-03 用户反馈「点刷新要等 40 多秒」）
+// 根因：loadTopDl 串行分页拉全表 download_clicks（累计 3.7 万条 = 38 次请求），
+//   四个统计函数 Promise.all 但都被这个长尾拖住。
+// 改法：①下载榜非「今日」模式只取最近 30 天（1 次请求）；②统计结果缓存到 localStorage，
+//   进页面/点刷新先秒渲染缓存，再后台静默拉新数据覆盖。
+const STAT_CACHE_KEY = 'mrhx_stats_cache_v1';
+const STAT_CACHE_TTL = 30 * 60 * 1000; // 30 分钟内直接用缓存，不发请求
+
+function readStatsCache() {
+  try {
+    const raw = localStorage.getItem(STAT_CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    if (!c || !c.at || Date.now() - c.at > STAT_CACHE_TTL) return null;
+    return c;
+  } catch (e) { return null; }
+}
+function writeStatsCache(payload) {
+  try { localStorage.setItem(STAT_CACHE_KEY, JSON.stringify(Object.assign({ at: Date.now() }, payload))); } catch (e) {}
+}
+// 把缓存里的统计数字先填进卡片（不重绘图表，只填文本，避免闪烁）
+function paintCachedStats(c) {
+  if (!c || !c.stats) return false;
+  const s = c.stats, d = c.dl || {};
+  const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null) el.textContent = v; };
+  set('statTotalViews', s.total);
+  set('statTotalPosts', s.postCount);
+  set('statAvgViews', s.avg);
+  set('statTodayViews', s.today);
+  set('statTodayCommentCount', s.todayComments);
+  if (d.total !== undefined) set('statDlClickCount', d.total);
+  if (d.today !== undefined) set('statTodayDlCount', d.today);
+  return true;
+}
+// 页面一打开就先把上次缓存画出来（避免空白等待），随后照常后台拉新数据
+function primeStatsFromCache() {
+  const c = readStatsCache();
+  if (!c) return false;
+  paintCachedStats(c);
+  const tip = document.getElementById('mrhxCacheTip');
+  if (tip) {
+    const mins = Math.max(1, Math.round((Date.now() - c.at) / 60000));
+    tip.textContent = '当前显示的是 ' + mins + ' 分钟前的数据，正在后台获取最新…';
+    tip.style.display = 'block';
+  }
+  return true;
+}
+function clearCacheTip() {
+  const tip = document.getElementById('mrhxCacheTip');
+  if (tip) { tip.style.display = 'none'; tip.textContent = ''; }
+}
+
 let _statsLoaded = false;
 async function statsRefreshAll(triggerBtn) {
   if (_statsRefreshing) return;
+  // 先把上次数据画出来（秒出），再后台拉新的覆盖
+  primeStatsFromCache();
   _statsRefreshing = true;
   // 记录旧值（首次加载前没有真实旧值，不显示增量）
   const oldVals = {};
@@ -878,6 +933,7 @@ async function statsRefreshAll(triggerBtn) {
   btns.forEach(id => { const b = $(id); if (b) { origTexts[id] = b.textContent; b.textContent = '刷新中…'; b.disabled = true; } });
   try {
     await Promise.all([loadStats(), loadDaily(), loadSnapshots(), loadTopDl()]);
+    clearCacheTip();
     // 对比并显示增量
     STAT_IDS.forEach(id => {
       const el = $(id);
@@ -2807,31 +2863,28 @@ async function loadStats() {
       }
     }
     $('statTodayCommentCount').textContent = todayCommentCount;
+    // 2026-10-03：原来两处都串行分页拉全表（各 38 次请求，合计 76 次 → 刷新要 40 秒+）。
+    // 改成只数行数：Prefer: count=exact + Range: 0-0，1 次请求拿到 content-range 总数，不传数据行。
     let totalDlClicks = 0;
     let todayDlClicks = 0;
-    {
-      let o = 0; const ps = 1000;
-      while (true) {
-        const r = await _safeFetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=${ps}&offset=${o}`, {
-          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-        }, 'download_clicks');
-        if (!r) break;
-        const b = await r.json(); totalDlClicks += b.length; if (b.length < ps) break; o += ps;
-      }
-    }
-    {
-      const bjRangeDl = bjDayUtcRange();
-      let o = 0; const ps = 1000;
-      while (true) {
-        const r = await _safeFetch(`${sbUrl}/rest/v1/download_clicks?select=id&created_at=gte.${bjRangeDl.start}&created_at=lt.${bjRangeDl.end}&limit=${ps}&offset=${o}`, {
-          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-        }, 'download_clicks_today');
-        if (!r) break;
-        const b = await r.json(); todayDlClicks += b.length; if (b.length < ps) break; o += ps;
-      }
-    }
+    const _cntOf = async (qs, tag) => {
+      const r = await _safeFetch(`${sbUrl}/rest/v1/download_clicks?select=id&${qs}`, {
+        headers: Object.assign(sbHeaders(), { 'Prefer': 'count=exact', 'Range': '0-0' })
+      }, tag);
+      if (!r) return 0;
+      const cr = r.headers.get('content-range') || '';
+      return parseInt(cr.split('/')[1] || '0', 10) || 0;
+    };
+    totalDlClicks = await _cntOf('limit=1', 'download_clicks_total');
+    todayDlClicks = await _cntOf(`created_at=gte.${bjDayUtcRange().start}&created_at=lt.${bjDayUtcRange().end}&limit=1`, 'download_clicks_today');
     $('statDlClickCount').textContent = totalDlClicks;
     $('statTodayDlCount').textContent = todayDlClicks;
+    _cachedDl = { total: totalDlClicks, today: todayDlClicks };
+    // 写统计缓存（下次进页面/点刷新先秒渲染，见 readStatsCache）
+    writeStatsCache({
+      stats: { total, postCount, avg, today: todayTotal, todayComments: todayCommentCount },
+      dl: { total: totalDlClicks, today: todayDlClicks }
+    });
     // 自动保存今日快照
     saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
@@ -3128,16 +3181,13 @@ async function loadTopDl() {
         offset += pageSize;
       }
     } else {
-      while (true) {
-        const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&limit=${pageSize}&offset=${offset}`, {
-          headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const batch = await res.json();
-        rows = rows.concat(batch);
-        if (batch.length < pageSize) break;
-        offset += pageSize;
-      }
+      // 2026-10-03：全表 3.7 万条要翻 38 页、40 秒。改为「最近 30 天」口径，1 次请求拿完。
+      const since = new Date(Date.now() - 30 * 864e5).toISOString();
+      const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&created_at=gte.${since}&limit=5000`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      rows = await res.json();
     }
     if (!rows.length) {
       box.innerHTML = '<p class="hint" style="margin-top:8px">暂无下载记录。</p>';

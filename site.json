@@ -3,7 +3,13 @@
     "name": "Tsinho黄油站",
     "logoEm": "黄油站",
     "tag": "每日更新 · PC+安卓双平台",
-    "footer": "by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版"
+    "footer": "by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版",
+    "email": "Tsinhos@qq.com"
+  },
+  "disclaimer": {
+    "enabled": true,
+    "url": "mianze.html",
+    "short": "本站资源来自互联网公开渠道与网友投稿分享，版权归原作者及权利人所有；本站不托管文件本体，第三方网盘的速度与时效不可控。站内资源会持续维护，失效或缺解压码欢迎在评论区反馈。"
   },
   "announcement": {
     "enabled": true,

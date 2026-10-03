@@ -90,6 +90,7 @@ const NAV_MENU = (() => {
   items.push({ label: '解压教程', url: 'tutorial.html' });
   items.push({ label: '游戏工具', url: 'tools.html' });
   items.push({ label: '下载说明', url: 'download.html' });
+  items.push({ label: '免责声明', url: 'mianze.html' });
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
@@ -160,8 +161,6 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
   #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
   #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
-  #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
-  #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
 }
 @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}`;
 
@@ -249,7 +248,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', '卡片布局原型.html', '图床对接演示.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -266,6 +265,18 @@ const SITE_LOGO_EM = (SITE.site && SITE.site.logoEm) || '分享';
 const SITE_TAG = (SITE.site && SITE.site.tag !== undefined) ? SITE.site.tag : '每日更新 · PC + 安卓双平台';
 const SITE_FOOTER = (SITE.site && SITE.site.footer !== undefined) ? SITE.site.footer : 'by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版';
 const SITE_AUTHOR = 'Tsinho';
+// 免责声明（2026-10-03）：文案与开关全在 site.json 的 disclaimer 段，后台可改；
+//   页脚统一渲染成 disclaimerFoot()，四处调用点（index/帖子/search/发布壳）都走它。
+const SITE_EMAIL = (SITE.site && SITE.site.email) || '';
+const DISC = SITE.disclaimer || {};
+const disclaimerFoot = () => {
+  if (!DISC.enabled) return SITE_FOOTER;
+  const mail = SITE_EMAIL
+    ? `侵权或版权问题请联系 <a class="foot-mail" href="mailto:${SITE_EMAIL}">${SITE_EMAIL}</a>`
+    : '侵权或版权问题请联系站长';
+  return `${mail}<br><span class="disc">${esc(DISC.short || '')}</span><br>`
+    + `${esc(SITE_FOOTER)} · <a class="disc-link" href="${esc(DISC.url || 'mianze.html')}">完整免责声明</a>`;
+};
 // 图片域名统一用 cdn.jsdelivr.net（站长实测：新上传图偶有缓存延迟但可用；gcore 等镜像在站长网络下反而不可靠）。
 //   历史页面里残留的其他 jsdelivr 镜像域名会被 localize 统一改写回主域
 let CDN_URL = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main';
@@ -803,7 +814,7 @@ ${navHeaderHtml('')}
   <p>暂无分享，敬请期待</p>
 </main>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
-<footer>${SITE_FOOTER}</footer>
+<footer>${disclaimerFoot()}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
@@ -1222,6 +1233,7 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
+    html = html.replace('</body>', `  <footer class="mrhx-foot">${disclaimerFoot()}</footer>\n  </body>`);
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
     // qzt 分页样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
@@ -1509,6 +1521,10 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .g-dl:hover{background:#c93a3f}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
+footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;line-height:1.7}
+footer .disc-link,footer a{color:#e5484d;text-decoration:none}
+footer .foot-mail{font-size:13.5px;font-weight:600}
+footer .disc-link:hover{text-decoration:underline}
 @media (max-width:720px){
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
@@ -1535,7 +1551,7 @@ ${navHeaderHtml('')}
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站</a></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
-<footer>${SITE_FOOTER}</footer>
+<footer>${disclaimerFoot()}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
@@ -1692,7 +1708,7 @@ ${navHeaderHtml('', 'q')}
   <div id="res" aria-busy="false"></div>
 </main>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
-<footer style="text-align:center;color:#999;font-size:12px;padding:24px 20px;border-top:1px solid #ecebe9">${SITE_FOOTER}</footer>
+<footer>${disclaimerFoot()}</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 (function () {

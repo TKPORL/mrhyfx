@@ -79,8 +79,6 @@ header{position:sticky;top:0;z-index:20;padding:0 20px 0}
   #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
   #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
-  #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
-  #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
 }
 @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
@@ -135,6 +133,10 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .g-dl:hover{background:#c93a3f}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
+footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;line-height:1.7}
+footer .disc-link,footer a{color:#e5484d;text-decoration:none}
+footer .foot-mail{font-size:13.5px;font-weight:600}
+footer .disc-link:hover{text-decoration:underline}
 @media (max-width:720px){
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
@@ -161,6 +163,7 @@ footer b{color:#e5484d}
     <a href="tutorial.html">解压教程</a>
     <a href="tools.html">游戏工具</a>
     <a href="download.html">下载说明</a>
+    <a href="mianze.html">免责声明</a>
   </nav>
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
@@ -199,6 +202,7 @@ footer b{color:#e5484d}
         <a href="tutorial.html">解压教程</a>
         <a href="tools.html">游戏工具</a>
         <a href="download.html">下载说明</a>
+        <a href="mianze.html">免责声明</a>
       </nav>
     </div>
   </div>
@@ -570,7 +574,7 @@ footer b{color:#e5484d}
   <div class="arrow">→</div>
 </a></div>
 </main>
-<footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<footer>侵权或版权问题请联系 <a class="foot-mail" href="mailto:Tsinhos@qq.com">Tsinhos@qq.com</a><br><span class="disc">本站资源来自互联网公开渠道与网友投稿分享，版权归原作者及权利人所有；本站不托管文件本体，第三方网盘的速度与时效不可控。站内资源会持续维护，失效或缺解压码欢迎在评论区反馈。</span><br>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版 · <a class="disc-link" href="mianze.html">完整免责声明</a></footer>
 <div class="mrhx-popup" id="mrhxPopup" role="dialog" aria-modal="true" aria-labelledby="mrhxPopupTitle">
   <div class="mrhx-popup-inner">
     <button type="button" class="mrhx-popup-close" id="mrhxPopupClose" aria-label="关闭公告">×</button>
