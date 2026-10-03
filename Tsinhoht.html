@@ -1865,14 +1865,17 @@ async function updateTimestamp(repo, token, name) {
     '发布: 更新timestamps.json', null, '');
 }
 
+// 撞车最多等这么久（次）。间隔封顶 6 秒，40 次≈5 分钟，覆盖 Actions 一轮「生成+备份」的时长。
+const PUBLISH_WAIT_MAX = 40;
+
 async function atomicCommit(repo, token, files, msg, statusEl, step) {
   const api = `https://api.github.com/repos/${repo}`;
   const auth = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
   let reason = '';
-  for (let attempt = 1; attempt <= 6; attempt++) {
+  for (let attempt = 1; attempt <= PUBLISH_WAIT_MAX; attempt++) {
     if (attempt > 1) {
-      if (statusEl) show(statusEl, `[${step}] ${reason}，第 ${attempt} 次重试…`, 'warn');
-      await new Promise(r => setTimeout(r, 3000 * attempt));
+      if (statusEl) show(statusEl, `[${step}] ${reason}｜已自动重试 ${attempt}/${PUBLISH_WAIT_MAX} 次，正在等仓库空闲（最长约 5 分钟）。内容不会丢，别关页面。`, 'warn');
+      await new Promise(r => setTimeout(r, Math.min(3000 * attempt, 6000)));
     }
     reason = '检测到分支被并发更新（Actions 自动生成可能刚推送）';
     try {
@@ -1900,7 +1903,12 @@ async function atomicCommit(repo, token, files, msg, statusEl, step) {
         return commitSha;
       }
       if (ref.status === 422) {
-        if (attempt === 6) throw Object.assign(new Error('更新分支失败 HTTP 422（重试 6 次仍被并发更新，请稍后再试）'), { final: true });
+        // 2026-10-03：Actions 自动生成/备份会并发推分支，原来 6 次（约 1 分钟）就放弃，
+        // 用户点一次发布失败却可能没看见提示。改为最多等 PUBLISH_WAIT_MAX 次（约 5 分钟）。
+        if (attempt >= PUBLISH_WAIT_MAX) {
+          throw Object.assign(new Error('仓库一直被自动任务占用，等了约 5 分钟仍没排上队。你的内容还在草稿里，'
+            + '过几分钟再点一次发布即可（已上传的图片不会重传）'), { final: true });
+        }
         continue;
       }
       throw new Error('更新分支失败 HTTP ' + ref.status);
@@ -1908,11 +1916,41 @@ async function atomicCommit(repo, token, files, msg, statusEl, step) {
       if (e && e.final) throw e;
       const m = String(e && e.message ? e.message : e);
       // 网络级中断（浏览器报 Failed to fetch）也重试：多图发布耗时长，中途断流很常见
-      if (attempt === 6 || !/Failed to fetch|NetworkError|Load failed|network error|fetch failed|HTTP 5\d\d/i.test(m)) throw e;
+      if (attempt >= PUBLISH_WAIT_MAX || !/Failed to fetch|NetworkError|Load failed|network error|fetch failed|HTTP 5\d\d/i.test(m)) throw e;
       reason = '网络请求中断（' + m.slice(0, 60) + '）';
       continue;
     }
   }
+}
+
+// 发布后核验（2026-10-03 加）：GitHub 提交返回 200 不等于内容真的上线，
+// 这里从 raw 把刚发布的文件拉下来，和本地提交的 HTML 逐项比对：
+// 首行标题 + 卡片/游戏条目数量。对不上就明确告诉用户「提交成功但内容没进去」，
+// 避免像 2026-10-02 那样「以为发出去了、实际仓库里根本没有」。
+async function verifyPublished(repo, fileName, title, sentHtml, statusEl) {
+  const local = String(sentHtml || '');
+  const localCards = (local.match(/<li class="node heading3/g) || []).length;
+  const localFirst = (local.match(/<div class="content mm-editor"[^>]*><span>([^<]{1,60})/) || [])[1] || '';
+  for (let i = 1; i <= 4; i++) {
+    const remote = await fetch(`${RAW_BASE}/${repo}/main/${fileName}?t=${Date.now()}`, { cache: 'no-store' })
+      .then(r => r.ok ? r.text() : null).catch(() => null);
+    if (remote !== null) {
+      const remoteCards = (remote.match(/<li class="node heading3/g) || []).length;
+      const remoteFirst = (remote.match(/<div class="content mm-editor"[^>]*><span>([^<]{1,60})/) || [])[1] || '';
+      const same = remoteCards === localCards && (!localFirst || !remoteFirst || remoteFirst.slice(0, 12) === localFirst.slice(0, 12));
+      if (same) {
+        if (statusEl) show(statusEl, `✓ 已核验：线上 ${fileName} 确实是你刚发的内容（${remoteCards} 个条目），可以放心关页面。`, 'ok');
+        return true;
+      }
+      if (statusEl) show(statusEl, `⚠ 已提交，但线上 ${fileName} 内容与你提交的不一致（本地 ${localCards} 条 / 线上 ${remoteCards} 条）。`
+        + `多半是提交后被自动生成覆盖了，请点「发布」重试一次（已上传的图片不会重传）。`, 'err');
+      return false;
+    }
+    await new Promise(r => setTimeout(r, 2000 * i));
+  }
+  if (statusEl) show(statusEl, `⚠ 提交已完成，但没能从线上读回 ${fileName} 做核验（网络问题）。`
+    + `请过 2-3 分钟刷新页面确认结果。`, 'warn');
+  return false;
 }
 
 async function publish(statusEl, name, title, count, htmlContent) {
@@ -1953,6 +1991,8 @@ async function publish(statusEl, name, title, count, htmlContent) {
     files.push({ path: 'counts.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(counts, null, 2) + '\n'))) });
   }
   await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
+  show(statusEl, '已提交，正在核验线上内容…', 'info');
+  await verifyPublished(repo, fileName, title, htmlContent, statusEl);
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
   try { idbClear(); } catch (e) {} // 发布成功，清掉暂存的草稿图片
 }
