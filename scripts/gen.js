@@ -704,6 +704,10 @@ async function localize(html, tag) {
     return '<img' + cleaned + '>';
   });
 
+  // 新上传回退格式的文件带清理标记：把后台使用的 Pages 绝对链接转成本地路径，
+  // 后续 WebP 替换才能命中；历史图片没有标记，因此不改动。
+  html = switchMarkedNewImageUrls(html, tag);
+
   const urls = [...new Set([...html.matchAll(/src="(https:\/\/[^"]+)"/g)].map(m => m[1]))]
     .filter(url => !url.includes(CDN_URL) && !/jsdelivr\.net\/gh\/TKPORL\/mrhyfx/.test(url) && !url.includes('tkporl.github.io/mrhyfx') && !isImgBedUrl(url));
   if (urls.length) {
@@ -760,6 +764,20 @@ async function localize(html, tag) {
     return `<img loading="lazy" decoding="async"${attrs}>`;
   });
   return html.split('crossorigin="anonymous"').join('');
+}
+
+function switchMarkedNewImageUrls(html, tag) {
+  const dir = safeAssetDir(tag);
+  if (!fs.existsSync(dir)) return html;
+  for (const marker of fs.readdirSync(dir).filter(name => name.endsWith('.mrhx-delete-after-webp'))) {
+    const sourceName = marker.slice(0, -'.mrhx-delete-after-webp'.length);
+    if (!/^[a-zA-Z0-9_-]+\.(?:png|jpe?g|bmp|tiff)$/i.test(sourceName)) continue;
+    const absolute = `https://tkporl.github.io/mrhyfx/assets/${tag}/${sourceName}`;
+    const webpName = path.parse(sourceName).name + '.webp';
+    const target = fs.existsSync(path.resolve(dir, webpName)) ? `assets/${tag}/${webpName}` : `assets/${tag}/${sourceName}`;
+    html = html.split(absolute).join(target);
+  }
+  return html;
 }
 
 function extractLinks(noteHtml) {
@@ -928,6 +946,48 @@ async function compressExistingAssets() {
         console.log('  compress', safeEntry, safeFile, `-> ${dstName}.webp (${(buf.length/1024).toFixed(0)}KB -> ${(compressed.length/1024).toFixed(0)}KB)`);
       } catch (e) {
         console.warn('  compress failed:', srcPath, e.message);
+      }
+    }
+  }
+}
+
+async function cleanupMarkedRawImages() {
+  const assetsRoot = path.resolve('assets');
+  if (!fs.existsSync(assetsRoot)) return;
+  const checkFiles = fs.readdirSync(POST_DIR).filter(file => /\.(?:html|json|xml|txt|md|css|js|svg)$/i.test(file) && !EXCLUDE.has(file));
+  const pages = checkFiles.map(file => fs.readFileSync(path.join(POST_DIR, file), 'utf8'));
+  for (const entry of fs.readdirSync(assetsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !/^[\u4e00-\u9fa5\w.-]+$/.test(entry.name)) continue;
+    const dir = safeAssetDir(entry.name);
+    for (const marker of fs.readdirSync(dir).filter(file => file.endsWith('.mrhx-delete-after-webp'))) {
+      const sourceName = marker.slice(0, -'.mrhx-delete-after-webp'.length);
+      if (path.basename(sourceName) !== sourceName || !/^[a-zA-Z0-9_-]+\.(?:png|jpe?g|gif|bmp|tiff)$/i.test(sourceName)) continue;
+      const sourcePath = path.resolve(dir, sourceName);
+      const webpPath = path.resolve(dir, path.parse(sourceName).name + '.webp');
+      const sourceRef = `assets/${entry.name}/${sourceName}`;
+      const webpRef = `assets/${entry.name}/${path.parse(sourceName).name}.webp`;
+      const sourceUsed = pages.some(page => page.includes(sourceRef));
+      const webpUsed = pages.some(page => page.includes(webpRef));
+      if (!fs.existsSync(sourcePath) || !fs.existsSync(webpPath) || sourceUsed || !webpUsed) {
+        console.warn('  kept marked source; WebP/page checks not satisfied:', entry.name, sourceName);
+        continue;
+      }
+      try {
+        const info = await sharp(fs.readFileSync(webpPath)).metadata();
+        if (info.format !== 'webp') {
+          console.warn('  kept marked source; target is not WebP:', entry.name, sourceName);
+          continue;
+        }
+        const rawUploadMarker = sourcePath + '.mrhx-new-upload';
+        if (fs.existsSync(rawUploadMarker)) {
+          fs.writeFileSync(webpPath + '.mrhx-new-upload', fs.readFileSync(rawUploadMarker));
+          fs.unlinkSync(rawUploadMarker);
+        }
+        fs.unlinkSync(sourcePath);
+        fs.unlinkSync(path.join(dir, marker));
+        console.log('  cleaned marked source after WebP is referenced:', entry.name, sourceName);
+      } catch (error) {
+        console.warn('  kept marked source; WebP validation failed:', sourceName, error.message);
       }
     }
   }
@@ -1871,6 +1931,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   fs.writeFileSync('robots.txt',
     'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\nDisallow: /Tsinhoht.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
   console.log('robots.txt ok');
+  await cleanupMarkedRawImages();
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理；--verify 模式不发布）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {

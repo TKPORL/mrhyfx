@@ -54,6 +54,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .g-prev figcaption{font-size:10px;color:#999;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g-prev .g-rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .g-prev .g-rm:hover{background:#e5484d}
+.g-img-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.g-img-item{position:relative;width:128px;border:1px solid #e8e6e0;border-radius:8px;overflow:hidden;background:#faf9f7}
+.g-img-item img{display:block;width:128px;height:88px;object-fit:cover}
+.g-img-item span{display:block;padding:4px 6px;font-size:11px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-img-item button{margin:2px 4px 5px 0;padding:4px 6px;font-size:11px}
 .game{transition:all .2s;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fefefe;position:relative}
 .game:hover{border-color:#d0cec8;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .game.newcard{animation:mrhxPop .5s ease both}
@@ -300,10 +305,9 @@ body.gate-pending main{display:none!important}
           </div>
           <div class="row">
             <button type="button" class="btn btn-s" id="imgBedTest">测试上传</button>
-            <button type="button" class="btn btn-s" id="imgBedClearCache">清空图片复用记录</button>
           </div>
           <p class="hint">图片会自动归到图床的一个目录里：目录名 = 帖子文件名（发布 31.html → 图床里出现 31/ 目录）。注意图床返回的外链本身仍是 /file/xxx 形式、不含目录名，目录只体现在图床后台的文件列表归类。</p>
-          <p class="hint">同一张图（同文件名+大小+修改时间）再次发布会自动复用上次的链接，不会重复上传；若某张图你已在图床里删掉、想让本地重新传，点「清空图片复用记录」。</p>
+          <p class="hint">图片按当前游戏卡片分别上传和保存；更换、添加或移除图片只影响当前卡片。</p>
           <p class="hint">密码只保存在这台电脑的浏览器里，不会上传或写进网站文件。选图床模式后，新发布的图片直接传到图床、不再进 GitHub 仓库；切回 GitHub 模式随时可以，互不影响。已有帖子的图片不受任何影响。</p>
           <p class="hint">提示：首次选择图床模式或改完密码后，请点一次「测试上传」确认图床可通；「保存配置到站点」会把图床地址（不含密码）写入 site.json，供首页生成脚本识别图床直链。</p>
           <div class="row"><button type="button" class="btn btn-s" id="imgBedSaveSite">保存配置到站点（site.json）</button></div>
@@ -630,8 +634,6 @@ function bedCfg() {
 }
 // 已上传图片的复用缓存：fileKey(名字+大小+修改时间+类型) → 图床外链。
 // 目的：同一台电脑上同一张图重复发布（改顺序、改标题、发布失败后重试）不再重传一遍。
-const BED_CACHE_KEY = 'mrhx_imgbed_uploaded_v1';
-const BED_CACHE_MAX = 2000;
 // 旧图床域名自动迁移（2026-09-27）：域名切换 tsinho.us.ci 后，浏览器 localStorage 里残留的旧地址
 // 会让新发布的帖子继续产出旧域名直链（绕过 CF 缓存、消耗 KV 额度）。打开后台时自动纠正一次。
 (function migrateImgbedUrl() {
@@ -642,37 +644,9 @@ const BED_CACHE_MAX = 2000;
     localStorage.setItem(IMGBED_URL_KEY, NEXT);
     const el = document.getElementById('imgBedUrl');
     if (el) el.value = NEXT;
-    try {
-      const cache = JSON.parse(localStorage.getItem(BED_CACHE_KEY) || '{}');
-      let n = 0;
-      for (const k in cache) {
-        if (typeof cache[k] === 'string' && LEGACY.some(l => cache[k].startsWith(l))) {
-          cache[k] = NEXT + '/' + cache[k].split('/').slice(3).join('/');
-          n++;
-        }
-      }
-      if (n) localStorage.setItem(BED_CACHE_KEY, JSON.stringify(cache));
-    } catch (e) { /* 缓存坏了不影响主流程，发布时会重新上传 */ }
-    console.warn('[图床] 检测到旧图床地址，已自动切换为 ' + NEXT + '（图片复用缓存已同步更新）');
+    console.warn('[图床] 检测到旧图床地址，已自动切换为 ' + NEXT);
   }
 })();
-function bedFileKey(f) { return [f.name, f.size, f.lastModified, f.type].join('|'); }
-function bedCacheGet(f) {
-  try {
-    const m = JSON.parse(localStorage.getItem(BED_CACHE_KEY) || '{}');
-    const url = m[bedFileKey(f)];
-    return (typeof url === 'string' && /^https?:\/\//.test(url)) ? url : null;
-  } catch (e) { return null; }
-}
-function bedCacheSet(f, url) {
-  try {
-    const m = JSON.parse(localStorage.getItem(BED_CACHE_KEY) || '{}');
-    m[bedFileKey(f)] = url;
-    const keys = Object.keys(m);
-    if (keys.length > BED_CACHE_MAX) keys.slice(0, keys.length - BED_CACHE_MAX).forEach(k => { delete m[k]; });
-    localStorage.setItem(BED_CACHE_KEY, JSON.stringify(m));
-  } catch (e) { /* 缓存写不进去不影响发布 */ }
-}
 // 图床目录名：与图床端 sanitizeUploadFolder 规则对齐，剔除特殊字符/路径穿越，保留字母数字点横线下划线
 function bedFolder(name) {
   return String(name || '')
@@ -758,11 +732,6 @@ $('imgBedTest').onclick = async () => {
   } catch (e) {
     show(stF, '图床测试失败：' + (e && e.message ? e.message : e), 'err');
   } finally { btn.disabled = false; }
-};
-// 清空「图片复用记录」：图床里的图被删掉后，想让本地重新上传时用
-$('imgBedClearCache').onclick = () => {
-  try { localStorage.removeItem(BED_CACHE_KEY); } catch (e) {}
-  show(stF, '已清空图片复用记录。下次发布会重新上传所有选中的图片。', 'ok');
 };
 // 读取线上 site.json：带缓存穿透参数 + 最多 3 次重试。
 // 重要约定：读不到时返回 null，调用方【必须】中止保存——绝不能用空对象回写，
@@ -1102,6 +1071,7 @@ document.addEventListener('focusin', e => {
 
 const DRAFT_FORM = 'mrhx_draft_form_v1';
 const DRAFT_HTML = 'mrhx_draft_html_v1';
+const removedImageUrls = new Set();
 let draftTimer;
 function collectDraft() {
   return {
@@ -1112,7 +1082,8 @@ function collectDraft() {
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
         return { name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
-      })
+      }),
+      removedImageUrls: [...removedImageUrls]
     },
     html: { name: $('hName').value, title: $('hTitle').value, content: $('html').value }
   };
@@ -1131,6 +1102,8 @@ function restoreDraft() {
     const f = localStorage.getItem(DRAFT_FORM);
     if (f) {
       const d = JSON.parse(f);
+      removedImageUrls.clear();
+      (d.removedImageUrls || []).forEach(url => removedImageUrls.add(url));
       $('fName').value = d.name || '';
       $('fTitle').value = d.title || '';
       $('fCount').value = d.count || '';
@@ -1164,20 +1137,20 @@ function idb() {
 async function idbSet(k, v) { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
 async function idbGet(k) { const db = await idb(); return new Promise((res, rej) => { const q = db.transaction('imgs', 'readonly').objectStore('imgs').get(k); q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error); }); }
 async function idbClear() { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').clear(); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
-// 卡片图片按其在 gameBox 中的顺序号存取（与草稿 cards 顺序一致）
+// 卡片图片按当前卡片顺序存取；卡片移动、删除、恢复后会重新保存。
 async function saveCardImages() {
   try {
     const box = $('gameBox');
-    for (let i = 0; i < box.children.length; i++) {
-      await idbSet('card_' + i, [...box.children[i].querySelector('.g-files').files]);
-    }
+    await idbSet('cards', [...box.children].map(card => [...card.querySelector('.g-files').files]));
   } catch (e) { console.warn('图片持久化失败', e); }
 }
 async function restoreCardImages() {
   try {
     const box = $('gameBox');
+    const saved = await idbGet('cards');
     for (let i = 0; i < box.children.length; i++) {
-      const files = await idbGet('card_' + i);
+      // 兼容旧版按 card_i 保存的草稿图片。
+      const files = saved.length ? (saved[i] || []) : await idbGet('card_' + i);
       if (!files || !files.length) continue;
       const dt = new DataTransfer();
       files.forEach(f => dt.items.add(f));
@@ -1357,6 +1330,7 @@ function addGameCard(data) {
     <div class="filebtn upnow" role="button" tabindex="0" title="把已选图片立刻上传并转成链接，之后刷新也不会丢">立即上传转链接</div>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
     <textarea class="g-imgs"></textarea>
+    <div class="g-img-list"></div>
     <div class="g-prev"></div>
   </div>
   <div class="field"><label>下载链接</label>
@@ -1371,15 +1345,30 @@ function addGameCard(data) {
   if (data) fillCard(d, data);
   d.querySelector('.del').onclick = () => { removeCard(d); };
   const fileInput = d.querySelector('.g-files');
-  fileInput.addEventListener('change', () => previewFiles(fileInput));
+  fileInput.addEventListener('change', () => {
+    previewFiles(fileInput);
+    if (fileInput.dataset.replaceIndex != null && !fileInput.files.length) delete fileInput.dataset.replaceIndex;
+    if (fileInput.dataset.replaceIndex != null && fileInput.files.length) uploadCardNow(d, Number(fileInput.dataset.replaceIndex));
+    else if (fileInput.dataset.addNow === '1' && fileInput.files.length) uploadCardNow(d, null);
+    delete fileInput.dataset.addNow;
+  });
+  fileInput.addEventListener('cancel', () => { delete fileInput.dataset.replaceIndex; });
+  d.querySelector('.g-imgs').addEventListener('input', e => {
+    const previous = (e.target.dataset.lastImgs || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const current = e.target.value.split('\n').map(s => s.trim()).filter(Boolean);
+    previous.filter(url => !current.includes(url)).forEach(url => removedImageUrls.add(url));
+    e.target.dataset.lastImgs = e.target.value;
+    renderImageLinks(d); saveDraft();
+  });
   // #53：自定义选择按钮（原生 input 隐藏），点击/回车触发文件选择
   const fb = d.querySelector('.filebtn');
-  fb.onclick = () => fileInput.click();
-  fb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
+  fb.onclick = () => { delete fileInput.dataset.replaceIndex; delete fileInput.dataset.addNow; fileInput.value = ''; fileInput.click(); };
+  fb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); delete fileInput.dataset.replaceIndex; delete fileInput.dataset.addNow; fileInput.value = ''; fileInput.click(); } };
   // 立即上传转链接：不等发布，图片先传上去转成外链，刷新/关机都不会丢
   const upnow = d.querySelector('.upnow');
-  upnow.onclick = () => uploadCardNow(d);
-  upnow.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); uploadCardNow(d); } };
+  upnow.textContent = '添加图片到本卡';
+  upnow.onclick = () => { delete fileInput.dataset.replaceIndex; fileInput.dataset.addNow = '1'; fileInput.value = ''; fileInput.click(); };
+  upnow.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); delete fileInput.dataset.replaceIndex; fileInput.dataset.addNow = '1'; fileInput.value = ''; fileInput.click(); } };
   d.querySelector('.g-move').onclick = e => openMove(d, e);
   d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
@@ -1396,11 +1385,15 @@ let deletedCards = [];
 function removeCard(d) {
   const num = d._num;
   const card = readCard(d);
+  (card.imgs || '').split('\n').map(url => url.trim()).filter(Boolean).forEach(url => removedImageUrls.add(url));
+  card._pendingFiles = [...d.querySelector('.g-files').files];
   card._deletedNum = num;
   deletedCards.push(card);
   d.remove();
   renum();
   renderDelList();
+  saveDraft();
+  saveCardImages();
   toast('已删除游戏 ' + num + '，可从上方回收站恢复');
 }
 function restoreCard(i) {
@@ -1408,6 +1401,15 @@ function restoreCard(i) {
   renderDelList();
   if (card) {
     const d = addGameCard(card);
+    if (card._pendingFiles && card._pendingFiles.length) {
+      const dt = new DataTransfer();
+      card._pendingFiles.forEach(f => dt.items.add(f));
+      const input = d.querySelector('.g-files');
+      input.files = dt.files;
+      previewFiles(input);
+    }
+    saveDraft();
+    saveCardImages();
     d.scrollIntoView({ behavior: 'smooth', block: 'center' });
     toast('已恢复游戏 ' + (card._deletedNum || card.name || ''));
   }
@@ -1458,6 +1460,8 @@ function doMove(d, val) {
   children.splice(target - 1, 0, d);
   children.forEach(c => box.appendChild(c));
   renum();
+  saveDraft();
+  saveCardImages();
   d.querySelector('.move-box').classList.remove('show');
   toast('已移动到第 ' + target + ' 位');
   d.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1508,6 +1512,30 @@ function fillCard(card, data) {
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
   if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
   if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
+  card.querySelector('.g-imgs').dataset.lastImgs = card.querySelector('.g-imgs').value;
+  renderImageLinks(card);
+}
+
+function renderImageLinks(card) {
+  const list = card.querySelector('.g-img-list');
+  const ta = card.querySelector('.g-imgs');
+  if (!list || !ta) return;
+  const urls = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  list.innerHTML = urls.map((url, i) => `<div class="g-img-item"><img src="${esc(url)}" alt="游戏图片 ${i + 1}" loading="lazy"><span>图片 ${i + 1}</span><button type="button" class="btn btn-s" data-img-replace="${i}">换这张</button><button type="button" class="btn btn-s" data-img-remove="${i}">移除</button></div>`).join('');
+  list.querySelectorAll('[data-img-remove]').forEach(b => b.onclick = () => {
+    const next = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const removed = next.splice(Number(b.dataset.imgRemove), 1)[0];
+    if (removed) removedImageUrls.add(removed);
+    ta.value = next.join('\n'); renderImageLinks(card); saveDraft();
+    ta.dataset.lastImgs = ta.value;
+  });
+  list.querySelectorAll('[data-img-replace]').forEach(b => b.onclick = () => {
+    const input = card.querySelector('.g-files');
+    input.value = '';
+    delete input.dataset.addNow;
+    input.dataset.replaceIndex = b.dataset.imgReplace;
+    input.click();
+  });
 }
 
 // 拖拽排序已移除：统一用每张卡片的「移动」按钮调整顺序
@@ -1585,6 +1613,7 @@ function applyUploadedUrls(cards, imagePaths) {
     const cur = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
     urls.forEach(u => { if (cur.indexOf(u) === -1) cur.push(u); });
     ta.value = cur.join('\n');
+    renderImageLinks(el);
     const fi = el.querySelector('.g-files');
     if (fi) fi.value = '';
     const fb = el.querySelector('.fb-name');
@@ -1636,16 +1665,8 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
       seenFiles.add(fileKey);
       if (bed) {
         // 图床模式：直接传图床，帖子记完整外链
-        const cached = bedCacheGet(f);
-        if (cached) {   // 同一张图之前传过 → 复用，不再重复上传
-          cardPaths.push(cached);
-          done++;
-          if (statusEl) show(statusEl, `[图床] ${f.name} 之前已上传过，复用现成链接（${done}/${total}）→ ${cached}`, 'info');
-          continue;
-        }
         done++;
         const url = await uploadToImgBed(f, bed.base, bed.pass, statusEl, `图床 ${done}/${total}`, folder);
-        bedCacheSet(f, url);
         cardPaths.push(url);
         continue;
       }
@@ -1669,7 +1690,10 @@ async function uploadGameImages(repo, token, name, cards, statusEl) {
       }
       usedNames.add(rawName);
       await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, statusEl, '图片');
-      cardPaths.push('https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName);
+      try { await markUploadedImage(repo, token, name, rawName, statusEl); }
+      catch (markerError) { if (statusEl) show(statusEl, '图片已上传，但新图标记失败；系统不会自动删除它：' + markerError.message, 'warn'); }
+      const pageUrl = 'https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName;
+      cardPaths.push(pageUrl);
     }
     paths.push(cardPaths);
   }
@@ -1691,9 +1715,12 @@ function scheduleWebpUpgrade(card, url) {
       if (r.ok) {
         const ta = card.querySelector('.g-imgs');
         if (ta && (ta.value || '').includes(url)) {
+          removedImageUrls.add(url);
           ta.value = ta.value.split('\n').map(l => l.trim() === url ? webpUrl : l).join('\n');
+          ta.dataset.lastImgs = ta.value;
           const prev = card.querySelector('.g-prev');
           if (prev) prev.querySelectorAll('img').forEach(im => { if (im.src === url) im.src = webpUrl; });
+          renderImageLinks(card);
           saveDraft();
           show($('status'), '压缩版已生成：图片链接已自动换成 webp（体积更小）', 'ok');
         }
@@ -1721,11 +1748,21 @@ async function fileToWebpBase64(f) {
   } finally { URL.revokeObjectURL(url); }
 }
 
-async function uploadCardNow(card) {
+async function markUploadedImage(repo, token, name, rawName, statusEl) {
+  const markerPath = `assets/${name}/${rawName}.mrhx-new-upload`;
+  await putFile(repo, token, markerPath, btoa('new-upload\n'), '发布: 标记新上传图片 ' + rawName, statusEl, '图片标记');
+  if (/\.(?:png|jpe?g|bmp|tiff)$/i.test(rawName)) {
+    const compressMarker = `assets/${name}/${rawName}.mrhx-delete-after-webp`;
+    await putFile(repo, token, compressMarker, btoa('new-upload\n'), '发布: 标记新图片压缩后清理 ' + rawName, statusEl, '图片标记');
+  }
+}
+
+async function uploadCardNow(card, replaceIndex) {
   let bed = null;
   try { bed = bedCfg(); } catch (e) { toast(e.message); return; }
   const files = [...card.querySelector('.g-files').files];
   if (!files.length) { toast('这张卡片还没有选择图片'); return; }
+  if (replaceIndex != null && files.length !== 1) { toast('一次只能替换一张图片'); return; }
   const name = $('fName').value.trim();
   if (!name) { toast('请先在「基本信息」里填文件名（图片要按它归档）'); return; }
   const ta = card.querySelector('.g-imgs');
@@ -1735,9 +1772,7 @@ async function uploadCardNow(card) {
     if (bed) await show(st, '', 'info');
     for (const f of files) {
       if (bed) {
-        const cached = bedCacheGet(f);
-        let url = cached || await uploadToImgBed(f, bed.base, bed.pass, st, '立即上传', bedFolder(name));
-        if (!cached) bedCacheSet(f, url);
+        const url = await uploadToImgBed(f, bed.base, bed.pass, st, '立即上传', bedFolder(name));
         lines.push(/^https?:\/\//.test(url) ? url : bed.base + url);
       } else {
         const token = $('token').value.trim(), repo = $('repo').value.trim();
@@ -1749,6 +1784,8 @@ async function uploadCardNow(card) {
         if (webpB64) { b64 = webpB64; rawName = randomAlnum(10) + '.webp'; }
         else { const ext = (f.name.match(/\.([a-zA-Z0-9]+)$/) || [])[1] || 'png'; rawName = randomAlnum(10) + '.' + ext; b64 = await fileToBase64(f); }
         await putFile(repo, token, `assets/${name}/${rawName}`, b64, '发布: 上传图片 ' + rawName, st, '图片');
+        try { await markUploadedImage(repo, token, name, rawName, st); }
+        catch (markerError) { show(st, '图片已上传，但新图标记失败；系统不会自动删除它：' + markerError.message, 'warn'); }
         const pageUrl = 'https://tkporl.github.io/mrhyfx/assets/' + name + '/' + rawName;
         lines.push(pageUrl);
         if (!webpB64) scheduleWebpUpgrade(card, pageUrl);
@@ -1758,9 +1795,12 @@ async function uploadCardNow(card) {
     show(st, '立即上传失败：' + e.message + '（已选图片还在，可直接重试）', 'err');
     return;
   }
+  if (replaceIndex != null) lines[replaceIndex] = lines.pop();
+  if (replaceIndex != null && ta.value.split('\n')[replaceIndex]) removedImageUrls.add(ta.value.split('\n')[replaceIndex].trim());
   ta.value = lines.join('\n');
   // 文件已转链接：清空文件选择（避免发布时重复上传），预览区改显示链接缩略图
   card.querySelector('.g-files').value = '';
+  delete card.querySelector('.g-files').dataset.replaceIndex;
   const fbName = card.querySelector('.fb-name');
   if (fbName) fbName.textContent = '';
   const prev = card.querySelector('.g-prev');
@@ -1771,7 +1811,9 @@ async function uploadCardNow(card) {
     const cap = document.createElement('figcaption'); cap.textContent = '已上传 ✓';
     fig.appendChild(img); fig.appendChild(cap); prev.appendChild(fig);
   });
+  renderImageLinks(card);
   saveDraft();
+  saveCardImages();
   show(st, '已上传 ' + files.length + ' 张并转为链接（已进草稿，刷新也不会丢）', 'ok');
 }
 
@@ -1806,7 +1848,7 @@ async function buildFormHtml(cards, imagePaths, title, name) {
     skeleton = skeleton.replace(/path:'\/[^']*\.html'/, `path:'/${name}.html'`);
   }
   const finalImagePaths = cards.map((c, i) => {
-    const selected = imagePaths[i] && imagePaths[i].length ? imagePaths[i] : (c.imgs || '').split('\n');
+    const selected = [...(c.imgs || '').split('\n'), ...(imagePaths[i] || [])];
     return [...new Set(selected.map(path => path.trim()).filter(Boolean))];
   });
   const blocks = cards.map((c, i) => gameHtml(c, finalImagePaths[i])).join('\n');
@@ -1992,8 +2034,17 @@ async function publish(statusEl, name, title, count, htmlContent) {
   }
   await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
   show(statusEl, '已提交，正在核验线上内容…', 'info');
-  await verifyPublished(repo, fileName, title, htmlContent, statusEl);
+  const verified = await verifyPublished(repo, fileName, title, htmlContent, statusEl);
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
+  if (verified) {
+    try {
+      const removed = await cleanupRemovedGithubImages(repo, token, htmlName, htmlContent, statusEl);
+      if (removed.length) show(statusEl, '帖子已发布；已自动清理从本帖移除且不再引用的 GitHub 图片 ' + removed.length + ' 张。图床图片需在图床后台手动删除。', 'ok');
+      removedImageUrls.clear();
+    } catch (e) {
+      show(statusEl, '帖子已发布，但有解绑图片未能自动清理：' + e.message + '。请之后检查 GitHub 仓库。', 'warn');
+    }
+  }
   try { idbClear(); } catch (e) {} // 发布成功，清掉暂存的草稿图片
 }
 
@@ -2016,6 +2067,97 @@ async function apiDelete(repo, token, path, sha, msg) {
   if (res.status === 404) return { path: path, skipped: true };
   if (!res.ok) throw new Error('删除 ' + path + ' 失败 HTTP ' + res.status);
   return { path: path, skipped: false };
+}
+
+async function cleanupRemovedGithubImages(repo, token, name, htmlContent, statusEl) {
+  const finalHtml = String(htmlContent || '');
+  const candidates = [...removedImageUrls].filter(url => {
+    try {
+      const relative = decodeURIComponent(new URL(url).pathname.replace(/^\/mrhyfx\//, ''));
+      const webpRelative = relative.replace(/\.(?:png|jpe?g|bmp|tiff)$/i, '.webp');
+      return ![url, relative, '/' + relative, webpRelative, '/' + webpRelative].some(ref => finalHtml.includes(ref));
+    } catch (_) { return false; }
+  });
+  const scopedCandidates = candidates.filter(url => {
+    try {
+      const u = new URL(url);
+      return u.hostname === 'tkporl.github.io' && u.pathname.startsWith('/mrhyfx/assets/' + encodeURIComponent(name) + '/');
+    } catch (_) { return false; }
+  });
+  if (!scopedCandidates.length) return [];
+  const refs = await findRepoImageReferences(repo, token, name, scopedCandidates);
+  const deleted = [];
+  for (const url of scopedCandidates) {
+    if (refs.has(url)) continue;
+    const u = new URL(url);
+    let path = decodeURIComponent(u.pathname.replace(/^\/mrhyfx\//, ''));
+    let newUploadMarker = await apiGet(repo, token, path + '.mrhx-new-upload');
+    if (!newUploadMarker && /\.(?:png|jpe?g|bmp|tiff)$/i.test(path)) {
+      const webpPath = path.replace(/\.(?:png|jpe?g|bmp|tiff)$/i, '.webp');
+      const webpMarker = await apiGet(repo, token, webpPath + '.mrhx-new-upload');
+      if (webpMarker) { path = webpPath; newUploadMarker = webpMarker; }
+    }
+    if (!newUploadMarker) continue; // 历史图片没有标记，永远不由此流程删除。
+    const rawPath = decodeURIComponent(u.pathname.replace(/^\/mrhyfx\//, ''));
+    const targets = [path];
+    if (path === rawPath && /\.(?:png|jpe?g|bmp|tiff)$/i.test(path)) {
+      targets.push(path.replace(/\.(?:png|jpe?g|bmp|tiff)$/i, '.webp'));
+    } else if (/\.webp$/i.test(path)) {
+      // 生成器可能已把卡片链接改成 WebP，但旧原图仍在仓库；
+      // 只在原图本身带“新上传”标记时把它一并纳入清理。
+      const stem = path.slice(0, -'.webp'.length);
+      for (const ext of ['.jpg', '.jpeg', '.png', '.bmp', '.tiff']) {
+        const rawCandidate = stem + ext;
+        if (await apiGet(repo, token, rawCandidate + '.mrhx-new-upload')) {
+          targets.push(rawCandidate);
+          break;
+        }
+      }
+    }
+    for (const target of [...new Set(targets)]) {
+      const info = await apiGet(repo, token, target);
+      if (info) await apiDelete(repo, token, target, info.sha, '发布: 清理已替换或解绑的图片 ' + target.split('/').pop());
+      const compressMarker = await apiGet(repo, token, target + '.mrhx-delete-after-webp');
+      if (compressMarker) await apiDelete(repo, token, target + '.mrhx-delete-after-webp', compressMarker.sha, '发布: 清理图片压缩标记 ' + target.split('/').pop());
+      const uploadMarker = target === path ? newUploadMarker : await apiGet(repo, token, target + '.mrhx-new-upload');
+      if (uploadMarker) await apiDelete(repo, token, target + '.mrhx-new-upload', uploadMarker.sha, '发布: 清理新图标记 ' + target.split('/').pop());
+    }
+    deleted.push(path);
+  }
+  return deleted;
+}
+
+async function findRepoImageReferences(repo, token, currentName, urls) {
+  const api = `https://api.github.com/repos/${repo}`;
+  const treeRes = await fetch(`${api}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' } });
+  if (!treeRes.ok) throw new Error('无法确认其他帖子是否仍使用图片（读取仓库目录失败 HTTP ' + treeRes.status + '），图片已保留');
+  const tree = await treeRes.json();
+  if (!Array.isArray(tree.tree) || tree.truncated) throw new Error('仓库文件列表不完整，图片已保留');
+  const paths = tree.tree.filter(item => item.type === 'blob' && /\.(?:html|json|xml|txt|md|css|js|svg)$/i.test(item.path) && item.path !== currentName + '.html').map(item => item.path);
+  const patterns = urls.map(url => {
+    const u = new URL(url);
+    const path = decodeURIComponent(u.pathname.replace(/^\/mrhyfx\//, ''));
+    const webpPath = path.replace(/\.(?:png|jpe?g|bmp|tiff)$/i, '.webp');
+    const webpUrl = url.replace(/\.(?:png|jpe?g|bmp|tiff)$/i, '.webp');
+    return [...new Set([url, '/' + path, path, webpUrl, '/' + webpPath, webpPath])];
+  });
+  let next = 0;
+  const refs = new Set();
+  let failure = null;
+  async function worker() {
+    while (next < paths.length && !failure) {
+      const path = paths[next++];
+      try {
+        const res = await fetch(`${RAW_BASE}/${repo}/main/${path}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('读取 ' + path + ' 失败 HTTP ' + res.status);
+        const html = await res.text();
+        patterns.forEach((forms, i) => { if (forms.some(form => html.includes(form))) refs.add(urls[i]); });
+      } catch (e) { failure = e; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(6, paths.length) }, worker));
+  if (failure) throw new Error('无法完整检查其他帖子引用（' + failure.message + '），图片已保留');
+  return refs;
 }
 
 function jsonItemBelongsToPost(item, tag) {
@@ -2188,6 +2330,8 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-name').value = c.name || '';
            card.querySelector('.g-intro').value = c.intro || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
+           card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
+           renderImageLinks(card);
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
@@ -2222,6 +2366,8 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-name').value = c.name || '';
            card.querySelector('.g-intro').value = c.intro || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
+           card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
+           renderImageLinks(card);
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
@@ -3400,6 +3546,9 @@ $('pubForm').onclick = async () => {
     const repo = $('repo').value.trim();
     const cards = collectGames();
     if (!cards.length) throw new Error('请至少添加一个游戏');
+    if ([...$('gameBox').children].some(card => card.querySelector('.g-files').dataset.replaceIndex != null)) {
+      throw new Error('有图片正在等待替换。请先选一张新图完成替换，或重新点「添加图片到本卡」。');
+    }
     if (!/^[A-Za-z0-9._-]+$/.test(name)) throw new Error('文件名只能包含英文/数字/点和横线，不要中文');
     if (!title) throw new Error('请填写帖子标题');
     const imagePaths = await uploadGameImages(repo, token, name, cards, stF);
