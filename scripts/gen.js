@@ -93,9 +93,12 @@ const NAV_MENU = (() => {
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
-const navLinksHtml = (indent, current) => NAV_MENU.map(n =>
-  `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${esc(n.label)}</a>`
-).join('\n');
+// skipHome：抽屉菜单不重复列「首页」（logo 已可回首页），桌面横排仍保留
+const navLinksHtml = (indent, current, skipHome) => NAV_MENU
+  .filter(n => !(skipHome && n.url === 'index.html'))
+  .map(n =>
+    `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${esc(n.label)}</a>`
+  ).join('\n');
 
 const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 .hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
@@ -201,7 +204,7 @@ ${navLinksHtml('    ', current)}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <nav class="drop-menu" aria-label="站点导航">
-${navLinksHtml('        ', current)}
+${navLinksHtml('        ', current, true)}
       </nav>
     </div>
   </div>
