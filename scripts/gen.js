@@ -89,6 +89,7 @@ const NAV_MENU = (() => {
   if (all) items.push({ label: '全部黄油', url: all.url });
   items.push({ label: '解压教程', url: 'tutorial.html' });
   items.push({ label: '游戏工具', url: 'tools.html' });
+  items.push({ label: '下载说明', url: 'download.html' });
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
@@ -221,7 +222,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', '卡片布局原型.html', '图床对接演示.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
