@@ -270,11 +270,11 @@ const SITE_AUTHOR = 'Tsinho';
 //   「by Tsinho… · 完整免责声明」——邮箱与完整条款只在 mianze.html 出现，不在每页重复堆。
 const SITE_EMAIL = (SITE.site && SITE.site.email) || '';
 const DISC = SITE.disclaimer || {};
-// brief=true 时只留一行（帖子页/qzt 用——内容都在免责声明页，不必每页重复堆三行）
+// 帖子页/qzt 用 brief 模式：完全回到加免责声明之前的样子——只留原 footer 一行，不加任何声明或链接。
+// 免责声明页 mianze.html 仍挂在导航里，想看的人自己点。
 const disclaimerFoot = (brief) => {
-  if (!DISC.enabled) return SITE_FOOTER;
+  if (!DISC.enabled || brief) return SITE_FOOTER;
   const link = `<a class="disc-link" href="${esc(DISC.url || 'mianze.html')}">完整免责声明</a>`;
-  if (brief) return `${esc(SITE_FOOTER)} · ${link}`;
   const mail = SITE_EMAIL
     ? `侵权或版权问题请联系 <a class="foot-mail" href="mailto:${SITE_EMAIL}">${SITE_EMAIL}</a>`
     : '侵权或版权问题请联系站长';
@@ -818,7 +818,7 @@ ${navHeaderHtml('')}
   <p>暂无分享，敬请期待</p>
 </main>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
-<footer>${disclaimerFoot(true)}</footer>
+<footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
@@ -1239,9 +1239,8 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
-    // 页脚：先删上次注入的全部副本再插一份（幂等——否则每次跑生成器都累积一份，2026-10-03 曾堆到 5 份）
+    // 帖子页/qzt 不加任何 footer（保持加免责声明之前的原样）——但要清掉历史注入的副本
     html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
-    html = html.replace('</body>', `  <footer class="mrhx-foot">${disclaimerFoot(true)}</footer>\n  </body>`);
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
     // qzt 分页样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
@@ -1559,7 +1558,7 @@ ${navHeaderHtml('')}
   <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">单游戏站</a></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
-<footer>${disclaimerFoot(true)}</footer>
+<footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
@@ -1716,7 +1715,7 @@ ${navHeaderHtml('', 'q')}
   <div id="res" aria-busy="false"></div>
 </main>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
-<footer>${disclaimerFoot(true)}</footer>
+<footer>${SITE_FOOTER}</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 (function () {
