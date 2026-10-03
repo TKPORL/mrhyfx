@@ -17,54 +17,54 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{position:sticky;top:0;z-index:20;padding:10px 20px 0}
-.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+header{/* nav-moved-to-site.css */}
+.hd-bar{/* nav-moved-to-site.css */}
 .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
 .logo img{width:118px;height:auto;border-radius:8px;display:block}
-.menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-.menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
-.menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
-.menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
-.menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
-.menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
-.menu a:hover{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
-.icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
-.icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
-.icon-btn:hover svg{stroke:#e5484d}
-.icon-btn[aria-expanded="true"]{background:#e5484d;border-color:#e5484d}
-.icon-btn[aria-expanded="true"] svg{stroke:#fff}
-.icon-btn:hover .dot{fill:#e5484d}
-.more-btn[aria-expanded="true"] .dot{fill:#fff}
-.more-btn{transition:opacity .3s cubic-bezier(.2,.8,.2,1) .24s,transform .3s cubic-bezier(.2,.8,.2,1) .24s,width .3s cubic-bezier(.2,.8,.2,1) .24s,border-width .3s ease .24s,visibility 0s linear 0s}
-.dot{transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
-.more-btn[aria-expanded="true"] .dot-1{transform:translateX(5.5px) rotate(45deg) scaleX(2.8)}
-.more-btn[aria-expanded="true"] .dot-3{transform:translateX(-5.5px) rotate(-45deg) scaleX(2.8)}
-.more-btn[aria-expanded="true"] .dot-2{transform:scale(0);opacity:0}
-.drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
-.drop.open{grid-template-rows:1fr}
-.drop>div{overflow:hidden;min-height:0}
-.drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
-.drop.open .drop-inner{opacity:1;transform:translateY(0)}
-.search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
-.search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
-.search-row input::placeholder{color:#b4b2a9}
-.search-row .go{width:34px;height:34px;border-radius:9px;border:none;background:#e5484d;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
-.search-row .go:hover{background:#c93a3f}
-.search-row .go svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round}
-.search-row .x{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;cursor:pointer;color:#888;font:inherit;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
-.search-row .x:hover{border-color:#f0b4b6;color:#e5484d}
-.drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
-.drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
-.drop-menu a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-.drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.menu{/* nav-moved-to-site.css */}
+.menu a{/* nav-moved-to-site.css */}
+.menu a:nth-child(1){/* nav-moved-to-site.css */}
+.menu a:nth-child(2){/* nav-moved-to-site.css */}
+.menu a:nth-child(3){/* nav-moved-to-site.css */}
+.menu a:nth-child(4){/* nav-moved-to-site.css */}
+.menu a:hover{/* nav-moved-to-site.css */}
+.menu a.on{/* nav-moved-to-site.css */}
+.acts{/* nav-moved-to-site.css */}
+.icon-btn{/* nav-moved-to-site.css */}
+.icon-btn:hover{/* nav-moved-to-site.css */}
+.icon-btn svg{/* nav-moved-to-site.css */}
+.icon-btn:hover svg{/* nav-moved-to-site.css */}
+.icon-btn[aria-expanded="true"]{/* nav-moved-to-site.css */}
+.icon-btn[aria-expanded="true"] svg{/* nav-moved-to-site.css */}
+.icon-btn:hover .dot{/* nav-moved-to-site.css */}
+.more-btn[aria-expanded="true"] .dot{/* nav-moved-to-site.css */}
+.more-btn{/* nav-moved-to-site.css */}
+.dot{/* nav-moved-to-site.css */}
+.more-btn[aria-expanded="true"] .dot-1{/* nav-moved-to-site.css */}
+.more-btn[aria-expanded="true"] .dot-3{/* nav-moved-to-site.css */}
+.more-btn[aria-expanded="true"] .dot-2{/* nav-moved-to-site.css */}
+.drop{/* nav-moved-to-site.css */}
+.drop.open{/* nav-moved-to-site.css */}
+.drop>div{/* nav-moved-to-site.css */}
+.drop-inner{/* nav-moved-to-site.css */}
+.drop.open .drop-inner{/* nav-moved-to-site.css */}
+.search-row{/* nav-moved-to-site.css */}
+.search-row input{/* nav-moved-to-site.css */}
+.search-row input::placeholder{/* nav-moved-to-site.css */}
+.search-row .go{/* nav-moved-to-site.css */}
+.search-row .go:hover{/* nav-moved-to-site.css */}
+.search-row .go svg{/* nav-moved-to-site.css */}
+.search-row .x{/* nav-moved-to-site.css */}
+.search-row .x:hover{/* nav-moved-to-site.css */}
+.drop-menu{/* nav-moved-to-site.css */}
+.drop-menu a{/* nav-moved-to-site.css */}
+.drop-menu a:hover{/* nav-moved-to-site.css */}
+.drop-menu a.on{/* nav-moved-to-site.css */}
 @media (min-width:681px){
-  .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}
+  .more-btn{/* nav-moved-to-site.css */}
 }
 @media (prefers-reduced-motion: reduce){
-  .dot,.drop,.drop-inner,.more-btn,.menu,.menu a{transition:none}
+  .dot,.drop,.drop-inner,.more-btn,.menu,.menu a{/* nav-moved-to-site.css */}
 }
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
@@ -103,21 +103,21 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 @media (max-width:680px){
-  .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}
-  .menu a{opacity:0;transform:translateX(22px)}
-  .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}
-  .menu a:nth-child(2){transition-delay:0s,0s,.04s,.04s}
-  .menu a:nth-child(3){transition-delay:0s,0s,.08s,.08s}
-  .menu a:nth-child(4){transition-delay:0s,0s,.12s,.12s}
-  .drop-menu{flex-wrap:wrap}
-  .drop-menu a{flex:1 1 auto;text-align:center}
+  .menu{/* nav-moved-to-site.css */}
+  .menu a{/* nav-moved-to-site.css */}
+  .menu a:nth-child(1){/* nav-moved-to-site.css */}
+  .menu a:nth-child(2){/* nav-moved-to-site.css */}
+  .menu a:nth-child(3){/* nav-moved-to-site.css */}
+  .menu a:nth-child(4){/* nav-moved-to-site.css */}
+  .drop-menu{/* nav-moved-to-site.css */}
+  .drop-menu a{/* nav-moved-to-site.css */}
 }
 @media (max-width:720px){
   header{padding:10px 14px 0}
-  .hd-bar{padding:7px 12px;min-height:52px;gap:10px}
+  .hd-bar{/* nav-moved-to-site.css */}
   .logo img{width:100px}
-  .icon-btn{width:34px;height:34px}
-  .drop-menu a{font-size:13px;padding:8px 10px}
+  .icon-btn{/* nav-moved-to-site.css */}
+  .drop-menu a{/* nav-moved-to-site.css */}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
   .vid-card{padding:14px;gap:10px;margin-bottom:22px}
@@ -139,55 +139,62 @@ footer b{color:#e5484d}
 </style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
+<link rel="stylesheet" href="assets/css/site.css?v=628c32aa">
 </head>
 <body>
 <header>
   <div class="hd-bar">
-    <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站"></a>
-    <nav class="menu" aria-label="主导航">
-      <a href="index.html">首页</a>
-      <a href="tutorial.html" class="on" aria-current="page">解压教程</a>
-      <a href="tools.html">游戏工具</a>
-      <a href="download.html">下载说明</a>
-    </nav>
-    <div class="acts">
-      <button type="button" class="icon-btn search-btn" id="searchBtn" aria-label="搜索游戏" aria-expanded="false" aria-controls="searchDrop">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
-      </button>
-      <button type="button" class="icon-btn more-btn" id="moreBtn" aria-label="更多导航" aria-expanded="false" aria-controls="moreDrop">
-        <svg viewBox="0 0 24 24" style="stroke:none">
-          <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
-          <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
-          <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
-        </svg>
-      </button>
-    </div>
+  <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="tutorial.html" class="on" aria-current="page">解压教程</a>
+    <a href="tools.html">游戏工具</a>
+    <a href="download.html">下载说明</a>
+    <a href="mianze.html">免责声明</a>
+  </nav>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+    </button>
   </div>
+</div>
 
-  <div class="drop" id="searchDrop">
-    <div>
-      <div class="drop-inner">
-        <form class="search-row" action="search.html" method="get" role="search">
-          <input type="text" name="q" id="searchInput" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
-          <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
-          <button class="x" type="button" id="searchClose" aria-label="关闭搜索">×</button>
-        </form>
-      </div>
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
     </div>
   </div>
+</div>
 
-  <div class="drop" id="moreDrop">
-    <div>
-      <div class="drop-inner">
-        <nav class="drop-menu" aria-label="站点导航">
-          <a href="index.html">首页</a>
-          <a href="tutorial.html" class="on" aria-current="page">解压教程</a>
-          <a href="tools.html">游戏工具</a>
-          <a href="download.html">下载说明</a>
-        </nav>
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <div class="drawer-head">
+        <img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站">
+        <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
+      <nav class="drop-menu" aria-label="站点导航">
+        <a href="tutorial.html" class="on" aria-current="page">解压教程</a>
+        <a href="tools.html">游戏工具</a>
+        <a href="download.html">下载说明</a>
+        <a href="mianze.html">免责声明</a>
+      </nav>
     </div>
   </div>
+</div>
+<div class="nav-mask" id="mrhxNavMask"></div>
 </header>
 <main>
   <div class="upd"><span class="tag">解压教程</span>解压失败、提示密码错误、提示压缩包损坏，先看这一页</div>
@@ -374,55 +381,7 @@ footer b{color:#e5484d}
 
 </main>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
-<script>
-(function () {
-  var searchBtn = document.getElementById('searchBtn');
-  var moreBtn = document.getElementById('moreBtn');
-  var searchDrop = document.getElementById('searchDrop');
-  var moreDrop = document.getElementById('moreDrop');
-  var searchInput = document.getElementById('searchInput');
-  var searchClose = document.getElementById('searchClose');
-  function setSearch(open) {
-    searchDrop.classList.toggle('open', open);
-    searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) { setTimeout(function () { searchInput.focus(); }, 60); }
-  }
-  function setMore(open) {
-    moreDrop.classList.toggle('open', open);
-    moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-  function closeAll() { setSearch(false); setMore(false); }
-  searchBtn.addEventListener('click', function () {
-    var open = !searchDrop.classList.contains('open');
-    closeAll();
-    setSearch(open);
-  });
-  moreBtn.addEventListener('click', function () {
-    var open = !moreDrop.classList.contains('open');
-    closeAll();
-    setMore(open);
-  });
-  searchClose.addEventListener('click', function () {
-    setSearch(false);
-    searchBtn.focus();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      var wasSearch = searchDrop.classList.contains('open');
-      closeAll();
-      if (wasSearch) { searchBtn.focus(); } else { moreBtn.focus(); }
-    }
-  });
-  document.addEventListener('click', function (e) {
-    if (!e.target.closest('header')) { closeAll(); }
-  });
-  var mq = window.matchMedia('(min-width: 541px)');
-  function onBreakpoint(e) {
-    if (e.matches) { setMore(false); }
-  }
-  if (mq.addEventListener) { mq.addEventListener('change', onBreakpoint); }
-  else if (mq.addListener) { mq.addListener(onBreakpoint); }
-})();
-</script>
+<!-- 旧导航脚本已移除，改用 assets/js/nav.js -->
+<script src="assets/js/nav.js"></script>
 </body>
 </html>
