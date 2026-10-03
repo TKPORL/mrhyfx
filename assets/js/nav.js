@@ -62,6 +62,12 @@
     navMask.addEventListener('click', function () { setMore(false); });
   }
 
+  // 抽屉内非链接的空白区域也收起（遮罩被抽屉压在下面，点不到，只能在面板内空白处收起）
+  moreDrop.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('a')) return;
+    setMore(false);
+  });
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       var wasSearch = searchDrop.classList.contains('open');

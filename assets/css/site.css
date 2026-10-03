@@ -262,7 +262,10 @@
   #mrhxMoreDrop .drawer-head img{width:104px;border-radius:8px;display:block}
   #mrhxMoreDrop .drawer-close{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;color:#666;font:inherit;font-size:18px;line-height:1;cursor:pointer;flex-shrink:0}
   #mrhxMoreDrop .drawer-close:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-  #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:2px;padding:10px;overflow-y:auto;flex:1}
-  #mrhxMoreDrop .drop-menu a{flex:0 0 auto;font-size:15px;font-weight:600;color:#3a3a3a;background:transparent;border:0;padding:13px 14px;border-radius:10px;text-align:left}
-  #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;color:#e5484d}
+  #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
+  #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
+  #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
+  #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
+  #mrhxMoreDrop .drawer-hint{margin:12px 14px 0;padding:10px 12px;border:1px dashed #ecebe9;border-radius:12px;background:#fdfcfa;color:#a8a49d;font-size:12px;line-height:1.6}
 }
