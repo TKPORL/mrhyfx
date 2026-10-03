@@ -159,7 +159,6 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
   #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
   #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
-  #mrhxMoreDrop .drawer-hint{margin:12px 14px 0;padding:10px 12px;border:1px dashed #ecebe9;border-radius:12px;background:#fdfcfa;color:#a8a49d;font-size:12px;line-height:1.6}
 }
 @media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}`;
 
@@ -204,7 +203,6 @@ ${navLinksHtml('    ', current)}
       <nav class="drop-menu" aria-label="站点导航">
 ${navLinksHtml('        ', current)}
       </nav>
-      <p class="drawer-hint">以后菜单加到十几项也照样竖着排，随便加不挤</p>
     </div>
   </div>
 </div>

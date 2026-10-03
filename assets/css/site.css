@@ -267,5 +267,4 @@
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
   #mrhxMoreDrop .drop-menu a::after{content:"›";margin-left:auto;font-size:17px;font-weight:400;color:#c9c6c1;line-height:1}
   #mrhxMoreDrop .drop-menu a:hover::after,#mrhxMoreDrop .drop-menu a.on::after{color:#e5484d}
-  #mrhxMoreDrop .drawer-hint{margin:12px 14px 0;padding:10px 12px;border:1px dashed #ecebe9;border-radius:12px;background:#fdfcfa;color:#a8a49d;font-size:12px;line-height:1.6}
 }
