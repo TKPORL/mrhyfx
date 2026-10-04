@@ -8,7 +8,12 @@
   if (RM || !FINE || !globalThis.Lenis) return;
 
   var lenis = new Lenis({ lerp: 0.1, duration: 1.2, smoothWheel: true });
-  function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+  // 先续订下一帧、再执行本帧（try/catch 兜底）：任何一帧 lenis.raf 抛异常，
+  // 循环都不会永久停摆——否则 wheel 已被 Lenis 拦截但无人驱动滚动，整页会"定住"。
+  function raf(t) {
+    requestAnimationFrame(raf);
+    try { lenis.raf(t); } catch (e) { console.error('[smooth] lenis frame error', e); }
+  }
   requestAnimationFrame(raf);
 
   // 页内锚点平滑跳转（#xxx）；不逐帧写 history（file:// 下会抛异常打断滚动循环）
