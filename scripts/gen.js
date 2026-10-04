@@ -65,6 +65,10 @@ const assetVer = rel => {
 };
 const CSS_VER = assetVer('assets/css/site.css');
 const NAVJS_VER = assetVer('assets/js/nav.js');
+// 丝滑滚动（2026-10-05）：Lenis 本地 vendored + 薄封装，三处注入点（帖子页 / 首页合集 / 空首页）共用
+const LENIS_VER = assetVer('assets/js/lenis.min.js');
+const SMOOTH_VER = assetVer('assets/js/smooth.js');
+const SMOOTH_SCRIPTS = `<script src="assets/js/lenis.min.js?v=${LENIS_VER}"></script>\n<script src="assets/js/smooth.js?v=${SMOOTH_VER}"></script>`;
 
 // ===================== 站点图标资源（2026-09-22 迁到图床 WebP）=====================
 // 两处唯一真相都在这里：以后要再换图标，只改这两行，全站页面由 gen.js 重新生成时统一切换。
@@ -835,6 +839,7 @@ ${navHeaderHtml('')}
   <p>暂无分享，敬请期待</p>
 </main>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
+${SMOOTH_SCRIPTS}
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
@@ -1249,7 +1254,7 @@ html = (function reorderNodes(str) {
     const bar = `<header>
 ${navHeaderHtml('')}
 </header>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n${SMOOTH_SCRIPTS}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -1623,6 +1628,7 @@ ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
+${SMOOTH_SCRIPTS}
 </body>
 </html>
 `;
