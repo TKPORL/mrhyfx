@@ -3536,6 +3536,47 @@ function publishErrorHint(e) {
   return '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错';
 }
 
+// ===== 发布前卡片体检（2026-10-06 加）=====
+// 背景：线上真实出现过两类发布事故——① 卡片游戏名留空，发布后页面标题空白（2026105pc 节点24）；
+//   ② 下载链接框里填成了「偷窃JK审问游戏」这种关键词而不是链接（8.19pc 节点2）。
+//   两者发布前肉眼很难逐卡发现，所以点发布时先自动检查、一次报全所有问题卡片，中止发布。
+// 规则：游戏名必填；下载链接必须是纯链接（http/https/magnet 开头、不含空格与中文）。
+const LINK_FIELDS = [
+  { sel: '.g-linkM', label: '移动云盘' },
+  { sel: '.g-linkB', label: '百度网盘' },
+  { sel: '.g-customUrl', label: '自定义跳转' },
+];
+// 纯链接判定：允许 http(s):// 与 magnet:? 开头；出现空格、中文或缺协议即判为「带文字的非法链接」
+function isPureLink(v) {
+  const s = String(v || '').trim();
+  if (!s) return true;                       // 没填不算错
+  if (/\s/.test(s)) return false;            // 含空格 = 多个词拼在一起，基本都是误填
+  if (/[^\x00-\x7F]/.test(s)) return false;  // 含非 ASCII（中文/全角标点）= 一定是文字
+  return /^(https?:\/\/|magnet:\?)/i.test(s);
+}
+function validateCards() {
+  const problems = [];
+  [...$('gameBox').children].forEach((el, i) => {
+    const no = i + 1;
+    const name = el.querySelector('.g-name').value.trim();
+    if (!name) problems.push('第 ' + no + ' 张卡片：游戏名称是空的');
+    LINK_FIELDS.forEach(f => {
+      const v = el.querySelector(f.sel).value.trim();
+      if (v && !isPureLink(v)) {
+        problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
+      }
+    });
+  });
+  return problems;
+}
+function showCardProblems(problems) {
+  const lines = problems.slice(0, 12).map((p, i) => (i + 1) + '. ' + p);
+  if (problems.length > 12) lines.push('…还有 ' + (problems.length - 12) + ' 处');
+  show($('status'), '已中止发布，发现 ' + problems.length + ' 处问题：\n' + lines.join('\n'), 'err');
+  // 同时弹窗提示，避免只看状态区没注意到
+  alert('发布已中止：发现 ' + problems.length + ' 处问题\n\n' + lines.join('\n'));
+}
+
 $('pubForm').onclick = async () => {
   const btn = $('pubForm'); btn.disabled = true;
   try {
@@ -3544,6 +3585,9 @@ $('pubForm').onclick = async () => {
     const count = $('fCount').value.trim();
     const token = $('token').value.trim();
     const repo = $('repo').value.trim();
+    // 发布前体检：卡片自身有问题就不上传，避免半成品上线后再靠人工补救
+    const cardProblems = validateCards();
+    if (cardProblems.length) { showCardProblems(cardProblems); return; }
     const cards = collectGames();
     if (!cards.length) throw new Error('请至少添加一个游戏');
     if ([...$('gameBox').children].some(card => card.querySelector('.g-files').dataset.replaceIndex != null)) {
