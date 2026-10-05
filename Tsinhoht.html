@@ -1081,7 +1081,8 @@ function collectDraft() {
       name: $('fName').value, title: $('fTitle').value, count: $('fCount').value,
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
-        return { name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
+        // cid 必须一起存：草稿恢复时靠它把IndexedDB 里的图片对回本卡（2026-10-06 修串位）
+        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       }),
       removedImageUrls: [...removedImageUrls]
     },
@@ -1137,24 +1138,53 @@ function idb() {
 async function idbSet(k, v) { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
 async function idbGet(k) { const db = await idb(); return new Promise((res, rej) => { const q = db.transaction('imgs', 'readonly').objectStore('imgs').get(k); q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error); }); }
 async function idbClear() { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').clear(); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
-// 卡片图片按当前卡片顺序存取；卡片移动、删除、恢复后会重新保存。
+// 卡片图片持久化（2026-10-06 重写）：改按卡片 cid 存取。
+// 之前按「卡片下标」存取，会串位：卡片一移动/删除/恢复，下标与图片的对应关系就全错，
+// 刷新后 A 卡的图被贴到 B 卡上（用户反馈「发布后图片消失、下载链接互相串位」）。
+// 根因有两层：① 按下标索引；② saveCardImages 是 async 但调用处都不 await，
+// 多个 IndexedDB 写事务并发时旧快照可能后到、覆盖新快照。
+// 现在：① 键是 data-cid（卡片唯一标识，永不随顺序变化）；② 用 _idbSaveChain 串行排队，
+// 保证「读-改-写」不交叉。旧版 cards 数组结构仍能读（按数组下标兜底回退）。
+let _idbSaveChain = Promise.resolve();
 async function saveCardImages() {
-  try {
-    const box = $('gameBox');
-    await idbSet('cards', [...box.children].map(card => [...card.querySelector('.g-files').files]));
-  } catch (e) { console.warn('图片持久化失败', e); }
+  // 串行化：每次保存接在上一次之后，杜绝并发写互相覆盖
+  _idbSaveChain = _idbSaveChain.then(async () => {
+    try {
+      const map = {};
+      [...$('gameBox').children].forEach(card => {
+        const cid = card.dataset.cid;
+        if (!cid) return;
+        const files = [...card.querySelector('.g-files').files];
+        if (files.length) map[cid] = files;
+      });
+      // 存不进去时也要清空旧值：否则删掉的卡片图片会一直留在库���，下次 cid 撞号就出错图
+      await idbSet('cardsByCid', map);
+      // 旧结构一并清掉，防止误读
+      await idbSet('cards', []);
+    } catch (e) { console.warn('图片持久化失败', e); }
+  });
+  return _idbSaveChain;
 }
 async function restoreCardImages() {
   try {
     const box = $('gameBox');
-    const saved = await idbGet('cards');
+    const byCid = await idbGet('cardsByCid');
+    const legacy = await idbGet('cards');
+    const useCid = byCid && typeof byCid === 'object' && !Array.isArray(byCid)
+      && Object.keys(byCid).length > 0;
     for (let i = 0; i < box.children.length; i++) {
-      // 兼容旧版按 card_i 保存的草稿图片。
-      const files = saved.length ? (saved[i] || []) : await idbGet('card_' + i);
+      const el = box.children[i];
+      const cid = el.dataset.cid;
+      // 新结构按 cid 取；取不到才回退旧版下标结构（升级兼容，只读一次）
+      let files = (useCid && cid) ? byCid[cid] : null;
+      if (!files || !files.length) {
+        if (!useCid && Array.isArray(legacy) && legacy[i] && legacy[i].length) files = legacy[i];
+        else if (!useCid) files = await idbGet('card_' + i);   // 更早的按 card_i 存法
+      }
       if (!files || !files.length) continue;
       const dt = new DataTransfer();
       files.forEach(f => dt.items.add(f));
-      const fi = box.children[i].querySelector('.g-files');
+      const fi = el.querySelector('.g-files');
       fi.files = dt.files;
       previewFiles(fi);
     }
@@ -1505,6 +1535,8 @@ function previewFiles(input) {
 }
 
 function fillCard(card, data) {
+  // 沿用草稿里的 cid：图片在 IndexedDB 是按 cid 存的，cid 变了就再也对不回原图（2026-10-06 修串位）
+  if (data.cid) card.dataset.cid = data.cid;
   if (data.name != null) card.querySelector('.g-name').value = data.name;
   if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
   if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
