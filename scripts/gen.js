@@ -95,12 +95,12 @@ const NAV_MENU = (() => {
   items.push({ label: '游戏工具', url: 'tools.html' });
   items.push({ label: '下载说明', url: 'download.html' });
   items.push({ label: '免责声明', url: 'mianze.html' });
-  items.push({ label: '赞助', url: 'sponsor.html' });   // 2026-10-06：赞助入口，放导航最后
+  items.push({ label: '赞助', url: 'sponsor.html' });   // 2026-10-06：赞助入口，按站长要求放最后
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
 // 桌面横排与手机抽屉共用同一份菜单（首页在最上）
-// 首页（current 传 'index.html'）不显示「首页」按钮——当前页不需要自我导航（2026-10-06 用户反馈）
+// 首页不显示「首页」项——当前页不需要自我导航（2026-10-06 站长要求）
 const navLinksHtml = (indent, current) => NAV_MENU
   .filter(n => !(current === 'index.html' && n.url === 'index.html'))
   .map(n =>
@@ -111,8 +111,8 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 .hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
 .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
 .hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
-.hd-bar .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 15px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.hd-bar .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
 .hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
 .hd-bar .menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
 .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
@@ -149,18 +149,6 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 .nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
 .nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 @media (min-width:681px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
-/* 导航自适应（2026-10-06）：菜单项多到 681px 以上也放不下时，nav.js 会给 .hd-bar 加 .nav-collapsed，
-   这里强制切「更多」形态。.hd-bar.nav-collapsed .more-btn 是 3 个类，比上面媒体查询里的
-   .hd-bar .more-btn（2 个类）权重更高，所以无需 !important 也能覆盖。 */
-.hd-bar.nav-collapsed .more-btn{opacity:1;transform:none;width:36px;border-width:1px;pointer-events:auto;visibility:visible}
-/* 收拢态（2026-10-06）：菜单必须「留在 flex 布局里」——早前用 position:absolute 让它退出布局，
-   结果原占位宽度瞬间释放，导航条与整页跟着重排，用户看到「整页从右闪到左一下」。
-   现在改为保留 flex:1 与占位宽度，只用 visibility/opacity/transform 做视觉隐藏：
-   布局零变化 → 零重排 → 零闪烁。 */
-.hd-bar.nav-collapsed .menu{visibility:hidden;opacity:0;transform:translateX(26px);pointer-events:none}
-.hd-bar.nav-collapsed .menu a{opacity:0;transform:translateX(22px)}
-/* 拖动窗口期间（nav.js 挂 .nav-resizing）：关掉收放过渡，临界点反复切换时不会一直重绘发闪 */
-.hd-bar.nav-resizing .menu,.hd-bar.nav-resizing .menu a,.hd-bar.nav-resizing .more-btn{transition:none !important}
 @media (max-width:680px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
 @media (max-width:720px){header{padding:0 14px 0}.hd-bar{padding:7px 12px;gap:10px}.hd-bar .logo img{width:100px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
 @media (max-width:680px){
@@ -851,7 +839,7 @@ ${SITE_ICON_TAGS}
 </head>
 <body>
 <header>
-${navHeaderHtml('index.html')}
+${navHeaderHtml('')}
 </header>
 <main>
   <p>暂无分享，敬请期待</p>
@@ -1621,11 +1609,22 @@ footer .disc-link:hover{text-decoration:underline}
   .date{width:52px;height:52px;border-radius:10px}
   .date b{font-size:19px}
   .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
-  .covers{flex:1 1 100%;order:3;overflow-x:auto;padding-bottom:2px}
-  .covers img{width:54px;height:54px}
   .arrow{display:none}
   .ggrid{grid-template-columns:repeat(2,1fr);gap:10px}
   .g-title{font-size:13px}
+}
+/* 2026-10-06：缩略图换行断点从 720px 降到 560px。
+   原来 .covers 的 order:3 + 整行换行挂在 720px 手机断点上，导致窗口从 760px 缩到 700px 时
+   首页卡片高度由 105px 突增到 150px（+43%）——用户反馈「页面收缩一半突然又变大」。
+   700px 其实是小窗口，右侧完全放得下 5 张 60px 缩略图，不需要换行。
+
+   同一天修的另一处（用户反馈「图片都到左边去了，右边留了很多空」+「最后一张被遮挡」）：
+   img 原来写死 width:54px，5 张固定 302px 宽。容器窄于 302px（实测 340px 以下）就出横向
+   滚动条 → 最后一张被裁；而容器宽于 302px 时右侧又留一大片空白。
+   改成 flex:1 1 0 + min-width:0，5 张图平分整行宽度：既铺满不留空，也不会溢出需要滚动。 */
+@media (max-width:560px){
+  .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
+  .covers img{flex:1 1 0;min-width:0;width:auto;height:auto;aspect-ratio:1/1}
 }
 </style>
 ${SITE_ICON_TAGS}
@@ -1651,8 +1650,8 @@ ${SMOOTH_SCRIPTS}
 </html>
 `;
   // 首页缩略图同样加图床兜底
-  // 2026-10-06：合集首页是从最新帖子页派生的，继承了帖子页 nav（含「首页」项）。
-  // 首页不显示「首页」按钮（当前页不需要自我导航），写盘前从 .menu 里摘掉。
+  // 2026-10-06：合集首页从最新帖子页派生，继承了帖子页 nav（含「首页」项）。
+  // 首页不显示「首页」按钮（当前页不需要自我导航），写盘前摘掉。
   const indexOut = index.replace(/\n\s*<a href="index\.html">首页<\/a>/g, '');
   fs.writeFileSync('index.html', injectJsdelivrFallback(injectImgFallback(indexOut)));
   console.log('index.html ok (合集模式), days:', days.length);
