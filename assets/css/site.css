@@ -133,7 +133,7 @@
     /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
     .mrhx-navrow{gap:6px}
     .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
-    .mrhx-navmid{justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .mrhx-navmid{justify-content:center;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .mrhx-navmid::-webkit-scrollbar{display:none}
     .mrhx-navmid .mrhx-btn-nav{flex:0 0 auto;padding:7px 11px;font-size:12px}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
