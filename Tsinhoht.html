@@ -62,9 +62,14 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .game{transition:all .2s;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fefefe;position:relative}
 .game:hover{border-color:#d0cec8;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .game.newcard{animation:mrhxPop .5s ease both}
-.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px}
+/* 新建卡片的高亮描边：告诉用户「这张是刚加的、还没填」，配合自动聚焦，不再像凭空多出的一张 */
+.game.newcard-focus{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
+.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap}
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d;white-space:nowrap}
-.game .ghead .gbtns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+/* 2026-10-06：原来 flex-wrap:wrap 让「移动/预览/删除」在窄屏换行、撑高卡片头，
+   而 ghead 是 align-items:center，「游戏 N」就被挤到按钮旁边看起来像重叠。
+   现在按钮行永不换行且不参与压缩（flex-shrink:0），窄屏时整体换行到下一行也不会压住编号。 */
+.game .ghead .gbtns{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;flex-shrink:0;margin-left:auto}
 .game .ghead .gbtns .btn-s{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer}
 @keyframes mrhxFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes mrhxModalFade{from{opacity:0;transform:translate(-50%,-48%)}to{opacity:1;transform:translate(-50%,-50%)}}
@@ -1405,10 +1410,20 @@ function addGameCard(data) {
   renum();
   if (!data) {
     d.classList.add('newcard');
-    toast('已添加游戏 ' + d.querySelector('.gnum').textContent);
-    d.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 2026-10-06：原来只弹 2.2 秒 toast + 滚到中间，卡片又是全空的，
+    // 用户在长页面里极易以为「按钮点了没反应」。现在：直接把光标放进游戏名称输入框、
+    // 卡片描边高亮 3 秒，滚到卡片头部而不是中间（避免一进来只看到图片区）。
+    focusNewCard(d);
+    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   return d;
+}
+// 新建卡片后：聚焦名称输入框 + 高亮描边，让「卡片已加好、请填名字」无法被忽略
+function focusNewCard(d) {
+  const nameEl = d.querySelector('.g-name');
+  if (nameEl) { try { nameEl.focus({ preventScroll: true }); } catch (e) { nameEl.focus(); } }
+  d.classList.add('newcard-focus');
+  setTimeout(() => d.classList.remove('newcard-focus'), 3000);
 }
 
 let deletedCards = [];
@@ -1616,7 +1631,16 @@ $('exportImgs').onclick = async () => {
 };
 restoreDraft();
 attachDraft();
-if (!localStorage.getItem(DRAFT_FORM)) addGameCard();
+// 首次打开（本地无草稿）时自动补一张空卡，让用户有地方开始填。
+// 2026-10-06：补卡后 toast 说清「这是给你用的第一张卡，请先填游戏名」，
+// 否则用户会直接点「添加一个游戏」去填第二张，把这张空卡当成凭空多出来的。
+if (!localStorage.getItem(DRAFT_FORM)) {
+  const first = addGameCard();
+  setTimeout(() => {
+    toast('下面这张是给你填的第一张卡，游戏名称写在这里');
+    focusNewCard(first);
+  }, 600);
+}
 
 function collectGames() {
   return [...$('gameBox').children].map(el => ({
