@@ -1414,9 +1414,19 @@ function addGameCard(data) {
     // 用户在长页面里极易以为「按钮点了没反应」。现在：直接把光标放进游戏名称输入框、
     // 卡片描边高亮 3 秒，滚到卡片头部而不是中间（避免一进来只看到图片区）。
     focusNewCard(d);
-    d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 2026-10-06：原来用 scrollIntoView({block:'start'})，卡片顶部会被 sticky 顶栏
+    // （z-index:100）盖住，看起来像「滑太过了」。现在按顶栏实际高度偏移，
+    // 让卡片顶部正好落在顶栏下方 12px。
+    scrollCardIntoView(d);
   }
   return d;
+}
+// 把卡片滚到视口里、且不被 sticky 顶栏遮住
+function scrollCardIntoView(d) {
+  var bar = document.querySelector('header');
+  var top = (bar ? bar.getBoundingClientRect().height : 0) + 12;
+  var y = window.pageYOffset + d.getBoundingClientRect().top - top;
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 // 新建卡片后：聚焦名称输入框 + 高亮描边，让「卡片已加好、请填名字」无法被忽略
 function focusNewCard(d) {
