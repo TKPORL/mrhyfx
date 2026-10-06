@@ -1609,22 +1609,15 @@ footer .disc-link:hover{text-decoration:underline}
   .date{width:52px;height:52px;border-radius:10px}
   .date b{font-size:19px}
   .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
+  /* 缩略图（2026-10-06 定稿）：flex:1 1 0 平分整行 → 5 张图铺满不留空、不溢出；
+     锁 max-width:55px → 大屏机型不再被拉得过大，小屏窄容器自动收缩不溢出。
+     min-width:0 + overflow:hidden 是安全边界（父容器 .post 是 flex，
+     子项写 flex:1 1 0 时不给 min-width:0 会撑破布局，曾实测把页面撑到 6562px 宽）。 */
+  .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
+  .covers img{flex:1 1 0;min-width:0;max-width:55px;width:auto;height:auto;aspect-ratio:1/1}
   .arrow{display:none}
   .ggrid{grid-template-columns:repeat(2,1fr);gap:10px}
   .g-title{font-size:13px}
-}
-/* 2026-10-06：缩略图换行断点从 720px 降到 560px。
-   原来 .covers 的 order:3 + 整行换行挂在 720px 手机断点上，导致窗口从 760px 缩到 700px 时
-   首页卡片高度由 105px 突增到 150px（+43%）——用户反馈「页面收缩一半突然又变大」。
-   700px 其实是小窗口，右侧完全放得下 5 张 60px 缩略图，不需要换行。
-
-   同一天修的另一处（用户反馈「图片都到左边去了，右边留了很多空」+「最后一张被遮挡」）：
-   img 原来写死 width:54px，5 张固定 302px 宽。容器窄于 302px（实测 340px 以下）就出横向
-   滚动条 → 最后一张被裁；而容器宽于 302px 时右侧又留一大片空白。
-   改成 flex:1 1 0 + min-width:0，5 张图平分整行宽度：既铺满不留空，也不会溢出需要滚动。 */
-@media (max-width:560px){
-  .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
-  .covers img{flex:1 1 0;min-width:0;width:auto;height:auto;aspect-ratio:1/1}
 }
 </style>
 ${SITE_ICON_TAGS}
