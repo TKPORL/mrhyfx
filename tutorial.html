@@ -70,11 +70,13 @@ header{/* nav-moved-to-site.css */}
 main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap;line-height:1.7}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
-.vid-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 20px;margin-bottom:28px;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
-.vid-ic{width:36px;height:36px;border-radius:50%;background:#fdf1f1;flex-shrink:0;position:relative}
-.vid-ic::after{content:'';position:absolute;left:13px;top:10px;border-left:10px solid #e5484d;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:3px solid transparent}
-.vid-name{flex:1;font-size:14.5px;font-weight:600;color:#2b2b2b}
-.vid-btn{display:inline-flex;align-items:center;padding:8px 18px;border-radius:99px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;white-space:nowrap}
+.vid-card{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid #f5c9c9;border-radius:16px;padding:22px 24px;margin-bottom:28px;box-shadow:0 2px 8px rgba(229,72,77,.08);animation:mrhxCard .5s ease both}
+.vid-ic{width:52px;height:52px;border-radius:50%;background:#fdf1f1;flex-shrink:0;position:relative}
+.vid-ic::after{content:'';position:absolute;left:19px;top:15px;border-left:14px solid #e5484d;border-top:11px solid transparent;border-bottom:11px solid transparent;border-right:3px solid transparent}
+.vid-txt{flex:1;min-width:0}
+.vid-name{font-size:18px;font-weight:700;color:#c93a3f;line-height:1.4}
+.vid-desc{margin-top:4px;font-size:13.5px;color:#6b6660;line-height:1.5}
+.vid-btn{display:inline-flex;align-items:center;padding:12px 28px;border-radius:99px;background:#e5484d;color:#fff;font-size:15px;font-weight:700;text-decoration:none;transition:.2s;white-space:nowrap;flex-shrink:0}
 .vid-btn:hover{background:#c93a3f;transform:translateY(-1px)}
 .sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
@@ -120,11 +122,14 @@ footer b{color:#e5484d}
   .drop-menu a{/* nav-moved-to-site.css */}
   main{padding:18px 14px 32px}
   .upd{padding:12px 14px;font-size:13px}
-  .vid-card{padding:14px;gap:10px;margin-bottom:22px}
-  .vid-ic{width:32px;height:32px}
-  .vid-ic::after{left:11px;top:9px;border-left:9px solid #e5484d;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:3px solid transparent}
-  .vid-name{font-size:14px}
-  .vid-btn{padding:7px 14px;font-size:12.5px}
+  /* 手机端：说明文字与按钮各占一行，避免图标被挤到中间、按钮被压扁 */
+  .vid-card{padding:16px;gap:12px;margin-bottom:22px;flex-wrap:wrap;align-items:flex-start}
+  .vid-ic{width:40px;height:40px}
+  .vid-ic::after{left:15px;top:12px;border-left:11px solid #e5484d;border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:3px solid transparent}
+  .vid-txt{flex:1}
+  .vid-name{font-size:16px}
+  .vid-desc{font-size:12.5px}
+  .vid-btn{width:100%;justify-content:center;padding:11px 20px;font-size:14px}
   .sect h2{font-size:17px}
   .tut-item{gap:10px;padding:13px 14px}
   .tut-ext{min-width:76px;font-size:11.5px;padding:4px 9px}
@@ -206,8 +211,11 @@ footer b{color:#e5484d}
 
   <div class="vid-card">
     <div class="vid-ic" aria-hidden="true"></div>
-    <div class="vid-name">解压教程</div>
-    <a class="vid-btn" href="https://pan.baidu.com/s/1jPjwvA5eAX6lLygXfGo_oQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a>
+    <div class="vid-txt">
+      <div class="vid-name">解压教程（视频详解）</div>
+      <div class="vid-desc">解压失败、提示密码错误、提示压缩包损坏 —— 点这里看完整视频教程</div>
+    </div>
+    <a class="vid-btn" href="https://pan.baidu.com/s/1jPjwvA5eAX6lLygXfGo_oQ?pwd=839m" target="_blank" rel="noreferrer">前往查看</a>
   </div>
 
   <div class="sect"><h2>第一步：拿一个解压工具</h2><span>解压工具全在「游戏工具」页</span></div>
