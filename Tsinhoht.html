@@ -1913,31 +1913,46 @@ async function buildFormHtml(cards, imagePaths, title, name) {
   return skeleton;
 }
 
+// PUT 一次文件，sha 冲突自动重试。
+// 2026-10-06 修：原来只处理 422（文件已存在→补 sha 重发一次），漏了 409。
+// 409 出现在「补 sha 的那次 PUT」：GET 拿到 sha 到 PUT 之间，Actions 自动生成/备份
+// 又推了提交、同一文件被改写 → GitHub 返 409 "X is at A but expected B"，
+// 原始 message 直接抛出，被 publishErrorHint 误判成 Token 失效，站长完全看不懂。
+// 现在统一成重试循环：每次失败都重新 GET 最新 sha 再 PUT，最多重试 PUT_SHA_RETRY 次。
+const PUT_SHA_RETRY = 5;
+const PUT_SHA_RETRY_DELAY = 1200;
+
 async function putFile(repo, token, path, content, msg, statusEl, step) {
   const apiPath = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path)}`;
-  let body = { message: msg, content: content };
-  let res = await fetch(apiPath, {
-    method: 'PUT',
-    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (res.status === 422) {
+  const auth = { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  let lastErr = null;
+  for (let attempt = 1; attempt <= PUT_SHA_RETRY; attempt++) {
+    // 每次都重新读当前 sha：文件可能不存在（422 不带 sha 即可），
+    // 也可能已存在但刚被别人改过（409 必须带最新 sha）
+    let sha = null;
     const exist = await fetch(apiPath, { headers: { 'Authorization': 'token ' + token } });
-    if (exist.ok) {
-      const info = await exist.json();
-      body.sha = info.sha;
-      res = await fetch(apiPath, {
-        method: 'PUT',
-        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+    if (exist.ok) sha = (await exist.json()).sha;
+    else if (exist.status !== 404) {
+      const e0 = await exist.json().catch(() => null);
+      if (attempt >= PUT_SHA_RETRY) throw new Error((e0 && e0.message) || ('HTTP ' + exist.status));
+    }
+    const body = { message: msg, content: content };
+    if (sha) body.sha = sha;
+    const res = await fetch(apiPath, { method: 'PUT', headers: auth, body: JSON.stringify(body) });
+    if (res.ok) {
+      if (statusEl) show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
+      return;
+    }
+    const err = await res.json().catch(() => null);
+    lastErr = (err && err.message) || ('HTTP ' + res.status);
+    //409/422 = sha 变了或文件刚被创建，重读后重试；其他状态码直接失败
+    if (res.status !== 409 && res.status !== 422) throw new Error(lastErr);
+    if (attempt < PUT_SHA_RETRY) {
+      if (statusEl) show(statusEl, `[${step}] ${path} 仓库正被自动任务并发更新（sha 冲突），已自动重试 ${attempt}/${PUT_SHA_RETRY}…`, 'warn');
+      await new Promise(r => setTimeout(r, PUT_SHA_RETRY_DELAY * attempt));
     }
   }
-  if (!res.ok) {
-    const err = await res.json().catch(() => null);
-    throw new Error((err && err.message) || ('HTTP ' + res.status));
-  }
-  if (statusEl) show(statusEl, `[${step}] ${path} 已提交 ✓`, 'ok');
+  throw new Error(lastErr || 'HTTP 409');
 }
 
 async function updateJson(repo, token, file, key, value, statusEl, allowCreate) {
@@ -3588,6 +3603,14 @@ function publishErrorHint(e) {
   }
   if (/Failed to fetch|NetworkError|Load failed|network error|fetch failed/i.test(msg)) {
     return '\n\n这是网络请求被中断（浏览器报 Failed to fetch），不是 Token 问题。常见原因：\n- 网络抖动 / 代理或 VPN 导致 api.github.com 连不上（重试即可）\n- 上面状态区最后一行就是中断发生的步骤，可据此判断卡在哪';
+  }
+  // 2026-10-06 加：GitHub Contents API 的 sha 冲突（409 / 422）原文是
+  // "xxx is at <新sha> but expected <旧sha>"，是「读 sha 到写之间被 Actions 自动生成
+  // 抢先改了同一个文件」，与 Token、仓库名、权限全都无关。以前落到下面的兜底分支，
+  // 会被误报成「Token 无效或过期」，站长白折腾。
+  if (/is at \w+ but expected|Reference update failed|sha 冲突|409|not a fast forward/i.test(msg)) {
+    return '\n\n这是仓库被 GitHub Actions 自动生成并发更新导致的 sha 冲突，不是 Token 问题。\n'
+      + '自动重试仍失败时：等 1-2 分钟让自动任务跑完，再点一次发布即可（已上传的图片不会重传）。';
   }
   return '\n\n常见原因：\n- Token 无效或过期（重新生成）\n- Token 没有勾选 repo 权限\n- 仓库名写错';
 }
