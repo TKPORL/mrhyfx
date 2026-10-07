@@ -1313,6 +1313,14 @@ ${navHeaderHtml('')}
     html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
 
+    // 历史遗留：分页块曾被注入到全站所有帖子（非 qzt 是脏数据）。
+    // 需求（站长 2026-10-07）：分页只针对求助贴 qzt.html，其他帖子一律清掉分页栏与分页资源。
+    // 只删这两段标记块，卡片 HTML 一字不动 —— 不碰名字、链接、图片、顺序。
+    // 幂等：qztInjectPager/qztUnwrapPager 同样「先删后插」，连跑两次结果一致。
+    if (file !== 'qzt.html') {
+      html = html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
+      html = html.replace(/<!--qzt-page-assets-->[\s\S]*?<!--\/qzt-page-assets-->\s*/g, '');
+    }
     // qzt 分页样式与脚本（只注入 qzt 页；先删后插保证幂等，同图标/SEO 模式）
     if (file === 'qzt.html') {
       html = html.replace(/<!--qzt-page-assets-->[\s\S]*?<!--\/qzt-page-assets-->\s*/g, '');

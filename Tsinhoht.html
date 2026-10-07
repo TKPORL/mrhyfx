@@ -1094,14 +1094,24 @@ function collectDraft() {
     html: { name: $('hName').value, title: $('hTitle').value, content: $('html').value }
   };
 }
+function writeDraftNow() {
+  const d = collectDraft();
+  localStorage.setItem(DRAFT_FORM + '_tmp', JSON.stringify(d.form));
+  localStorage.setItem(DRAFT_HTML + '_tmp', JSON.stringify(d.html));
+  localStorage.setItem(DRAFT_FORM, localStorage.getItem(DRAFT_FORM + '_tmp'));
+  localStorage.setItem(DRAFT_HTML, localStorage.getItem(DRAFT_HTML + '_tmp'));
+}
 function saveDraft() {
   clearTimeout(draftTimer);
-  draftTimer = setTimeout(() => {
-    localStorage.setItem(DRAFT_FORM + '_tmp', JSON.stringify(collectDraft().form));
-    localStorage.setItem(DRAFT_HTML + '_tmp', JSON.stringify(collectDraft().html));
-    localStorage.setItem(DRAFT_FORM, localStorage.getItem(DRAFT_FORM + '_tmp'));
-    localStorage.setItem(DRAFT_HTML, localStorage.getItem(DRAFT_HTML + '_tmp'));
-  }, 400);
+  draftTimer = setTimeout(writeDraftNow, 400);
+}
+// 立即写盘版：用在「刚粘贴完链接」这类关键动作后。
+// 2026-07-07 实测事故：saveDraft 有 400ms 防抖，粘贴链接后若在窗口内刷新/切换，
+// 草稿里还是粘贴前的旧数据，恢复后链接会落到别的卡片上（用户反馈「发布后链接串到别的游戏」）。
+// 链接是这个站最重要的数据，不能靠 400ms 的运气。
+function saveDraftNow() {
+  clearTimeout(draftTimer);
+  writeDraftNow();
 }
 function restoreDraft() {
   try {
@@ -1222,6 +1232,11 @@ function attachDraft() {
   ['hName', 'hTitle', 'html'].forEach(id => $(id).addEventListener('input', saveDraft));
   const box = $('gameBox');
   box.addEventListener('input', saveDraft);
+  // 链接类输入框：粘贴/输入完成后立即写盘，不走 400ms 防抖。
+  // 链接是这个站最容易丢的数据（丢了就会张冠李戴），不能靠防抖窗口的运气。
+  ['g-linkM', 'g-linkB', 'g-customName', 'g-customUrl'].forEach(cls => {
+    box.addEventListener('change', e => { if (e.target.classList.contains(cls)) saveDraftNow(); });
+  });
   box.addEventListener('change', e => { if (e.target.classList.contains('g-files')) { previewFiles(e.target); saveDraft(); saveCardImages(); } });
   $('clearFormDraft').onclick = () => {
     localStorage.removeItem(DRAFT_FORM);
@@ -1349,7 +1364,12 @@ function addGameCard(data) {
   const d = document.createElement('div');
   d.className = 'game';
   // 卡片唯一标识：发布后把上传好的图片链接回填到对应卡片用（不能靠下标，collectGames 会过滤空卡片）
-  d.dataset.cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  // cid 必须全局唯一且永不重复。之前用 Date.now()，restoreDraft 批量重建卡片时同一毫秒内
+  // 多张卡片会拿到同一个 cid（Date.now() 毫秒精度），撞号后 applyUploadedUrls 按 cid 回填
+  // 会贴到错误的卡片上 —— 图片/链接张冠李戴的隐患之一。
+  // 现在用「页面级自增序号 + 时间戳 + 随机串」三重保证：序号由本页面维护，跨批次也不会重。
+  window.__mrhxCardSeq = (window.__mrhxCardSeq || 0) + 1;
+  d.dataset.cid = 'c' + window.__mrhxCardSeq.toString(36) + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
   // 拖拽已取消（与「移动」按钮功能重叠，且长按选文字会误触发拖动）
   d.innerHTML = `<div class="ghead"><span class="gnum">游戏 ${n}</span>
     <div class="gbtns">
@@ -3643,8 +3663,14 @@ function isPureLink(v) {
   if (/[^\x00-\x7F]/.test(s)) return false;  // 含非 ASCII（中文/全角标点）= 一定是文字
   return /^(https?:\/\/|magnet:\?)/i.test(s);
 }
+// 链接归一化：只比「同一个链接」，忽略末尾斜杠与大小写差异；
+// 百度网盘分享码大小写敏感（1snBOE 与 1snboe 是两个不同链接），故只去末尾斜杠、不做大小写折叠。
+function linkKey(v) {
+  return String(v || '').trim().replace(/\/+$/, '');
+}
 function validateCards() {
   const problems = [];
+  const seen = {};   // linkKey → { no, name, label }
   [...$('gameBox').children].forEach((el, i) => {
     const no = i + 1;
     const name = el.querySelector('.g-name').value.trim();
@@ -3653,6 +3679,18 @@ function validateCards() {
       const v = el.querySelector(f.sel).value.trim();
       if (v && !isPureLink(v)) {
         problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
+      }
+      if (!v) return;
+      const k = linkKey(v);
+      if (seen[k]) {
+        // 同一个链接给了两个游戏 —— 2026-10-07 实测 2026106pcaz 第 12/23 个游戏共用一条网盘链接。
+        // 成因是填卡片时链接贴错，肉眼极难发现（介绍框里常常没写游戏名，无从核对），
+        // 所以在这里硬拦，撞了直接中止发布。
+        problems.push('第 ' + no + ' 张卡片「' + (name || '(无名字)') + '」的' + f.label +
+          '链接，与第 ' + seen[k].no + ' 张卡片「' + seen[k].name + '」完全相同（' +
+          v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
+      } else {
+        seen[k] = { no, name: name || '(无名字)', label: f.label };
       }
     });
   });
@@ -3677,6 +3715,10 @@ $('pubForm').onclick = async () => {
     // 发布前体检：卡片自身有问题就不上传，避免半成品上线后再靠人工补救
     const cardProblems = validateCards();
     if (cardProblems.length) { showCardProblems(cardProblems); return; }
+    // 体检通过即认定当前这份数据就是要发布的，立刻写一份草稿存底。
+    // 万一上传中途网络断/关页面，重开时草稿里就是「已通过体检的这份正确数据」，
+    // 而不是最后一次防抖窗口里那份可能还差一点点的旧数据。
+    saveDraftNow();
     const cards = collectGames();
     if (!cards.length) throw new Error('请至少添加一个游戏');
     if ([...$('gameBox').children].some(card => card.querySelector('.g-files').dataset.replaceIndex != null)) {
