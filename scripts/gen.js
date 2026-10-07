@@ -1241,7 +1241,11 @@ html = (function reorderNodes(str) {
       }
       var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
-      if (contentBlock && contentBlock.indexOf('免费帮找') > -1) {
+      // 公告卡（标题「求助公告」，2026-10-07 由「免费帮找游戏（纯公益）」改名而来）：
+      // 标题含下面任一关键词即判定为公告卡，加 node-full 让它横跨整行。
+      // ⚠️ 改名后一度只认「免费帮找」，导致 node-full 丢失（间距样式失效、
+      // 「求助公告」被当成一个游戏写进 SEO/搜索索引）。两个词都保留做兼容。
+      if (contentBlock && (contentBlock.indexOf('求助公告') > -1 || contentBlock.indexOf('免费帮找') > -1)) {
         open = open.replace(/<li class="node heading3">/, '<li class="node heading3 node-full">');
       }
       return open + contentBlock + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + (noteBlock ? '\n    ' + noteBlock : '') + '\n  </li>';
