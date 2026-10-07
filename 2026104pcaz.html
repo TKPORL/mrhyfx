@@ -1166,7 +1166,7 @@
     />
   </li>
   </ul>
-    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1GCx5QCtyyprOk7G0V__0VA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1riJ8XRaNR-qEHUAbGybiiA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
     <div class="note mm-editor"><span>【ADV/2D/日式/AI汉化版】母娘陷落 母娘陥落 v20260924【PC+安卓 2.88G】 【AA6465】</span></div>
   </li><li class="node heading3">
     <div class="bullet">
@@ -2301,12 +2301,54 @@ Ver0.91 AI汉化版双端更新，沙盒经营与多线互动结合，带你沉�
     <div class="note mm-editor"><span>【更新/欧美SLG/动态/汉化版】隔壁的女人 Ms Morisson S1Ep.6【PC+安卓 3.10G】 【C262111】</span></div>
   </li>
   </ul>
+  <!--qzt-pager--><nav class="qzt-pager" id="qztPager" hidden></nav><!--/qzt-pager-->
   <div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>
-<!--mrhx-stagger--><style>
+<!--qzt-page-assets--><style>
+.qzt-pager{margin:22px 0 8px;text-align:center}
+.qzt-pager button{display:inline-block;min-width:34px;padding:6px 10px;margin:0 3px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;font-family:inherit}
+.qzt-pager button.on{background:#a33;color:#fff;border-color:#a33}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var ul=document.querySelector('ul.node-list'); if(!ul) return;
+  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
+  var P=50, n=Math.ceil(lis.length/P); if(n<2) return;
+  var bar=document.getElementById('qztPager'); if(!bar) return;
+  bar.removeAttribute('hidden');
+  var cur=-1, btns=[];
+  function show(p){
+    if(p===cur) return;
+    cur=p;
+    lis.forEach(function(li,i){
+      var on=Math.floor(i/P)===p;
+      li.style.display=on?'':'none';
+      Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+        if(on){ if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); } }
+        else if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+      });
+    });
+    for(var j=0;j<btns.length;j++) btns[j].className=(j===p?'on':'');
+    var m=location.hash.match(/p(\d+)/);
+    if(!m || parseInt(m[1],10)!==p+1) location.hash='p'+(p+1);
+  }
+  for(var i=0;i<n;i++)(function(p){
+    var b=document.createElement('button'); b.type='button'; b.textContent=String(p+1);
+    b.addEventListener('click',function(){ show(p); window.scrollTo({top:0,behavior:'smooth'}); });
+    bar.appendChild(b); btns.push(b);
+  })(i);
+  var h=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
+  show(h>=1&&h<=n?h-1:0);
+  window.addEventListener('hashchange',function(){
+    var x=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
+    if(x>=1&&x<=n&&x-1!==cur) show(x-1);
+  });
+});
+</script><!--/qzt-page-assets-->
+    <!--mrhx-stagger--><style>
 .node:nth-child(1){animation-delay:0s}
 .node:nth-child(2){animation-delay:0.05s}
 .node:nth-child(3){animation-delay:0.1s}
