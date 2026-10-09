@@ -1837,7 +1837,7 @@ ${navHeaderHtml('')}
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${SITE_NAME} · 每日更新</title>
+<title>${SITE_NAME} · 全部合集</title>
 ${seoHead('', null, { ogImg: (days[0] && days[0].cover) || (CDN_URL + '/logo.webp') })}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -1991,52 +1991,19 @@ ${SITE_ICON_TAGS}
 ${navHeaderHtml('')}
 </header>
 <main>
-  <section class="hero">
-    <div class="hcopy">
-      <h1>Tsinho黄油站</h1>
-    </div>
-    <div class="stats">
-      <div class="stat"><b>${totalGames}</b><span>在库游戏</span></div>
-      <div class="stat"><b>${searchIndex.filter(g => /PC/i.test(g.plat || '') && !/安卓/.test(g.plat || '')).length}</b><span>PC</span></div>
-      <div class="stat"><b>${searchIndex.filter(g => /安卓/.test(g.plat || '') && /PC/i.test(g.plat || '')).length}</b><span>双端</span></div>
-    </div>
-  </section>
-  <a class="qzt-banner" href="qzt.html">
-    <span class="pin">置顶</span>
-    <span class="bt"><h3>求助贴 · 免费帮找游戏</h3><p>库里没有想要的？去求助贴留言，看到就找，纯公益不收费。</p></span>
-    <span class="go">去留言求助</span>
-  </a>
-  <div class="sect"><h2>最新游戏</h2></div>
-  <div class="layout">
-    <div class="maincol">
-      <div class="filterbar" id="gwFilter" style="display:none">
-        <button type="button" class="chip on" data-pf="">全部</button>
-        <button type="button" class="chip" data-pf="both">PC+安卓</button>
-        <button type="button" class="chip" data-pf="pc">PC</button>
-        <span class="count" style="display:none">共 <b id="gwCount">…</b> 款</span>
-      </div>
-      <div class="grid" id="gwGrid"></div>
-      <div class="qzt-more" id="gwMore" hidden><button type="button" id="gwMoreBtn">显示更多</button><span class="qzt-more-info" id="gwMoreInfo"></span></div>
-      <!-- 方案D：往期合集目录在本页隐藏，仅为备用站爬虫保留帖子卡结构（勿在此注释里写出帖子卡的开始标签原文，否则会被爬虫正则误切）；用户入口 = 导航栏「往期合集」→ daily.html -->
-      <div id="dayHidden" style="display:none" aria-hidden="true">
-      <div class="sect" style="margin-top:36px"><h2>每日分享</h2><span>${days.length} 期</span></div>
-      <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
-      </div>
-    </div>
-    <aside class="side">
-      <div class="panel">
-        <h3>热门榜单</h3>
-        <div id="hotList"><div class="hot-loading">加载中…</div></div>
-      </div>
-    </aside>
+  <div class="page-head">
+    <h1>Tsinho黄油站</h1>
+    <p>每日更新合集 · 共 ${days.length} 期 · 在库 ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款游戏。逛整期点下面卡片，找单款游戏用顶部搜索更快。</p>
   </div>
+  <div class="upd"><span class="tag">新站</span><span>全新<b>单游戏站</b>已上线：全部游戏一页逛，翻页更快体验更轻</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">前往备用站 →</a></div>
+  <div class="sect"><h2>全部合集</h2><span>${days.length} 期</span></div>
+  <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
-${gwScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}
 </body>
