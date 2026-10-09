@@ -1846,7 +1846,7 @@ ${NAV_CSS}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
-.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
+.upd{display:inline-flex;width:fit-content;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
   .upd-note{font-size:12.5px;color:#999;margin:-14px 0 16px;padding-left:4px;line-height:1.7}
@@ -1993,10 +1993,9 @@ ${navHeaderHtml('')}
 <main>
   <div class="page-head">
     <h1>Tsinho黄油站</h1>
-    <p>共 ${days.length} 期 · ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款游戏</p>
   </div>
   <div class="upd"><span class="tag">新站</span><span><b>单游戏站</b>已上线</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">前往备用站</a></div>
-  <div class="sect"><h2>全部合集</h2><span>${days.length} 期</span></div>
+  <div class="sect"><h2>全部合集</h2><span>${days.length} 期 · 共 ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
 <footer>${SITE_FOOTER}</footer>
