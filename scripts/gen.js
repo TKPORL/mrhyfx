@@ -689,11 +689,12 @@ const popupHtml = (() => {
 <script>
   // 2026-10-09 站长要求：公告每小时弹一次；公告内容被改过则立即重弹。
   // 记「上次关闭时间 + 当时公告内容指纹」，任一不满足就显示。
+  (function(){
   var K_TIME='mrhx_ann_time', K_SIG='mrhx_ann_sig', TTL=3600*1000;
   var el=document.getElementById('mrhxPopup');
   if(!el) return;
   var content=el.querySelector('.mrhx-popup-content');
-  var text=content?content.textContent.replace(/\s+/g,'') : '';
+  var text=content?content.textContent:'';
   var sig='';
   for(var i=0;i<text.length;i++){ sig=((sig<<5)-sig+text.charCodeAt(i))>>>0; }
   sig=String(sig)+'_'+text.length;
@@ -708,6 +709,7 @@ const popupHtml = (() => {
   };
   var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
   var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
+  })();
 </script>
 <style>
 .mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
