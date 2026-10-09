@@ -91,44 +91,47 @@ html,body{overflow-x:clip}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
-main{max-width:1080px;margin:0 auto;padding:22px 20px 44px}
-.crumbs{font-size:13px;color:#999;margin-bottom:16px}
+main{max-width:1080px;margin:0 auto;padding:26px 20px 56px}
+.crumbs{font-size:13px;color:#999;margin-bottom:18px}
 .crumbs a:hover{color:#e5484d}
-.detail{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;background:#fff;border:1px solid #ecebe9;border-radius:16px;padding:30px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.d-cover{width:100%;height:auto;object-fit:contain;border-radius:12px;background:#f4f2ef}
-.d-headrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.d-title{font-size:24px;font-weight:800;line-height:1.4}
-.badge{font-size:13px;font-weight:600;border-radius:8px;padding:5px 13px;display:inline-block}
+.detail{display:grid;grid-template-columns:340px minmax(0,1fr);gap:38px;background:#fff;border:1px solid #ecebe9;border-radius:18px;padding:34px;box-shadow:0 2px 10px rgba(43,43,43,.05)}
+.d-cover{width:100%;aspect-ratio:16/11;object-fit:cover;border-radius:12px;background:#f4f2ef;box-shadow:0 4px 16px rgba(43,43,43,.08)}
+.d-headrow{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.d-title{font-size:26px;font-weight:800;line-height:1.35;flex:1;min-width:200px}
+.badge{font-size:13px;font-weight:600;border-radius:8px;padding:5px 13px;display:inline-block;margin-top:6px}
 .badge.plat-both{background:#e5484d;color:#fff}
 .badge.plat-pc{background:#3949ab;color:#fff}
 .badge.plat-az{background:#4a7326;color:#fff}
 .badge.plat-none{background:#f1efe9;color:#888}
-.badge.time{background:#f1efe9;color:#888;font-size:12.5px;margin-top:10px}
-.like-center{display:flex;justify-content:center;margin:26px 0 6px}
-.like-btn{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:10px 22px;transition:.18s}
-.like-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
-.like-btn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-.like-btn.liked{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.dl-title{font-size:14px;font-weight:700;color:#888;letter-spacing:2px;margin:18px 0 10px}
+.badge.time{background:#f1efe9;color:#888;font-size:12.5px;margin:0 0 4px}
+.dl-zone{margin-top:22px;background:#f8faf7;border:1px solid #e3ede6;border-radius:14px;padding:18px 20px}
+.dl-title{font-size:12.5px;font-weight:700;color:#5c8a6e;letter-spacing:2px;margin:0 0 12px;display:flex;align-items:center;gap:7px}
+.dl-title::before{content:'';width:7px;height:7px;border-radius:50%;background:#1a9e5c}
 .dl-btns{display:flex;gap:10px;flex-wrap:wrap}
-.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:10px;font-size:15px;font-weight:600;transition:.2s;text-decoration:none}
-.dl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:600;transition:.2s;text-decoration:none}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(26,158,92,.25)}
 .dl-btn.primary{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
 .dl-btn.primary:hover{background:#178a50}
 .dl-btn.alt{background:#fff;color:#444;border:1px solid #e2ded8}
-.dl-btn.alt:hover{color:#e5484d;border-color:#f0b4b6}
+.dl-btn.alt:hover{color:#1a9e5c;border-color:#bcd9c9;box-shadow:0 6px 16px rgba(0,0,0,.08)}
 .dl-btn svg{width:15px;height:15px}
 .dl-none{color:#999;font-size:14px}
-.dl-note{margin-top:12px;font-size:13px;color:#999;line-height:1.7}
-.intro{margin-top:24px;padding-top:22px;border-top:1px dashed #ecebe9}
-.intro h3,.rel h3{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dl-note{margin-top:12px;font-size:12.5px;color:#9aa89f;line-height:1.7}
+.dl-note a{color:#e5484d}
+.intro{margin-top:26px;padding-top:24px;border-top:1px dashed #ecebe9}
+.intro h3,.rel h3{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .intro h3::before,.rel h3::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
 .intro .txt{font-size:15px;color:#444;line-height:1.9;white-space:pre-wrap;word-break:break-word}
-.rel{margin-top:28px}
-.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.like-center{display:flex;justify-content:flex-end;margin:18px 0 0;padding-top:16px;border-top:1px dashed #ecebe9}
+.like-btn{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:10px 24px;transition:.18s}
+.like-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.like-btn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.like-btn.liked{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
+.rel{margin-top:32px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px}
 .rcard{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s;display:block;text-decoration:none}
 .rcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-.rcard .c{position:relative;aspect-ratio:16/9;overflow:hidden;background:#f4f2ef}
+.rcard .c{position:relative;aspect-ratio:16/10;overflow:hidden;background:#f4f2ef}
 .rcard .c img{width:100%;height:100%;object-fit:cover;object-position:top}
 .rcard .p{position:absolute;left:8px;top:8px;font-size:10.5px;font-weight:600;color:#fff;background:rgba(43,43,43,.72);border-radius:6px;padding:2px 7px}
 .rcard .i{padding:12px 14px 14px;border-top:1px solid #ecebe9}
@@ -214,13 +217,15 @@ main{max-width:1080px;margin:0 auto;padding:22px 20px 44px}
     <div>
       <div class="d-headrow"><h1 class="d-title">黄昏时偶然的黑与白</h1><span class="badge plat-pc">PC</span></div>
       <span class="badge time">发布于 2026年9月10日</span>
-      <div class="dl-title">下载地址</div>
-      <div class="dl-btns"><a class="dl-btn primary" href="https://yun.139.com/shareweb/#/w/i/2xG3tWmgoAtmz" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>移动云盘（不限速）</a><a class="dl-btn alt" href="https://pan.baidu.com/s/1V2z8BO8qXJEdycYVraHlQw?pwd=839m" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>百度网盘</a></div>
-      <p class="dl-note">链接自动同步自每日分享，若失效请到<a href="2026910pc.html" style="color:#e5484d">来源帖</a>留言。安卓游戏请先看解压教程再安装。</p>
+      <div class="dl-zone">
+        <div class="dl-title">下载地址</div>
+        <div class="dl-btns"><a class="dl-btn primary" href="https://yun.139.com/shareweb/#/w/i/2xG3tWmgoAtmz" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>移动云盘（不限速）</a><a class="dl-btn alt" href="https://pan.baidu.com/s/1V2z8BO8qXJEdycYVraHlQw?pwd=839m" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>百度网盘</a></div>
+        <p class="dl-note">链接自动同步自每日分享，若失效请到<a href="2026910pc.html">来源帖</a>留言。安卓游戏请先看解压教程再安装。</p>
+      </div>
       <div class="intro"><h3>游戏介绍</h3><div class="txt">【SLG/AI汉化】黄昏时偶然的黑与白1.2【PC 927M】 【24884】</div></div>
+      <div class="like-center"><button type="button" class="like-btn" id="likeBtn"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.6 2.6 5 6.2 5c2.2 0 3.7 1.2 4.6 2.6h2.4C14.1 6.2 15.6 5 17.8 5c3.6 0 5.6 3.6 4.2 6.7C19.5 16.3 12 21 12 21z"/></svg><span id="likeTxt">点赞 …</span></button></div>
     </div>
   </section>
-  <div class="like-center"><button type="button" class="like-btn" id="likeBtn"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.6 2.6 5 6.2 5c2.2 0 3.7 1.2 4.6 2.6h2.4C14.1 6.2 15.6 5 17.8 5c3.6 0 5.6 3.6 4.2 6.7C19.5 16.3 12 21 12 21z"/></svg><span id="likeTxt">点赞 …</span></button></div>
   <div class="comments-wrap" id="commentsHost"></div>
   <section class="rel"><h3>相关推荐</h3><div class="rel-grid"><a class="rcard" href="game/695.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/j0o74d6mw5.webp" alt="鸡鸡硬硬公园"><span class="p">PC</span></div><div class="i"><div class="t">鸡鸡硬硬公园</div></div></a><a class="rcard" href="game/696.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/ep7zq6agw3.webp" alt="冒险途中全员告白"><span class="p">PC</span></div><div class="i"><div class="t">冒险途中全员告白</div></div></a><a class="rcard" href="game/697.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/kd915of7ck.webp" alt="与流民少女共谱的食堂繁荣记"><span class="p">PC</span></div><div class="i"><div class="t">与流民少女共谱的食堂繁荣记</div></div></a><a class="rcard" href="game/698.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/e7mtpf0ecp.webp" alt="淫界人柱阿拉卡.JK驱魔师恐怖探索"><span class="p">PC</span></div><div class="i"><div class="t">淫界人柱阿拉卡.JK驱魔师恐怖探索</div></div></a><a class="rcard" href="game/700.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/5si430tef7.webp" alt="梦境5 春之欲望"><span class="p">PC</span></div><div class="i"><div class="t">梦境5 春之欲望</div></div></a><a class="rcard" href="game/701.html"><div class="c"><img loading="lazy" src="https://tkporl.github.io/mrhyfx/assets/2026910pc/rs9yll0dio.webp" alt="虫潮孤堡机欲防线"><span class="p">PC</span></div><div class="i"><div class="t">虫潮孤堡机欲防线</div></div></a></div></section>
 </main>
