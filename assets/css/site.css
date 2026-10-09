@@ -276,3 +276,35 @@ footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;l
 footer .disc-link,footer a{color:#e5484d;text-decoration:none}
 footer .disc-link:hover{text-decoration:underline}
 footer .foot-mail{font-size:13.5px;font-weight:600}
+
+/* ===== 2026-10-10 补齐：平台筛选 + 抽屉菜单图标样式（与 NAV_CSS 同步，帖子页此前缺失导致图标撑成大黑块） ===== */
+.plat-dd{position:relative;flex-shrink:0}
+.hd-bar .plat-slot{display:flex;align-items:center;flex-shrink:0;margin-left:auto;padding-left:12px}
+.plat-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.plat-btn:hover,.plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.plat-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;transition:transform .2s}
+.plat-btn .pic{display:none;width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.plat-btn .pl-head{display:none}
+.plat-dd.open .plat-btn .chev{transform:rotate(180deg)}
+.plat-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:150px;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:6px;display:none;z-index:30}
+.plat-dd.open .plat-menu{display:block}
+.plat-menu button{display:block;width:100%;text-align:left;font-family:inherit;font-size:13px;color:#555;background:none;border:none;border-radius:8px;padding:9px 12px;cursor:pointer;transition:.15s}
+.plat-menu button:hover{background:#fdf3f3;color:#e5484d}
+.plat-menu button.on{background:#fdf3f3;color:#e5484d;font-weight:700}
+#mrhxMoreDrop .plat-dd{display:block;width:100%;box-sizing:border-box;padding:0 14px 12px;margin-top:-4px}
+#mrhxMoreDrop .plat-btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;box-sizing:border-box;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+#mrhxMoreDrop .plat-btn .pic{display:block}
+#mrhxMoreDrop .plat-btn .pl-desk{display:none}
+#mrhxMoreDrop .plat-btn .pl-head{display:inline}
+#mrhxMoreDrop .plat-btn .chev{margin-left:auto}
+#mrhxMoreDrop .plat-btn:hover,#mrhxMoreDrop .plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-btn .chev{width:14px;height:14px;stroke:#999;stroke-width:2.2;flex-shrink:0}
+#mrhxMoreDrop .plat-dd.open .plat-btn .chev{stroke:#e5484d}
+#mrhxMoreDrop .plat-menu{position:static;display:none;min-width:0;width:100%;box-sizing:border-box;margin-top:8px;border:1px solid #ecebe9;border-radius:12px;box-shadow:none;padding:6px;background:#fff}
+#mrhxMoreDrop .plat-dd.open .plat-menu{display:block}
+#mrhxMoreDrop .plat-menu button{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;text-align:left;font-size:14px;color:#555;background:#faf9f7;border:1px solid #f0eeec;border-radius:9px;padding:11px 13px;margin-bottom:6px}
+#mrhxMoreDrop .plat-menu button:last-child{margin-bottom:0}
+#mrhxMoreDrop .plat-menu button:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
+#mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
