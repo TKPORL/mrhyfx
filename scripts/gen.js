@@ -1030,6 +1030,11 @@ function qztUnwrapPager(html) {
   // 分页壳剥除（先删后插）
   html = html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
   html = html.replace(/<!--qzt-page-assets-->[\s\S]*?<!--\/qzt-page-assets-->\s*/g, '');
+  // defer 变体归一化（2026-10-09）：上次运行 qztDeferImages 写出的 hidden 变体卡，
+  // reorder 按 '<li class="node heading3">' 精确认卡，变体会被处理链毁掉（曾丢 145 卡）。
+  // 必须在 reorder 前还原成标准开标签；图片的 data-src 留给 qztDeferImages 按新顺序双向归位。
+  html = html.split('<li hidden class="node heading3">').join('<li class="node heading3">');
+  html = html.split('<li class="node heading3" hidden>').join('<li class="node heading3">');
   return html;
 }
 function qztInjectPager(html) {
@@ -1040,6 +1045,23 @@ function qztInjectPager(html) {
   return html.slice(0, end + 5)
     + '\n  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->'
     + html.slice(end + 5);
+}
+function qztDeferImages(s) {
+  // 生成期真·延迟加载：第 60 张卡之后的 img 不写 src（写 data-src），li 加 hidden——
+  // 浏览器解析 HTML 时就不会发起这 144 个图片请求（此前只在浏览器端摘 src，
+  // 为时已晚，206 张图并发把用户网络打爆，前 60 张也转圈——2026-10-09 用户实测踩坑）。
+  // ⚠️ 入参是 node-list 的 inner（以第一张卡开头），split 后 parts[0] = 卡 0，parts[i] = 卡 i
+  return s.split(/(?=<li class="node heading3)/).map(function (p, i) {
+    if (i < QZT_MORE_COUNT) {
+      // 前 60 卡反向还原：上轮被 defer 的卡若因新帖插入排进前 60，必须拿回真 src
+      return p.replace(/(<img\b[^>]*?)\sdata-src="([^"]*)"/g, '$1 src="$2"');
+    }
+    return p
+      .replace(/(<img\b[^>]*?)\ssrc="([^"]*)"/g, '$1 data-src="$2"')
+      // hidden 必须插在 class 之后——gen.js 守卫与搜索索引都按 '<li class="node heading3' 前缀数卡，
+      // 写成 '<li hidden class=...' 会让统计掉到 61 触发发布自检（2026-10-09 踩坑）
+      .replace(/<li class="node heading3">/, '<li class="node heading3" hidden>');
+  }).join('');
 }
 const QZT_PAGE_ASSETS = `<style>
 .qzt-more{margin:26px 0 10px;text-align:center}
@@ -1062,29 +1084,28 @@ document.addEventListener('DOMContentLoaded',function(){
   var FIRST=${QZT_MORE_COUNT}; if(lis.length<=FIRST) return;
   var box=document.getElementById('qztMore'); if(!box) return;
   var info=document.getElementById('qztMoreInfo');
-  function stash(imgs){
-    Array.prototype.forEach.call(imgs,function(im){
-      if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+  var shown=FIRST;
+  function fill(li){
+    li.removeAttribute('hidden');
+    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
     });
   }
-  function hideFrom(i){
-    for(var j=i;j<lis.length;j++){
-      lis[j].setAttribute('hidden','');
-      stash(lis[j].querySelectorAll('img'));
-    }
+  function refresh(){
+    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
+    if(shown>=lis.length) box.style.display='none';
+  }
+  function showBatch(){
+    var end=Math.min(shown+FIRST,lis.length);
+    for(var j=shown;j<end;j++) fill(lis[j]);
+    shown=end; refresh();
   }
   function showAll(){
-    lis.forEach(function(li){
-      li.removeAttribute('hidden');
-      Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-        if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
-      });
-    });
-    box.style.display='none';
+    lis.forEach(fill);
+    shown=lis.length; refresh();
   }
-  hideFrom(FIRST);
   box.removeAttribute('hidden');
-  if(info) info.textContent='已显示 '+FIRST+' 款 · 共 '+lis.length+' 款游戏';
+  refresh();
   // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
   if(/p\\d+/.test(location.hash) && parseInt((location.hash.match(/p(\\d+)/)||[])[1],10)>1) showAll();
   var btn=document.getElementById('qztMoreBtn');
@@ -1094,10 +1115,11 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   var mask=document.createElement('div');
   mask.className='qzt-modal-mask'; mask.id='qztModal';
-  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-FIRST)+' 款游戏未显示。<br>全部显示可能会让页面变卡，要怎么显示？</p><div class="row"><button type="button" id="qztCancel">只看前 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztCancel">先不加了</button><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
   document.body.appendChild(mask);
   mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
   document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
+  document.getElementById('qztBatch').addEventListener('click',function(){ mask.classList.remove('show'); showBatch(); });
   document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });
 </script>`;
@@ -1270,7 +1292,9 @@ html = (function reorderNodes(str) {
       return open + contentBlock + (imgBlock ? '\n    ' + imgBlock : '') + (dlBlock ? '\n    ' + dlBlock : '') + (noteBlock ? '\n    ' + noteBlock : '') + '\n  </li>';
     });
     blocks = blocks.filter(b => b.trim().length > 0);
-    return prefix + '<ul class="node-list">\n' + blocks.join('') + '\n  </ul>' + suffix;
+    let qztInner = blocks.join('');
+    if (file === 'qzt.html') qztInner = qztDeferImages(qztInner);
+    return prefix + '<ul class="node-list">\n' + qztInner + '\n  </ul>' + suffix;
   })(file === 'qzt.html' ? qztUnwrapPager(html) : html);
 
     // qzt.html：卡片壳已剥净，此处注入页码栏（DOM 不包壳，reorder 无痕）
