@@ -1327,29 +1327,28 @@ document.addEventListener('DOMContentLoaded',function(){
   var FIRST=60; if(lis.length<=FIRST) return;
   var box=document.getElementById('qztMore'); if(!box) return;
   var info=document.getElementById('qztMoreInfo');
-  function stash(imgs){
-    Array.prototype.forEach.call(imgs,function(im){
-      if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+  var shown=FIRST;
+  function fill(li){
+    li.removeAttribute('hidden');
+    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
     });
   }
-  function hideFrom(i){
-    for(var j=i;j<lis.length;j++){
-      lis[j].setAttribute('hidden','');
-      stash(lis[j].querySelectorAll('img'));
-    }
+  function refresh(){
+    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
+    if(shown>=lis.length) box.style.display='none';
+  }
+  function showBatch(){
+    var end=Math.min(shown+FIRST,lis.length);
+    for(var j=shown;j<end;j++) fill(lis[j]);
+    shown=end; refresh();
   }
   function showAll(){
-    lis.forEach(function(li){
-      li.removeAttribute('hidden');
-      Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-        if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
-      });
-    });
-    box.style.display='none';
+    lis.forEach(fill);
+    shown=lis.length; refresh();
   }
-  hideFrom(FIRST);
   box.removeAttribute('hidden');
-  if(info) info.textContent='已显示 '+FIRST+' 款 · 共 '+lis.length+' 款游戏';
+  refresh();
   // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
   if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
   var btn=document.getElementById('qztMoreBtn');
@@ -1359,10 +1358,11 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   var mask=document.createElement('div');
   mask.className='qzt-modal-mask'; mask.id='qztModal';
-  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-FIRST)+' 款游戏未显示。<br>全部显示可能会让页面变卡，要怎么显示？</p><div class="row"><button type="button" id="qztCancel">只看前 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztCancel">先不加了</button><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
   document.body.appendChild(mask);
   mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
   document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
+  document.getElementById('qztBatch').addEventListener('click',function(){ mask.classList.remove('show'); showBatch(); });
   document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });
 </script><!--/qzt-page-assets-->
