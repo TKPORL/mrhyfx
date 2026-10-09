@@ -105,6 +105,9 @@ const NAV_MENU = (() => {
   // 2026-10-09 站长定稿：桌面导航与备用站一致，含免责声明；往期合集只在手机抽屉
   items.push({ label: '免责声明', url: 'mianze.html',
     ic: '<path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/>' });
+  // 备用站（单游戏站）：外链，新标签打开
+  items.push({ label: '备用站', url: 'https://tkporl.github.io/hyfxdyx/',
+    ic: '<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/>' });
   items.push({ label: '往期合集', url: 'daily.html', mobileOnly: true,
     ic: '<path d="M4 5h16v14H4z"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/>' });
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
@@ -1996,7 +1999,6 @@ ${navHeaderHtml('')}
   <div class="page-head">
     <h1>Tsinho黄油站</h1>
   </div>
-  <div class="upd"><span class="tag">新站</span><span><b>单游戏站</b>已上线</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">前往备用站</a></div>
   <div class="sect"><h2>全部合集</h2><span>${days.length} 期 · 共 ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
