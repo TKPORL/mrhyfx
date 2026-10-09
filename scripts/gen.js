@@ -100,7 +100,7 @@ const NAV_MENU = (() => {
     ic: '<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/>' });
   items.push({ label: '游戏工具', url: 'tools.html',
     ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/>' });
-  items.push({ label: '下载说明', url: 'download.html',
+  items.push({ label: '不限速教程', url: 'download.html',
     ic: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>' });
   // 2026-10-09 站长定稿：桌面导航与备用站一致，含免责声明；往期合集只在手机抽屉
   items.push({ label: '免责声明', url: 'mianze.html',
@@ -1846,6 +1846,8 @@ ${NAV_CSS}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
+.page-head{margin-bottom:18px}
+.page-head h1{font-size:26px;font-weight:800;letter-spacing:.5px}
 .upd{display:inline-flex;width:fit-content;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
@@ -1859,7 +1861,7 @@ main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
   .pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
   .pg.off{opacity:.35;cursor:default}
   .pginfo{font-size:12px;color:#999;margin-left:6px}
-.sect{display:flex;align-items:center;gap:12px;margin:4px 0 16px;flex-wrap:nowrap}
+.sect{display:flex;align-items:center;gap:12px;margin:30px 0 16px;flex-wrap:nowrap}
 .sect::before,.sect::after{content:'';height:1px;background:#ecebe9;flex:1}
 .sect h2{font-size:14px;font-weight:800;color:#2b2b2b;letter-spacing:1px;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .sect h2::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
