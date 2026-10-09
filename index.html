@@ -201,7 +201,9 @@ main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
 .gcard .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b4b0a9;background:#f4f2ef;letter-spacing:2px}
 .gcard .cover img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .35s;display:block}
 .gcard:hover .cover img{transform:scale(1.04)}
-.gcard .plat{position:absolute;left:9px;top:9px;font-size:10.5px;font-weight:600;color:#fff;background:rgba(28,26,24,.72);backdrop-filter:blur(4px);border-radius:6px;padding:2px 7px}
+.gcard .plat{position:absolute;left:9px;top:9px;font-size:10.5px;font-weight:700;color:#fff;background:#5a8dee;border-radius:6px;padding:2px 7px;letter-spacing:.3px;pointer-events:none}
+.gcard .plat.az{background:#1a9e5c}
+.gcard .plat.both{background:#8b5cf6}
 .gcard .new{position:absolute;right:9px;top:9px;font-size:10.5px;font-weight:700;color:#fff;background:#e5484d;border-radius:6px;padding:2px 7px}
 .gcard .info{padding:10px 12px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
 .gcard .trow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
@@ -984,7 +986,7 @@ footer .disc-link:hover{text-decoration:underline}
     var isNew = g.source && g.source.replace(/.html$/, '') === NEWEST;
     return '<a class="gcard" href="' + esc(href) + '"><div class="cover">' +
       (g.img ? '<img loading="lazy" src="' + esc(g.img) + '" alt="' + esc(g.title) + '">' : '<span class="noimg">无图</span>') +
-      (g.plat ? '<span class="plat">' + esc(g.plat) + '</span>' : '') +
+      (g.plat ? '<span class="plat ' + (/安卓/.test(g.plat) ? (/PC/i.test(g.plat) ? 'both' : 'az') : 'pc') + '">' + esc(g.plat) + '</span>' : '') +
       (isNew ? '<span class="new">NEW</span>' : '') +
       '</div><div class="info"><div class="trow"><div class="t">' + esc(g.title) + '</div>' +
       '<div class="meta"><span class="date-txt">' + esc(fmtDay(g.d)) + '</span></div></div></div></a>';
