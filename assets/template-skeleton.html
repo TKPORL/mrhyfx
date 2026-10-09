@@ -1309,6 +1309,8 @@
 </script>
 
     <!--qzt-page-assets--><style>
+/* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
+.node[hidden]{display:none!important}
 .qzt-more{margin:26px 0 10px;text-align:center}
 .qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
 .qzt-more button:hover{background:#e5484d;color:#fff}
