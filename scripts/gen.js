@@ -1020,7 +1020,7 @@ const allGames = [];
 // 单文件 JS 分页：卡片全在页面里（SEO/搜索索引不受影响），脚本按每 50 张一组切换显示；
 // 非当前页的 img 把 src 暂存 data-src 并清空，翻到才加载（display:none 挡不住非 lazy img 发请求，必须清 src）。
 // 幂等：页码栏与样式脚本都用注释标记先删后插；DOM 不包壳，reorderNodes 输入输出无痕。
-const QZT_PAGE_SIZE = 50;
+const QZT_MORE_COUNT = 60;
 function qztUnwrapPager(html) {
   // 兼容清理：2026-10-01 短暂上线过的折叠壳（横幅 + hidden 容器），剥掉还原成纯净卡片流
   html = html.replace(/<div class="qzt-fold-box">[\s\S]*?<\/div>\s*/g, '');
@@ -1038,48 +1038,67 @@ function qztInjectPager(html) {
   const end = html.lastIndexOf('</ul>');
   if (end < 0) return html;
   return html.slice(0, end + 5)
-    + '\n  <!--qzt-pager--><nav class="qzt-pager" id="qztPager" hidden></nav><!--/qzt-pager-->'
+    + '\n  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->'
     + html.slice(end + 5);
 }
 const QZT_PAGE_ASSETS = `<style>
-.qzt-pager{margin:22px 0 8px;text-align:center}
-.qzt-pager button{display:inline-block;min-width:34px;padding:6px 10px;margin:0 3px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;font-family:inherit}
-.qzt-pager button.on{background:#a33;color:#fff;border-color:#a33}
+.qzt-more{margin:26px 0 10px;text-align:center}
+.qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.qzt-more button:hover{background:#e5484d;color:#fff}
+.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
+.qzt-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.qzt-modal-mask.show{display:flex}
+.qzt-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.qzt-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.qzt-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.qzt-modal button:hover{opacity:.9}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
   var ul=document.querySelector('ul.node-list'); if(!ul) return;
   var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var P=${QZT_PAGE_SIZE}, n=Math.ceil(lis.length/P); if(n<2) return;
-  var bar=document.getElementById('qztPager'); if(!bar) return;
-  bar.removeAttribute('hidden');
-  var cur=-1, btns=[];
-  function show(p){
-    if(p===cur) return;
-    cur=p;
-    lis.forEach(function(li,i){
-      var on=Math.floor(i/P)===p;
-      li.style.display=on?'':'none';
+  var FIRST=${QZT_MORE_COUNT}; if(lis.length<=FIRST) return;
+  var box=document.getElementById('qztMore'); if(!box) return;
+  var info=document.getElementById('qztMoreInfo');
+  function stash(imgs){
+    Array.prototype.forEach.call(imgs,function(im){
+      if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+    });
+  }
+  function hideFrom(i){
+    for(var j=i;j<lis.length;j++){
+      lis[j].setAttribute('hidden','');
+      stash(lis[j].querySelectorAll('img'));
+    }
+  }
+  function showAll(){
+    lis.forEach(function(li){
+      li.removeAttribute('hidden');
       Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-        if(on){ if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); } }
-        else if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+        if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
       });
     });
-    for(var j=0;j<btns.length;j++) btns[j].className=(j===p?'on':'');
-    var m=location.hash.match(/p(\\d+)/);
-    if(!m || parseInt(m[1],10)!==p+1) location.hash='p'+(p+1);
+    box.style.display='none';
   }
-  for(var i=0;i<n;i++)(function(p){
-    var b=document.createElement('button'); b.type='button'; b.textContent=String(p+1);
-    b.addEventListener('click',function(){ show(p); window.scrollTo({top:0,behavior:'smooth'}); });
-    bar.appendChild(b); btns.push(b);
-  })(i);
-  var h=parseInt((location.hash.match(/p(\\d+)/)||[])[1],10);
-  show(h>=1&&h<=n?h-1:0);
-  window.addEventListener('hashchange',function(){
-    var x=parseInt((location.hash.match(/p(\\d+)/)||[])[1],10);
-    if(x>=1&&x<=n&&x-1!==cur) show(x-1);
+  hideFrom(FIRST);
+  box.removeAttribute('hidden');
+  if(info) info.textContent='已显示 '+FIRST+' 款 · 共 '+lis.length+' 款游戏';
+  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
+  if(/p\\d+/.test(location.hash) && parseInt((location.hash.match(/p(\\d+)/)||[])[1],10)>1) showAll();
+  var btn=document.getElementById('qztMoreBtn');
+  if(btn) btn.addEventListener('click',function(){
+    var mask=document.getElementById('qztModal');
+    if(mask) mask.classList.add('show');
   });
+  var mask=document.createElement('div');
+  mask.className='qzt-modal-mask'; mask.id='qztModal';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-FIRST)+' 款游戏未显示。<br>全部显示可能会让页面变卡，要怎么显示？</p><div class="row"><button type="button" id="qztCancel">只看前 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  document.body.appendChild(mask);
+  mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
+  document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
+  document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });
 </script>`;
 
@@ -1944,9 +1963,255 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   fs.writeFileSync('search.html', searchPage);
   console.log('search.html ok');
 
+  // ===== 期A：独立游戏页生成（game/<自增编号>.html）=====
+  // 设计确认书：【期A·独立页生成器·设计确认书】20261009.md
+  // 锚 = 来源帖slug__封面文件名（重排/改介绍不变）；对照表 game-id-map.json 记「锚→编号」，
+  //   删除的编号永不复用；对照表地位等同 timestamps.json，绝不能丢。
+  let gamePages = [];
+  {
+    const MAP_FILE = 'game-id-map.json';
+    let idMap = {};
+    if (fs.existsSync(MAP_FILE)) {
+      try { idMap = readJson(MAP_FILE); }
+      catch (e) { throw new Error('game-id-map.json 解析失败——它记录着全部独立页编号，乱用会打乱所有网址，中止生成。修复后再跑。'); }
+    }
+    const usedNums = new Set(Object.values(idMap).map(Number));
+    let nextNum = 1;
+    while (usedNums.has(nextNum)) nextNum++;
+    const contentHash = s => { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) >>> 0; return x.toString(36); };
+    const anchorRaw = g => path.parse(g.url || 'unknown').name + '__' + ((g.img || '').split('/').pop().replace(/\.[a-z]+$/i, ''));
+    // 锚去重：同帖同图（老帖通用图名/无图条目）追加内容哈希（与顺序无关，重排不变形）
+    const seenAnchor = {};
+    const entries = searchIndex.map(g => {
+      let a = anchorRaw(g);
+      if (seenAnchor[a]) a += '-' + contentHash(g.title + '|' + (g.intro || '') + '|' + (g.links || []).map(l => l.url).join(','));
+      seenAnchor[a] = 1;
+      return { g, a };
+    });
+    for (const { a } of entries) {
+      if (!idMap[a]) { idMap[a] = String(nextNum); usedNums.add(nextNum); nextNum++; }
+    }
+    fs.writeFileSync(MAP_FILE, JSON.stringify(idMap));
+    const g2num = new Map(entries.map(e => [e.g, idMap[e.a]]));
+
+    fs.mkdirSync('game', { recursive: true });
+    const cm = SITE.comments;
+    const cmOn = !!(cm.enabled && cm.url && cm.anonKey);
+    const cmSb = cmOn ? esc(cm.url.replace(/\/+$/, '')) : '';
+    const cmKey = cmOn ? esc(cm.anonKey) : '';
+    const cmFold = cmOn && Number(cm.foldThreshold) > 0 ? Number(cm.foldThreshold) : 6;
+    const platClassOf = p => (/安卓/.test(p) && /PC/i.test(p)) ? 'both' : /安卓/.test(p) ? 'az' : /PC/i.test(p) ? 'pc' : '';
+    const fmtTs = ts => { const d = new Date(ts); return isNaN(d) ? '' : `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`; };
+    const kept = new Set();
+
+    entries.forEach(({ g, a }) => {
+      const num = idMap[a];
+      const key = String(num);
+      const fname = key + '.html';
+      kept.add(fname);
+      const pagePath = '/game/' + fname;
+      const slug = path.parse(g.url || '').name;
+      const ts = TIMESTAMPS[slug] || '';
+      const pc = platClassOf(g.plat || '');
+      // 相关推荐：同帖优先，不足补同平台，6 个（生成时算好写死）
+      const rel = [];
+      for (const x of searchIndex) { if (x !== g && x.url === g.url && rel.length < 6) rel.push(x); }
+      for (const x of searchIndex) { if (x !== g && x.plat === g.plat && !rel.includes(x) && rel.length < 6) rel.push(x); }
+      const relHtml = rel.map(x => {
+        const n = g2num.get(x);
+        const ximg = x.img || (CDN_URL + '/logo.webp');
+        return `<a class="rcard" href="game/${n}.html"><div class="c"><img loading="lazy" src="${esc(ximg)}" alt="${esc(x.title)}"><span class="p">${esc(x.plat || '')}</span></div><div class="i"><div class="t">${esc(x.title)}</div></div></a>`;
+      }).join('');
+      const dlBtns = (g.links && g.links.length)
+        ? g.links.map((l, i) => `<a class="dl-btn ${i === 0 ? 'primary' : 'alt'}" href="${esc(l.url)}" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>${esc(l.label || '下载地址')}</a>`).join('')
+        : '<span class="dl-none">暂无下载链接，请到来源帖查看</span>';
+      const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@type': 'VideoGame', name: g.title, image: g.img || undefined, description: (g.intro || '').slice(0, 300) || undefined, genre: g.plat || undefined, url: SITE_URL + 'game/' + fname });
+      const likeScript = cmOn ? `
+<script>
+(function () {
+  var SB = '${cmSb}', KEY = '${cmKey}', ID = '${pagePath}';
+  var h = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY };
+  var base = 0;
+  function render() {
+    var liked = false;
+    try { liked = localStorage.getItem('mrhyfx_like_' + ID) === '1'; } catch (e) {}
+    var b = document.getElementById('likeBtn');
+    if (!b) return;
+    b.classList.toggle('liked', liked);
+    b.disabled = liked;
+    document.getElementById('likeTxt').textContent = liked ? '已赞 ' + base : '点赞 ' + base;
+  }
+  fetch(SB + '/rest/v1/game_likes?select=count&game_id=eq.' + encodeURIComponent(ID), { headers: h })
+    .then(function (r) { return r.json(); })
+    .then(function (rows) { base = (rows && rows[0] && rows[0].count) || 0; render(); })
+    .catch(function () { render(); });
+  var btn = document.getElementById('likeBtn');
+  if (btn) btn.addEventListener('click', function () {
+    try { if (localStorage.getItem('mrhyfx_like_' + ID) === '1') return; } catch (e) { return; }
+    btn.disabled = true;
+    fetch(SB + '/rest/v1/rpc/inc_game_like', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify({ p_id: ID }) })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (c) { base = Number(c) || base + 1; try { localStorage.setItem('mrhyfx_like_' + ID, '1'); } catch (e) {} render(); })
+      .catch(function () { btn.disabled = false; document.getElementById('likeTxt').textContent = '点赞失败，请重试'; });
+  });
+})();
+</script>` : '';
+      const page = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(g.title)} - ${esc(SITE_NAME)}</title>
+<base href="${SITE_URL}">
+${seoHead('game/' + fname, g.title, { desc: (g.intro || '').slice(0, 120), ogImg: g.img || '' })}
+${SITE_ICON_TAGS}
+<script type="application/ld+json">${jsonLd}</script>
+<style>
+${NAV_CSS}
+</style>
+<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:clip}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+main{max-width:1080px;margin:0 auto;padding:22px 20px 44px}
+.crumbs{font-size:13px;color:#999;margin-bottom:16px}
+.crumbs a:hover{color:#e5484d}
+.detail{display:grid;grid-template-columns:320px minmax(0,1fr);gap:34px;background:#fff;border:1px solid #ecebe9;border-radius:16px;padding:30px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.d-cover{width:100%;height:auto;object-fit:contain;border-radius:12px;background:#f4f2ef}
+.d-headrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.d-title{font-size:24px;font-weight:800;line-height:1.4}
+.badge{font-size:13px;font-weight:600;border-radius:8px;padding:5px 13px;display:inline-block}
+.badge.plat-both{background:#e5484d;color:#fff}
+.badge.plat-pc{background:#3949ab;color:#fff}
+.badge.plat-az{background:#4a7326;color:#fff}
+.badge.plat-none{background:#f1efe9;color:#888}
+.badge.time{background:#f1efe9;color:#888;font-size:12.5px;margin-top:10px}
+.like-center{display:flex;justify-content:center;margin:26px 0 6px}
+.like-btn{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:10px 22px;transition:.18s}
+.like-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.like-btn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.like-btn.liked{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
+.dl-title{font-size:14px;font-weight:700;color:#888;letter-spacing:2px;margin:18px 0 10px}
+.dl-btns{display:flex;gap:10px;flex-wrap:wrap}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:10px;font-size:15px;font-weight:600;transition:.2s;text-decoration:none}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.dl-btn.primary{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
+.dl-btn.primary:hover{background:#178a50}
+.dl-btn.alt{background:#fff;color:#444;border:1px solid #e2ded8}
+.dl-btn.alt:hover{color:#e5484d;border-color:#f0b4b6}
+.dl-btn svg{width:15px;height:15px}
+.dl-none{color:#999;font-size:14px}
+.dl-note{margin-top:12px;font-size:13px;color:#999;line-height:1.7}
+.intro{margin-top:24px;padding-top:22px;border-top:1px dashed #ecebe9}
+.intro h3,.rel h3{font-size:17px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.intro h3::before,.rel h3::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
+.intro .txt{font-size:15px;color:#444;line-height:1.9;white-space:pre-wrap;word-break:break-word}
+.rel{margin-top:28px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.rcard{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s;display:block;text-decoration:none}
+.rcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.rcard .c{position:relative;aspect-ratio:16/9;overflow:hidden;background:#f4f2ef}
+.rcard .c img{width:100%;height:100%;object-fit:cover;object-position:top}
+.rcard .p{position:absolute;left:8px;top:8px;font-size:10.5px;font-weight:600;color:#fff;background:rgba(43,43,43,.72);border-radius:6px;padding:2px 7px}
+.rcard .i{padding:12px 14px 14px;border-top:1px solid #ecebe9}
+.rcard .t{font-size:14.5px;font-weight:600;line-height:1.5;height:44px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcard:hover .t{color:#e5484d}
+.comments-wrap{margin-top:28px}
+/* 评论父/子同款 + 组外框（备用站验证版） */
+.mrhx-creply-item{margin-left:0!important;width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:#fff;border:1px solid #ecebe9;border-left:1px solid #ecebe9;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.03);padding:12px 14px}
+.mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+.mrhx-group{border:1px solid #f0e6e2;border-radius:12px;padding:4px 4px 0;margin-bottom:10px;background:#fcfaf8}
+.mrhx-group .mrhx-citem,.mrhx-group .mrhx-creply-item{margin-bottom:4px}
+@media (max-width:720px){
+  main{padding:16px 14px 32px}
+  .detail{grid-template-columns:1fr;padding:18px;gap:20px}
+  .d-cover{max-width:260px}
+  .mrhx-creply-item .mrhx-ccontent{padding-left:0}
+  .mrhx-creply-item .mrhx-cbar{padding-left:0}
+}
+</style>
+</head>
+<body>
+<header>
+${navHeaderHtml('')}
+</header>
+<main>
+  <div class="crumbs"><a href="index.html">首页</a> / <a href="${esc(g.url || 'index.html')}">${esc(g.source || '来源帖')}</a> / <span>${esc(g.title)}</span></div>
+  <section class="detail">
+    <img class="d-cover" src="${esc(g.img || (CDN_URL + '/logo.webp'))}" alt="${esc(g.title)}">
+    <div>
+      <div class="d-headrow"><h1 class="d-title">${esc(g.title)}</h1>${g.plat ? `<span class="badge plat-${pc || 'none'}">${esc(g.plat)}</span>` : ''}</div>
+      ${ts ? `<span class="badge time">发布于 ${esc(fmtTs(ts))}</span>` : ''}
+      <div class="dl-title">下载地址</div>
+      <div class="dl-btns">${dlBtns}</div>
+      <p class="dl-note">链接自动同步自每日分享，若失效请到<a href="${esc(g.url || 'index.html')}" style="color:#e5484d">来源帖</a>留言。安卓游戏请先看解压教程再安装。</p>
+      <div class="intro"><h3>游戏介绍</h3><div class="txt">${esc(g.intro || '暂无介绍。')}</div></div>
+    </div>
+  </section>
+  <div class="like-center">${cmOn ? `<button type="button" class="like-btn" id="likeBtn"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.6 2.6 5 6.2 5c2.2 0 3.7 1.2 4.6 2.6h2.4C14.1 6.2 15.6 5 17.8 5c3.6 0 5.6 3.6 4.2 6.7C19.5 16.3 12 21 12 21z"/></svg><span id="likeTxt">点赞 …</span></button>` : ''}</div>
+  <div class="comments-wrap" id="commentsHost"></div>
+  <section class="rel">${rel.length ? `<h3>相关推荐</h3><div class="rel-grid">${relHtml}</div>` : ''}</section>
+</main>
+<footer>${SITE_FOOTER}</footer>
+${topButton}
+<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
+${SMOOTH_SCRIPTS}
+${cmOn ? viewScript(cmSb, cmKey, pagePath) : ''}
+${cmOn ? `<!--mrhx-comments-->\n<script>window.MRHXC={sb:'${cmSb}',key:'${cmKey}',path:'${pagePath}',fold:${cmFold}};</script>\n<script src="assets/js/comments.js"></script>\n<!--mrhx-comments-end-->` : ''}
+${likeScript}
+<script>
+/* 评论父/子分组外框（先收集整组再移动；评论脚本异步渲染+翻页都持续生效） */
+(function () {
+  function regroup() {
+    var list = document.getElementById('mrhx-clist');
+    if (!list) return;
+    [].slice.call(list.children).forEach(function (el) {
+      if (el.classList.contains('mrhx-group')) return;
+      if (el.classList.contains('mrhx-citem') && !el.classList.contains('mrhx-creply-item')) {
+        var grp = [el];
+        var n = el.nextElementSibling;
+        while (n && n.classList.contains('mrhx-creply-item')) { grp.push(n); n = n.nextElementSibling; }
+        var w = document.createElement('div');
+        w.className = 'mrhx-group';
+        el.parentNode.insertBefore(w, el);
+        grp.forEach(function (x) { w.appendChild(x); });
+      }
+    });
+  }
+  var mo = new MutationObserver(regroup);
+  function arm() {
+    var list = document.getElementById('mrhx-clist');
+    if (list) { mo.observe(list, { childList: true }); regroup(); }
+    else setTimeout(arm, 300);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+})();
+</script>
+</body>
+</html>`;
+      fs.writeFileSync(path.join('game', fname), page);
+      const mod = ts ? new Date(ts).toISOString().slice(0, 10) : undefined;
+      gamePages.push({ loc: SITE_URL + 'game/' + fname, pri: '0.4', mod: mod || undefined });
+    });
+    // 残页清理：索引中已消失的游戏，对应页面逐个删除（单文件 unlink，非递归）
+    if (fs.existsSync('game')) {
+      for (const f of fs.readdirSync('game')) {
+        if (f.endsWith('.html') && !kept.has(f)) { fs.unlinkSync(path.join('game', f)); console.log('game 残页清理:', f); }
+      }
+    }
+    console.log('game pages ok:', kept.size, '(map:', Object.keys(idMap).length + ')');
+  }
+
   // ===== SEO: sitemap.xml + robots.txt =====
   const today = new Date().toISOString().slice(0, 10);
   const smEntries = [{ loc: SITE_URL, pri: '1.0', mod: today }];
+  for (const gp of gamePages) {
+    smEntries.push({ loc: gp.loc, pri: gp.pri, mod: gp.mod || today });
+  }
   for (const d of days) {
     const fname = path.basename(d.file);
     const key = path.parse(d.file).name;

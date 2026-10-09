@@ -1072,7 +1072,7 @@
   <div class="title">新帖子标题</div>
         <ul class="node-list">
   </ul>
-  <!--qzt-pager--><nav class="qzt-pager" id="qztPager" hidden></nav><!--/qzt-pager-->
+  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->
   <div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
         <span style="color:#dc9b04">Tsinho</span>
@@ -1307,44 +1307,63 @@
 </script>
 
     <!--qzt-page-assets--><style>
-.qzt-pager{margin:22px 0 8px;text-align:center}
-.qzt-pager button{display:inline-block;min-width:34px;padding:6px 10px;margin:0 3px;border:1px solid #d9a0a0;border-radius:999px;background:#fdf3f2;color:#a33;font-size:13px;cursor:pointer;font-family:inherit}
-.qzt-pager button.on{background:#a33;color:#fff;border-color:#a33}
+.qzt-more{margin:26px 0 10px;text-align:center}
+.qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.qzt-more button:hover{background:#e5484d;color:#fff}
+.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
+.qzt-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.qzt-modal-mask.show{display:flex}
+.qzt-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.qzt-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.qzt-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.qzt-modal button:hover{opacity:.9}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
   var ul=document.querySelector('ul.node-list'); if(!ul) return;
   var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var P=50, n=Math.ceil(lis.length/P); if(n<2) return;
-  var bar=document.getElementById('qztPager'); if(!bar) return;
-  bar.removeAttribute('hidden');
-  var cur=-1, btns=[];
-  function show(p){
-    if(p===cur) return;
-    cur=p;
-    lis.forEach(function(li,i){
-      var on=Math.floor(i/P)===p;
-      li.style.display=on?'':'none';
+  var FIRST=60; if(lis.length<=FIRST) return;
+  var box=document.getElementById('qztMore'); if(!box) return;
+  var info=document.getElementById('qztMoreInfo');
+  function stash(imgs){
+    Array.prototype.forEach.call(imgs,function(im){
+      if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+    });
+  }
+  function hideFrom(i){
+    for(var j=i;j<lis.length;j++){
+      lis[j].setAttribute('hidden','');
+      stash(lis[j].querySelectorAll('img'));
+    }
+  }
+  function showAll(){
+    lis.forEach(function(li){
+      li.removeAttribute('hidden');
       Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-        if(on){ if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); } }
-        else if(im.getAttribute('src') && !im.getAttribute('data-src')){ im.setAttribute('data-src',im.getAttribute('src')); im.removeAttribute('src'); }
+        if(im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
       });
     });
-    for(var j=0;j<btns.length;j++) btns[j].className=(j===p?'on':'');
-    var m=location.hash.match(/p(\d+)/);
-    if(!m || parseInt(m[1],10)!==p+1) location.hash='p'+(p+1);
+    box.style.display='none';
   }
-  for(var i=0;i<n;i++)(function(p){
-    var b=document.createElement('button'); b.type='button'; b.textContent=String(p+1);
-    b.addEventListener('click',function(){ show(p); window.scrollTo({top:0,behavior:'smooth'}); });
-    bar.appendChild(b); btns.push(b);
-  })(i);
-  var h=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
-  show(h>=1&&h<=n?h-1:0);
-  window.addEventListener('hashchange',function(){
-    var x=parseInt((location.hash.match(/p(\d+)/)||[])[1],10);
-    if(x>=1&&x<=n&&x-1!==cur) show(x-1);
+  hideFrom(FIRST);
+  box.removeAttribute('hidden');
+  if(info) info.textContent='已显示 '+FIRST+' 款 · 共 '+lis.length+' 款游戏';
+  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
+  if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
+  var btn=document.getElementById('qztMoreBtn');
+  if(btn) btn.addEventListener('click',function(){
+    var mask=document.getElementById('qztModal');
+    if(mask) mask.classList.add('show');
   });
+  var mask=document.createElement('div');
+  mask.className='qzt-modal-mask'; mask.id='qztModal';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-FIRST)+' 款游戏未显示。<br>全部显示可能会让页面变卡，要怎么显示？</p><div class="row"><button type="button" id="qztCancel">只看前 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  document.body.appendChild(mask);
+  mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
+  document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
+  document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });
 </script><!--/qzt-page-assets-->
   </body>
