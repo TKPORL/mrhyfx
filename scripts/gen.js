@@ -90,36 +90,82 @@ const NAV_BREAKPOINT = 540;
 const NAV_MENU = (() => {
   const all = NAV.find(n => n.label === '全部黄油');
   const items = [{ label: '首页', url: 'index.html' }];
-  if (all) items.push({ label: '全部黄油', url: all.url });
-  items.push({ label: '解压教程', url: 'tutorial.html' });
-  items.push({ label: '游戏工具', url: 'tools.html' });
-  items.push({ label: '下载说明', url: 'download.html' });
-  items.push({ label: '免责声明', url: 'mianze.html' });
-  items.push({ label: '赞助', url: 'sponsor.html' });   // 2026-10-06：赞助入口，按站长要求放最后
+  // 2026-10-09 站长定稿顺序：赞助最前（首页之后）、往期合集最后
+  // ic = 手机抽屉里的菜单图标（stroke path，16px），与备用站同款
+  items.push({ label: '赞助', url: 'sponsor.html',
+    ic: '<path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/>' });
+  if (all) items.push({ label: '全部黄油', url: all.url,
+    ic: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>' });
+  items.push({ label: '解压教程', url: 'tutorial.html',
+    ic: '<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/>' });
+  items.push({ label: '游戏工具', url: 'tools.html',
+    ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/>' });
+  items.push({ label: '下载说明', url: 'download.html',
+    ic: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>' });
+  // 2026-10-09 站长定稿：桌面导航与备用站一致，含免责声明；往期合集只在手机抽屉
+  items.push({ label: '免责声明', url: 'mianze.html',
+    ic: '<path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/>' });
+  items.push({ label: '往期合集', url: 'daily.html', mobileOnly: true,
+    ic: '<path d="M4 5h16v14H4z"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/>' });
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
 // 桌面横排与手机抽屉共用同一份菜单（首页在最上）
 // 首页不显示「首页」项——当前页不需要自我导航（2026-10-06 站长要求）
-const navLinksHtml = (indent, current) => NAV_MENU
+const navLinksHtml = (indent, current, includeMobileOnly, withIcon) => NAV_MENU
   .filter(n => !(current === 'index.html' && n.url === 'index.html'))
+  .filter(n => includeMobileOnly || !n.mobileOnly)
   .map(n =>
-    `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${esc(n.label)}</a>`
+    `${indent}<a href="${esc(n.url)}"${n.ext ? ' target="_blank" rel="noreferrer"' : ''}${current === n.url ? ' class="on" aria-current="page"' : ''}>${withIcon && n.ic ? '<svg class="nic" viewBox="0 0 24 24">' + n.ic + '</svg>' : ''}${esc(n.label)}</a>`
   ).join('\n');
 
-const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
-.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,247,.62);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);border-bottom:1px solid rgba(236,235,233,.55)}
+.hd-bar{max-width:1320px;margin:0 auto;background:transparent;border:none;box-shadow:none;display:flex;align-items:center;gap:14px;padding:10px 14px;min-height:62px}
 .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
-.hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
-.hd-bar .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.hd-bar .logo img{width:134px;height:auto;border-radius:8px;display:block}
+.hd-bar .menu{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:14px;color:#555;text-decoration:none;padding:9px 16px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease}
 .hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
 .hd-bar .menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
 .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
 .hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
 .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.hd-bar .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
-.hd-bar .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.hd-bar .acts{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px}
+/* ===== 顶部平台下拉（首页专用；桌面点开，手机搬进「⋯」抽屉） ===== */
+.plat-dd{position:relative;flex-shrink:0}
+.hd-bar .plat-slot{display:flex;align-items:center;flex-shrink:0;margin-left:auto;padding-left:12px}
+.plat-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.plat-btn:hover,.plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.plat-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;transition:transform .2s}
+.plat-btn .pic{display:none;width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.plat-btn .pl-head{display:none}
+.plat-dd.open .plat-btn .chev{transform:rotate(180deg)}
+.plat-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:150px;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:6px;display:none;z-index:30}
+.plat-dd.open .plat-menu{display:block}
+.plat-menu button{display:block;width:100%;text-align:left;font-family:inherit;font-size:13px;color:#555;background:none;border:none;border-radius:8px;padding:9px 12px;cursor:pointer;transition:.15s}
+.plat-menu button:hover{background:#fdf3f3;color:#e5484d}
+.plat-menu button.on{background:#fdf3f3;color:#e5484d;font-weight:700}
+/* 手机端：顶栏里的平台下拉隐藏，搬进抽屉 */
+@media (max-width:900px){.hd-bar .plat-dd{display:none}}
+/* 抽屉里的平台下拉：按钮与菜单项同宽同款，避免大小不一显得不协调 */
+#mrhxMoreDrop .plat-dd{display:block;width:100%;box-sizing:border-box;padding:0 14px 12px;margin-top:-4px}
+#mrhxMoreDrop .plat-btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;box-sizing:border-box;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+#mrhxMoreDrop .plat-btn .pic{display:block}
+#mrhxMoreDrop .plat-btn .pl-desk{display:none}
+#mrhxMoreDrop .plat-btn .pl-head{display:inline}
+#mrhxMoreDrop .plat-btn .chev{margin-left:auto}
+#mrhxMoreDrop .plat-btn:hover,#mrhxMoreDrop .plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-btn .chev{width:14px;height:14px;stroke:#999;stroke-width:2.2;flex-shrink:0}
+#mrhxMoreDrop .plat-dd.open .plat-btn .chev{stroke:#e5484d}
+#mrhxMoreDrop .plat-menu{position:static;display:none;min-width:0;width:100%;box-sizing:border-box;margin-top:8px;border:1px solid #ecebe9;border-radius:12px;box-shadow:none;padding:6px;background:#fff}
+#mrhxMoreDrop .plat-dd.open .plat-menu{display:block}
+#mrhxMoreDrop .plat-menu button{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;text-align:left;font-size:14px;color:#555;background:#faf9f7;border:1px solid #f0eeec;border-radius:9px;padding:11px 13px;margin-bottom:6px}
+#mrhxMoreDrop .plat-menu button:last-child{margin-bottom:0}
+#mrhxMoreDrop .plat-menu button:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
+#mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
+.hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
 .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -148,10 +194,10 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 .nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
 .nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
 .nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-@media (min-width:681px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
-@media (max-width:680px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
-@media (max-width:720px){header{padding:0 14px 0}.hd-bar{padding:7px 12px;gap:10px}.hd-bar .logo img{width:100px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
-@media (max-width:680px){
+@media (min-width:901px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+@media (max-width:900px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+@media (max-width:720px){.hd-bar{padding:9px 14px;gap:12px}.hd-bar .logo img{width:104px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
+@media (max-width:900px){
   /* 手机端：「更多」菜单改为左侧抽屉（2026-10-03 用户定稿，替代原来横排展开的 drop-menu） */
   .nav-mask{position:fixed;inset:0;background:rgba(20,18,17,.34);opacity:0;pointer-events:none;transition:opacity .28s ease;z-index:40}
   .nav-mask.open{opacity:1;pointer-events:auto}
@@ -173,8 +219,9 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 const navHeaderHtml = (current, inputId) => `<div class="hd-bar">
   <a class="logo" href="index.html"><img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}"></a>
   <nav class="menu" aria-label="主导航">
-${navLinksHtml('    ', current)}
+${navLinksHtml('    ', current, false)}
   </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
@@ -209,7 +256,7 @@ ${navLinksHtml('    ', current)}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <nav class="drop-menu" aria-label="站点导航">
-${navLinksHtml('        ', current)}
+${navLinksHtml('        ', current, true, true)}
       </nav>
     </div>
   </div>
@@ -254,7 +301,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', '卡片布局原型.html', '图床对接演示.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', 'daily.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -640,15 +687,30 @@ const popupHtml = (() => {
   </div>
 </div>
 <script>
-(function(){
-  var k='mrhx_ann_dismissed';
-  var close=function(){localStorage.setItem(k,String(Date.now()));var el=document.getElementById('mrhxPopup');if(el)el.style.display='none';};
+  // 2026-10-09 站长要求：公告每小时弹一次；公告内容被改过则立即重弹。
+  // 记「上次关闭时间 + 当时公告内容指纹」，任一不满足就显示。
+  var K_TIME='mrhx_ann_time', K_SIG='mrhx_ann_sig', TTL=3600*1000;
+  var el=document.getElementById('mrhxPopup');
+  if(!el) return;
+  var content=el.querySelector('.mrhx-popup-content');
+  var text=content?content.textContent.replace(/\s+/g,'') : '';
+  var sig='';
+  for(var i=0;i<text.length;i++){ sig=((sig<<5)-sig+text.charCodeAt(i))>>>0; }
+  sig=String(sig)+'_'+text.length;
+  var last=0, lastSig='';
+  try{ last=parseInt(localStorage.getItem(K_TIME)||'0',10)||0; lastSig=localStorage.getItem(K_SIG)||''; }catch(e){}
+  var fresh = lastSig && lastSig!==sig;
+  var expired = !last || (Date.now()-last)>=TTL;
+  if(fresh || expired){ el.style.display='flex'; } else { el.style.display='none'; }
+  var close=function(){
+    try{ localStorage.setItem(K_TIME,String(Date.now())); localStorage.setItem(K_SIG,sig); }catch(e){}
+    el.style.display='none';
+  };
   var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
   var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
-})();
 </script>
 <style>
-.mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
+.mrhx-popup{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;animation:mrhxPopFade .3s ease both}
 .mrhx-popup-inner{background:#fff;border-radius:16px;padding:24px 22px 18px;max-width:520px;width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;text-align:center;animation:mrhxPopSlide .3s ease both}
 .mrhx-popup-close{position:absolute;top:10px;right:12px;width:30px;height:30px;border:none;border-radius:50%;background:#faf9f7;color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
@@ -1064,6 +1126,8 @@ function qztDeferImages(s) {
   }).join('');
 }
 const QZT_PAGE_ASSETS = `<style>
+/* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
+.node[hidden]{display:none!important}
 .qzt-more{margin:26px 0 10px;text-align:center}
 .qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
 .qzt-more button:hover{background:#e5484d;color:#fff}
@@ -1590,6 +1654,182 @@ ${navHeaderHtml('')}
 </script>
 `;
 
+  const gwScript = `<script>
+(function () {
+  var FIRST = ${QZT_MORE_COUNT};
+  var SB = '${SITE.comments.url.replace(/\/+$/, '')}';
+  var KEY = '${SITE.comments.anonKey}';
+  var NEWEST = '${days[0] ? days[0].file.replace(/\.html$/, '') : ''}';
+  var grid = document.getElementById('gwGrid');
+  if (!grid) return;
+  var all = [], pf = '', shown = 0, views = {};
+  // 平台归类：both=PC+安卓双端；az=含安卓（双端也归此类，因为本站数据里没有「仅安卓」）；pc=仅 PC
+  function platClass(p) { p = p || ''; return (/安卓/.test(p) && /PC/i.test(p)) ? 'both' : /安卓/.test(p) ? 'az' : /PC/i.test(p) ? 'pc' : ''; }
+  function platMatch(g, want) {
+    if (!want) return true;
+    var p = g.plat || '';
+    var hasAz = /安卓/.test(p), hasPc = /PC/i.test(p);
+    if (want === 'both') return hasAz && hasPc;
+    if (want === 'pc') return hasPc && !hasAz;  // 仅 PC
+    return true;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function fmtDay(d) {
+    var m = /^(\\d{4})-(\\d{2})-(\\d{2})/.exec(d || '');
+    return m ? (parseInt(m[2], 10) + '月' + parseInt(m[3], 10) + '日') : '';
+  }
+  function card(g) {
+    var href = g.n ? ('game/' + g.n + '.html') : (g.url || 'index.html');
+    var isNew = g.source && g.source.replace(/\.html$/, '') === NEWEST;
+    return '<a class="gcard" href="' + esc(href) + '"><div class="cover">' +
+      (g.img ? '<img loading="lazy" src="' + esc(g.img) + '" alt="' + esc(g.title) + '">' : '<span class="noimg">无图</span>') +
+      (g.plat ? '<span class="plat">' + esc(g.plat) + '</span>' : '') +
+      (isNew ? '<span class="new">NEW</span>' : '') +
+      '\</div><div class="info"><div class="trow"><div class="t">' + esc(g.title) + '</div>' +
+      '<div class="meta"><span class="date-txt">' + esc(fmtDay(g.d)) + '</span></div></div></div></a>';
+  }
+  function filtered() { return pf ? all.filter(function (g) { return platMatch(g, pf); }) : all; }
+  function refresh() {
+    var arr = filtered();
+    document.getElementById('gwCount').textContent = arr.length + ' 款';
+    var _sc = document.getElementById('gwSectCount'); if (_sc) _sc.textContent = arr.length + ' 款';
+    document.getElementById('gwMoreInfo').textContent = '已显示 ' + shown + ' 款 · 共 ' + arr.length + ' 款';
+    document.getElementById('gwMore').hidden = shown >= arr.length;
+  }
+  function showBatch() {
+    var arr = filtered();
+    var end = Math.min(shown + FIRST, arr.length);
+    var html = '';
+    for (var j = shown; j < end; j++) html += card(arr[j]);
+    grid.insertAdjacentHTML('beforeend', html);
+    shown = end;
+    refresh();
+  }
+  function reset() { grid.innerHTML = ''; shown = 0; showBatch(); }
+  fetch('search_index.json?v=' + Date.now(), { cache: 'no-cache' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { all = (d || []).filter(function (g) { return g.n; }); reset(); loadViews(); })
+    .catch(function () {});
+  // 热度 = 浏览量 + 点赞×20 + 评论×50（权重体现互动价值；缺数据项按 0 计）
+  // 浏览量（帖子级）；点赞/评论按独立页 URL（/game/<n>.html）统计
+  var likeByGame = {}, cmtByGame = {};
+  function hotScore(g) {
+    var n = String(g.n || '');
+    return (views['/' + (g.source || '')] || 0)
+      + (likeByGame[n] || 0) * 20
+      + (cmtByGame[n] || 0) * 50;
+  }
+  fetch(SB + '/rest/v1/page_views?select=url,count&order=count.desc&limit=500', { headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY } })
+    .then(function (r) { return r.json(); })
+    .then(function (rows) { (rows || []).forEach(function (r) { views[r.url] = r.count; }); renderHot(); })
+    .catch(function () {});
+  // 点赞总数（独立页 game_likes）
+  fetch(SB + '/rest/v1/game_likes?select=game_id,count&order=count.desc&limit=500', { headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY } })
+    .then(function (r) { return r.json(); })
+    .then(function (rows) {
+      (rows || []).forEach(function (r) {
+        var _seg = String(r.game_id || '').split('/game/')[1];
+        var n = _seg ? _seg.replace('.html', '') : '';
+        if (n) likeByGame[n] = r.count || 0;
+      });
+      renderHot();
+    })
+    .catch(function () {});
+  // 评论数（comments 表按 url 聚合；取最近 1000 条前端计数，避免复杂聚合）
+  fetch(SB + '/rest/v1/comments?select=url&limit=1000', { headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY } })
+    .then(function (r) { return r.json(); })
+    .then(function (rows) {
+      (rows || []).forEach(function (r) {
+        var _seg = String(r.url || '').split('/game/')[1];
+        var n = _seg ? _seg.replace('.html', '') : '';
+        if (n) cmtByGame[n] = (cmtByGame[n] || 0) + 1;
+      });
+      renderHot();
+    })
+    .catch(function () {});
+
+  function renderHot() {
+    var host = document.getElementById('hotList');
+    if (!host) return;
+    var seen = {}, items = [];
+    var arr = all.slice().sort(function (a, b) { return hotScore(b) - hotScore(a); });
+    for (var j = 0; j < arr.length && items.length < 10; j++) {
+      var g = arr[j];
+      if (hotScore(g) <= 0) continue;
+      if (seen[g.title]) continue;
+      seen[g.title] = 1;
+      items.push(g);
+    }
+    host.innerHTML = items.length ? items.map(function (g, i) {
+      var href = g.n ? ('game/' + g.n + '.html') : (g.url || 'index.html');
+      return '<a class="hot-item" href="' + esc(href) + '"><span class="no">' + (i + 1) + '</span>' +
+        '<img loading="lazy" src="' + esc(g.img) + '" alt=""><span class="t">' + esc(g.title) + '</span></a>';
+    }).join('') : '<div class="hot-loading">暂无数据</div>';
+  }
+  // ===== 平台筛选：注入顶部导航（桌面），手机搬进「⋯」抽屉 =====
+  function buildPlatDd() {
+    var dd = document.createElement('div');
+    dd.className = 'plat-dd';
+    dd.id = 'gwPlatDd';
+    dd.innerHTML = '<button type="button" class="plat-btn" aria-expanded="false">' +
+      '<svg class="pic" viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M7 12h10"/><path d="M10 19h4"/></svg>' +
+      '<span class="pl-desk" aria-hidden="false">平台：<span class="pl">全部</span></span>' +
+      '<span class="pl-head" aria-hidden="true">平台筛选</span>' +
+      '<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>' +
+      '<div class="plat-menu">' +
+      '<button type="button" data-pf="" class="on">全部平台</button>' +
+      '<button type="button" data-pf="both">PC + 安卓</button>' +
+      '<button type="button" data-pf="pc">仅 PC</button>' +
+      '</div>';
+    var btn = dd.querySelector('.plat-btn'), menu = dd.querySelector('.plat-menu');
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    menu.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      pf = b.getAttribute('data-pf') || '';
+      dd.querySelector('.pl').textContent = pf === 'both' ? 'PC + 安卓' : (pf === 'pc' ? '仅 PC' : '全部');
+      [].slice.call(menu.querySelectorAll('button')).forEach(function (x) { x.classList.toggle('on', x === b); });
+      // 同步隐藏的原始筛选条（保持 .on 状态一致，便于其它逻辑复用）
+      var fb = document.getElementById('gwFilter');
+      if (fb) [].slice.call(fb.querySelectorAll('.chip')).forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-pf') === pf); });
+      dd.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      reset();
+    });
+    document.addEventListener('click', function (e) {
+      if (!dd.contains(e.target)) { dd.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    });
+    return dd;
+  }
+  function placePlatDd() {
+    var dd = document.getElementById('gwPlatDd') || buildPlatDd();
+    var mobile = window.matchMedia('(max-width: 900px)').matches;
+    // 两种文案只让可见的那份被辅助技术读到
+    var deskSpan = dd.querySelector('.pl-desk'), headSpan = dd.querySelector('.pl-head');
+    if (deskSpan) deskSpan.setAttribute('aria-hidden', mobile ? 'true' : 'false');
+    if (headSpan) headSpan.setAttribute('aria-hidden', mobile ? 'false' : 'true');
+    if (mobile) {
+      var inner = document.querySelector('#mrhxMoreDrop .drop-inner');
+      if (inner && dd.parentNode !== inner) inner.appendChild(dd);
+    } else {
+      var slot = document.getElementById('gwPlatSlot');
+      if (slot && dd.parentNode !== slot) slot.appendChild(dd);
+    }
+  }
+  window.addEventListener('load', placePlatDd);
+  placePlatDd();
+  var mqPlat = window.matchMedia('(max-width: 900px)');
+  if (mqPlat.addEventListener) mqPlat.addEventListener('change', placePlatDd);
+  else if (mqPlat.addListener) mqPlat.addListener(placePlatDd);
+  // 2026-10-09 站长定稿：首页「显示更多」点击直接追加一批（60 款），不再弹窗；弹窗交互只保留在求助帖 qzt
+  document.getElementById('gwMoreBtn').addEventListener('click', showBatch);
+})();
+</script>`;
+
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1603,7 +1843,7 @@ body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFo
 ${NAV_CSS}
 @keyframes mrhxDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
 .upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
@@ -1617,9 +1857,10 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
   .pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
   .pg.off{opacity:.35;cursor:default}
   .pginfo{font-size:12px;color:#999;margin-left:6px}
-.sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
-.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect{display:flex;align-items:center;gap:12px;margin:4px 0 16px;flex-wrap:nowrap}
+.sect::before,.sect::after{content:'';height:1px;background:#ecebe9;flex:1}
+.sect h2{font-size:14px;font-weight:800;color:#2b2b2b;letter-spacing:1px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sect h2::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
 .sect span{font-size:13px;color:#aaa;white-space:nowrap}
 .post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .55s ease both}
 .post:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
@@ -1637,20 +1878,80 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
 .post:hover .arrow{color:#e5484d;transform:translateX(5px)}
 .empty{text-align:center;color:#999;padding:40px 0}
-.gsect{margin-top:34px}
-.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px}
+/* ===== 期B2.0 demo 版式 ===== */
+.hero{margin:12px 0 18px;background:linear-gradient(120deg,#2a2622 0%,#3d2a28 60%,#52302e 100%);border-radius:18px;padding:26px 30px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:30px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-70px;top:-70px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(229,72,77,.4),transparent 70%)}
+.hero h1{font-size:23px;font-weight:800;letter-spacing:.5px}
+.hero p{margin-top:7px;font-size:13px;color:rgba(255,255,255,.72);line-height:1.7;max-width:460px}
+.hero .stats{display:flex;flex-wrap:wrap;gap:22px;position:relative;z-index:1;flex-shrink:0}
+.hero .stat{text-align:center}
+.hero .stat b{display:block;font-size:22px;font-weight:800;color:#ff8f93}
+.hero .stat span{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;display:block}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 224px;gap:18px;align-items:start}
+.side{position:sticky;top:76px}
+/* 中屏（721~1100px）：右栏收起放到底部，主列恢复整宽多列，避免游戏墙被热门榜挤成单列 */
+@media (max-width:1080px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;order:2}
+  .panel{max-width:100%}
+}
+.panel{background:#fff;border:1px solid #ecebe9;border-radius:12px;padding:12px 12px 9px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.panel h3{font-size:13.5px;font-weight:800;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.panel h3::before{content:"";width:4px;height:16px;border-radius:2px;background:#e5484d}
+.hot-item{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px dashed #f0eeec;text-decoration:none}
+.hot-item:last-child{border-bottom:none}
+.hot-item .no{width:16px;text-align:center;font-size:12px;font-weight:800;color:#c9c6c0;flex-shrink:0}
+.hot-item:nth-child(-n+3) .no{color:#e5484d}
+.hot-item img{width:42px;height:31px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#f4f2ef}
+.hot-item .t{flex:1;min-width:0;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.15s}
+.hot-item:hover .t{color:#e5484d}
+.hot-loading{font-size:13px;color:#b4b0a9;padding:8px 0}
+.qzt-banner{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:13px 17px;margin-bottom:15px;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;transition:.2s}
+.qzt-banner:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.07)}
+.qzt-banner .pin{font-size:11px;font-weight:700;color:#fff;background:#e5484d;border-radius:6px;padding:3px 9px;flex-shrink:0}
+.qzt-banner .bt{min-width:0}
+.qzt-banner h3{font-size:15px;font-weight:800;color:#e5484d;white-space:nowrap}
+.qzt-banner p{font-size:13px;color:#6b665f;margin-top:2px;line-height:1.6}
+.qzt-banner .go{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;background:#e5484d;color:#fff;font-size:12.5px;font-weight:600;border-radius:99px;padding:7px 16px;transition:.16s;white-space:nowrap}
+.filterbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.filterbar .chip{font-size:13px;color:#6b665f;background:#fff;border:1px solid #e9e5df;border-radius:99px;padding:7px 16px;transition:.16s;cursor:pointer;font-family:inherit}
+.filterbar .chip:hover{border-color:#e5484d;color:#e5484d}
+.filterbar .chip.on{background:#e5484d;border-color:#e5484d;color:#fff;font-weight:600}
+.filterbar .count{margin-left:auto;font-size:13px;color:#6b665f}
+.filterbar .count b{color:#e5484d}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:15px;margin-bottom:8px}
 .gcard{display:flex;flex-direction:column;background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
-.gcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-.g-cover{width:100%;aspect-ratio:4/3;overflow:hidden;background:#f4f2ef}
-.g-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:.3s}
-.gcard:hover .g-cover img{transform:scale(1.04)}
-.g-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}
-.g-title{font-size:14px;font-weight:700;color:#2b2b2b;line-height:1.45;display:flex;align-items:flex-start;flex-wrap:wrap;gap:5px}
-.g-plat{display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:#fff;background:#e5484d;white-space:nowrap;vertical-align:2px}
-.g-src{font-size:11px;color:#aaa}
-.g-dls{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
-.g-dl{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
-.g-dl:hover{background:#c93a3f}
+.gcard:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(28,26,24,.13)}
+.gcard .cover{display:block;width:100%;aspect-ratio:16/9;overflow:hidden;background:#f4f2ef;position:relative}
+/* 无封面游戏的占位（2026-10-09）：浅灰底 + 居中「无图」字样 */
+.gcard .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b4b0a9;background:#f4f2ef;letter-spacing:2px}
+.gcard .cover img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .35s;display:block}
+.gcard:hover .cover img{transform:scale(1.04)}
+.gcard .plat{position:absolute;left:9px;top:9px;font-size:10.5px;font-weight:600;color:#fff;background:rgba(28,26,24,.72);backdrop-filter:blur(4px);border-radius:6px;padding:2px 7px}
+.gcard .new{position:absolute;right:9px;top:9px;font-size:10.5px;font-weight:700;color:#fff;background:#e5484d;border-radius:6px;padding:2px 7px}
+.gcard .info{padding:10px 12px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.gcard .trow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.gcard .trow .t{flex:1;min-width:0}
+.gcard .meta .date-txt{flex-shrink:0;white-space:nowrap;color:#999;font-size:11.5px}
+.gcard .t{font-size:13px;font-weight:700;color:#2b2b2b;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gcard:hover .t{color:#e5484d}
+.gcard .meta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#999;margin-top:auto;padding-top:2px}
+.gcard .meta .views{display:none}
+.gcard .meta .views{flex-shrink:0}
+.gcard .meta .views b{color:#e5484d;font-weight:700}
+/* 显示更多按钮 + 分段加载弹窗（期B 回滚时样式丢失，2026-10-09 补回；否则按钮裸奔） */
+.qzt-more{margin:26px 0 10px;text-align:center}
+.qzt-more button{display:inline-block;padding:11px 40px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.qzt-more button:hover{background:#e5484d;color:#fff}
+.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
+.gw-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.gw-modal-mask.show{display:flex}
+.gw-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.gw-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.gw-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.gw-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.gw-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.gw-modal button:hover{opacity:.9}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;line-height:1.7}
@@ -1671,7 +1972,11 @@ footer .disc-link:hover{text-decoration:underline}
   .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
   .covers img{flex:1 1 0;min-width:0;max-width:55px;width:auto;height:auto;aspect-ratio:1/1}
   .arrow{display:none}
-  .ggrid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .hero{flex-direction:column;align-items:flex-start;padding:24px;margin-bottom:20px}
+  .hero .stats{gap:22px}
+  .layout{grid-template-columns:1fr}
+  .side{position:static;min-width:0}
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .g-title{font-size:13px}
 }
 </style>
@@ -1682,16 +1987,52 @@ ${SITE_ICON_TAGS}
 ${navHeaderHtml('')}
 </header>
 <main>
-  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
-  <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
-  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">备用站</a></div>
-  <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
+  <section class="hero">
+    <div class="hcopy">
+      <h1>Tsinho黄油站</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${totalGames}</b><span>在库游戏</span></div>
+      <div class="stat"><b>${searchIndex.filter(g => /PC/i.test(g.plat || '') && !/安卓/.test(g.plat || '')).length}</b><span>PC</span></div>
+      <div class="stat"><b>${searchIndex.filter(g => /安卓/.test(g.plat || '') && /PC/i.test(g.plat || '')).length}</b><span>双端</span></div>
+    </div>
+  </section>
+  <a class="qzt-banner" href="qzt.html">
+    <span class="pin">置顶</span>
+    <span class="bt"><h3>求助贴 · 免费帮找游戏</h3><p>库里没有想要的？去求助贴留言，看到就找，纯公益不收费。</p></span>
+    <span class="go">去留言求助</span>
+  </a>
+  <div class="sect"><h2>最新游戏</h2></div>
+  <div class="layout">
+    <div class="maincol">
+      <div class="filterbar" id="gwFilter" style="display:none">
+        <button type="button" class="chip on" data-pf="">全部</button>
+        <button type="button" class="chip" data-pf="both">PC+安卓</button>
+        <button type="button" class="chip" data-pf="pc">PC</button>
+        <span class="count" style="display:none">共 <b id="gwCount">…</b> 款</span>
+      </div>
+      <div class="grid" id="gwGrid"></div>
+      <div class="qzt-more" id="gwMore" hidden><button type="button" id="gwMoreBtn">显示更多</button><span class="qzt-more-info" id="gwMoreInfo"></span></div>
+      <!-- 方案D：往期合集目录在本页隐藏，仅为备用站爬虫保留帖子卡结构（勿在此注释里写出帖子卡的开始标签原文，否则会被爬虫正则误切）；用户入口 = 导航栏「往期合集」→ daily.html -->
+      <div id="dayHidden" style="display:none" aria-hidden="true">
+      <div class="sect" style="margin-top:36px"><h2>每日分享</h2><span>${days.length} 期</span></div>
+      <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="panel">
+        <h3>热门榜单</h3>
+        <div id="hotList"><div class="hot-loading">加载中…</div></div>
+      </div>
+    </aside>
+  </div>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
+${gwScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}
 </body>
@@ -1703,6 +2044,94 @@ ${SMOOTH_SCRIPTS}
   const indexOut = index.replace(/\n\s*<a href="index\.html">首页<\/a>/g, '');
   fs.writeFileSync('index.html', injectJsdelivrFallback(injectImgFallback(indexOut)));
   console.log('index.html ok (合集模式), days:', days.length);
+
+  // ===== 方案D：往期合集页 daily.html =====
+  // 首页的游戏墙已承载「全部游戏」，日期目录从首页移出到本页；首页仍保留隐藏目录给备用站爬虫读 <a class="post">。
+  {
+    const dailyList = dayLis || '<div class="empty">暂无分享</div>';
+    const dailyPage = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>往期合集 - ${esc(SITE_NAME)}</title>
+${seoHead('daily.html', '往期合集', { desc: '按日期查看本站历次每日分享合集，点进去是那一期的游戏列表。' })}
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+${NAV_CSS}
+@keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.page-head{margin-bottom:22px}
+.page-head h1{font-size:22px;font-weight:800;display:flex;align-items:center;gap:9px}
+.page-head h1::before{content:'';width:4px;height:20px;border-radius:2px;background:#e5484d}
+.page-head p{margin-top:8px;font-size:13.5px;color:#999;line-height:1.7}
+.sect{display:flex;align-items:center;gap:14px;margin:4px 0 18px;flex-wrap:nowrap}
+.sect::before,.sect::after{content:'';height:1px;background:#ecebe9;flex:1}
+.sect h2{font-size:14px;font-weight:800;color:#2b2b2b;letter-spacing:1px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sect h2::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
+.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .55s ease both}
+.post:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.date{flex-shrink:0;width:62px;height:62px;border-radius:12px;background:#e5484d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;transition:.25s}
+.post:hover .date{transform:rotate(-4deg) scale(1.05)}
+.date b{font-size:22px;font-weight:700}
+.date span{font-size:11px;opacity:.85}
+.info{flex:1;min-width:0}
+.ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
+.pmeta{font-size:13px;color:#888}
+.pinb{display:inline-block;background:#e58d0a;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.pcmt{color:#e58d0a}
+.covers{display:flex;gap:8px;flex-shrink:0}
+.covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9;transition:.25s}
+.post:hover .covers img{transform:translateY(-2px)}
+.arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
+.post:hover .arrow{color:#e5484d;transform:translateX(5px)}
+.pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
+.pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
+.pg:hover:not(.off){border-color:#e5484d;color:#e5484d}
+.pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
+.pg.off{opacity:.35;cursor:default}
+.pginfo{font-size:12px;color:#999;margin-left:6px}
+.empty{text-align:center;color:#999;padding:40px 0}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer a{color:#e5484d;text-decoration:none}
+@media (max-width:720px){
+  main{padding:18px 14px 32px}
+  .post{flex-wrap:wrap;gap:12px;padding:14px}
+  .date{width:52px;height:52px;border-radius:10px}
+  .date b{font-size:19px}
+  .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
+  .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
+  .covers img{flex:1 1 0;min-width:0;max-width:55px;width:auto;height:auto;aspect-ratio:1/1}
+  .arrow{display:none}
+  .page-head h1{font-size:19px}
+}
+</style>
+${SITE_ICON_TAGS}
+</head>
+<body>
+<header>
+${navHeaderHtml('daily.html')}
+</header>
+<main>
+  <div class="page-head">
+    <h1>往期合集</h1>
+    <p>按日期查看本站历次每日分享，点进去是那一期的游戏列表。想直接找单款游戏，回首页用游戏库搜索更快。</p>
+  </div>
+  <div class="sect"><h2>全部合集</h2><span>${days.length} 期</span></div>
+  <div id="dayLis">${dailyList}</div>
+</main>
+<footer>${SITE_FOOTER}</footer>
+${topButton}
+<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
+${SMOOTH_SCRIPTS}
+</body>
+</html>
+`;
+    fs.writeFileSync('daily.html', injectJsdelivrFallback(injectImgFallback(dailyPage)));
+    console.log('daily.html ok, days:', days.length);
+  }
 
   // #28/#50/#51：底部导航行 =「← 上一期 ｜ 官网 全部黄油 解压教程 ｜ 下一期 →」。
   //   链序与首页一致（days 已按置顶在前+时间倒序）。求助贴 qzt 置顶且不是期数：上一期置灰、下一期指向最新一期；
@@ -1770,18 +2199,7 @@ ${SMOOTH_SCRIPTS}
     }
   }
 
-  // #32 瘦身：只保留必要字段，简介截前 80 字（当前 250KB，全量简介是体积大头）
-  const slimIndex = searchIndex.map(g => ({
-    title: g.title,
-    url: g.url,
-    img: g.img,
-    plat: g.plat,
-    links: g.links,
-    intro: (g.intro || '').slice(0, 80),
-    source: g.source
-  }));
-  fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
-  console.log('search_index.json ok, games:', slimIndex.length);
+  // #32 瘦身：写盘挪到期A编号块之后（g2num 可见处），补 n 字段供首页游戏墙直链独立页
 
   fs.writeFileSync('game_index.json', JSON.stringify(gameIndex, null, 2));
   console.log('game_index.json ok, posts:', Object.keys(gameIndex).length);
@@ -1808,17 +2226,20 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .sect span{font-size:13px;color:#aaa;white-space:nowrap}
 .result{border:1px solid #ecebe9;border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.result .rt a{font-size:16px;color:#2b2b2b;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;padding-bottom:1px}
-.result .rt a:hover{color:#e5484d;border-bottom-color:#e5484d}
-.result .rt .src{font-size:11px;color:#fff;background:#e5484d;border-radius:99px;padding:2px 10px}
-.result .intro{font-size:13px;color:#666;line-height:1.8;margin-bottom:10px;word-break:break-word}
+.result .rt .name{font-size:16px;color:#2b2b2b;font-weight:600;padding-bottom:1px}
+.result .rt .src{font-size:11px;color:#888;background:#f1efe9;border-radius:99px;padding:2px 10px}
+.result .rt .detail-link{font-size:12px;font-weight:600;color:#e5484d;text-decoration:none;margin-left:auto;white-space:nowrap}
+.result .rt .detail-link:hover{text-decoration:underline}
+.result .intro{font-size:13px;color:#888;line-height:1.75;margin-bottom:12px;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .result .dl{display:flex;gap:8px;flex-wrap:wrap}
 .result .img{margin-top:10px}
-.result .img img{max-width:100%;border-radius:10px;border:1px solid #ecebe9}
-.result.exact{border-left:3px solid #e5484d}
-.btn-dl{display:inline-flex;align-items:center;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none}
-.btn-dl-m{background:#e5484d;color:#fff}
-.btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+.result .img img{max-width:100%;max-height:240px;width:auto;object-fit:contain;border-radius:10px;border:1px solid #ecebe9}
+.result.exact{border-color:#f0b4b6}
+.btn-dl{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13.5px;font-weight:600;text-decoration:none;transition:.2s}
+.btn-dl-m{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
+.btn-dl-m:hover{background:#178a50;transform:translateY(-1px)}
+.btn-dl-b{background:#fff;color:#444;border:1px solid #e2ded8}
+.btn-dl-b:hover{color:#1a9e5c;border-color:#b9e2cc;background:#f0faf4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
 .empty-box{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:28px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .empty-box h3{font-size:15px;color:#2b2b2b;margin-bottom:8px}
@@ -1844,6 +2265,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 ${navHeaderHtml('', 'q')}
 </header>
 <main>
+  <div id="histWrap"></div>
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res" aria-busy="false"></div>
 </main>
@@ -1851,6 +2273,14 @@ ${navHeaderHtml('', 'q')}
 <footer>${SITE_FOOTER}</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function relTime(iso){
+  if(!iso) return '';
+  var d=new Date(iso); if(isNaN(d.getTime())) return '';
+  var diff=Math.floor((Date.now()-d.getTime())/864e5);
+  if(diff<=0) return '今天'; if(diff===1) return '昨天';
+  if(diff<30) return diff+' 天前';
+  return d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();
+}
 (function () {
   var q = new URLSearchParams(location.search).get('q') || '';
   var input = document.getElementById('q');
@@ -1885,11 +2315,13 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       '<a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>';
   }
   function rowHtml(g, isExact) {
-    var dl = (g.links || []).map(function (l) {
-      var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
-      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
+    var ic = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>';
+    var dl = (g.links || []).map(function (l, i) {
+      var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
+      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><a href="' + esc(g.url || '') + '">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
+      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -1916,7 +2348,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   resBox.appendChild(moreWrap);
   document.getElementById('mrhx-more').onclick = renderMore;
   setMore(false);
-  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
+  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     if (!q) {
       // Direct access without query - show return to homepage message
@@ -1925,6 +2357,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       return;
     }
     saveHist(q);
+    var hw = document.getElementById('histWrap');
+    if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
     var kw = q.toLowerCase();
     function fuzzyMatch(text, pattern) {
       var t = (text || '').toLowerCase();
@@ -2018,6 +2452,40 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
     fs.writeFileSync(MAP_FILE, JSON.stringify(idMap));
     const g2num = new Map(entries.map(e => [e.g, idMap[e.a]]));
 
+    // 2026-10-09 站长定稿：「最新游戏」= 按「游戏被加入的时间」倒序，不按帖子日期。
+    //   任何帖子里新增的游戏都要冒到最前（求助帖新加一款，它也到最前）。
+    //   实现：台账 game-added.json（锚 -> 首次出现时间）。地位同 game-id-map.json，只增不删。
+    //   首次生成（台账不存在）用来源帖时间回填历史；此后新出现的锚一律记「本次生成时间」，
+    //   因此无论往哪个帖子加游戏，重跑 gen 后它都会排到最前。
+    const ADDED_FILE = 'game-added.json';
+    let g2addedAll = null;
+    {
+      let addedMap = {};
+      let firstRun = false;
+      if (fs.existsSync(ADDED_FILE)) {
+        try { addedMap = readJson(ADDED_FILE); }
+        catch (e) { throw new Error('game-added.json 解析失败——它记录着全部游戏的加入时间，删掉会让「最新游戏」排序全部重置，中止生成。修复后再跑。'); }
+      } else {
+        firstRun = true;
+      }
+      const nowIso = new Date().toISOString();
+      let changed = false;
+      for (const { g, a } of entries) {
+        if (addedMap[a]) continue;
+        const slug = path.parse(g.url || '').name;
+        const t = TIMESTAMPS[slug];
+        // 首次回填：用来源帖时间（qzt 用它自己的时间）；此后新条目一律记当前时间
+        addedMap[a] = (firstRun && t) ? t : nowIso;
+        changed = true;
+      }
+      if (changed || firstRun) fs.writeFileSync(ADDED_FILE, JSON.stringify(addedMap));
+      const g2added = new Map(entries.map(e => [e.g, addedMap[e.a] || '']));
+      g2addedAll = g2added;
+      const at = g => { const d = new Date(g2added.get(g) || 0); return isNaN(d.getTime()) ? 0 : d.getTime(); };
+      searchIndex.sort((a, b) => at(b) - at(a));
+      console.log('game-added.json ok, 台账', Object.keys(addedMap).length, '条（' + (firstRun ? '首次回填' : '增量') + '）');
+    }
+
     fs.mkdirSync('game', { recursive: true });
     const cm = SITE.comments;
     const cmOn = !!(cm.enabled && cm.url && cm.anonKey);
@@ -2037,15 +2505,16 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       const slug = path.parse(g.url || '').name;
       const ts = TIMESTAMPS[slug] || '';
       const pc = platClassOf(g.plat || '');
-      // 相关推荐：同帖优先，不足补同平台，6 个（生成时算好写死）
-      const rel = [];
-      for (const x of searchIndex) { if (x !== g && x.url === g.url && rel.length < 6) rel.push(x); }
-      for (const x of searchIndex) { if (x !== g && x.plat === g.plat && !rel.includes(x) && rel.length < 6) rel.push(x); }
-      const relHtml = rel.map(x => {
+      // 相关推荐：随机 12 个（2026-10-09 站长要求：每次进页面都不一样）。
+      //   生成期把「本游戏之外的候选池」整体写进页面，由页面脚本每次随机抽 12 个渲染，
+      //   这样同一份静态页在不同访问/刷新下推荐不同，且不增加请求。
+      const relPool = searchIndex.filter(x => x !== g).map(x => {
         const n = g2num.get(x);
-        const ximg = x.img || (CDN_URL + '/logo.webp');
-        return `<a class="rcard" href="game/${n}.html"><div class="c"><img loading="lazy" src="${esc(ximg)}" alt="${esc(x.title)}"><span class="p">${esc(x.plat || '')}</span></div><div class="i"><div class="t">${esc(x.title)}</div></div></a>`;
-      }).join('');
+        return { n: n, t: x.title, img: x.img || '', p: x.plat || '' };
+      });
+      // 候选池 JSON 写进页面；渲染交给下方 relScript 随机抽 12 个（每次刷新都不同）
+      const relPoolJson = JSON.stringify(relPool).replace(/</g, '\\u003c');
+      const relHtml = ''; // 占位：实际由 relScript 填充（SEO 仍靠 JSON-LD 与 sitemap）
       const dlBtns = (g.links && g.links.length)
         ? g.links.map((l, i) => `<a class="dl-btn ${i === 0 ? 'primary' : 'alt'}" href="${esc(l.url)}" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>${esc(l.label || '下载地址')}</a>`).join('')
         : '<span class="dl-none">暂无下载链接，请到来源帖查看</span>';
@@ -2101,25 +2570,23 @@ html,body{overflow-x:clip}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
-main{max-width:1080px;margin:0 auto;padding:26px 20px 56px}
-.crumbs{font-size:13px;color:#999;margin-bottom:18px}
+main{max-width:1000px;margin:0 auto;padding:20px 18px 40px}
+.crumbs{font-size:12px;color:#999;margin-bottom:14px}
 .crumbs a{color:#8a857e;text-decoration:none;transition:.15s}
 .crumbs a:hover{color:#e5484d}
-.detail{display:grid;grid-template-columns:340px minmax(0,1fr);gap:38px;background:#fff;border:1px solid #ecebe9;border-radius:18px;padding:34px;box-shadow:0 2px 10px rgba(43,43,43,.05)}
-.d-cover{width:100%;aspect-ratio:16/11;object-fit:cover;border-radius:12px;background:#f4f2ef;box-shadow:0 4px 16px rgba(43,43,43,.08)}
+.detail{display:grid;grid-template-columns:250px minmax(0,1fr);gap:26px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.d-cover{width:100%;height:auto;object-fit:contain;border-radius:12px;background:#f4f2ef}
+.d-cover-none{aspect-ratio:16/11;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#b4b0a9;letter-spacing:3px}
 .d-headrow{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-.d-title{font-size:26px;font-weight:800;line-height:1.35;flex:1;min-width:200px}
-.badge{font-size:13px;font-weight:600;border-radius:8px;padding:5px 13px;display:inline-block;margin-top:6px}
-.badge.plat-both{background:#e5484d;color:#fff}
-.badge.plat-pc{background:#3949ab;color:#fff}
-.badge.plat-az{background:#4a7326;color:#fff}
+.d-title{font-size:19px;font-weight:800;line-height:1.45}
+.badge{font-size:12px;font-weight:600;border-radius:8px;padding:4px 11px}
+.badge.plat-both,.badge.plat-pc,.badge.plat-az{background:#fdf1f1;color:#e5484d;border:1px solid #f0b4b6}
 .badge.plat-none{background:#f1efe9;color:#888}
-.badge.time{background:#f1efe9;color:#888;font-size:12.5px;margin:0 0 4px}
-.dl-zone{margin-top:22px;background:#f8faf7;border:1px solid #e3ede6;border-radius:14px;padding:18px 20px}
-.dl-title{font-size:12.5px;font-weight:700;color:#5c8a6e;letter-spacing:2px;margin:0 0 12px;display:flex;align-items:center;gap:7px}
-.dl-title::before{content:'';width:7px;height:7px;border-radius:50%;background:#1a9e5c}
+.badge.time{background:#f1efe9;color:#888}
+.dl-zone{margin-top:20px}
+.dl-title{font-size:12px;font-weight:700;color:#888;letter-spacing:2px;margin-bottom:9px}
 .dl-btns{display:flex;gap:10px;flex-wrap:wrap}
-.dl-btn{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:600;transition:.2s;text-decoration:none}
+.dl-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;transition:.2s}
 .dl-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(26,158,92,.25)}
 .dl-btn.primary{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
 .dl-btn.primary:hover{background:#178a50}
@@ -2127,27 +2594,28 @@ main{max-width:1080px;margin:0 auto;padding:26px 20px 56px}
 .dl-btn.alt:hover{color:#1a9e5c;border-color:#bcd9c9;box-shadow:0 6px 16px rgba(0,0,0,.08)}
 .dl-btn svg{width:15px;height:15px}
 .dl-none{color:#999;font-size:14px}
-.dl-note{margin-top:12px;font-size:12.5px;color:#9aa89f;line-height:1.7}
+.dl-note{margin-top:10px;font-size:12px;color:#999;line-height:1.65}
 .dl-note a{color:#e5484d}
-.intro{margin-top:26px;padding-top:24px;border-top:1px dashed #ecebe9}
-.intro h3,.rel h3{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.intro{margin-top:20px;padding-top:18px;border-top:1px dashed #ecebe9}
+.intro h3,.rel h3{font-size:15.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .intro h3::before,.rel h3::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
-.intro .txt{font-size:15px;color:#444;line-height:1.9;white-space:pre-wrap;word-break:break-word}
-.like-center{display:flex;justify-content:flex-end;margin:18px 0 0;padding-top:16px;border-top:1px dashed #ecebe9}
-.like-btn{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:10px 24px;transition:.18s}
+.intro .txt{font-size:13.5px;color:#444;line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.like-center{display:flex;justify-content:center;margin:26px 0 6px}
+.like-btn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:9px;padding:9px 20px;transition:.18s}
 .like-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
 .like-btn:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 .like-btn.liked{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.rel{margin-top:32px}
-.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px}
-footer{margin:34px auto 0;padding:18px 20px 26px;max-width:1040px;text-align:center;font-size:12.5px;color:#b8b2aa;border-top:1px solid #ecebe9}
+.rel{margin-top:24px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:11px}
+footer{border-top:1px solid #ecebe9;padding:22px 20px;text-align:center;color:#999;font-size:12px}
 .rcard{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:.2s;display:block;text-decoration:none}
 .rcard:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
-.rcard .c{position:relative;aspect-ratio:16/10;overflow:hidden;background:#f4f2ef}
+.rcard .c{position:relative;aspect-ratio:16/9;overflow:hidden;background:#f4f2ef}
+.rcard .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#b4b0a9;letter-spacing:2px}
 .rcard .c img{width:100%;height:100%;object-fit:cover;object-position:top}
 .rcard .p{position:absolute;left:8px;top:8px;font-size:10.5px;font-weight:600;color:#fff;background:rgba(43,43,43,.72);border-radius:6px;padding:2px 7px}
-.rcard .i{padding:12px 14px 14px;border-top:1px solid #ecebe9}
-.rcard .t{font-size:14.5px;font-weight:600;line-height:1.5;height:44px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#2b2b2b}
+.rcard .i{padding:9px 11px 11px;border-top:1px solid #ecebe9}
+.rcard .t{font-size:12.5px;font-weight:600;line-height:1.5;height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#2b2b2b}
 .rcard:hover .t{color:#e5484d}
 /* 评论模块：脚本可能插入 body 直下，统一限宽居中 */
 #mrhx-comments{max-width:1040px;margin:30px auto 0}
@@ -2165,6 +2633,25 @@ footer{margin:34px auto 0;padding:18px 20px 26px;max-width:1040px;text-align:cen
   .mrhx-creply-item .mrhx-ccontent{padding-left:0}
   .mrhx-creply-item .mrhx-cbar{padding-left:0}
 }
+/* 大屏放大一档：全屏桌面下 UI 不至于太小（备用站同款） */
+@media (min-width:1024px){
+  .detail{grid-template-columns:320px minmax(0,1fr);padding:30px;gap:34px}
+  .d-title{font-size:24px}
+  .badge{font-size:13px;padding:5px 13px}
+  .like-btn{font-size:14.5px;padding:10px 22px}
+  .dl-title{font-size:14px}
+  .dl-btn{font-size:15px;padding:11px 22px}
+  .dl-note{font-size:13px}
+  .intro h3,.rel h3{font-size:17px}
+  .intro .txt{font-size:15px;line-height:1.9}
+  .crumbs{font-size:13px}
+  .rel-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+  .rcard .t{font-size:14.5px}
+  .rcard .i{padding:12px 14px 14px}
+  .mrhx-ccontent{font-size:13.5px}
+  .mrhx-cmeta b{font-size:13px}
+  .mrhx-cbtn{font-size:11.5px}
+}
 </style>
 </head>
 <body>
@@ -2174,7 +2661,7 @@ ${navHeaderHtml('')}
 <main>
   <div class="crumbs"><a href="index.html">首页</a> / <a href="${esc(g.url || 'index.html')}">${esc(g.source || '来源帖')}</a> / <span>${esc(g.title)}</span></div>
   <section class="detail">
-    <img class="d-cover" src="${esc(g.img || (CDN_URL + '/logo.webp'))}" alt="${esc(g.title)}">
+    ${g.img ? `<img class="d-cover" src="${esc(g.img)}" alt="${esc(g.title)}">` : '<div class="d-cover d-cover-none">无图</div>'}
     <div>
       <div class="d-headrow"><h1 class="d-title">${esc(g.title)}</h1>${g.plat ? `<span class="badge plat-${pc || 'none'}">${esc(g.plat)}</span>` : ''}</div>
       ${ts ? `<span class="badge time">发布于 ${esc(fmtTs(ts))}</span>` : ''}
@@ -2188,7 +2675,23 @@ ${navHeaderHtml('')}
     </div>
   </section>
   <div class="comments-wrap" id="commentsHost"></div>
-  <section class="rel">${rel.length ? `<h3>相关推荐</h3><div class="rel-grid">${relHtml}</div>` : ''}</section>
+  <section class="rel" id="relSec"><h3>相关推荐</h3><div class="rel-grid" id="relGrid"></div></section>
+<script>
+// 相关推荐：每次进页面从候选池随机抽 12 个（2026-10-09 站长要求）
+(function () {
+  var POOL = ${relPoolJson};
+  var host = document.getElementById('relGrid');
+  if (!host || !POOL || !POOL.length) { var s = document.getElementById('relSec'); if (s) s.style.display = 'none'; return; }
+  var esc = function (v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  // Fisher-Yates 洗牌后取前 12
+  var a = POOL.slice();
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  var pick = a.slice(0, 12);
+  host.innerHTML = pick.map(function (x) {
+    return '<a class="rcard" href="game/' + x.n + '.html"><div class="c">' + (x.img ? '<img loading="lazy" src="' + esc(x.img) + '" alt="' + esc(x.t) + '">' : '<span class="noimg">无图</span>') + '<span class="p">' + esc(x.p) + '</span></div><div class="i"><div class="t">' + esc(x.t) + '</div></div></a>';
+  }).join('');
+})();
+</script>
 </main>
 <footer>${SITE_FOOTER}</footer>
 ${topButton}
@@ -2239,6 +2742,21 @@ ${likeScript}
       }
     }
     console.log('game pages ok:', kept.size, '(map:', Object.keys(idMap).length + ')');
+
+    // #32 瘦身 + 期B：n 字段 = 独立页编号，首页游戏墙/搜索直接链 game/<n>.html
+    const slimIndex = searchIndex.map(g => ({
+      title: g.title,
+      url: g.url,
+      img: g.img,
+      plat: g.plat,
+      links: g.links,
+      intro: (g.intro || '').slice(0, 80),
+      source: g.source,
+      n: g2num.get(g) || null,
+      d: (g2addedAll && g2addedAll.get(g)) || TIMESTAMPS[path.parse(g.url || '').name] || ''
+    }));
+    fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
+    console.log('search_index.json ok, games:', slimIndex.length, '(含编号)');
   }
 
   // ===== SEO: sitemap.xml + robots.txt =====

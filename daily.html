@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>往期合集 - Tsinho黄油站</title>
+<meta name="description" content="按日期查看本站历次每日分享合集，点进去是那一期的游戏列表。">
+<meta name="author" content="Tsinho">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://tkporl.github.io/mrhyfx/daily.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tsinho黄油站">
+<meta property="og:title" content="往期合集 · Tsinho黄油站">
+<meta property="og:description" content="按日期查看本站历次每日分享合集，点进去是那一期的游戏列表。">
+<meta property="og:url" content="https://tkporl.github.io/mrhyfx/daily.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/logo.webp">
+<meta name="google-site-verification" content="VpsDgk3IMraB1pVzxdJKFU9S_2X4q15ShE3z3BLz6pY">
+<meta name="yandex-verification" content="0ad787015695e649">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,247,.62);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);border-bottom:1px solid rgba(236,235,233,.55)}
+.hd-bar{max-width:1320px;margin:0 auto;background:transparent;border:none;box-shadow:none;display:flex;align-items:center;gap:14px;padding:10px 14px;min-height:62px}
+.hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
+.hd-bar .logo img{width:134px;height:auto;border-radius:8px;display:block}
+.hd-bar .menu{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:14px;color:#555;text-decoration:none;padding:9px 16px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease}
+.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
+.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
+.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
+.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
+.hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
+.hd-bar .acts{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px}
+/* ===== 顶部平台下拉（首页专用；桌面点开，手机搬进「⋯」抽屉） ===== */
+.plat-dd{position:relative;flex-shrink:0}
+.hd-bar .plat-slot{display:flex;align-items:center;flex-shrink:0;margin-left:auto;padding-left:12px}
+.plat-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.plat-btn:hover,.plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.plat-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;transition:transform .2s}
+.plat-btn .pic{display:none;width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.plat-btn .pl-head{display:none}
+.plat-dd.open .plat-btn .chev{transform:rotate(180deg)}
+.plat-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:150px;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:6px;display:none;z-index:30}
+.plat-dd.open .plat-menu{display:block}
+.plat-menu button{display:block;width:100%;text-align:left;font-family:inherit;font-size:13px;color:#555;background:none;border:none;border-radius:8px;padding:9px 12px;cursor:pointer;transition:.15s}
+.plat-menu button:hover{background:#fdf3f3;color:#e5484d}
+.plat-menu button.on{background:#fdf3f3;color:#e5484d;font-weight:700}
+/* 手机端：顶栏里的平台下拉隐藏，搬进抽屉 */
+@media (max-width:900px){.hd-bar .plat-dd{display:none}}
+/* 抽屉里的平台下拉：按钮与菜单项同宽同款，避免大小不一显得不协调 */
+#mrhxMoreDrop .plat-dd{display:block;width:100%;box-sizing:border-box;padding:0 14px 12px;margin-top:-4px}
+#mrhxMoreDrop .plat-btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;box-sizing:border-box;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+#mrhxMoreDrop .plat-btn .pic{display:block}
+#mrhxMoreDrop .plat-btn .pl-desk{display:none}
+#mrhxMoreDrop .plat-btn .pl-head{display:inline}
+#mrhxMoreDrop .plat-btn .chev{margin-left:auto}
+#mrhxMoreDrop .plat-btn:hover,#mrhxMoreDrop .plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-btn .chev{width:14px;height:14px;stroke:#999;stroke-width:2.2;flex-shrink:0}
+#mrhxMoreDrop .plat-dd.open .plat-btn .chev{stroke:#e5484d}
+#mrhxMoreDrop .plat-menu{position:static;display:none;min-width:0;width:100%;box-sizing:border-box;margin-top:8px;border:1px solid #ecebe9;border-radius:12px;box-shadow:none;padding:6px;background:#fff}
+#mrhxMoreDrop .plat-dd.open .plat-menu{display:block}
+#mrhxMoreDrop .plat-menu button{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;text-align:left;font-size:14px;color:#555;background:#faf9f7;border:1px solid #f0eeec;border-radius:9px;padding:11px 13px;margin-bottom:6px}
+#mrhxMoreDrop .plat-menu button:last-child{margin-bottom:0}
+#mrhxMoreDrop .plat-menu button:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
+#mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
+.hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
+.hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
+.hd-bar .icon-btn:hover svg{stroke:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"]{background:#e5484d;border-color:#e5484d}
+.hd-bar .icon-btn[aria-expanded="true"] svg{stroke:#fff}
+.hd-bar .icon-btn:hover .dot{fill:#e5484d}
+.hd-bar .more-btn[aria-expanded="true"] .dot{fill:#fff}
+.hd-bar .more-btn{transition:opacity .3s cubic-bezier(.2,.8,.2,1) .24s,transform .3s cubic-bezier(.2,.8,.2,1) .24s,width .3s cubic-bezier(.2,.8,.2,1) .24s,border-width .3s ease .24s,visibility 0s linear 0s}
+.hd-bar .dot{transform-box:fill-box;transform-origin:center;transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.hd-bar .more-btn[aria-expanded="true"] .dot-1{transform:translateX(5.5px) rotate(45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-3{transform:translateX(-5.5px) rotate(-45deg) scaleX(2.8)}
+.hd-bar .more-btn[aria-expanded="true"] .dot-2{transform:scale(0);opacity:0}
+.nav-drop{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open{grid-template-rows:1fr}
+.nav-drop>div{overflow:hidden;min-height:0}
+.nav-drop .drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.nav-drop.open .drop-inner{opacity:1;transform:translateY(0)}
+.nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
+.nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
+.nav-drop .search-row input::placeholder{color:#b4b2a9}
+.nav-drop .search-row .go{width:34px;height:34px;border-radius:9px;border:none;background:#e5484d;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+.nav-drop .search-row .go:hover{background:#c93a3f}
+.nav-drop .search-row .go svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round}
+.nav-drop .search-row .x{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;cursor:pointer;color:#888;font:inherit;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.nav-drop .search-row .x:hover{border-color:#f0b4b6;color:#e5484d}
+.nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
+.nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
+.nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (min-width:901px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+@media (max-width:900px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+@media (max-width:720px){.hd-bar{padding:9px 14px;gap:12px}.hd-bar .logo img{width:104px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
+@media (max-width:900px){
+  /* 手机端：「更多」菜单改为左侧抽屉（2026-10-03 用户定稿，替代原来横排展开的 drop-menu） */
+  .nav-mask{position:fixed;inset:0;background:rgba(20,18,17,.34);opacity:0;pointer-events:none;transition:opacity .28s ease;z-index:40}
+  .nav-mask.open{opacity:1;pointer-events:auto}
+  #mrhxMoreDrop{position:fixed;inset:0;z-index:41;display:block;opacity:0;pointer-events:none;transition:opacity .28s ease}
+  #mrhxMoreDrop.open{opacity:1;pointer-events:auto}
+  #mrhxMoreDrop>div{overflow:visible;height:100%}
+  #mrhxMoreDrop .drop-inner{position:absolute;top:0;left:0;bottom:0;width:272px;margin:0;border:0;border-right:1px solid #ecebe9;border-radius:0 14px 14px 0;box-shadow:6px 0 28px rgba(0,0,0,.12);padding:0;display:flex;flex-direction:column;overflow:hidden;opacity:1;transform:translateX(-102%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  #mrhxMoreDrop.open .drop-inner{transform:none}
+  #mrhxMoreDrop .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f0eeec;flex-shrink:0}
+  #mrhxMoreDrop .drawer-head img{width:104px;border-radius:8px;display:block}
+  #mrhxMoreDrop .drawer-close{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;color:#666;font:inherit;font-size:18px;line-height:1;cursor:pointer;flex-shrink:0}
+  #mrhxMoreDrop .drawer-close:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+  #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
+  #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
+}
+@media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}
+@keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+.page-head{margin-bottom:22px}
+.page-head h1{font-size:22px;font-weight:800;display:flex;align-items:center;gap:9px}
+.page-head h1::before{content:'';width:4px;height:20px;border-radius:2px;background:#e5484d}
+.page-head p{margin-top:8px;font-size:13.5px;color:#999;line-height:1.7}
+.sect{display:flex;align-items:center;gap:14px;margin:4px 0 18px;flex-wrap:nowrap}
+.sect::before,.sect::after{content:'';height:1px;background:#ecebe9;flex:1}
+.sect h2{font-size:14px;font-weight:800;color:#2b2b2b;letter-spacing:1px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sect h2::before{content:'';width:4px;height:15px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
+.post{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:14px;text-decoration:none;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .55s ease both}
+.post:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
+.date{flex-shrink:0;width:62px;height:62px;border-radius:12px;background:#e5484d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;transition:.25s}
+.post:hover .date{transform:rotate(-4deg) scale(1.05)}
+.date b{font-size:22px;font-weight:700}
+.date span{font-size:11px;opacity:.85}
+.info{flex:1;min-width:0}
+.ptitle{font-size:17px;font-weight:700;color:#2b2b2b;margin-bottom:6px}
+.pmeta{font-size:13px;color:#888}
+.pinb{display:inline-block;background:#e58d0a;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.pcmt{color:#e58d0a}
+.covers{display:flex;gap:8px;flex-shrink:0}
+.covers img{width:60px;height:60px;object-fit:cover;border-radius:10px;border:1px solid #ecebe9;transition:.25s}
+.post:hover .covers img{transform:translateY(-2px)}
+.arrow{flex-shrink:0;color:#d5d2cc;font-size:20px;transition:.2s}
+.post:hover .arrow{color:#e5484d;transform:translateX(5px)}
+.pgbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;margin:22px 0 6px}
+.pg{border:1px solid #e2ded8;background:#fff;color:#666;border-radius:99px;padding:6px 13px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.2s}
+.pg:hover:not(.off){border-color:#e5484d;color:#e5484d}
+.pg.on{border-color:#e5484d;background:#e5484d;color:#fff}
+.pg.off{opacity:.35;cursor:default}
+.pginfo{font-size:12px;color:#999;margin-left:6px}
+.empty{text-align:center;color:#999;padding:40px 0}
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
+footer a{color:#e5484d;text-decoration:none}
+@media (max-width:720px){
+  main{padding:18px 14px 32px}
+  .post{flex-wrap:wrap;gap:12px;padding:14px}
+  .date{width:52px;height:52px;border-radius:10px}
+  .date b{font-size:19px}
+  .ptitle{font-size:15px;word-break:break-word;line-height:1.5}
+  .covers{flex:1 1 100%;order:3;min-width:0;overflow:hidden;padding-bottom:2px}
+  .covers img{flex:1 1 0;min-width:0;max-width:55px;width:auto;height:auto;aspect-ratio:1/1}
+  .arrow{display:none}
+  .page-head h1{font-size:19px}
+}
+</style>
+<link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
+<link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
+</head>
+<body>
+<header>
+<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/imgbed/50af5e238ef2c38ec20e.webp'" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="sponsor.html">赞助</a>
+    <a href="tutorial.html">解压教程</a>
+    <a href="tools.html">游戏工具</a>
+    <a href="download.html">下载说明</a>
+    <a href="mianze.html">免责声明</a>
+  </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <div class="drawer-head">
+        <img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/imgbed/50af5e238ef2c38ec20e.webp'" alt="Tsinho黄油站">
+        <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
+      </div>
+      <nav class="drop-menu" aria-label="站点导航">
+        <a href="index.html">首页</a>
+        <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
+        <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
+        <a href="tools.html"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏工具</a>
+        <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>下载说明</a>
+        <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
+        <a href="daily.html" class="on" aria-current="page"><svg class="nic" viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/></svg>往期合集</a>
+      </nav>
+    </div>
+  </div>
+</div>
+<div class="nav-mask" id="mrhxNavMask"></div>
+</header>
+<main>
+  <div class="page-head">
+    <h1>往期合集</h1>
+    <p>按日期查看本站历次每日分享，点进去是那一期的游戏列表。想直接找单款游戏，回首页用游戏库搜索更快。</p>
+  </div>
+  <div class="sect"><h2>全部合集</h2><span>48 期</span></div>
+  <div id="dayLis"><a class="post" href="qzt.html" data-path="/qzt.html" style="animation-delay:0.00s">
+  <div class="date"><b style="font-size:12px">求助区</b></div>
+  <div class="info">
+    <div class="ptitle">求助贴-可在此贴求游戏 <span class="pinb">置顶</span></div>
+    <div class="pmeta">共 206 款游戏<span class="pcmt" data-cpath="/qzt.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/qzt/img_02.webp" alt="求助贴-可在此贴求游戏" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/qzt/img_03.webp" alt="求助贴-可在此贴求游戏" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/qzt/img_04.webp" alt="求助贴-可在此贴求游戏" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/qzt/img_05.webp" alt="求助贴-可在此贴求游戏" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/qzt/img_06.webp" alt="求助贴-可在此贴求游戏" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026107pcaz.html" data-path="/2026107pcaz.html" style="animation-delay:0.04s">
+  <div class="date"><b>7</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月7号黄油（PC+安卓）</div>
+    <div class="pmeta">共 42 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026107pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pcaz/0f8iskwq6t.webp" alt="10月7号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pcaz/xevdcnlabu.webp" alt="10月7号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pcaz/870iocxley.webp" alt="10月7号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pcaz/hvgteihy6c.webp" alt="10月7号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pcaz/zm3eowrl15.webp" alt="10月7号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026107pc.html" data-path="/2026107pc.html" style="animation-delay:0.08s">
+  <div class="date"><b>7</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月7号黄油（PC）</div>
+    <div class="pmeta">共 53 款游戏 · PC<span class="pcmt" data-cpath="/2026107pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pc/pl9606pcd8.webp" alt="10月7号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pc/12dkmgca8r.webp" alt="10月7号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pc/s9ip0ojwgp.webp" alt="10月7号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pc/ig4uppk58c.webp" alt="10月7号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026107pc/02uxtnlw52.webp" alt="10月7号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026106pcaz.html" data-path="/2026106pcaz.html" style="animation-delay:0.12s">
+  <div class="date"><b>6</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月6号黄油（PC+安卓）</div>
+    <div class="pmeta">共 43 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026106pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pcaz/diku955v74.webp" alt="10月6号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pcaz/rtzm33cx6z.webp" alt="10月6号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pcaz/oq03koj6b5.webp" alt="10月6号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pcaz/nva4kvuwbd.webp" alt="10月6号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pcaz/rxh8rca67i.webp" alt="10月6号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026106pc.html" data-path="/2026106pc.html" style="animation-delay:0.16s">
+  <div class="date"><b>6</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月6号黄油（PC）</div>
+    <div class="pmeta">共 43 款游戏 · PC<span class="pcmt" data-cpath="/2026106pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pc/htsjchze64.webp" alt="10月6号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pc/qqo7im69s4.webp" alt="10月6号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pc/ub9c4k2n9f.webp" alt="10月6号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pc/5mk7tis1gv.webp" alt="10月6号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026106pc/qlm7zlkswr.webp" alt="10月6号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026105pcaz.html" data-path="/2026105pcaz.html" style="animation-delay:0.20s">
+  <div class="date"><b>5</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月5号黄油（PC+安卓）</div>
+    <div class="pmeta">共 31 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026105pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pcaz/5g87blalyv.webp" alt="10月5号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pcaz/gkc52wuzgo.webp" alt="10月5号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pcaz/bndgdkupm3.webp" alt="10月5号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pcaz/j16ngz5tib.webp" alt="10月5号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pcaz/430olicom2.webp" alt="10月5号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026105pc.html" data-path="/2026105pc.html" style="animation-delay:0.24s">
+  <div class="date"><b>5</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月5号黄油（PC）</div>
+    <div class="pmeta">共 46 款游戏 · PC<span class="pcmt" data-cpath="/2026105pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pc/38kj2cqgap.webp" alt="10月5号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pc/lt681ny6t2.webp" alt="10月5号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pc/cecvql6bw2.webp" alt="10月5号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pc/piuub5olyr.webp" alt="10月5号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026105pc/tecopah784.webp" alt="10月5号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026104pc.html" data-path="/2026104pc.html" style="animation-delay:0.28s">
+  <div class="date"><b>4</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月4号黄油（PC）</div>
+    <div class="pmeta">共 23 款游戏 · PC<span class="pcmt" data-cpath="/2026104pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pc/4b8jm5m06j.webp" alt="10月4号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pc/5ys2b6yd45.webp" alt="10月4号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pc/tiu3ayo57k.webp" alt="10月4号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pc/ldjt4gxo0r.webp" alt="10月4号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pc/wvovdlo1lb.webp" alt="10月4号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026104pcaz.html" data-path="/2026104pcaz.html" style="animation-delay:0.32s">
+  <div class="date"><b>4</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月4号黄油（PC+安卓）</div>
+    <div class="pmeta">共 65 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026104pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pcaz/tk3u3rsy51.webp" alt="10月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pcaz/cwy0e6yuc5.webp" alt="10月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pcaz/8fg2avwn6n.webp" alt="10月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pcaz/fmexa2gxvf.webp" alt="10月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026104pcaz/a6e4av0sjs.webp" alt="10月4号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026102pcaz.html" data-path="/2026102pcaz.html" style="animation-delay:0.36s">
+  <div class="date"><b>2</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月2号黄油（PC+安卓）</div>
+    <div class="pmeta">共 35 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026102pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pcaz/7lvv42346y.webp" alt="10月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pcaz/5753i02pno.webp" alt="10月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pcaz/qb4p9ner7s.webp" alt="10月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pcaz/86px2139op.webp" alt="10月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pcaz/q8i3o9eh6w.webp" alt="10月2号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026102pc.html" data-path="/2026102pc.html" style="animation-delay:0.40s">
+  <div class="date"><b>2</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月2黄油（PC）</div>
+    <div class="pmeta">共 45 款游戏 · PC<span class="pcmt" data-cpath="/2026102pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pc/pesfvy5bj7.webp" alt="10月2黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pc/gor1x37tch.webp" alt="10月2黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pc/jc22dpmxqn.webp" alt="10月2黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pc/tdmp6mynwz.webp" alt="10月2黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026102pc/66l0zintg9.webp" alt="10月2黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026101pcaz.html" data-path="/2026101pcaz.html" style="animation-delay:0.44s">
+  <div class="date"><b>1</b><span>10月</span></div>
+  <div class="info">
+    <div class="ptitle">10月1号黄油（PC+安卓）</div>
+    <div class="pmeta">共 53 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026101pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026101pcaz/bcnhg70umc.webp" alt="10月1号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026101pcaz/koop5kljuo.webp" alt="10月1号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026101pcaz/wa1tpb2vu8.webp" alt="10月1号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026101pcaz/yv50m1vn2c.webp" alt="10月1号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026101pcaz/fq3ikv9edq.webp" alt="10月1号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026929pc.html" data-path="/2026929pc.html" style="animation-delay:0.48s">
+  <div class="date"><b>29</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月29号黄油（PC）</div>
+    <div class="pmeta">共 34 款游戏 · PC<span class="pcmt" data-cpath="/2026929pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/81fa53b2456453e782ad.webp" alt="9月29号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/945a8830cac04c313abb.webp" alt="9月29号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/a571b28f697760913ce6.webp" alt="9月29号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/27777be9c0a21357f1d2.webp" alt="9月29号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/4dbf2a15107c46d2a311.webp" alt="9月29号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026929pcaz.html" data-path="/2026929pcaz.html" style="animation-delay:0.52s">
+  <div class="date"><b>29</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月29号黄油（PC+安卓）</div>
+    <div class="pmeta">共 54 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026929pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026929pcaz/nx3dcj3d4s.webp" alt="9月29号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026929pcaz/nmqd04rfhy.webp" alt="9月29号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026929pcaz/wfq886lfsd.webp" alt="9月29号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026929pcaz/mo3i002aie.webp" alt="9月29号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026929pcaz/pft5nc1n7h.webp" alt="9月29号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026928pc.html" data-path="/2026928pc.html" style="animation-delay:0.56s">
+  <div class="date"><b>28</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月28号黄油（PC）</div>
+    <div class="pmeta">共 52 款游戏 · PC<span class="pcmt" data-cpath="/2026928pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/cd80f1bbb0acbab6722a.webp" alt="9月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/e0aa822d086174be1c23.webp" alt="9月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/29528b192850b424ced1.webp" alt="9月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/8cab7caab3066be99298.webp" alt="9月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/279752cc90cc91d8affe.webp" alt="9月28号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026926pcaz.html" data-path="/2026926pcaz.html" style="animation-delay:0.60s">
+  <div class="date"><b>26</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月26号黄油（PC+安卓）</div>
+    <div class="pmeta">共 42 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026926pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/ae1f2f1e7d1d67afe345.webp" alt="9月26号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/130e6f2cd5f938cddf81.webp" alt="9月26号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/d3d21b933b8ca30ed3cc.webp" alt="9月26号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/3f3b68b486ca6abdaf74.webp" alt="9月26号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/3c52c9416148e33d7633.webp" alt="9月26号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="20269926pc.html" data-path="/20269926pc.html" style="animation-delay:0.64s">
+  <div class="date"><b>26</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月26黄油（PC）</div>
+    <div class="pmeta">共 46 款游戏 · PC<span class="pcmt" data-cpath="/20269926pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/f299469f5ac0317a19ea.webp" alt="9月26黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/79152adb949b1331b9c0.webp" alt="9月26黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/add5ef854e641f2c6bdb.webp" alt="9月26黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/e0b7cf004a1b69a2a662.webp" alt="9月26黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/057033e7b0c434dfaa22.webp" alt="9月26黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026924pc.html" data-path="/2026924pc.html" style="animation-delay:0.68s">
+  <div class="date"><b>24</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月24号黄油（PC+安卓）</div>
+    <div class="pmeta">共 48 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026924pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/585a953895c05cb5788c.webp" alt="9月24号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/d89d81d5c979f6f73e37.webp" alt="9月24号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/fbf5b6339883bad34903.webp" alt="9月24号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/9a6c3b9576979dd31637.webp" alt="9月24号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/26e41df325d374099561.webp" alt="9月24号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026922pcaz.html" data-path="/2026922pcaz.html" style="animation-delay:0.72s">
+  <div class="date"><b>22</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月22号黄油（PC+安卓）</div>
+    <div class="pmeta">共 38 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026922pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/dbc00545a4937506a921.webp" alt="9月22号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/36c1638095e666aa6a18.webp" alt="9月22号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/1c604f6d79347f7ccaac.webp" alt="9月22号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/011af72859a5eae34b7b.webp" alt="9月22号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/489763b5b5619b601b08.webp" alt="9月22号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026920pcaz.html" data-path="/2026920pcaz.html" style="animation-delay:0.76s">
+  <div class="date"><b>20</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月20号黄油-PC+安卓（回归-首帖）</div>
+    <div class="pmeta">共 50 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026920pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/09752c108a82311992f9.webp" alt="9月20号黄油-PC+安卓（回归-首帖）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/b5030dce396dc0b51d61.webp" alt="9月20号黄油-PC+安卓（回归-首帖）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/2ed657946876cb8c35ce.webp" alt="9月20号黄油-PC+安卓（回归-首帖）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/4fe5423b675740cc5b47.webp" alt="9月20号黄油-PC+安卓（回归-首帖）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/imgbed/ffee5cc080d540608513.webp" alt="9月20号黄油-PC+安卓（回归-首帖）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026914pc.html" data-path="/2026914pc.html" style="animation-delay:0.80s">
+  <div class="date"><b>14</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月14号黄油（PC）</div>
+    <div class="pmeta">共 31 款游戏 · PC<span class="pcmt" data-cpath="/2026914pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026914pc/rbdub5a2cx.webp" alt="9月14号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026914pc/k1xcdas8t4.webp" alt="9月14号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026914pc/lwcv7a2ldq.webp" alt="9月14号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026914pc/uvshia5dcl.webp" alt="9月14号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026914pc/o2cbtwjsni.webp" alt="9月14号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026913pc.html" data-path="/2026913pc.html" style="animation-delay:0.84s">
+  <div class="date"><b>13</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月13号黄油（PC）</div>
+    <div class="pmeta">共 23 款游戏 · PC<span class="pcmt" data-cpath="/2026913pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026913pc/ln7pu6j9dw.webp" alt="9月13号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026913pc/5bvsfnh7qe.webp" alt="9月13号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026913pc/g3cf91w6lz.webp" alt="9月13号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026913pc/azbsvcrd2i.webp" alt="9月13号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026913pc/iyo87jik4f.webp" alt="9月13号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026910pc.html" data-path="/2026910pc.html" style="animation-delay:0.88s">
+  <div class="date"><b>10</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月10号黄油（PC）</div>
+    <div class="pmeta">共 16 款游戏 · PC<span class="pcmt" data-cpath="/2026910pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026910pc/j0o74d6mw5.webp" alt="9月10号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026910pc/ep7zq6agw3.webp" alt="9月10号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026910pc/kd915of7ck.webp" alt="9月10号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026910pc/e7mtpf0ecp.webp" alt="9月10号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026910pc/uthb5jiyy6.webp" alt="9月10号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026909pcaz.html" data-path="/2026909pcaz.html" style="animation-delay:0.92s">
+  <div class="date"><b>9</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月9号黄油（PC+安卓）</div>
+    <div class="pmeta">共 31 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026909pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026909pcaz/rbwc0t2a3q.webp" alt="9月9号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026909pcaz/f9qpvhqvzo.webp" alt="9月9号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026909pcaz/b58suxrgib.webp" alt="9月9号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026909pcaz/na4xq9rq9r.webp" alt="9月9号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026909pcaz/nys5ua8lv1.webp" alt="9月9号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026907PC.html" data-path="/2026907PC.html" style="animation-delay:0.00s">
+  <div class="date"><b>7</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月7号黄油（PC）下载链接已恢复</div>
+    <div class="pmeta">共 33 款游戏 · PC<span class="pcmt" data-cpath="/2026907PC.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026907PC/vsys9mz468.webp" alt="9月7号黄油（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026907PC/aexniypgog.webp" alt="9月7号黄油（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026907PC/4um8b4mydp.webp" alt="9月7号黄油（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026907PC/38ekce433o.webp" alt="9月7号黄油（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026907PC/4wh3u0crta.webp" alt="9月7号黄油（PC）下载链接已恢复" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026904pcaz.html" data-path="/2026904pcaz.html" style="animation-delay:0.04s">
+  <div class="date"><b>4</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月4号黄油（PC+安卓）</div>
+    <div class="pmeta">共 14 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026904pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026904pcaz/ph5a992pl0.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904pcaz/cc72aftwtr.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904pcaz/7agu6z5519.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904pcaz/lghqcy542u.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904pcaz/0xrbqxp4un.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026904.html" data-path="/2026904.html" style="animation-delay:0.08s">
+  <div class="date"><b>4</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月4号黄油（PC+安卓）</div>
+    <div class="pmeta">共 14 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026904.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026904/hivrgzkl60.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904/6xjf6qgwfx.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904/c5pem1nob1.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904/8segm45qhi.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026904/mlq5p6dtd1.webp" alt="9月4号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="202692pcaz.html" data-path="/202692pcaz.html" style="animation-delay:0.12s">
+  <div class="date"><b>2</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月2号黄油（PC+安卓）</div>
+    <div class="pmeta">共 33 款游戏 · PC+安卓<span class="pcmt" data-cpath="/202692pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/202692pcaz/e1kt3jicsd.webp" alt="9月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202692pcaz/jfxciceqgb.webp" alt="9月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202692pcaz/oskviuvsuy.webp" alt="9月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202692pcaz/35mwe2syek.webp" alt="9月2号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202692pcaz/g02l4w0h0u.webp" alt="9月2号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="202691pc.html" data-path="/202691pc.html" style="animation-delay:0.16s">
+  <div class="date"><b>1</b><span>9月</span></div>
+  <div class="info">
+    <div class="ptitle">9月1号黄油（PC）</div>
+    <div class="pmeta">共 9 款游戏 · PC<span class="pcmt" data-cpath="/202691pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/202691pc/k64kd60fk6.webp" alt="9月1号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202691pc/ust35jbm5u.webp" alt="9月1号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202691pc/ecehvisbg6.webp" alt="9月1号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202691pc/en4m9jdw00.webp" alt="9月1号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/202691pc/fvq7mf2uxe.webp" alt="9月1号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026828pc.html" data-path="/2026828pc.html" style="animation-delay:0.20s">
+  <div class="date"><b>28</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月28号黄油（PC）</div>
+    <div class="pmeta">共 24 款游戏 · PC<span class="pcmt" data-cpath="/2026828pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pc/g6c8av9r7m.webp" alt="8月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pc/clgpomd7jr.webp" alt="8月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pc/ccql5ho2ne.webp" alt="8月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pc/h623mo4bv3.webp" alt="8月28号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pc/1i7g0sux70.webp" alt="8月28号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026828pcaz.html" data-path="/2026828pcaz.html" style="animation-delay:0.24s">
+  <div class="date"><b>28</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月28号黄油（PC+安卓）</div>
+    <div class="pmeta">共 25 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026828pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pcaz/cf8exihrh2.webp" alt="8月28号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pcaz/0llqbcvu85.webp" alt="8月28号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pcaz/v59g570pgi.webp" alt="8月28号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pcaz/r4xbgdz4no.webp" alt="8月28号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026828pcaz/y1vwxicw4q.webp" alt="8月28号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026827pcaz.html" data-path="/2026827pcaz.html" style="animation-delay:0.28s">
+  <div class="date"><b>27</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月27号黄油（PC+安卓）</div>
+    <div class="pmeta">共 25 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026827pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pcaz/gtdabyt3q0.webp" alt="8月27号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pcaz/ysdfspni85.webp" alt="8月27号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pcaz/4xx4iimuiz.webp" alt="8月27号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pcaz/mx07mhsxl5.webp" alt="8月27号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pcaz/39jqhxc1ng.webp" alt="8月27号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026827pc.html" data-path="/2026827pc.html" style="animation-delay:0.32s">
+  <div class="date"><b>27</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月27号黄油（PC）</div>
+    <div class="pmeta">共 23 款游戏 · PC<span class="pcmt" data-cpath="/2026827pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pc/y6ktcps4ib.webp" alt="8月27号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pc/8tzo7oynwa.webp" alt="8月27号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pc/yqsbsj5n15.webp" alt="8月27号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pc/aa3gupqzpe.webp" alt="8月27号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026827pc/s8hko9jqmq.webp" alt="8月27号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026826.html" data-path="/2026826.html" style="animation-delay:0.36s">
+  <div class="date"><b>26</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月26号黄油分享（PC）</div>
+    <div class="pmeta">共 15 款游戏 · PC<span class="pcmt" data-cpath="/2026826.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026826/go11yxb7tc.webp" alt="8月26号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026826/b93wztei31.webp" alt="8月26号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026826/j9iojg4lke.webp" alt="8月26号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026826/g0gydce4do.webp" alt="8月26号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026826/shv28g1gjz.webp" alt="8月26号黄油分享（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="2026825.html" data-path="/2026825.html" style="animation-delay:0.40s">
+  <div class="date"><b>25</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月25号黄油合集（PC+安卓）</div>
+    <div class="pmeta">共 11 款游戏 · PC+安卓<span class="pcmt" data-cpath="/2026825.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/2026825/qe9gplleli.webp" alt="8月25号黄油合集（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026825/uzewjhp0cu.webp" alt="8月25号黄油合集（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026825/gazai1ghdi.webp" alt="8月25号黄油合集（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026825/vf41l4t00p.webp" alt="8月25号黄油合集（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/2026825/saxdtz5f65.webp" alt="8月25号黄油合集（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.25pc.html" data-path="/8.25pc.html" style="animation-delay:0.44s">
+  <div class="date"><b>25</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月25号黄油分享（PC）</div>
+    <div class="pmeta">共 22 款游戏 · PC<span class="pcmt" data-cpath="/8.25pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.25pc/hln2ks61vt.webp" alt="8月25号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.25pc/y4092t5dta.webp" alt="8月25号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.25pc/ttz7ptoown.webp" alt="8月25号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.25pc/5sruzudu52.webp" alt="8月25号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.25pc/rkvsgbyc4q.webp" alt="8月25号黄油分享（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.24pc.html" data-path="/8.24pc.html" style="animation-delay:0.48s">
+  <div class="date"><b>24</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月24号黄油分享（PC）</div>
+    <div class="pmeta">共 22 款游戏 · PC<span class="pcmt" data-cpath="/8.24pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.24pc/g0ulfa662i.webp" alt="8月24号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.24pc/jpdojj1w3a.webp" alt="8月24号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.24pc/zcrilvznzh.webp" alt="8月24号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.24pc/0il2w3a2cu.webp" alt="8月24号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.24pc/spag5u4efi.webp" alt="8月24号黄油分享（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.23pc.html" data-path="/8.23pc.html" style="animation-delay:0.52s">
+  <div class="date"><b>23</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月23号黄油分享（PC）</div>
+    <div class="pmeta">共 24 款游戏 · PC<span class="pcmt" data-cpath="/8.23pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pc/4st9rnaans.webp" alt="8月23号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pc/xj2lpg4t81.webp" alt="8月23号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pc/9q1icro49k.webp" alt="8月23号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pc/buouiiysgx.webp" alt="8月23号黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pc/oq9x6qwqfw.webp" alt="8月23号黄油分享（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.23pcaz.html" data-path="/8.23pcaz.html" style="animation-delay:0.56s">
+  <div class="date"><b>23</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月23号黄油分享（PC+AZ）</div>
+    <div class="pmeta">共 30 款游戏 · PC<span class="pcmt" data-cpath="/8.23pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pcaz/23bmfgkhsh.webp" alt="8月23号黄油分享（PC+AZ）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pcaz/nzw5ayt4je.webp" alt="8月23号黄油分享（PC+AZ）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pcaz/we5smk5z9u.webp" alt="8月23号黄油分享（PC+AZ）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pcaz/oyhv7g9q6h.webp" alt="8月23号黄油分享（PC+AZ）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.23pcaz/j9jgw5jn7t.webp" alt="8月23号黄油分享（PC+AZ）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.21PC.html" data-path="/8.21PC.html" style="animation-delay:0.60s">
+  <div class="date"><b>21</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月21黄油分享（PC）</div>
+    <div class="pmeta">共 25 款游戏 · PC<span class="pcmt" data-cpath="/8.21PC.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.21PC/img_02.webp" alt="8月21黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.21PC/img_03.webp" alt="8月21黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.21PC/img_04.webp" alt="8月21黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.21PC/img_05.webp" alt="8月21黄油分享（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.21PC/img_06.webp" alt="8月21黄油分享（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="820PCAZ.html" data-path="/820PCAZ.html" style="animation-delay:0.64s">
+  <div class="date"><b>20</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月20号黄油更新-PC+安卓</div>
+    <div class="pmeta">共 18 款游戏 · PC+安卓<span class="pcmt" data-cpath="/820PCAZ.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/820PCAZ/img_02.webp" alt="8月20号黄油更新-PC+安卓" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/820PCAZ/img_03.webp" alt="8月20号黄油更新-PC+安卓" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/820PCAZ/img_04.webp" alt="8月20号黄油更新-PC+安卓" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/820PCAZ/img_05.webp" alt="8月20号黄油更新-PC+安卓" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/820PCAZ/img_06.webp" alt="8月20号黄油更新-PC+安卓" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.19pc.html" data-path="/8.19pc.html" style="animation-delay:0.68s">
+  <div class="date"><b>19</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月19号黄油分享-PC版</div>
+    <div class="pmeta">共 23 款游戏 · PC<span class="pcmt" data-cpath="/8.19pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.19pc/img_02.webp" alt="8月19号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.19pc/img_03.webp" alt="8月19号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.19pc/img_04.webp" alt="8月19号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.19pc/img_05.webp" alt="8月19号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.19pc/img_06.webp" alt="8月19号黄油分享-PC版" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.17pc.html" data-path="/8.17pc.html" style="animation-delay:0.72s">
+  <div class="date"><b>17</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月17号黄油分享-PC版</div>
+    <div class="pmeta">共 38 款游戏 · PC<span class="pcmt" data-cpath="/8.17pc.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.17pc/img_02.webp" alt="8月17号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.17pc/img_03.webp" alt="8月17号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.17pc/img_04.webp" alt="8月17号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.17pc/img_05.webp" alt="8月17号黄油分享-PC版" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.17pc/img_06.webp" alt="8月17号黄油分享-PC版" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.12pcaz.html" data-path="/8.12pcaz.html" style="animation-delay:0.76s">
+  <div class="date"><b>12</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月12号黄油（PC+安卓）</div>
+    <div class="pmeta">共 12 款游戏 · PC+安卓<span class="pcmt" data-cpath="/8.12pcaz.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.12pcaz/img_02.webp" alt="8月12号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12pcaz/img_03.webp" alt="8月12号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12pcaz/img_04.webp" alt="8月12号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12pcaz/img_05.webp" alt="8月12号黄油（PC+安卓）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12pcaz/img_06.webp" alt="8月12号黄油（PC+安卓）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.12PC.html" data-path="/8.12PC.html" style="animation-delay:0.80s">
+  <div class="date"><b>12</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月12号黄油（PC）</div>
+    <div class="pmeta">共 8 款游戏 · PC<span class="pcmt" data-cpath="/8.12PC.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.12PC/img_02.webp" alt="8月12号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12PC/img_03.webp" alt="8月12号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12PC/img_04.webp" alt="8月12号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12PC/img_05.webp" alt="8月12号黄油（PC）" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.12PC/img_06.webp" alt="8月12号黄油（PC）" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.1.1.html" data-path="/8.1.1.html" style="animation-delay:0.84s">
+  <div class="date"><b>11</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月11号黄油 43款（PC+安卓）下载链接已恢复</div>
+    <div class="pmeta">共 15 款游戏 · PC+安卓<span class="pcmt" data-cpath="/8.1.1.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_02.webp" alt="8月11号黄油 43款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_03.webp" alt="8月11号黄油 43款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_04.webp" alt="8月11号黄油 43款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_05.webp" alt="8月11号黄油 43款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_06.webp" alt="8月11号黄油 43款（PC+安卓）下载链接已恢复" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.11.html" data-path="/8.11.html" style="animation-delay:0.88s">
+  <div class="date"><b>11</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月11号黄油 41款（PC）下载链接已恢复</div>
+    <div class="pmeta">共 28 款游戏 · PC<span class="pcmt" data-cpath="/8.11.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_02.webp" alt="8月11号黄油 41款（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_03.webp" alt="8月11号黄油 41款（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_04.webp" alt="8月11号黄油 41款（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_05.webp" alt="8月11号黄油 41款（PC）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.11/img_06.webp" alt="8月11号黄油 41款（PC）下载链接已恢复" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a>
+<a class="post" href="8.10.html" data-path="/8.10.html" style="animation-delay:0.92s">
+  <div class="date"><b>10</b><span>8月</span></div>
+  <div class="info">
+    <div class="ptitle">8月10号黄油 92款（PC+安卓）下载链接已恢复</div>
+    <div class="pmeta">共 13 款游戏 · PC+安卓<span class="pcmt" data-cpath="/8.10.html"></span></div>
+  </div>
+  <div class="covers"><img src="https://tkporl.github.io/mrhyfx/assets/8.10/img_02.webp" alt="8月10号黄油 92款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.10/img_03.webp" alt="8月10号黄油 92款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.10/img_04.webp" alt="8月10号黄油 92款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.10/img_05.webp" alt="8月10号黄油 92款（PC+安卓）下载链接已恢复" loading="lazy"><img src="https://tkporl.github.io/mrhyfx/assets/8.10/img_06.webp" alt="8月10号黄油 92款（PC+安卓）下载链接已恢复" loading="lazy"></div>
+  <div class="arrow">→</div>
+</a></div>
+</main>
+<footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
+  // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
+  //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
+  //   改为自绘逐帧滚动：每帧实时取最新页高、速度从慢到快，页面被撑高也无缝跟进，不经过浏览器 smooth 动画不会停顿；
+  //   用户滚轮/触摸/键盘打断时自动停止
+  function toBottom() {
+    if (b._auto) return;
+    b._auto = true;
+    var stop = function () {
+      b._auto = false;
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchstart', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    var v = 0;
+    var frame = function () {
+      if (!b._auto) return;
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var h = maxScroll();
+      if (h - y <= 2) { stop(); return; }
+      v = Math.min(v + 2.5, 120);
+      window.scrollTo(0, Math.min(y + v, h));
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = maxScroll();
+    // 方向感知：最近一次是往下滑就提供“去底部↓”，往上滑就“回顶部↑”；贴顶强制↓、贴底强制↑。
+    //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+    var dirDown = y >= lastY; lastY = y;
+    var nearTop = y < 100;
+    var nearBottom = h - y < 100;
+    if (nearTop || (!nearBottom && dirDown)) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = toBottom; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  var lastY = 0;
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+<script src="assets/js/nav.js?v=4fcd5d5b"></script>
+<script src="assets/js/lenis.min.js?v=e4bb975a"></script>
+<script src="assets/js/smooth.js?v=26633810"></script>
+</body>
+</html>

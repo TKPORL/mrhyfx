@@ -22,19 +22,53 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-header{position:sticky;top:0;z-index:20;padding:0 20px 0}
-.hd-bar{max-width:900px;margin:0 auto;background:#fff;border:1px solid #ecebe9;border-radius:0 0 12px 12px;box-shadow:0 6px 18px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:52px}
+header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,247,.62);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);border-bottom:1px solid rgba(236,235,233,.55)}
+.hd-bar{max-width:1320px;margin:0 auto;background:transparent;border:none;box-shadow:none;display:flex;align-items:center;gap:14px;padding:10px 14px;min-height:62px}
 .hd-bar .logo{display:flex;align-items:center;flex-shrink:0;text-decoration:none}
-.hd-bar .logo img{width:118px;height:auto;border-radius:8px;display:block}
-.hd-bar .menu{display:flex;align-items:center;justify-content:space-evenly;gap:1px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
-.hd-bar .menu a{font-size:13px;color:#555;text-decoration:none;padding:9px 26px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease,opacity .26s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
+.hd-bar .logo img{width:134px;height:auto;border-radius:8px;display:block}
+.hd-bar .menu{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0;flex-wrap:nowrap;overflow:hidden;max-width:1000px;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s}
+.hd-bar .menu a{font-size:14px;color:#555;text-decoration:none;padding:9px 16px;border:1px solid #ecebe9;background:#fff;border-radius:10px;white-space:nowrap;transition:color .18s ease,background .18s ease,border-color .18s ease}
 .hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,.12s,.12s}
 .hd-bar .menu a:nth-child(2){transition-delay:0s,0s,0s,.08s,.08s}
 .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
 .hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
 .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-.hd-bar .acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto}
-.hd-bar .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+.hd-bar .acts{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px}
+/* ===== 顶部平台下拉（首页专用；桌面点开，手机搬进「⋯」抽屉） ===== */
+.plat-dd{position:relative;flex-shrink:0}
+.hd-bar .plat-slot{display:flex;align-items:center;flex-shrink:0;margin-left:auto;padding-left:12px}
+.plat-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.plat-btn:hover,.plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.plat-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;transition:transform .2s}
+.plat-btn .pic{display:none;width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.plat-btn .pl-head{display:none}
+.plat-dd.open .plat-btn .chev{transform:rotate(180deg)}
+.plat-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:150px;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:6px;display:none;z-index:30}
+.plat-dd.open .plat-menu{display:block}
+.plat-menu button{display:block;width:100%;text-align:left;font-family:inherit;font-size:13px;color:#555;background:none;border:none;border-radius:8px;padding:9px 12px;cursor:pointer;transition:.15s}
+.plat-menu button:hover{background:#fdf3f3;color:#e5484d}
+.plat-menu button.on{background:#fdf3f3;color:#e5484d;font-weight:700}
+/* 手机端：顶栏里的平台下拉隐藏，搬进抽屉 */
+@media (max-width:900px){.hd-bar .plat-dd{display:none}}
+/* 抽屉里的平台下拉：按钮与菜单项同宽同款，避免大小不一显得不协调 */
+#mrhxMoreDrop .plat-dd{display:block;width:100%;box-sizing:border-box;padding:0 14px 12px;margin-top:-4px}
+#mrhxMoreDrop .plat-btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;box-sizing:border-box;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+#mrhxMoreDrop .plat-btn .pic{display:block}
+#mrhxMoreDrop .plat-btn .pl-desk{display:none}
+#mrhxMoreDrop .plat-btn .pl-head{display:inline}
+#mrhxMoreDrop .plat-btn .chev{margin-left:auto}
+#mrhxMoreDrop .plat-btn:hover,#mrhxMoreDrop .plat-dd.open .plat-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-btn .chev{width:14px;height:14px;stroke:#999;stroke-width:2.2;flex-shrink:0}
+#mrhxMoreDrop .plat-dd.open .plat-btn .chev{stroke:#e5484d}
+#mrhxMoreDrop .plat-menu{position:static;display:none;min-width:0;width:100%;box-sizing:border-box;margin-top:8px;border:1px solid #ecebe9;border-radius:12px;box-shadow:none;padding:6px;background:#fff}
+#mrhxMoreDrop .plat-dd.open .plat-menu{display:block}
+#mrhxMoreDrop .plat-menu button{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;text-align:left;font-size:14px;color:#555;background:#faf9f7;border:1px solid #f0eeec;border-radius:9px;padding:11px 13px;margin-bottom:6px}
+#mrhxMoreDrop .plat-menu button:last-child{margin-bottom:0}
+#mrhxMoreDrop .plat-menu button:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
+#mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
+.hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
 .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -63,10 +97,10 @@ header{position:sticky;top:0;z-index:20;padding:0 20px 0}
 .nav-drop .drop-menu{display:flex;flex-wrap:wrap;gap:4px;padding:4px}
 .nav-drop .drop-menu a{font-size:13.5px;color:#555;text-decoration:none;padding:9px 13px;border-radius:9px;background:#faf9f7;border:1px solid #f0eeec;white-space:nowrap;transition:.18s}
 .nav-drop .drop-menu a:hover,.nav-drop .drop-menu a.on{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
-@media (min-width:681px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
-@media (max-width:680px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
-@media (max-width:720px){header{padding:0 14px 0}.hd-bar{padding:7px 12px;gap:10px}.hd-bar .logo img{width:100px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
-@media (max-width:680px){
+@media (min-width:901px){.hd-bar .more-btn{opacity:0;transform:scale(.88);width:0;border-width:0;pointer-events:none;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),width .28s cubic-bezier(.2,.8,.2,1),border-width .28s ease,visibility 0s linear .3s}}
+@media (max-width:900px){.hd-bar .menu{max-width:0;transform:translateX(26px);pointer-events:none;visibility:hidden;transition:max-width .34s cubic-bezier(.2,.8,.2,1),transform .34s cubic-bezier(.2,.8,.2,1),visibility 0s linear .38s}.hd-bar .menu a{opacity:0;transform:translateX(22px)}.hd-bar .menu a:nth-child(1){transition-delay:0s,0s,0s,0s}.hd-bar .menu a:nth-child(2){transition-delay:0s,0s,.03s,.03s}.hd-bar .menu a:nth-child(3){transition-delay:0s,0s,.06s,.06s}.hd-bar .menu a:nth-child(4){transition-delay:0s,0s,.09s,.09s}.nav-drop .drop-menu a{flex:1 1 auto;text-align:center}}
+@media (max-width:720px){.hd-bar{padding:9px 14px;gap:12px}.hd-bar .logo img{width:104px}.hd-bar .icon-btn{width:34px;height:34px}.nav-drop .drop-menu a{font-size:13px;padding:8px 10px}}
+@media (max-width:900px){
   /* 手机端：「更多」菜单改为左侧抽屉（2026-10-03 用户定稿，替代原来横排展开的 drop-menu） */
   .nav-mask{position:fixed;inset:0;background:rgba(20,18,17,.34);opacity:0;pointer-events:none;transition:opacity .28s ease;z-index:40}
   .nav-mask.open{opacity:1;pointer-events:auto}
@@ -91,17 +125,20 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .sect span{font-size:13px;color:#aaa;white-space:nowrap}
 .result{border:1px solid #ecebe9;border-radius:14px;background:#fff;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.result .rt a{font-size:16px;color:#2b2b2b;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;padding-bottom:1px}
-.result .rt a:hover{color:#e5484d;border-bottom-color:#e5484d}
-.result .rt .src{font-size:11px;color:#fff;background:#e5484d;border-radius:99px;padding:2px 10px}
-.result .intro{font-size:13px;color:#666;line-height:1.8;margin-bottom:10px;word-break:break-word}
+.result .rt .name{font-size:16px;color:#2b2b2b;font-weight:600;padding-bottom:1px}
+.result .rt .src{font-size:11px;color:#888;background:#f1efe9;border-radius:99px;padding:2px 10px}
+.result .rt .detail-link{font-size:12px;font-weight:600;color:#e5484d;text-decoration:none;margin-left:auto;white-space:nowrap}
+.result .rt .detail-link:hover{text-decoration:underline}
+.result .intro{font-size:13px;color:#888;line-height:1.75;margin-bottom:12px;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .result .dl{display:flex;gap:8px;flex-wrap:wrap}
 .result .img{margin-top:10px}
-.result .img img{max-width:100%;border-radius:10px;border:1px solid #ecebe9}
-.result.exact{border-left:3px solid #e5484d}
-.btn-dl{display:inline-flex;align-items:center;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;text-decoration:none}
-.btn-dl-m{background:#e5484d;color:#fff}
-.btn-dl-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
+.result .img img{max-width:100%;max-height:240px;width:auto;object-fit:contain;border-radius:10px;border:1px solid #ecebe9}
+.result.exact{border-color:#f0b4b6}
+.btn-dl{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13.5px;font-weight:600;text-decoration:none;transition:.2s}
+.btn-dl-m{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
+.btn-dl-m:hover{background:#178a50;transform:translateY(-1px)}
+.btn-dl-b{background:#fff;color:#444;border:1px solid #e2ded8}
+.btn-dl-b:hover{color:#1a9e5c;border-color:#b9e2cc;background:#f0faf4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
 .empty-box{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:28px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .empty-box h3{font-size:15px;color:#2b2b2b;margin-bottom:8px}
@@ -128,12 +165,13 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
   <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站"></a>
   <nav class="menu" aria-label="主导航">
     <a href="index.html">首页</a>
+    <a href="sponsor.html">赞助</a>
     <a href="tutorial.html">解压教程</a>
     <a href="tools.html">游戏工具</a>
     <a href="download.html">下载说明</a>
     <a href="mianze.html">免责声明</a>
-    <a href="sponsor.html">赞助</a>
   </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
@@ -169,11 +207,12 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
       </div>
       <nav class="drop-menu" aria-label="站点导航">
         <a href="index.html">首页</a>
-        <a href="tutorial.html">解压教程</a>
-        <a href="tools.html">游戏工具</a>
-        <a href="download.html">下载说明</a>
-        <a href="mianze.html">免责声明</a>
-        <a href="sponsor.html">赞助</a>
+        <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
+        <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
+        <a href="tools.html"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏工具</a>
+        <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>下载说明</a>
+        <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
+        <a href="daily.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/></svg>往期合集</a>
       </nav>
     </div>
   </div>
@@ -181,13 +220,22 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 <div class="nav-mask" id="mrhxNavMask"></div>
 </header>
 <main>
+  <div id="histWrap"></div>
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res" aria-busy="false"></div>
 </main>
-<script src="assets/js/nav.js?v=b211250e"></script>
+<script src="assets/js/nav.js?v=4fcd5d5b"></script>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <script>
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function relTime(iso){
+  if(!iso) return '';
+  var d=new Date(iso); if(isNaN(d.getTime())) return '';
+  var diff=Math.floor((Date.now()-d.getTime())/864e5);
+  if(diff<=0) return '今天'; if(diff===1) return '昨天';
+  if(diff<30) return diff+' 天前';
+  return d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();
+}
 (function () {
   var q = new URLSearchParams(location.search).get('q') || '';
   var input = document.getElementById('q');
@@ -222,11 +270,13 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       '<a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>';
   }
   function rowHtml(g, isExact) {
-    var dl = (g.links || []).map(function (l) {
-      var cls = l.url.indexOf('pan.baidu.com') > -1 ? 'btn-dl btn-dl-b' : 'btn-dl btn-dl-m';
-      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + esc(l.label) + '</a>';
+    var ic = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>';
+    var dl = (g.links || []).map(function (l, i) {
+      var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
+      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><a href="' + esc(g.url || '') + '">' + esc(g.title) + '</a><span class="src">' + esc(g.source) + '</span></div>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
+      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -253,7 +303,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   resBox.appendChild(moreWrap);
   document.getElementById('mrhx-more').onclick = renderMore;
   setMore(false);
-  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
+  if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
   fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
     if (!q) {
       // Direct access without query - show return to homepage message
@@ -262,6 +312,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
       return;
     }
     saveHist(q);
+    var hw = document.getElementById('histWrap');
+    if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
     var kw = q.toLowerCase();
     function fuzzyMatch(text, pattern) {
       var t = (text || '').toLowerCase();
