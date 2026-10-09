@@ -1592,6 +1592,73 @@ ${navHeaderHtml('')}
 </script>
 `;
 
+  const gwScript = `<script>
+(function () {
+  var FIRST = ${QZT_MORE_COUNT};
+  var grid = document.getElementById('gwGrid');
+  if (!grid) return;
+  var all = [], pf = '', shown = 0;
+  function platClass(p) { p = p || ''; return (/安卓/.test(p) && /PC/i.test(p)) ? 'both' : /安卓/.test(p) ? 'az' : /PC/i.test(p) ? 'pc' : ''; }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function card(g) {
+    var href = g.n ? ('game/' + g.n + '.html') : (g.url || 'index.html');
+    var pc = platClass(g.plat);
+    return '<a class="gcard" href="' + esc(href) + '"><div class="g-cover">' +
+      (g.img ? '<img loading="lazy" src="' + esc(g.img) + '" alt="' + esc(g.title) + '">' : '') +
+      '</div><div class="g-body"><div class="g-title">' + esc(g.title) +
+      (g.plat ? '<span class="gw-plat pf-' + pc + '">' + esc(g.plat) + '</span>' : '') +
+      '</div></div></a>';
+  }
+  function filtered() { return pf ? all.filter(function (g) { return platClass(g.plat) === pf; }) : all; }
+  function refresh() {
+    var arr = filtered();
+    document.getElementById('gwCount').textContent = arr.length + ' 款';
+    document.getElementById('gwMoreInfo').textContent = '已显示 ' + shown + ' 款 · 共 ' + arr.length + ' 款';
+    document.getElementById('gwMore').hidden = shown >= arr.length;
+  }
+  function showBatch() {
+    var arr = filtered();
+    var end = Math.min(shown + FIRST, arr.length);
+    var html = '';
+    for (var j = shown; j < end; j++) html += card(arr[j]);
+    grid.insertAdjacentHTML('beforeend', html);
+    shown = end;
+    refresh();
+  }
+  function reset() { grid.innerHTML = ''; shown = 0; showBatch(); }
+  fetch('search_index.json?v=' + Date.now(), { cache: 'no-cache' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) { all = (d || []).filter(function (g) { return g.img && g.n; }); reset(); })
+    .catch(function () {});
+  document.getElementById('gwFilter').addEventListener('click', function (e) {
+    var b = e.target.closest('.pg');
+    if (!b || b.classList.contains('on')) return;
+    pf = b.getAttribute('data-pf') || '';
+    [].slice.call(this.querySelectorAll('.pg')).forEach(function (x) { x.classList.toggle('on', x === b); });
+    reset();
+  });
+  document.getElementById('gwMoreBtn').addEventListener('click', function () {
+    document.getElementById('gwModal').classList.add('show');
+  });
+  var mask = document.createElement('div');
+  mask.className = 'gw-modal-mask'; mask.id = 'gwModal';
+  mask.innerHTML = '<div class="gw-modal"><p>游戏库还没显示完。<br>要继续怎么显示？</p><div class="row"><button type="button" id="gwCancel">先不加了</button><button type="button" id="gwBatch">再显示 ' + FIRST + ' 款</button><button type="button" class="pri" id="gwAll">显示全部</button></div></div>';
+  document.body.appendChild(mask);
+  mask.addEventListener('click', function (e) { if (e.target === mask) mask.classList.remove('show'); });
+  document.getElementById('gwCancel').addEventListener('click', function () { mask.classList.remove('show'); });
+  document.getElementById('gwBatch').addEventListener('click', function () { mask.classList.remove('show'); showBatch(); });
+  document.getElementById('gwAll').addEventListener('click', function () {
+    mask.classList.remove('show');
+    var arr = filtered();
+    var html = '';
+    for (var j = grid.children.length; j < arr.length; j++) html += card(arr[j]);
+    grid.insertAdjacentHTML('beforeend', html);
+    shown = arr.length;
+    refresh();
+  });
+})();
+</script>`;
+
   const index = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1653,6 +1720,24 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
 .g-dls{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
 .g-dl{display:inline-flex;align-items:center;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;transition:.2s}
 .g-dl:hover{background:#c93a3f}
+/* 期B·游戏库（2026-10-09）：hero 下方游戏墙，四色角标对齐规范（双端红/PC墨蓝/安卓苔绿） */
+.gw-sect{display:flex;align-items:center;gap:8px;margin:34px 0 12px;flex-wrap:wrap}
+.gw-sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
+.gw-sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.gw-sect span{font-size:13px;color:#aaa}
+.gw-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.gw-plat{display:inline-block;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;vertical-align:2px}
+.gw-plat.pf-both{background:#e5484d}
+.gw-plat.pf-pc{background:#3949ab}
+.gw-plat.pf-az{background:#4a7326}
+.gw-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.gw-modal-mask.show{display:flex}
+.gw-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.gw-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.gw-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.gw-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.gw-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.gw-modal button:hover{opacity:.9}
 footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
 footer b{color:#e5484d}
 footer .disc{display:inline-block;max-width:640px;margin-top:6px;color:#b4b0a9;line-height:1.7}
@@ -1686,7 +1771,16 @@ ${navHeaderHtml('')}
 <main>
   <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${totalGames}</b> 款游戏资源</div>
   <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
-  <div class="sect"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">备用站</a></div>
+  <div class="gw-sect"><h2>游戏库</h2><span id="gwCount"></span></div>
+  <div class="gw-filter" id="gwFilter">
+    <button type="button" class="pg on" data-pf="">全部</button>
+    <button type="button" class="pg" data-pf="both">PC+安卓</button>
+    <button type="button" class="pg" data-pf="pc">PC</button>
+    <button type="button" class="pg" data-pf="az">安卓</button>
+  </div>
+  <div class="ggrid" id="gwGrid"></div>
+  <div class="qzt-more" id="gwMore" hidden style="margin-top:22px"><button type="button" id="gwMoreBtn">显示更多</button><span class="qzt-more-info" id="gwMoreInfo"></span></div>
+  <div class="sect" style="margin-top:34px"><h2>每日分享</h2><span>${days.length} 期</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">备用站</a></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
 <footer>${SITE_FOOTER}</footer>
@@ -1694,6 +1788,7 @@ ${popupHtml}
 ${topButton}
 ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
+${gwScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}
 </body>
@@ -1772,18 +1867,7 @@ ${SMOOTH_SCRIPTS}
     }
   }
 
-  // #32 瘦身：只保留必要字段，简介截前 80 字（当前 250KB，全量简介是体积大头）
-  const slimIndex = searchIndex.map(g => ({
-    title: g.title,
-    url: g.url,
-    img: g.img,
-    plat: g.plat,
-    links: g.links,
-    intro: (g.intro || '').slice(0, 80),
-    source: g.source
-  }));
-  fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
-  console.log('search_index.json ok, games:', slimIndex.length);
+  // #32 瘦身：写盘挪到期A编号块之后（g2num 可见处），补 n 字段供首页游戏墙直链独立页
 
   fs.writeFileSync('game_index.json', JSON.stringify(gameIndex, null, 2));
   console.log('game_index.json ok, posts:', Object.keys(gameIndex).length);
@@ -2241,6 +2325,20 @@ ${likeScript}
       }
     }
     console.log('game pages ok:', kept.size, '(map:', Object.keys(idMap).length + ')');
+
+    // #32 瘦身 + 期B：n 字段 = 独立页编号，首页游戏墙/搜索直接链 game/<n>.html
+    const slimIndex = searchIndex.map(g => ({
+      title: g.title,
+      url: g.url,
+      img: g.img,
+      plat: g.plat,
+      links: g.links,
+      intro: (g.intro || '').slice(0, 80),
+      source: g.source,
+      n: g2num.get(g) || null
+    }));
+    fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
+    console.log('search_index.json ok, games:', slimIndex.length, '(含编号)');
   }
 
   // ===== SEO: sitemap.xml + robots.txt =====
