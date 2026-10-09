@@ -108,8 +108,7 @@ const NAV_MENU = (() => {
   // 备用站（单游戏站）：外链，新标签打开
   items.push({ label: '备用站', url: 'https://tkporl.github.io/hyfxdyx/',
     ic: '<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/>' });
-  items.push({ label: '往期合集', url: 'daily.html', mobileOnly: true,
-    ic: '<path d="M4 5h16v14H4z"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M4 10h16"/>' });
+  // 2026-10-10 站长要求：往期合集从手机抽屉移除（daily.html 页面保留，仅不进导航）
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
 
@@ -1851,7 +1850,7 @@ ${NAV_CSS}
 main{max-width:1280px;margin:0 auto;padding:24px 24px 40px}
 .page-head{margin-bottom:18px}
 .page-head h1{font-size:26px;font-weight:800;letter-spacing:.5px}
-.upd{display:inline-flex;width:fit-content;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap}
 .upd b{color:#e5484d}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
   .upd-note{font-size:12.5px;color:#999;margin:-14px 0 16px;padding-left:4px;line-height:1.7}
@@ -1996,9 +1995,9 @@ ${SITE_ICON_TAGS}
 ${navHeaderHtml('')}
 </header>
 <main>
-  <div class="page-head">
-    <h1>Tsinho黄油站</h1>
-  </div>
+  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Tsinho黄油站</h1>
+  <div class="upd"><span class="tag">游戏资源</span>本站点共上传了 <b>${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)}</b> 款游戏资源</div>
+  <div class="upd-note">右上角可搜索游戏（搜"关键词"NO全名）；没搜到的，可在置顶评论区留言游戏全名，站长看到会尽快补上</div>
   <div class="sect"><h2>全部合集</h2><span>${days.length} 期 · 共 ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
