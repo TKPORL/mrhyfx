@@ -1993,9 +1993,9 @@ ${navHeaderHtml('')}
 <main>
   <div class="page-head">
     <h1>Tsinho黄油站</h1>
-    <p>每日更新合集 · 共 ${days.length} 期 · 在库 ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款游戏。逛整期点下面卡片，找单款游戏用顶部搜索更快。</p>
+    <p>共 ${days.length} 期 · ${days.reduce((s, d) => s + (Number(d.gameCount) || 0), 0)} 款游戏</p>
   </div>
-  <div class="upd"><span class="tag">新站</span><span>全新<b>单游戏站</b>已上线：全部游戏一页逛，翻页更快体验更轻</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">前往备用站 →</a></div>
+  <div class="upd"><span class="tag">新站</span><span><b>单游戏站</b>已上线</span><a class="dyx-btn" href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">前往备用站</a></div>
   <div class="sect"><h2>全部合集</h2><span>${days.length} 期</span></div>
   <div id="dayLis">${dayLis || '<div class="empty">暂无分享</div>'}</div>
 </main>
