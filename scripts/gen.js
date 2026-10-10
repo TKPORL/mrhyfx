@@ -699,25 +699,12 @@ const popupHtml = (() => {
 </div>
 <script>
   // 2026-10-09 站长要求：公告每小时弹一次；公告内容被改过则立即重弹。
-  // 记「上次关闭时间 + 当时公告内容指纹」，任一不满足就显示。
+  // 2026-10-10 站长要求：公告每次访问都弹，不再记时间/指纹
   (function(){
-  var K_TIME='mrhx_ann_time', K_SIG='mrhx_ann_sig', TTL=3600*1000;
   var el=document.getElementById('mrhxPopup');
   if(!el) return;
-  var content=el.querySelector('.mrhx-popup-content');
-  var text=content?content.textContent:'';
-  var sig='';
-  for(var i=0;i<text.length;i++){ sig=((sig<<5)-sig+text.charCodeAt(i))>>>0; }
-  sig=String(sig)+'_'+text.length;
-  var last=0, lastSig='';
-  try{ last=parseInt(localStorage.getItem(K_TIME)||'0',10)||0; lastSig=localStorage.getItem(K_SIG)||''; }catch(e){}
-  var fresh = lastSig && lastSig!==sig;
-  var expired = !last || (Date.now()-last)>=TTL;
-  if(fresh || expired){ el.style.display='flex'; } else { el.style.display='none'; }
-  var close=function(){
-    try{ localStorage.setItem(K_TIME,String(Date.now())); localStorage.setItem(K_SIG,sig); }catch(e){}
-    el.style.display='none';
-  };
+  el.style.display='flex';
+  var close=function(){ el.style.display='none'; };
   var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
   var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
   })();
