@@ -1330,7 +1330,10 @@ html = (function reorderNodes(str) {
       var clean = dlBlock ? block.replace(dlBlock, '') : block;
       var content = clean.match(/<div class="content mm-editor" ><span>[\s\S]*?<\/span><\/div>/);
       var note = clean.match(/<div class="note mm-editor">[\s\S]*?<\/div>/);
-      var img = clean.match(/<ul class="image-list">[\s\S]*?<\/ul>/);
+      var img = clean.match(/<ul[^>]*image-list[^>]*>[\s\S]*?<\/ul>/);
+      // 2026-10-11 丢图事故防线：原卡含图片标签但图片区正则没匹配上时，原样返回不重组，
+      //   否则图片区会被永久丢弃（覆盖式生成，写回后源里就没有了，不可逆）
+      if (block.indexOf('<img') > -1 && !img) return block;
       if (!note && !img) return block;
       var noteBlock = note ? note[0] : '';
       var imgBlock = img ? img[0] : '';
