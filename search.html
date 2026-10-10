@@ -279,7 +279,7 @@ function relTime(iso){
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
-      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '') + '</div>' +
+      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +

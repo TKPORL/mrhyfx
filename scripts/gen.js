@@ -2308,7 +2308,7 @@ function relTime(iso){
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
-      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '') + '</div>' +
+      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -2433,8 +2433,13 @@ function relTime(iso){
       seenAnchor[a] = 1;
       return { g, a };
     });
+    // 2026-10-10 站长定稿：停止为新游戏创建独立页（合集帖已承载全部信息，仓库不再膨胀）。
+    //   已有编号的旧游戏照常维护（重生成/残页清理）；新锚不再分配编号、不写入 map、不建页。
+    //   台账 game-added.json 仍记录新游戏时间（搜索排序用）。
+    //   恢复自动生成：去掉下面 continue 即可，「删除的号永不复用」规则不受影响。
     for (const { a } of entries) {
-      if (!idMap[a]) { idMap[a] = String(nextNum); usedNums.add(nextNum); nextNum++; }
+      if (!idMap[a]) continue;
+      usedNums.add(Number(idMap[a]));
     }
     fs.writeFileSync(MAP_FILE, JSON.stringify(idMap));
     const g2num = new Map(entries.map(e => [e.g, idMap[e.a]]));
@@ -2484,6 +2489,7 @@ function relTime(iso){
     const kept = new Set();
 
     entries.forEach(({ g, a }) => {
+      if (!idMap[a]) return; // 2026-10-10：新游戏无独立页，跳过建页（旧游戏照常维护）
       const num = idMap[a];
       const key = String(num);
       const fname = key + '.html';
