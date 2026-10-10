@@ -211,6 +211,7 @@
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
   .mrhx-cfold-wrap{position:relative}
   .mrhx-cfold-wrap.mrhx-cfolded{max-height:280px;overflow:hidden}
+  .mrhx-cmore-wrap{text-align:center}
   .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
   .mrhx-cfold-mask:not(.mrhx-cfold-show){display:none}
   .mrhx-cfbtn{display:inline-block;border:1px solid #f0b4b6;background:#fff;color:#e5484d;padding:8px 24px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(229,72,77,.12)}

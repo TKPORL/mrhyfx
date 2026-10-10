@@ -1082,7 +1082,7 @@ const allGames = [];
 // 单文件 JS 分页：卡片全在页面里（SEO/搜索索引不受影响），脚本按每 50 张一组切换显示；
 // 非当前页的 img 把 src 暂存 data-src 并清空，翻到才加载（display:none 挡不住非 lazy img 发请求，必须清 src）。
 // 幂等：页码栏与样式脚本都用注释标记先删后插；DOM 不包壳，reorderNodes 输入输出无痕。
-const QZT_MORE_COUNT = 60;
+const QZT_MORE_COUNT = 100;
 function qztUnwrapPager(html) {
   // 兼容清理：2026-10-01 短暂上线过的折叠壳（横幅 + hidden 容器），剥掉还原成纯净卡片流
   html = html.replace(/<div class="qzt-fold-box">[\s\S]*?<\/div>\s*/g, '');
@@ -1183,10 +1183,9 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   var mask=document.createElement('div');
   mask.className='qzt-modal-mask'; mask.id='qztModal';
-  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztCancel">先不加了</button><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
   document.body.appendChild(mask);
   mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
-  document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
   document.getElementById('qztBatch').addEventListener('click',function(){ mask.classList.remove('show'); showBatch(); });
   document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });

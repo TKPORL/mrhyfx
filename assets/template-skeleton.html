@@ -1006,7 +1006,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=3ea56025">
+<link rel="stylesheet" href="assets/css/site.css?v=ca7003f5">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -1340,7 +1340,7 @@ li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:p
 document.addEventListener('DOMContentLoaded',function(){
   var ul=document.querySelector('ul.node-list'); if(!ul) return;
   var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var FIRST=60; if(lis.length<=FIRST) return;
+  var FIRST=100; if(lis.length<=FIRST) return;
   var box=document.getElementById('qztMore'); if(!box) return;
   var info=document.getElementById('qztMoreInfo');
   var shown=FIRST;
@@ -1374,10 +1374,9 @@ document.addEventListener('DOMContentLoaded',function(){
   });
   var mask=document.createElement('div');
   mask.className='qzt-modal-mask'; mask.id='qztModal';
-  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztCancel">先不加了</button><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
+  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
   document.body.appendChild(mask);
   mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
-  document.getElementById('qztCancel').addEventListener('click',function(){ mask.classList.remove('show'); });
   document.getElementById('qztBatch').addEventListener('click',function(){ mask.classList.remove('show'); showBatch(); });
   document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
 });
