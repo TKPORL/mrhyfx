@@ -86,7 +86,7 @@
      这里显式归零（本文件晚于页面内联样式，同优先级后者胜）。 */
   .title{font-size:20px;font-weight:700;word-break:break-word;padding-left:0;padding-bottom:6px;margin-bottom:10px}
   .mrhx-views{font-size:12px;font-weight:400;color:#999;margin-left:8px;white-space:nowrap}
-  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-left:0}
+  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px;margin-left:0}
   body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;padding:0;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
   body.mrhx-grid2 .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
   body.mrhx-grid2 .node .bullet{display:none}
@@ -121,6 +121,14 @@
   .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background:#f4f2ef;pointer-events:none}
   .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
   @keyframes mrhxSpin{to{transform:rotate(360deg)}}
+  /* 901-1280 小窗/中屏：导航收紧间距防截断（与 gen.js NAV_CSS 同步维护） */
+  @media (min-width:901px) and (max-width:1280px){
+    .hd-bar{gap:10px}
+    .hd-bar .menu{gap:8px}
+    .hd-bar .menu a{padding:9px 10px;font-size:13px}
+    .hd-bar .logo img{width:112px}
+    .hd-bar .acts{margin-left:8px}
+  }
   @media (max-width:720px){
     body.narrow{padding-left:12px !important;padding-right:12px !important;padding-bottom:28px !important}
     header{padding:0 0 10px}
