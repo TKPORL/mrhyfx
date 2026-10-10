@@ -2335,7 +2335,8 @@ function parseCollectionDoc(doc) {
         }
       });
     }
-    const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || '').filter(Boolean).join('\n');
+    // 2026-10-11：兼容延迟加载卡（qzt 第 100 张之后图片是 data-src 无 src），否则后台读不到图
+    const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || i.getAttribute('data-src') || '').filter(Boolean).join('\n');
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
       intro, imgs, linkM, linkB, customName, customUrl
