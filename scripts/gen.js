@@ -819,7 +819,9 @@ async function localize(html, tag) {
   }
   // #12：公共脚本/样式目录（assets/js、assets/css）与图床备份目录（assets/imgbed）不参与帖子图片目录重写，
   //   否则会被误改写成 assets/<tag>/（imgbed 备份图全 404，2026-10-01 老帖图全裂事故根因）
-  html = html.replace(/assets\/(?!js\/|css\/|imgbed\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
+  // 2026-10-11：assets/game/ 放行——正确封面图按「编号-游戏名」集中存放（各帖子共享），
+    //   不能被重写成本帖目录（那会指向不存在的文件导致裂图）
+    html = html.replace(/assets\/(?!js\/|css\/|imgbed\/|game\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
   html = html.replace(/src="assets\/(?!js\/|css\/)/g, `src="${CDN_URL}/assets/`);
   html = html.replace(/href="assets\/(?!js\/|css\/)/g, `href="${CDN_URL}/assets/`);
   // #13：帖子卡片图懒加载（每帖首图不懒，保证首屏立即出图）
