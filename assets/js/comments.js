@@ -287,7 +287,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
         }
         render();
       })
-      .catch(function (e) { if (reset || full) list.textContent = '评论加载失败（' + e.message + '），请稍后再试'; else render(); });
+      .catch(function (e) { if (reset || full) { var m = String((e && e.message) || e); list.textContent = /fetch|network|Failed|Load|timeout/i.test(m) ? '评论加载失败：本站服务器在国外，请开启 VPN（梯子）后刷新页面重试' : '评论加载失败（' + m + '），请稍后再试'; } else render(); });
   }
   function load() {
     fetchPage(true);
@@ -312,7 +312,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       form.reset();
       load();
       // 新评论通知站长：已由 Supabase 触发器自动发邮件（supabase/upgrade_notify_comment.sql），前端不再持有密钥直调
-    }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { var m = String((e && e.message) || e); alert(/fetch|network|Failed|Load|timeout/i.test(m) ? '发送失败：请检查网络，或开启 VPN（梯子）后重试' : '发送失败：' + m); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   load();
 })();
