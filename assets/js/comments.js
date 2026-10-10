@@ -266,6 +266,12 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     if (!all.length) list.appendChild(h('p', 'mrhx-cempty', '还没有评论，来说两句吧'));
     applyFold();
   }
+  // 2026-10-11：按 id 去重（首屏补拉的父评论可能与后续分页重复）
+  function dedupe(arr) {
+    var seen = {}, out = [];
+    arr.forEach(function (c) { if (c && c.id && !seen[c.id]) { seen[c.id] = 1; out.push(c); } });
+    return out;
+  }
   function fetchPage(reset, full) {
     if (reset) { list.innerHTML = '<p class="mrhx-loading">评论加载中...</p>'; offset = 0; totalKnown = null; }
     // 排序：置顶永远第一（折叠态也可见不被截断），其余按时间倒序
@@ -279,11 +285,27 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       })
       .then(function (d) {
         d = d || [];
-        if (full) { all = d; hasMore = false; }
+        if (full) { all = dedupe(d); hasMore = false; }
         else {
           if (reset) all = d; else all = all.concat(d);
           offset += d.length;
-          hasMore = totalKnown != null ? all.length < totalKnown : d.length === PAGE;
+          hasMore = totalKnown != null ? offset < totalKnown : d.length === PAGE;
+          // 2026-10-11 排序修复：首屏补拉「被回复的父评论」。
+          //   回复是新的、但父评论很老，父评论排不进第一页 → 补进来后由前端按
+          //   「最后活动时间」排序，被回复的评论就能浮到最前（站长要的效果）。
+          if (reset) {
+            var have = {};
+            all.forEach(function (c) { have[c.id] = 1; });
+            var missing = [];
+            d.forEach(function (c) { if (c.pid && !have[c.pid]) missing.push(c.pid); });
+            if (missing.length) {
+              var uniq = missing.filter(function (v, i, a) { return a.indexOf(v) === i; });
+              return fetch(SB + '/rest/v1/comments?id=in.(' + uniq.map(encodeURIComponent).join(',') + ')&select=id,pid,nick,email,is_admin,pinned,content,created_at', { headers: headers() })
+                .then(function (r2) { return r2.ok ? r2.json() : []; })
+                .then(function (extra) { all = dedupe(all.concat(extra || [])); render(); });
+            }
+          }
+          all = dedupe(all);
         }
         render();
       })
