@@ -2310,7 +2310,7 @@ function relTime(iso){
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
-      (g.n ? '<a class="detail-link" href="game/' + g.n + '.html">查看详情</a>' : '<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
+      ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
       (g.img ? '<div class="img"><img src="' + esc(g.img) + '" alt="" loading="lazy"></div>' : '') +
@@ -2491,7 +2491,10 @@ function relTime(iso){
     const kept = new Set();
 
     entries.forEach(({ g, a }) => {
-      if (!idMap[a]) return; // 2026-10-10：新游戏无独立页，跳过建页（旧游戏照常维护）
+      // 2026-10-11 站长定稿：独立页彻底停用（合集帖已承载全部信息）。
+      //   不建新页、不维护旧页；存量页面由站长手动删除（本脚本不删任何 game 文件）。
+      //   恢复：删掉下面这行 return 即可。
+      return;
       const num = idMap[a];
       const key = String(num);
       const fname = key + '.html';
@@ -2731,7 +2734,10 @@ ${likeScript}
       gamePages.push({ loc: SITE_URL + 'game/' + fname, pri: '0.4', mod: mod || undefined });
     });
     // 残页清理：索引中已消失的游戏，对应页面逐个删除（单文件 unlink，非递归）
-    if (fs.existsSync('game')) {
+    // 2026-10-11：独立页停用后 kept 恒为空，此时必须跳过清理——否则会把全部存量页面删光
+    if (!kept.size) {
+      console.log('独立页已停用：跳过残页清理，存量页面由站长手动删除');
+    } else if (fs.existsSync('game')) {
       for (const f of fs.readdirSync('game')) {
         if (f.endsWith('.html') && !kept.has(f)) { fs.unlinkSync(path.join('game', f)); console.log('game 残页清理:', f); }
       }
