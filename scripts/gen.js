@@ -628,6 +628,12 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
+  // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
+  function targetY() {
+    var el = document.querySelector('.mrhx-navrow') || document.getElementById('mrhx-comments');
+    if (!el) return maxScroll();
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - 84, maxScroll());
+  }
   // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
   //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
   //   改为自绘逐帧滚动：每帧实时取最新页高、速度从慢到快，页面被撑高也无缝跟进，不经过浏览器 smooth 动画不会停顿；
@@ -649,9 +655,10 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
       if (!b._auto) return;
       var y = window.scrollY || document.documentElement.scrollTop;
       var h = maxScroll();
-      if (h - y <= 2) { stop(); return; }
+      var ty = targetY();
+      if (y >= ty - 2) { stop(); return; }
       v = Math.min(v + 2.5, 120);
-      window.scrollTo(0, Math.min(y + v, h));
+      window.scrollTo(0, Math.min(y + v, ty));
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
@@ -663,7 +670,7 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
     //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
     var dirDown = y >= lastY; lastY = y;
     var nearTop = y < 100;
-    var nearBottom = h - y < 100;
+    var nearBottom = targetY() - y < 100;
     if (nearTop || (!nearBottom && dirDown)) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = toBottom; }
     else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
     b.classList.add('show');
