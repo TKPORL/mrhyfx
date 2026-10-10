@@ -1504,7 +1504,7 @@ ${navHeaderHtml('')}
 
     // #30：标题后挂浏览量占位（真实数字由 track.js 从 page_views 拉取；先清旧占位保证幂等）
     html = html.replace(/<span class="mrhx-views"[^>]*><\/span>/g, '');
-    html = html.replace(/<div class="title">([^<]*)<\/div>/, '<div class="title">$1<span class="mrhx-views" id="mrhx-views"></span></div>');
+    // 2026-10-10 站长要求：浏览量不再对访客显示（只在后台可见）；1506 保留用于清掉存量页面的旧占位，track.js 有判空安全跳过
 
     // 给后台搜索用的「帖子级别」索引：每期帖子的标题 + 所有游戏名 + 帖子正文 intro
     if (!gameIndex[shortName]) {

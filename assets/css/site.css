@@ -84,9 +84,9 @@
   .node .note{font-size:12px;color:#666;line-height:1.6;margin-top:4px;word-break:break-word;white-space:pre-wrap}
   /* 帖子页原始模板给 .title 写了 padding-left:10px，会让标题比顶部导航多缩进 10px、左边缘对不齐。
      这里显式归零（本文件晚于页面内联样式，同优先级后者胜）。 */
-  .title{font-size:20px;font-weight:700;word-break:break-word;padding-left:0;padding-bottom:6px;margin-bottom:10px}
+  .title{font-size:20px;font-weight:700;word-break:break-word;text-align:center;padding-left:0;padding-bottom:6px;margin-bottom:10px}
   .mrhx-views{font-size:12px;font-weight:400;color:#999;margin-left:8px;white-space:nowrap}
-  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px;margin-left:0}
+  body.mrhx-grid2 .node-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:8px 14px;margin-left:0}
   body.mrhx-grid2 .node{margin-bottom:0;display:flex;flex-direction:column;padding:0;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
   body.mrhx-grid2 .node:hover{border-color:#f0b4b6;transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.08)}
   body.mrhx-grid2 .node .bullet{display:none}
@@ -103,7 +103,7 @@
   body.mrhx-grid2 .node .exp-hint{order:5;display:none;margin:0 14px 12px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;max-width:calc(100% - 28px);cursor:pointer}
   body.mrhx-grid2 .node .exp-hint:hover{border-color:#e5484d;color:#e5484d}
   body.mrhx-grid2 .node-full{grid-column:1/-1;display:flex;flex-direction:column}
-  body.mrhx-grid2 .node-full .content{-webkit-line-clamp:unset;overflow:visible}
+  body.mrhx-grid2 .node-full .content{display:block;-webkit-line-clamp:unset;overflow:visible}
   body.mrhx-grid2 .node-full .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
   /* 求助公告卡：标题「求助公告」与下面 5 条公告原本隔了 19px（12+7），看着松散，
      站长要求往上靠一点 —— 只收窄这张卡的标题下边距，别的卡片不受影响。 */
