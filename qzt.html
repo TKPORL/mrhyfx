@@ -1018,7 +1018,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=23ec07b0">
+<link rel="stylesheet" href="assets/css/site.css?v=3ea56025">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -1086,14 +1086,11 @@
 <!--mrhx-end-->
   <div class="title">求助贴-可在此贴求游戏</div>
         <ul class="node-list">
-<li class="node heading3 node-full">
-  <div class="content mm-editor" ><span>求助公告</span></div>
-    <div class="note mm-editor"><span>1. 求资源：在评论区留言即可，站长会尽可能帮你们去找，找到后发布到本帖；系统会按你填的邮箱自动通知，请填常用邮箱。
-2. 完全免费：本站所有资源、功能全部免费分享，不收取任何费用，资源来之不易，请珍惜。
-3. 禁止商用：资源仅限个人使用，禁止倒卖；违者永久拉黑并公示。
-4. 配图说明：游戏会陆续补充，数量增多后部分配图可能与游戏名对不上，以游戏名为准。
-5. 赞助支持：本站属于纯公益，无任何付费项——真要说有，大概就是顶部的赞助入口了吧哈哈。如果觉得小站还不错，欢迎到赞助页给一点小小支持，感谢理解！</span></div>
-  </li><li class="node heading3">
+<li class="mrhx-announce"><div class="mra-t">求助公告</div><div class="mra-b"><span>1. 图片加载慢/评论不了：请开VPN（梯子）后刷新即可。
+2. 求资源：评论区留言，站长看到会尽快补上；请填常用邮箱，补档自动通知。
+3. 禁止商用：仅限个人使用，禁止倒卖，违者拉黑公示。
+4. 配图说明：配图陆续补充，可能与游戏名对不上，以游戏名为准。
+5. 赞助支持：本站纯公益，资源全部免费分享；如果觉得本站不错，欢迎到赞助页支持一下，感谢！</span></div></li><li class="node heading3">
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -5198,6 +5195,10 @@ POV 第一人称 + 监控视角切换
 .qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
 .qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
 .qzt-modal button:hover{opacity:.9}
+/* 2026-10-10 求助公告专用块（替代 node-full 游戏卡结构）：自有样式，不受游戏卡布局规则影响 */
+li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px solid #f0dcdc;border-radius:12px;padding:2px 16px 8px;margin:0}
+li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
+li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){

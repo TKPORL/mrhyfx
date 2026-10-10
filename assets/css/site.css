@@ -153,6 +153,9 @@
     body.mrhx-grid2 .node{border-radius:12px}
     body.mrhx-grid2 .node .content{margin:10px 12px 0}
     body.mrhx-grid2 .node-full .content{text-align:center}
+    li.mrhx-announce{padding:0 12px 6px}
+    li.mrhx-announce .mra-t{font-size:14px;padding:8px 0 5px;margin-bottom:6px}
+    li.mrhx-announce .mra-b{font-size:12px;line-height:1.6}
     body.mrhx-grid2 .node .note{margin:6px 12px 0;font-size:12px}
     body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
     body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}

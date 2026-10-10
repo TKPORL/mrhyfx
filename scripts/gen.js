@@ -1153,6 +1153,10 @@ const QZT_PAGE_ASSETS = `<style>
 .qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
 .qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
 .qzt-modal button:hover{opacity:.9}
+/* 2026-10-10 求助公告专用块（替代 node-full 游戏卡结构）：自有样式，不受游戏卡布局规则影响 */
+li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px solid #f0dcdc;border-radius:12px;padding:2px 16px 8px;margin:0}
+li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
+li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
@@ -1371,6 +1375,20 @@ html = (function reorderNodes(str) {
     blocks = blocks.filter(b => b.trim().length > 0);
     let qztInner = blocks.join('');
     if (file === 'qzt.html') qztInner = qztDeferImages(qztInner);
+    if (file === 'qzt.html') {
+      // 2026-10-10 站长定稿：公告不再借用游戏卡片结构（node-full 卡自带两行截断/margin 规则，间距怎么调都有残留），
+      //   改为专用公告块：提取原卡 content/note 文本，整体换成 <li class="mrhx-announce">；
+      //   幂等：源里已是公告块（找不到 node-full）则跳过；备用站爬虫本就跳过无图无链的卡，不受影响。
+      const nfA = /<li class="node heading3 node-full">([\s\S]*?)<\/li>/.exec(qztInner);
+      if (nfA) {
+        const ctA = /<div class="content[^"]*"\s*>\s*<span>([\s\S]*?)<\/span>\s*<\/div>/.exec(nfA[1]);
+        const ntA = /<div class="note[^"]*"[^>]*>([\s\S]*)<\/div>\s*$/.exec(nfA[1]);
+        if (ctA && ntA) {
+          qztInner = qztInner.replace(nfA[0],
+            '<li class="mrhx-announce"><div class="mra-t">' + ctA[1] + '</div><div class="mra-b">' + ntA[1] + '</div></li>');
+        }
+      }
+    }
     return prefix + '<ul class="node-list">\n' + qztInner + '\n  </ul>' + suffix;
   })(file === 'qzt.html' ? qztUnwrapPager(html) : html);
 
