@@ -1169,12 +1169,23 @@ document.addEventListener('DOMContentLoaded',function(){
     var end=Math.min(shown+FIRST,lis.length);
     for(var j=shown;j<end;j++) fill(lis[j]);
     shown=end; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
   }
   function showAll(){
     lis.forEach(fill);
     shown=lis.length; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
   }
   box.removeAttribute('hidden');
+  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
+  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
+  var _saved = null;
+  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
+  if (_saved === 'all') { showAll(); }
+  else if (_saved && parseInt(_saved, 10) > 0) {
+    var _n = parseInt(_saved, 10);
+    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
+  }
   refresh();
   // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
   if(/p\\d+/.test(location.hash) && parseInt((location.hash.match(/p(\\d+)/)||[])[1],10)>1) showAll();
@@ -1308,10 +1319,12 @@ html = (function reorderNodes(str) {
     var suffix = str.slice(end + 5);
     var blocks = [], pos = 0;
     while (pos < inner.length) {
-      var h3 = inner.indexOf('<li class="node heading3">', pos);
+      // 2026-10-11：起点识别兼容 hidden 变体——原先只认 '<li class="node heading3">'，
+      //   一旦 qztUnwrapPager 未生效，hidden 卡会被并进上一张卡，图片区随之丢弃（线上丢图根因）
+      var h3 = inner.indexOf('<li class="node heading3', pos);
       if (h3 < 0) { blocks.push(inner.slice(pos)); break; }
       if (h3 > pos) blocks.push(inner.slice(pos, h3));
-      var depth = 1, i = h3 + 27;
+      var depth = 1, i = inner.indexOf('>', h3) + 1;
       while (i < inner.length) {
         if (inner.indexOf('<ul class="image-list">', i) === i) {
           var uEnd = inner.indexOf('</ul>', i + 22);
@@ -1352,7 +1365,7 @@ html = (function reorderNodes(str) {
           .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
           .replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
       }
-      var openTag = clean.match(/<li class="node heading3">[\s\S]*?<\/div>[\s\S]*?<\/div>/);
+      var openTag = clean.match(/<li class="node heading3"(?: hidden)?>[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
       // 公告卡（标题「求助公告」，2026-10-07 由「免费帮找游戏（纯公益）」改名而来）：
       // 标题含下面任一关键词即判定为公告卡，加 node-full 让它横跨整行。
