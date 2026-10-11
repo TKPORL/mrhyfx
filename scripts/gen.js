@@ -2803,7 +2803,7 @@ ${likeScript}
       img: g.img,
       plat: g.plat,
       links: g.links,
-      intro: (g.intro || '').slice(0, 800), // 2026-10-12 原 80 字会截断介绍（用户反馈「少字/隔断」），放宽到 800
+      intro: (g.intro || ''), // 2026-10-12 不截断——原 80 字上限导致前台介绍少字/隔断；实测最长 2500 字，体积影响可忽略
       source: g.source,
       n: g2num.get(g) || null,
       d: (g2addedAll && g2addedAll.get(g)) || TIMESTAMPS[path.parse(g.url || '').name] || ''
