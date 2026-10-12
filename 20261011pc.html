@@ -1018,7 +1018,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=74257e9d">
+<link rel="stylesheet" href="assets/css/site.css?v=b3aa3dd2">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -4408,6 +4408,28 @@ acgyxyz</span></div>
     if (e.target === modal || e.target === closeBtn || e.target === backBtn) closeModal();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
+
+  // 2026-10-13 解压码：把介绍里的「解压码：xxx」渲染成可一键复制的按钮（点击复制到剪贴板）
+  (function () {
+    document.querySelectorAll('.note.mm-editor').forEach(function (nt) {
+      var sp = nt.querySelector(':scope > span') || nt;
+      var m = (sp.textContent || '').match(/解压码[:：]s*([A-Za-z0-9]+)/);
+      if (!m) return;
+      var code = m[1];
+      sp.innerHTML = sp.innerHTML.replace(/解压码[:：]s*[A-Za-z0-9]+/,
+        '<button type="button" class="mrhx-unzip" data-code="' + code + '">复制解压码：' + code + '</button>');
+    });
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip') : null;
+      if (!b) return;
+      e.preventDefault();
+      var code = b.getAttribute('data-code') || '';
+      var done = function () { b.classList.add('ok'); b.textContent = '已复制 ✓'; setTimeout(function () { b.classList.remove('ok'); b.textContent = '复制解压码：' + code; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制解压码：', code); });
+      } else { window.prompt('复制解压码：', code); }
+    });
+  })();
 
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
