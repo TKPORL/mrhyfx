@@ -1339,8 +1339,8 @@ function gameHtml(c, imgPaths) {
     />
   </li>`).join('\n');
   const buttons = [];
-   if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-m" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">移动云盘（不限速）</a>`);
    if (c.linkB) buttons.push(`<a class="mrhx-btn mrhx-btn-b" href="${esc(c.linkB)}" target="_blank" rel="noreferrer">百度网盘</a>`);
+   if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-u" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">UC网盘</a>`);
    if (c.customName && c.customUrl) buttons.push(`<a class="mrhx-btn mrhx-btn-qk" href="${esc(c.customUrl)}" target="_blank" rel="noreferrer">${esc(c.customName)}</a>`);
    const links = buttons.length ? `<div class="mrhx-dl">${buttons.join('')}</div>` : '';
    return `<li class="node heading3">
@@ -1390,8 +1390,8 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-      <input type="text" class="g-linkM" placeholder="移动云盘链接">
       <input type="text" class="g-linkB" placeholder="百度网盘链接">
+      <input type="text" class="g-linkM" placeholder="UC网盘链接">
       <input type="text" class="g-customName" placeholder="自定义按钮名称">
       <input type="text" class="g-customUrl" placeholder="自定义跳转链接">
     </div>
@@ -3248,7 +3248,7 @@ $('statDlClicks').onclick = async () => {
     rows.forEach(r => {
       const g = (r.game_name || '未知').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
       const u = (r.post_url || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : '自定义';
+      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : r.link_type === 'uc' ? 'UC' : '自定义';
       const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
       html += '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px"><b>' + g + '</b> <span style="color:#999">' + t + '</span> <span style="color:#aaa;font-size:11px">' + u + '</span><div style="color:#aaa;font-size:11px;margin-top:2px">' + d + '</div></div>';
     });
@@ -3280,7 +3280,7 @@ $('statTodayDl').onclick = async () => {
     rows.forEach(r => {
       const g = String(r.game_name || '未知').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
       const u = String(r.post_url || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : '自定义';
+      const t = r.link_type === 'mobile' ? '移动' : r.link_type === 'baidu' ? '百度' : r.link_type === 'uc' ? 'UC' : '自定义';
       const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
       html += '<div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px"><b>' + g + '</b> <span style="color:#999">' + t + '</span> <span style="color:#aaa;font-size:11px">' + u + '</span><div style="color:#aaa;font-size:11px;margin-top:2px">' + d + '</div></div>';
     });

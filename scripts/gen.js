@@ -314,6 +314,9 @@ const DOWNLOAD_BUTTONS = (SITE.downloadButtons && Array.isArray(SITE.downloadBut
   ? SITE.downloadButtons
   : [
       { name: '百度网盘', pattern: 'pan.baidu.com', cls: 'mrhx-btn-b', type: 'baidu' },
+      { name: 'UC网盘', pattern: 'uc.cn', cls: 'mrhx-btn-u', type: 'uc' },
+      // 2026-10-12 站长不再分享移动云盘；但存量帖子仍有 yun.139.com 链接——
+      //   保留此规则（原名原样式）以免重跑生成时把存量按钮误判成「自定义」改色
       { name: '移动云盘（不限速）', pattern: 'yun.139.com', cls: 'mrhx-btn-m', type: 'mobile' }
     ];
 
