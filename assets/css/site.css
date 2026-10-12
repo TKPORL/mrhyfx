@@ -64,6 +64,10 @@
   .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
+  /* 2026-10-13 解压码按钮：点击即复制（卡片/弹窗通用） */
+  .mrhx-unzip{display:inline-block;margin-top:4px;padding:3px 12px;border-radius:8px;border:1px dashed #e0a800;background:#fffaf0;color:#b8860b;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s}
+  .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
+  .mrhx-unzip.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
   .mrhx-btn-u:hover{background:#d8e6ff}
   .mrhx-btn-qk{background:#6366f1;color:#fff}
   .mrhx-btn-qk:hover{background:#4f46e5}

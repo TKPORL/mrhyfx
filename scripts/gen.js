@@ -562,6 +562,28 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
 
+  // 2026-10-13 解压码：把介绍里的「解压码：xxx」渲染成可一键复制的按钮（点击复制到剪贴板）
+  (function () {
+    document.querySelectorAll('.note.mm-editor').forEach(function (nt) {
+      var sp = nt.querySelector(':scope > span') || nt;
+      var m = (sp.textContent || '').match(/解压码[:：]\s*([A-Za-z0-9]+)/);
+      if (!m) return;
+      var code = m[1];
+      sp.innerHTML = sp.innerHTML.replace(/解压码[:：]\s*[A-Za-z0-9]+/,
+        '<button type="button" class="mrhx-unzip" data-code="' + code + '">复制解压码：' + code + '</button>');
+    });
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip') : null;
+      if (!b) return;
+      e.preventDefault();
+      var code = b.getAttribute('data-code') || '';
+      var done = function () { b.classList.add('ok'); b.textContent = '已复制 ✓'; setTimeout(function () { b.classList.remove('ok'); b.textContent = '复制解压码：' + code; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制解压码：', code); });
+      } else { window.prompt('复制解压码：', code); }
+    });
+  })();
+
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');

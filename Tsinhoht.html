@@ -1087,7 +1087,7 @@ function collectDraft() {
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
         // cid 必须一起存：草稿恢复时靠它把IndexedDB 里的图片对回本卡（2026-10-06 修串位）
-        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
+        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       }),
       removedImageUrls: [...removedImageUrls]
     },
@@ -1349,7 +1349,12 @@ function gameHtml(c, imgPaths) {
   </div>
     
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
-    ${c.intro ? `<div class="note mm-editor"><span>${esc(c.intro)}</span></div>` : ''}
+    ${(() => {
+      // 2026-10-13 解压码：存进 note 文本（前台脚本会渲染成可一键复制的按钮），拼接前先清旧标记保证幂等
+      const _ic = String(c.intro || '').replace(/\s*解压码[:：]\s*[A-Za-z0-9]+/g, '').trim();
+      const _nt = _ic + (c.unzip ? (_ic ? '\n' : '') + '解压码：' + c.unzip : '');
+      return _nt ? `<div class="note mm-editor"><span>${esc(_nt)}</span></div>` : '';
+    })()}
     ${links}
     ${rows ? `<ul class="image-list">
 ${rows}
@@ -1379,6 +1384,7 @@ function addGameCard(data) {
     </div></div>
   <div class="field"><label>游戏名称</label><input type="text" class="g-name"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
+  <div class="field"><label>解压码（选填）</label><input type="text" class="g-unzip" placeholder="如 xiebao，前台会显示成可一键复制的按钮"></div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
     <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
@@ -1503,6 +1509,7 @@ function readCard(el) {
   return {
     name: el.querySelector('.g-name').value.trim(),
     intro: el.querySelector('.g-intro').value.trim(),
+    unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -1584,6 +1591,7 @@ function fillCard(card, data) {
   if (data.cid) card.dataset.cid = data.cid;
   if (data.name != null) card.querySelector('.g-name').value = data.name;
   if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
+  if (data.unzip != null && card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = data.unzip;
   if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
@@ -1677,6 +1685,7 @@ function collectGames() {
     cid: el.dataset.cid || '',
     name: el.querySelector('.g-name').value.trim(),
     intro: el.querySelector('.g-intro').value.trim(),
+    unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -2337,9 +2346,12 @@ function parseCollectionDoc(doc) {
     }
     // 2026-10-11：兼容延迟加载卡（qzt 第 100 张之后图片是 data-src 无 src），否则后台读不到图
     const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || i.getAttribute('data-src') || '').filter(Boolean).join('\n');
+    // 2026-10-13 解压码：从介绍文本里提取（格式「解压码：xxx」），并从 intro 里剔除以免重复拼接
+    const unzip = (intro.match(/解压码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    const introClean = intro.replace(/\s*解压码[:：]\s*[A-Za-z0-9]+/g, '').trim();
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
-      intro, imgs, linkM, linkB, customName, customUrl
+      intro: introClean, unzip, imgs, linkM, linkB, customName, customUrl
     };
   });
 }
@@ -2431,6 +2443,7 @@ function bindPostButtons(box, token, repo) {
            const card = addGameCard();
            card.querySelector('.g-name').value = c.name || '';
            card.querySelector('.g-intro').value = c.intro || '';
+           if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
@@ -2467,6 +2480,7 @@ function bindPostButtons(box, token, repo) {
            const card = addGameCard();
            card.querySelector('.g-name').value = c.name || '';
            card.querySelector('.g-intro').value = c.intro || '';
+           if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
