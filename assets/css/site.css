@@ -65,6 +65,14 @@
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
   /* 2026-10-13 解压码按钮：点击即复制（卡片/弹窗通用） */
+  /* 2026-10-13 多图卡片：卡片上只显示封面（第一张），其余图在介绍弹窗里看 */
+  .node .image-list .image-row:nth-child(n+2),body.mrhx-grid2 .node .image-list .image-row:nth-child(n+2){display:none}
+  /* 弹窗图片区：顶部封面 + 图集，下面是完整文字介绍 */
+  .mrhx-detail-cover:empty,.mrhx-detail-imgs:empty{display:none}
+  .mrhx-detail-cover{margin:0 0 12px}
+  .mrhx-detail-cover img{width:100%;border-radius:10px;display:block}
+  .mrhx-detail-imgs{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+  .mrhx-detail-imgs img{width:100%;border-radius:10px;display:block}
   .mrhx-unzip{display:inline-block;margin-top:4px;padding:3px 12px;border-radius:8px;border:1px dashed #e0a800;background:#fffaf0;color:#b8860b;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s}
   .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
   .mrhx-unzip.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
