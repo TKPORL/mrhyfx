@@ -90,6 +90,12 @@
     核验暂存区 0 个 `D` → commit → push。
   - **推送前必查远端是否有用户新内容**：`git cat-file -p origin/main:qzt.html | grep -c 'li class="node heading3'`
     与本地对比；远端卡片数更多 = 用户在后台加了新游戏，**绝不能用本地版本覆盖**。
+  - ★★★ **数据文件提交前必须与远端核对（2026-10-13 事故）**：`titles.json` / `timestamps.json` / `counts.json` /
+    `pins.json` / `hidden.json` / `games.json` / `site.json` / `links.json` 由**后台发布器直推远端**，
+    本地副本常年落后——add 这些文件前**必须** `git diff origin/main -- <文件>` 检查；若差异是「远端有条目、本地没有」
+    = 本地旧版会洗掉后台写入的数据（真实事故：2026-10-13 发布器写了 20261013pc/pcaz 的时间戳，AI 推送本地旧版
+    把它洗掉，导致首页不显示新帖，AI 又"补条目"才恢复——补的其实就是自己洗掉的）。**正确流程**：数据文件一律
+    以远端为准，本地改动只在明确知道本地更新过时才提交。
 - 项目根目录 = `D:\Tsinho文件夹\Tsinho黄油站\mrhyfx`
   （路径中 `Tsinho文件夹`、`Tsinho黄油站` **都没有空格**）
 - Git 远端：`git@github.com:TKPORL/mrhyfx.git`（部署 = 推送）
