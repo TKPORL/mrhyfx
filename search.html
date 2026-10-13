@@ -402,6 +402,12 @@ function relTime(iso){
     if (im) {
       ti.textContent = im.getAttribute('data-t') + (im.getAttribute('data-p') ? ' [' + im.getAttribute('data-p') + ']' : '');
       tx.textContent = im.getAttribute('data-i') || '（暂无介绍）';
+      var _cv = d.querySelector('.mrhx-detail-cover');
+      if (_cv) {
+        _cv.innerHTML = '';
+        var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
+        if (_ci.src) _cv.appendChild(_ci);
+      }
       d.classList.add('show');
       return;
     }
