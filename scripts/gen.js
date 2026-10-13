@@ -883,7 +883,15 @@ async function localize(html, tag) {
   //   否则会被误改写成 assets/<tag>/（imgbed 备份图全 404，2026-10-01 老帖图全裂事故根因）
   // 2026-10-11：assets/game/ 放行——正确封面图按「编号-游戏名」集中存放（各帖子共享），
     //   不能被重写成本帖目录（那会指向不存在的文件导致裂图）
-    html = html.replace(/assets\/(?!js\/|css\/|imgbed\/|game\/)[^"\/]+(?=\/)/g, 'assets/' + tag);
+    // 2026-10-13 加存在性检查：站长复用旧帖图片时，URL 指向旧帖目录（文件真实存在）；
+    //   若无脑改写成本帖 tag 会指向不存在的文件 → 全帖裂图（20261013pc 事故）。
+    //   仅当 assets/<本帖tag>/<文件名> 确实存在时才改写，否则保留原路径。
+    html = html.replace(/assets\/(?!js\/|css\/|imgbed\/|game\/)([^"\/]+)\/([^"\/\s)]+\.(?:webp|png|jpe?g|gif|avif))/gi, function (m, dir, fname) {
+      try {
+        if (fs.existsSync(path.resolve('assets', tag, fname))) return 'assets/' + tag + '/' + fname;
+      } catch (e) {}
+      return m;
+    });
   html = html.replace(/src="assets\/(?!js\/|css\/)/g, `src="${CDN_URL}/assets/`);
   html = html.replace(/href="assets\/(?!js\/|css\/)/g, `href="${CDN_URL}/assets/`);
   // #13：帖子卡片图懒加载（每帖首图不懒，保证首屏立即出图）
