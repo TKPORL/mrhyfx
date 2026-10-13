@@ -65,6 +65,8 @@ const assetVer = rel => {
 };
 const CSS_VER = assetVer('assets/css/site.css');
 const NAVJS_VER = assetVer('assets/js/nav.js');
+const COPYCODE_VER = assetVer('assets/js/copycode.js');
+const copycodeScript = '<script src="assets/js/copycode.js?v=' + COPYCODE_VER + '"></scr' + 'ipt>';
 // 丝滑滚动（2026-10-05）：Lenis 本地 vendored + 薄封装，三处注入点（帖子页 / 首页合集 / 空首页）共用
 const LENIS_VER = assetVer('assets/js/lenis.min.js');
 const SMOOTH_VER = assetVer('assets/js/smooth.js');
@@ -564,25 +566,48 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
 
-  // 2026-10-13 解压码：把介绍里的「解压码：xxx」渲染成可一键复制的按钮（点击复制到剪贴板）
+  // 2026-10-13 解压码/作弊码：从介绍里提取标记 → 生成「解压码」「作弊码」按钮（放在下载链接后面），点击即复制
   (function () {
-    document.querySelectorAll('.note.mm-editor').forEach(function (nt) {
+    function mkBtn(label, code, cls) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'mrhx-code ' + cls;
+      b.setAttribute('data-code', code);
+      b.textContent = label;
+      return b;
+    }
+    document.querySelectorAll('.node.heading3').forEach(function (n) {
+      if (n.classList.contains('node-full')) return;
+      var nt = n.querySelector('.note.mm-editor');
+      if (!nt) return;
       var sp = nt.querySelector(':scope > span') || nt;
-      var m = (sp.textContent || '').match(/解压码[:：]\s*([A-Za-z0-9]+)/);
-      if (!m) return;
-      var code = m[1];
-      sp.innerHTML = sp.innerHTML.replace(/解压码[:：]\s*[A-Za-z0-9]+/,
-        '<button type="button" class="mrhx-unzip" data-code="' + code + '">复制解压码：' + code + '</button>');
+      var txt = sp.textContent || '';
+      var um = txt.match(/解压码[:：]\s*([A-Za-z0-9]+)/);
+      var cm = txt.match(/作弊码[:：]\s*([A-Za-z0-9]+)/);
+      if (!um && !cm) return;
+      // 标记从介绍正文里移除，避免重复显示
+      sp.innerHTML = sp.innerHTML.replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '');
+      var box = document.createElement('div');
+      box.className = 'mrhx-codes';
+      if (um) box.appendChild(mkBtn('解压码', um[1], 'mrhx-code-u'));
+      if (cm) box.appendChild(mkBtn('作弊码', cm[1], 'mrhx-code-c'));
+      var dl = n.querySelector('.mrhx-dl');
+      if (dl) dl.insertAdjacentElement('afterend', box);
+      else nt.insertAdjacentElement('afterend', box);
     });
     document.addEventListener('click', function (e) {
-      var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip') : null;
+      var b = e.target && e.target.closest ? e.target.closest('.mrhx-code') : null;
       if (!b) return;
       e.preventDefault();
       var code = b.getAttribute('data-code') || '';
-      var done = function () { b.classList.add('ok'); b.textContent = '已复制 ✓'; setTimeout(function () { b.classList.remove('ok'); b.textContent = '复制解压码：' + code; }, 1600); };
+      var label = b.textContent;
+      var done = function () {
+        b.classList.add('ok'); b.textContent = '已复制：' + code;
+        setTimeout(function () { b.classList.remove('ok'); b.textContent = label; }, 2000);
+      };
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制解压码：', code); });
-      } else { window.prompt('复制解压码：', code); }
+        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制' + label + '：', code); });
+      } else { window.prompt('复制' + label + '：', code); }
     });
   })();
 
@@ -1494,7 +1519,7 @@ ${navHeaderHtml('')}
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
     // 帖子页/qzt 不加任何 footer（保持加免责声明之前的原样）——但要清掉历史注入的副本
     html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
-    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}\n  </body>`);
+    html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}${copycodeScript}\n  </body>`);
 
     // 历史遗留：分页块曾被注入到全站所有帖子（非 qzt 是脏数据）。
     // 需求（站长 2026-10-07）：分页只针对求助贴 qzt.html，其他帖子一律清掉分页栏与分页资源。
@@ -2499,7 +2524,7 @@ function relTime(iso){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') d.classList.remove('show'); });
 })();
 </script>
-</body>
+<script src="assets/js/copycode.js?v=${COPYCODE_VER}"></script>\n  </body>
 </html>
 `;
   fs.writeFileSync('search.html', searchPage);

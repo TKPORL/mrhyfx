@@ -64,6 +64,13 @@
   .mrhx-btn-b{background:#e6f4ea;color:#1a7f37;border:1px solid #b7e2c4}
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
+  /* 2026-10-13 解压码/作弊码按钮：在下载按钮行内，点击即复制（金黄/紫，虚线） */
+  .mrhx-unzip,.mrhx-cheat{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
+  .mrhx-unzip{background:#fffaf0;color:#b8860b;border-color:#e0a800}
+  .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
+  .mrhx-cheat{background:#EEEDFE;color:#534AB7;border-color:#7F77DD}
+  .mrhx-cheat:hover{background:#e3defb;border-style:solid}
+  .mrhx-unzip.ok,.mrhx-cheat.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
   /* 2026-10-13 解压码按钮：点击即复制（卡片/弹窗通用） */
   /* 2026-10-13 多图卡片：卡片上只显示封面（第一张），其余图在介绍弹窗里看 */
   .node .image-list .image-row:nth-child(n+2),body.mrhx-grid2 .node .image-list .image-row:nth-child(n+2){display:none}
@@ -73,9 +80,17 @@
   .mrhx-detail-cover img{width:100%;border-radius:10px;display:block}
   .mrhx-detail-imgs{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
   .mrhx-detail-imgs img{width:100%;border-radius:10px;display:block}
-  .mrhx-unzip{display:inline-block;margin-top:4px;padding:3px 12px;border-radius:8px;border:1px dashed #e0a800;background:#fffaf0;color:#b8860b;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:.2s}
-  .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
-  .mrhx-unzip.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
+  /* 2026-10-13 解压码/作弊码按钮：跟下载按钮同风格，放在下载链接后面，点击即复制 */
+  .mrhx-codes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  /* 卡片是 flex + order 排序：与下载按钮同 order，靠 DOM 顺序（脚本插在 .mrhx-dl 之后）落在其下方 */
+  body.mrhx-grid2 .node .mrhx-codes{order:3;margin:0 14px 12px}
+  .mrhx-code{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid transparent;transition:transform .2s,background .2s}
+  .mrhx-code:hover{transform:translateY(-2px)}
+  .mrhx-code-u{background:#fffaf0;color:#b8860b;border-color:#f0d9a0}
+  .mrhx-code-u:hover{background:#fff3d6;border-color:#e0a800}
+  .mrhx-code-c{background:#f3f0ff;color:#534AB7;border-color:#d8d2f5}
+  .mrhx-code-c:hover{background:#ebe7ff;border-color:#7f77dd}
+  .mrhx-code.ok{background:#e6f4ea;color:#1a7f37;border-color:#1a7f37}
   .mrhx-btn-u:hover{background:#d8e6ff}
   .mrhx-btn-qk{background:#6366f1;color:#fff}
   .mrhx-btn-qk:hover{background:#4f46e5}
