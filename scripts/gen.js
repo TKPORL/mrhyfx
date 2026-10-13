@@ -1666,6 +1666,7 @@ ${navHeaderHtml('')}
     // 平台标签按「显示标题」判断（标题含"安卓"即 PC+安卓）；用文件名判断是错的——pcaz 里恰好含 "pc"、永远不含"安卓"（2026-10-01 用户反馈全显示 PC）
     const plat = /安卓/.test(disp) ? 'PC+安卓' : /PC/i.test(disp) ? 'PC' : '';
     const dateM = title.match(/(\d+)月(\d+)/);
+    const dateYMD = title.match(/^(\d{4})(\d{2})(\d{2})/); // 2026-10-13 新增：YYYYMMDD 命名（20261013pc）此前全走 iconTitle fallback，日期框显示错乱
     const dateD3 = title.match(/^(\d+)\.(\d+)\.(\d+)/);
     const dateN = !dateD3 ? title.match(/(\d+)\.(\d+)/) : null;
     const _ic = ICONS[title];
@@ -1675,6 +1676,7 @@ ${navHeaderHtml('')}
     const badge = _ic && (icM || icN) ? `<b>${esc(icM ? icM[2] : icN[2])}</b><span>${esc(icM ? icM[1] : icN[1])}月</span>`
       : _ic ? `<b style="font-size:12px">${esc(_ic)}</b>`
       : dateM ? `<b>${dateM[2]}</b><span>${dateM[1]}月</span>`
+      : dateYMD ? `<b>${parseInt(dateYMD[3])}</b><span>${parseInt(dateYMD[2])}月</span>`
       : dateD3 ? `<b>${parseInt(dateD3[2] + dateD3[3])}</b><span>${dateD3[1]}月</span>`
       : dateN ? `<b>${dateN[2]}</b><span>${dateN[1]}月</span>`
       : `<b style="font-size:12px">${esc(iconTitle(disp))}</b>`;
