@@ -392,3 +392,14 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
    上一版我把它绝对定位到标题行最右边，站长反馈"跑到最右边去了"。
    现在它就在标题文字旁边（骨架里已挪进 h2），这里只需把定位重置为行内。 */
 .mrhx-comments h2 .mrhx-cfbar{position:static;display:inline-block;margin:0 0 0 10px;vertical-align:middle;text-align:left;background:none;padding:0;z-index:auto}
+
+
+/* ===== 2026-10-14（站长）：缩短评论要"正中间" =====
+   站长要求：按钮与「评论区」字样同一行（平行）＋水平位置在正中间，不靠左不靠右。
+   上一版把它做成 h2 里的行内块 → 紧挨标题文字，电脑上看着靠左。
+   现在：钉在标题行上、横跨整行、内容水平垂直居中（标题文字仍在左边，互不遮挡）。 */
+.mrhx-comments h2{position:relative}
+.mrhx-comments h2 .mrhx-cfbar{position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center;justify-content:center;margin:0;padding:0;background:none;box-shadow:none;text-align:center;pointer-events:none;z-index:6}
+/* 兜底：浏览器若还缓存着旧骨架（按钮是标题下方的独立块），也让它压在标题行正中 */
+.mrhx-comments .mrhx-cfbar{position:absolute;top:4px;left:0;right:0;bottom:auto;display:block;margin:0;padding:0;background:none;box-shadow:none;text-align:center;pointer-events:none;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
