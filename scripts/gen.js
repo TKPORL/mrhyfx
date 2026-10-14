@@ -1162,17 +1162,17 @@ function thumbUrlOf(url, kind) {
 }
 
 function thumbifyImgTag(tag, kind) {
-  if (/\sdata-full=/.test(tag)) return tag; // 幂等：本 tag 已处理  const dm0 = tag.match(/\sdata-full="([^"]+)"/);
+  // 已经缩略图化过（src 已是 thumb）：只校正尺寸并登记任务，保持幂等
+  const dm0 = tag.match(/\sdata-full="([^"]+)"/);
   const am0 = tag.match(/\s(?:data-)?src="([^"]+)"/);
   if (dm0 && am0 && am0[1].indexOf("/assets/thumb/") >= 0) {
-    // 已缩略图化：校正尺寸（首页封面可能拿到 360 的图）并登记任务，保持幂等
     const want = thumbUrlOf(dm0[1], kind);
     if (want && want !== am0[1]) return tag.replace(am0[1], want);
     return tag;
   }
   let orig = null;
   const out = tag.replace(/(\s(?:data-)?src)="([^"]+)"/g, function (m, attr, url) {
-    if (url.indexOf('/assets/') < 0) return m;
+    if (url.indexOf("/assets/") < 0) return m;
     const t = thumbUrlOf(url, kind);
     if (!t) return m;
     if (!orig) orig = url;
