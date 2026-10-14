@@ -1638,7 +1638,7 @@ function fillCard(card, data) {
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
   if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
-  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl; if(window.mrhxClBuild) window.mrhxClBuild(card);
+  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
   card.querySelector('.g-imgs').dataset.lastImgs = card.querySelector('.g-imgs').value;
   renderImageLinks(card);
 }
@@ -2495,7 +2495,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -2533,7 +2533,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -3758,6 +3758,38 @@ function validateCards() {
   });
     });
   });
+  // ===== 2026-10-14（站长）2B：拦「越存越空」 =====
+  // 打开这张卡时本来有内容、现在要存成空 —— 这就是历史上「链接/介绍被洗掉」的真凶机制。
+  // 有意清空不算错：弹窗问你一次，确认就放行，并把确认后的状态设成新基线。
+  try {
+    if (typeof window.mrhxNow === 'function') {
+      const emptied = [];
+      [...$('gameBox').children].forEach((el, i) => {
+        const snap = el.__mrhxSnap; if (!snap) return;
+        const now = window.mrhxNow(el);
+        const nm = (el.querySelector('.g-name') || {}).value || snap.__name || '(无名字)';
+        Object.keys(snap).forEach(k => {
+          if (k === '__name') return;
+          if (snap[k] && !String(now[k] || '').trim()) {
+            const f = el.querySelector('.' + k);
+            let label = k;
+            try { if (f && f.closest('.field')) { const lb = f.closest('.field').querySelector('label'); if (lb && lb.textContent.trim()) label = lb.textContent.trim(); } } catch (e) {}
+            emptied.push('第 ' + (i + 1) + ' 张卡片「' + String(nm).trim() + '」的「' + label + '」会从有内容变成空');
+          }
+        });
+      });
+      if (emptied.length) {
+        const body = emptied.slice(0, 8).join('\n') + (emptied.length > 8 ? '\n…还有 ' + (emptied.length - 8) + ' 处' : '');
+        const go = confirm('发现 ' + emptied.length + ' 处内容会变空：\n\n' + body + '\n\n有意清空请点「确定」继续发布；否则点「取消」回去检查。');
+        if (go) {
+          [...$('gameBox').children].forEach(el => { delete el.__mrhxSnap; if (window.mrhxSnap) window.mrhxSnap(el); });
+        } else {
+          emptied.forEach(x => problems.push(x + '（已中止发布，防止内容静默丢失；确认要清空就再点一次发布并点「确定」）'));
+        }
+      }
+    }
+  } catch (e) {}
+
   return problems;
 }
 function showCardProblems(problems) {
@@ -3935,6 +3967,32 @@ function openPreview(cards, title) {
   }, true);
   function boot(){ var b = document.getElementById("gameBox"); if(b) [].slice.call(b.children).forEach(build); }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+<script>
+/* 2026-10-14（站长）2B 用：给卡片文本字段拍快照 / 取当前值（按 g-* 类名做键，稳定） */
+(function(){
+  function pick(card) {
+    var s = {};
+    var list = card.querySelectorAll('input[type=text], textarea, input:not([type])');
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      var k = (f.className || '').split(/\s+/).filter(function(c){ return c.indexOf('g-') === 0; })[0];
+      if (!k) continue;
+      s[k] = String(f.value == null ? '' : f.value).trim();
+    }
+    var n = card.querySelector('.g-name');
+    s.__name = n ? String(n.value || '').trim() : '';
+    return s;
+  }
+  window.mrhxNow = function(card){ return card ? pick(card) : {}; };
+  window.mrhxSnap = function(card){ if (card && !card.__mrhxSnap) card.__mrhxSnap = pick(card); };
+  /* 兜底：用户只要碰过这张卡就先拍一张（防某些回填路径没触发） */
+  document.addEventListener('focusin', function(e){
+    var t2 = e.target;
+    var c = t2 && t2.closest ? (t2.closest('.game') || t2.closest('#gameBox > *')) : null;
+    if (c) window.mrhxSnap(c);
+  }, true);
 })();
 </script>
 </body>
