@@ -1162,7 +1162,14 @@ function thumbUrlOf(url, kind) {
 }
 
 function thumbifyImgTag(tag, kind) {
-  if (/\sdata-full=/.test(tag)) return tag; // 幂等：本 tag 已处理
+  if (/\sdata-full=/.test(tag)) return tag; // 幂等：本 tag 已处理  const dm0 = tag.match(/\sdata-full="([^"]+)"/);
+  const am0 = tag.match(/\s(?:data-)?src="([^"]+)"/);
+  if (dm0 && am0 && am0[1].indexOf("/assets/thumb/") >= 0) {
+    // 已缩略图化：校正尺寸（首页封面可能拿到 360 的图）并登记任务，保持幂等
+    const want = thumbUrlOf(dm0[1], kind);
+    if (want && want !== am0[1]) return tag.replace(am0[1], want);
+    return tag;
+  }
   let orig = null;
   const out = tag.replace(/(\s(?:data-)?src)="([^"]+)"/g, function (m, attr, url) {
     if (url.indexOf('/assets/') < 0) return m;
@@ -1796,8 +1803,18 @@ ${navHeaderHtml('')}
     // 封面来源：站内 assets（jsDelivr 直链）+ 自建图床直链（图床模式发布的帖子）
     // 注意：导航 logo 也是图床直链，必须排除，否则会混进每帖的封面缩略图（2026-09-22 踩过）
     const _bedRe = [...IMGBED_BASES].map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    // 2026-10-14：日页会被就地缩略图化（src 变成 assets/thumb/xxx@360x270.webp），而首页封面
+    //   正是从日页里提取的——必须先用同一 <img> 上的 data-full 换回原图，否则首页会引用 360
+    //   尺寸缩略图（多耗约 4 倍流量）、丢掉 data-full（onerror 兜底失效）、也拿不到 120 的任务。
+    const _thumbOrig = new Map();
+    for (const _t of (dayHtml.match(/<img\b[^>]*>/gi) || [])) {
+      const _d = _t.match(/\sdata-full="([^"]+)"/);
+      const _s = _t.match(/\s(?:data-)?src="([^"]+)"/);
+      if (_d && _s && _s[1].indexOf("/assets/thumb/") >= 0) _thumbOrig.set(_s[1], _d[1]);
+    }
     const covers = [...new Set([...dayHtml.matchAll(new RegExp('src="(https:\\/\\/(?:cdn|gcore|fastly|testingcf)\\.jsdelivr\\.net\\/gh\\/TKPORL\\/mrhyfx@[^\\/]+\\/assets\\/[^"]+|https:\\/\\/tkporl\\.github\\.io\\/mrhyfx\\/assets\\/[^"]+|(?:' + _bedRe + ')\\/[^"]+)', 'g'))].map(m => m[1]))]
       .filter(src => src !== SITE_LOGO_IMG && src !== SITE_ICON_IMG).slice(0, 5)
+      .map(s => _thumbOrig.get(s) || s)
       .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
     // 修复：分页后每页卡片重新触发入场动画，旧逻辑按全局序号递增延迟（第2页延迟长达 2.4s，看起来像空页）；
