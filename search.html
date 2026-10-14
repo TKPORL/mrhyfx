@@ -248,6 +248,17 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 <script src="assets/js/nav.js?v=4fcd5d5b"></script>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <script>
+  /* 缩略图 URL 推导（2026-10-14）：与 gen.js 的 thumbUrlOf 规则一致，纯字符串运算——
+     本脚本被塞在 gen.js 的模板串里，写正则会被吃掉反斜杠（AGENTS.md 有记录）。 */
+  function thumbOf(u) {
+    u = String(u == null ? '' : u); var i = u.indexOf('/assets/');
+    if (i < 0) return u;
+    var rel = u.slice(i + 1).split('?')[0].split('#')[0];
+    if (rel.indexOf('assets/thumb/') === 0) return u;
+    var name = rel.slice(7).split('/').join('__');
+    var dot = name.lastIndexOf('.'); if (dot > 0 && dot > name.lastIndexOf('__')) name = name.slice(0, dot);
+    return u.slice(0, i + 1) + 'assets/thumb/' + name + '@360x270.webp';
+  }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function relTime(iso){
   if(!iso) return '';
@@ -300,7 +311,7 @@ function relTime(iso){
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -416,6 +427,6 @@ function relTime(iso){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') d.classList.remove('show'); });
 })();
 </script>
-<script src="assets/js/copycode.js?v=d6197836"></script>
+<script src="assets/js/copycode.js?v=0c97c021"></script>
   </body>
 </html>
