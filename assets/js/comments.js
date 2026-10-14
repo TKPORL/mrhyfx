@@ -23,8 +23,28 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   var moreWrap = document.getElementById('mrhx-cmore-wrap');
   var moreBtnEl = document.getElementById('mrhx-cmore-btn');
   var folded = true;
+  var lastFolded = null;   // 2026-10-14：首次渲染不动画，只在用户真的切换折叠态时过渡
   // #39：折叠阈值由页面配置 MRHXC.fold 下发（site.json comments.foldThreshold，默认 6）
   var FOLD_MIN = (C.fold > 0 ? C.fold : 6);
+  // 2026-10-14：展开/收起加过渡。CSS 的 max-height 在 280px↔none 之间跳无法过渡，
+  //   所以 JS 先把 max-height 钉到当前真实高度(scrollHeight)，下一帧再改目标值 → 平滑；
+  //   展开动画结束后必须放开 max-height:none，否则长评论区会被永久截断。
+  function animateFold() {
+    if (!foldWrap) return;
+    var changed = (lastFolded !== null && lastFolded !== folded);
+    lastFolded = folded;
+    if (!changed) return;
+    var h = foldWrap.scrollHeight;
+    foldWrap.style.overflow = 'hidden';
+    foldWrap.style.maxHeight = h + 'px';
+    if (folded) {
+      requestAnimationFrame(function () { requestAnimationFrame(function () { foldWrap.style.maxHeight = '280px'; }); });
+    } else {
+      var off = function (e) { if (e && e.target !== foldWrap) return; foldWrap.style.maxHeight = 'none'; foldWrap.style.overflow = ''; foldWrap.removeEventListener('transitionend', off); };
+      foldWrap.addEventListener('transitionend', off);
+      setTimeout(off, 520);
+    }
+  }
   function applyFold() {
     if (!foldWrap) return;
     var need = all.length > FOLD_MIN;
@@ -39,11 +59,13 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       foldWrap.classList.add('mrhx-cfolded');
       foldMask.classList.add('mrhx-cfold-show');
       foldBtn.textContent = '展开评论（' + totalCount() + ' 条）';
+      animateFold();
       if (cfbar) cfbar.style.display = 'none';
       if (moreWrap) moreWrap.style.display = 'none';
     } else {
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');
+      animateFold();
       // 顶部 cfbar 只显示「缩短评论」
       if (cfbar) {
         cfbar.style.display = 'block';
@@ -71,7 +93,10 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   if (moreBtnEl) moreBtnEl.onclick = function () {
     // 底部按钮：一次性拉全部
     moreBtnEl.disabled = true; moreBtnEl.textContent = '加载中…';
-    fetchPage(true, true);
+    // 2026-10-14 修：原来传 reset=true → 会走 list.innerHTML='评论加载中...' 把已有评论全抹掉再重建，
+    //   视觉上"评论突然全没了、再刷一下"（站长反馈：很着急的样子）。改成增量全量拉取：all 被全量
+    //   替换后原样重渲染，界面不出现空白；loading 由按钮自己的「加载中…」承担。
+    fetchPage(false, true);
   };
   var all = [];
   // 两段式分页：首次拉 20 条（秒开）；展开后点「加载更多评论」一次拉全部
