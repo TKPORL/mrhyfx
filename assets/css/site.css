@@ -386,3 +386,9 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 .mrhx-comments .mrhx-creply-item{width:100%;min-width:0;max-width:100%;background:#fff;border:1px solid #ecebe9;border-left:1px solid #ecebe9;border-radius:10px;padding:12px 14px;margin:0 0 6px}
 .mrhx-comments .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
 @media (max-width:720px){.mrhx-comments .mrhx-creply-item{padding:8px 10px;margin:0 0 6px}}
+
+
+/* ===== 2026-10-14（站长）：缩短评论回到「评论区」标题旁边 =====
+   上一版我把它绝对定位到标题行最右边，站长反馈"跑到最右边去了"。
+   现在它就在标题文字旁边（骨架里已挪进 h2），这里只需把定位重置为行内。 */
+.mrhx-comments h2 .mrhx-cfbar{position:static;display:inline-block;margin:0 0 0 10px;vertical-align:middle;text-align:left;background:none;padding:0;z-index:auto}
