@@ -208,6 +208,13 @@ textarea.g-customUrl{min-height:38px;max-height:220px;resize:vertical;line-heigh
    避免三个按钮与下方游戏框贴在一起。 */
 .links textarea{flex:1;min-width:0}
 .card > .row:first-child{margin-bottom:12px}
+
+/* 2026-10-14（站长）自定义链接＝点按钮加一行 */
+.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.clrows{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.clrow{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:center}
+.clrow .cldel{padding:6px 12px;background:#f3f1ee;color:#666}
+@media (max-width:720px){.links{grid-template-columns:1fr}.clrow{grid-template-columns:1fr 1fr auto}}
 </style>
 </head>
 <body class="gate-pending">
@@ -1427,11 +1434,13 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-      <input type="text" class="g-linkB" placeholder="百度网盘链接">
-      <input type="text" class="g-linkM" placeholder="UC网盘链接">
-      <input type="text" class="g-customName" placeholder="自定义按钮名称">
-      <textarea class="g-customUrl" rows="1" placeholder="自定义链接（每行一条：链接 ｜ 名称 ｜ 颜色，后两项可省）" title="每行一条。格式：链接 ｜ 名称（可省）｜ 颜色（可省：百度/UC/灰）"></textarea>
-    </div>
+<input type="text" class="g-linkB" placeholder="百度网盘链接">
+<input type="text" class="g-linkM" placeholder="UC网盘链接">
+</div>
+<input type="hidden" class="g-customName">
+<input type="hidden" class="g-customUrl">
+<div class="clrows"></div>
+<button type="button" class="btn btn-s cladd" style="margin-top:8px">＋ 自定义链接</button>
   </div>
   <div class="move-box"></div>`;
   if (data) fillCard(d, data);
@@ -1629,7 +1638,7 @@ function fillCard(card, data) {
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
   if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
-  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
+  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl; if(window.mrhxClBuild) window.mrhxClBuild(card);
   card.querySelector('.g-imgs').dataset.lastImgs = card.querySelector('.g-imgs').value;
   renderImageLinks(card);
 }
@@ -2486,7 +2495,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -2524,7 +2533,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -3862,6 +3871,71 @@ function openPreview(cards, title) {
   $('previewModal').classList.add('show');
   $('previewModal').scrollTop = 0;
 }
+</script>
+<script>
+/*
+  2026-10-14（站长）自定义链接改成"点按钮加一行"：每行【按钮名称】+【链接】。
+  数据仍然写进原有的隐藏字段 .g-customUrl（每行：链接 ｜ 名称），所以生成按钮、发布体检、
+  保存、草稿这几条链路一行都不用改；编辑旧帖时由 mrhxClBuild 把字段还原成行。
+*/
+(function(){
+  function cardOf(el){ return (el.closest && (el.closest(".game") || el.closest("#gameBox > *"))) || null; }
+  function rowHtml(){
+    return '<div class="clrow">' +
+      '<input type="text" class="clname" placeholder="自定义按钮名称">' +
+      '<input type="text" class="clurl" placeholder="链接（http/https 开头）">' +
+      '<button type="button" class="btn btn-s cldel" title="删除这条">删除</button>' +
+      '</div>';
+  }
+  function lines(card){
+    return [].slice.call(card.querySelectorAll(".clrows .clrow")).map(function(r){
+      var u = r.querySelector(".clurl").value.trim();
+      if(!u) return "";
+      var n = r.querySelector(".clname").value.trim();
+      return n ? (u + " ｜ " + n) : u;
+    }).filter(Boolean);
+  }
+  function sync(card){ var f = card && card.querySelector(".g-customUrl"); if(f) f.value = lines(card).join("\n"); }
+  function build(card){
+    if(!card) return;
+    var box = card.querySelector(".clrows"), f = card.querySelector(".g-customUrl");
+    if(!box || !f) return;
+    box.innerHTML = "";
+    String(f.value || "").split(/\r?\n/).forEach(function(line){
+      var v = line.trim(); if(!v) return;
+      var p = v.split(/[|｜]/);
+      box.insertAdjacentHTML("beforeend", rowHtml());
+      var r = box.lastElementChild;
+      r.querySelector(".clurl").value = (p[0] || "").trim();
+      r.querySelector(".clname").value = (p[1] || "").trim();
+    });
+  }
+  window.mrhxClSync = sync; window.mrhxClBuild = build;
+  document.addEventListener("click", function(e){
+    var t2 = e.target;
+    if(t2.closest && t2.closest(".cladd")){
+      var c1 = cardOf(t2), b1 = c1 && c1.querySelector(".clrows");
+      if(b1){ b1.insertAdjacentHTML("beforeend", rowHtml()); b1.lastElementChild.querySelector(".clname").focus(); }
+      return;
+    }
+    if(t2.closest && t2.closest(".cldel")){
+      var c2 = cardOf(t2), r2 = t2.closest(".clrow");
+      if(r2){ r2.parentNode.removeChild(r2); sync(c2); }
+    }
+  }, true);
+  document.addEventListener("input", function(e){
+    var x = e.target;
+    if(x.classList && (x.classList.contains("clname") || x.classList.contains("clurl"))) sync(cardOf(x));
+  }, true);
+  /* 兜底对账：任何别处改了隐藏字段（例如插件式回填），这里把行重建回来，防止"看到的≠要保存的" */
+  document.addEventListener("focusin", function(e){
+    var c = cardOf(e.target); if(!c) return;
+    var f = c.querySelector(".g-customUrl"); if(!f) return;
+    if((f.value || "").trim() !== lines(c).join("\n").trim()) build(c);
+  }, true);
+  function boot(){ var b = document.getElementById("gameBox"); if(b) [].slice.call(b.children).forEach(build); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
 </script>
 </body>
 </html>
