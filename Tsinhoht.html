@@ -1341,7 +1341,23 @@ function gameHtml(c, imgPaths) {
   const buttons = [];
    if (c.linkB) buttons.push(`<a class="mrhx-btn mrhx-btn-b" href="${esc(c.linkB)}" target="_blank" rel="noreferrer">百度网盘</a>`);
    if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-u" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">UC网盘</a>`);
-   if (c.customName && c.customUrl) buttons.push(`<a class="mrhx-btn mrhx-btn-qk" href="${esc(c.customUrl)}" target="_blank" rel="noreferrer">${esc(c.customName)}</a>`);
+   if (c.customUrl) {
+     // 2026-10-14（站长）自定义链接支持多条：每行一条，格式「链接 ｜ 名称 ｜ 颜色」（后两项可省）。
+     // 颜色省略时自动识别：百度→浅绿、UC→浅蓝、其它→灰。
+     // 兼容旧数据：只有一行且没写名称时仍用「自定义按钮名称」，旧卡片渲染结果完全不变。
+     String(c.customUrl).split(/\r?\n/).forEach(function (line, idx) {
+       const parts = String(line).split(/[|｜]/);
+       const u = (parts[0] || '').trim();
+       if (!u) return;
+       const nm = (parts[1] || '').trim() || (idx === 0 ? (c.customName || '').trim() : '') || '下载';
+       const col = (parts[2] || '').trim().toLowerCase();
+       let cls = 'mrhx-btn-qk';
+       if (col) cls = (col === '百度' || col === '绿' || col === 'baidu' || col === 'green') ? 'mrhx-btn-b' : (col === '蓝' || col === 'uc' || col === 'blue') ? 'mrhx-btn-u' : 'mrhx-btn-qk';
+       else if (/pan\.baidu\.com|baidu\.com/.test(u)) cls = 'mrhx-btn-b';
+       else if (/uc\.cn|drive\.uc/.test(u)) cls = 'mrhx-btn-u';
+       buttons.push(`<a class="mrhx-btn ${cls}" href="${esc(u)}" target="_blank" rel="noreferrer">${esc(nm)}</a>`);
+     });
+   }
    const links = buttons.length ? `<div class="mrhx-dl">${buttons.join('')}</div>` : '';
    return `<li class="node heading3">
     <div class="bullet">
@@ -1402,7 +1418,7 @@ function addGameCard(data) {
       <input type="text" class="g-linkB" placeholder="百度网盘链接">
       <input type="text" class="g-linkM" placeholder="UC网盘链接">
       <input type="text" class="g-customName" placeholder="自定义按钮名称">
-      <input type="text" class="g-customUrl" placeholder="自定义跳转链接">
+      <textarea class="g-customUrl" rows="2" placeholder="自定义链接（每行一条：链接 ｜ 名称 ｜ 颜色，后两项可省）" title="每行一条。格式：链接 ｜ 名称（可省）｜ 颜色（可省：百度/UC/灰）"></textarea>
     </div>
   </div>
   <div class="move-box"></div>`;
@@ -3700,22 +3716,25 @@ function validateCards() {
     const name = el.querySelector('.g-name').value.trim();
     if (!name) problems.push('第 ' + no + ' 张卡片：游戏名称是空的');
     LINK_FIELDS.forEach(f => {
-      const v = el.querySelector(f.sel).value.trim();
-      if (v && !isPureLink(v)) {
-        problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
-      }
-      if (!v) return;
-      const k = linkKey(v);
-      if (seen[k]) {
-        // 同一个链接给了两个游戏 —— 2026-10-07 实测 2026106pcaz 第 12/23 个游戏共用一条网盘链接。
-        // 成因是填卡片时链接贴错，肉眼极难发现（介绍框里常常没写游戏名，无从核对），
-        // 所以在这里硬拦，撞了直接中止发布。
-        problems.push('第 ' + no + ' 张卡片「' + (name || '(无名字)') + '」的' + f.label +
-          '链接，与第 ' + seen[k].no + ' 张卡片「' + seen[k].name + '」完全相同（' +
-          v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
-      } else {
-        seen[k] = { no, name: name || '(无名字)', label: f.label };
-      }
+  // 2026-10-14（站长）多链接：自定义链接框支持「每行一条：链接 ｜ 名称 ｜ 颜色」，
+  // 所以先按行拆出「链接」部分再逐条校验；其它字段拆行结果还是它自己，行为不变。
+  const raw = el.querySelector(f.sel).value.trim();
+  const vals = f.sel === '.g-customUrl'
+    ? raw.split(/\r?\n/).map(s => s.split(/[|｜]/)[0].trim()).filter(Boolean)
+    : (raw ? [raw] : []);
+  vals.forEach(v => {
+    if (!isPureLink(v)) {
+      problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
+    }
+    const k = linkKey(v);
+    if (seen[k]) {
+      problems.push('第 ' + no + ' 张卡片「' + (name || '(无名字)') + '」的' + f.label +
+        '链接，与第 ' + seen[k].no + ' 张卡片「' + seen[k].name + '」完全相同（' +
+        v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
+    } else {
+      seen[k] = { no, name: name || '(无名字)', label: f.label };
+    }
+  });
     });
   });
   return problems;
