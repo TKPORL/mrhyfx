@@ -175,7 +175,7 @@
     .node{padding:12px;border-radius:12px}
     .node .bullet{display:none}
     .node .content{font-size:14px}
-    .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center;justify-content:center;min-height:34px}
+    .mrhx-dl .mrhx-btn{flex:1 1 45%;max-width:48%;text-align:center;justify-content:center}
     /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
     .mrhx-navrow{gap:6px}
     .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
@@ -193,7 +193,8 @@
     body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
     body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}
     body.mrhx-grid2 .node .exp-hint{margin:0 12px 12px}
-    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center;min-width:0;padding:6px 8px;font-size:12px;justify-content:center;min-height:34px}
+    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;max-width:48%;text-align:center;min-width:0;padding:6px 8px;font-size:12px;justify-content:center}
+body.mrhx-grid2 .mrhx-dl .mrhx-unzip,body.mrhx-grid2 .mrhx-dl .mrhx-cheat{padding:6px 10px;font-size:12px}
     @media (max-width:380px){body.mrhx-grid2 .mrhx-dl .mrhx-btn{font-size:11px;padding:5px 4px}}
     .image-list .image{max-width:100% !important}
   }

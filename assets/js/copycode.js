@@ -19,8 +19,8 @@
         dl = document.createElement('div'); dl.className = 'mrhx-dl';
         nt.insertAdjacentElement('afterend', dl);
       }
-      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz[1] + '">解压码</button>');
-      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb[1] + '">作弊码</button>');
+      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz[1] + '" data-label="解压码">解压码</button>');
+      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb[1] + '" data-label="作弊码">作弊码</button>');
     });
   }
   enhance(document);
@@ -29,7 +29,9 @@
     if (!b) return;
     e.preventDefault();
     var code = b.getAttribute('data-code') || '';
-    var label = b.textContent;
+    // 用 data-label 而不是 textContent：多个脚本副本时，后一个监听会读到前一个刚写的「已复制 ✓」，
+    //   1.6 秒后把它写回去 → 按钮永久卡在「已复制 ✓」（2026-10-14 实测 qzt 有 21 个脚本副本）
+    var label = b.getAttribute('data-label') || b.textContent;
     var done = function () {
       b.classList.add('ok'); b.textContent = '已复制 ✓';
       setTimeout(function () { b.classList.remove('ok'); b.textContent = label; }, 1600);

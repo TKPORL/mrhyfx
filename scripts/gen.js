@@ -1644,6 +1644,9 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
+    // 幂等（2026-10-14 补）：copycode.js 标签此前只插不清，每次 gen 都再追加一个
+    //   （实测 qzt 21 个、20261011pc 74 个）。重复 <script> = 重复 click 监听 → 复制文案卡住。
+    html = html.replace(/\s*<script src="assets\/js\/copycode\.js\?v=[0-9a-f]*"><\/script>/g, '');
     // 帖子页/qzt 不加任何 footer（保持加免责声明之前的原样）——但要清掉历史注入的副本
     html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}${copycodeScript}\n  </body>`);
@@ -1682,7 +1685,9 @@ ${navHeaderHtml('')}
     const games = searchBlocks.map(b => {
       const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
-      const img0 = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      // ★缩略图系统上线后页面里的 src 已是缩略图、原图在 data-full（2026-10-14 踩过）：
+      //   索引/封面/og:image 必须取原图，否则搜索页弹窗大图与分享卡封面会把 360 缩略图拉大 → 糊
+      const img0 = (b.match(/data-full="([^"]+)"/) || b.match(/src="([^"]+)"/) || [])[1] || '';
       // 历史页面可能残留 t_ 缩略图引用（#14 已撤销），统一还原原图
       const img = img0.replace(/\/t_([^/"?]+\.webp)$/, '/$1');
       const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
@@ -2501,6 +2506,17 @@ ${navHeaderHtml('', 'q')}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer>${SITE_FOOTER}</footer>
 <script>
+  /* 缩略图 URL 推导（2026-10-14）：与 gen.js 的 thumbUrlOf 规则一致，纯字符串运算——
+     本脚本被塞在 gen.js 的模板串里，写正则会被吃掉反斜杠（AGENTS.md 有记录）。 */
+  function thumbOf(u) {
+    u = String(u == null ? '' : u); var i = u.indexOf('/assets/');
+    if (i < 0) return u;
+    var rel = u.slice(i + 1).split('?')[0].split('#')[0];
+    if (rel.indexOf('assets/thumb/') === 0) return u;
+    var name = rel.slice(7).split('/').join('__');
+    var dot = name.lastIndexOf('.'); if (dot > 0 && dot > name.lastIndexOf('__')) name = name.slice(0, dot);
+    return u.slice(0, i + 1) + 'assets/thumb/' + name + '@360x270.webp';
+  }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function relTime(iso){
   if(!iso) return '';
@@ -2553,7 +2569,7 @@ function relTime(iso){
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -3048,6 +3064,9 @@ ${likeScript}
   console.log('robots.txt ok');
   await cleanupMarkedRawImages();
   // ===== 缩略图（2026-10-14）：全部页面写完后再统一改写 + 生成（必须在 verify 之后）=====
+  // 搜索页卡片图也走缩略图：URL 由搜索页前端从原图推导（不写进 search_index.json，
+  //   否则每次搜索要多下载约 180KB）。这里为索引里的图登记生成任务，漏掉的也有 onerror 兜底回原图。
+  for (const g of searchIndex) { if (g && g.img) thumbUrlOf(g.img, 'post'); }
   await applyThumbsToPages();
   await generateThumbs();
 
