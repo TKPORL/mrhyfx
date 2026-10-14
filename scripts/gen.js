@@ -2102,6 +2102,11 @@ footer .disc-link:hover{text-decoration:underline}
   .grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .g-title{font-size:13px}
 }
+  /* 骨架屏（skeleton + shimmer）：带 .mrhx-img-loading 的图显示「灰底 + 流光」。
+     图片不透明，加载完自动盖住灰底；类由下方脚本在 load/error 后移除。 */
+  img.mrhx-img-loading{background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite}
+  @keyframes mrhx-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+  @media (prefers-reduced-motion:reduce){img.mrhx-img-loading{animation:none}}
 </style>
 ${SITE_ICON_TAGS}
 </head>
@@ -2123,6 +2128,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 ${indexScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}
+<script>(function(){function mark(im){if(im.complete)return;im.classList.add('mrhx-img-loading');im.addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});im.addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}function init(){var imgs=document.querySelectorAll('.covers img,.gcard .cover img,img.image');if(!('IntersectionObserver' in window)){for(var i=0;i<imgs.length;i++)mark(imgs[i]);return}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mark(e.target);io.unobserve(e.target)}})},{rootMargin:'300px'});for(var i=0;i<imgs.length;i++)io.observe(imgs[i])}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();</script>
 </body>
 </html>
 `;
