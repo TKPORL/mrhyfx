@@ -426,12 +426,11 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 
 /* ===== 2026-10-14（站长）评论组框：父评论 + 它的回复 = 一个框 =====
    组盒负责表达层级（取代左缩进），组内父/子评论仍保持同宽同底色（站长要的 UI 一致）。 */
-.mrhx-cgroup{background:transparent;border:none;border-radius:0;padding:0 0 12px;margin:0 0 12px;border-bottom:1px solid #f0eeec}
-.mrhx-cgroup:last-child{border-bottom:none;margin-bottom:0;padding-bottom:2px}
+.mrhx-cgroup{background:#fcfbfa;border:1px solid #efeceb;border-radius:14px;padding:10px 12px 6px;margin:0 0 12px}
 .mrhx-cgroup .mrhx-cgroup-hd{font-size:11px;color:#a09590;margin:0 0 6px 2px;font-weight:500}
 .mrhx-cgroup > .mrhx-citem{margin-bottom:6px}
 .mrhx-cgroup .mrhx-creply-item{margin:0 0 6px}
-@media (max-width:720px){.mrhx-cgroup{padding:6px 6px 0;border-radius:12px}}
+@media (max-width:720px){.mrhx-cgroup{padding:8px 10px 4px;border-radius:12px}}
 
 
 /* ===== 2026-10-14 评论区过渡动画（站长："都有一个过渡的动画效果 而不是瞬间就没了"）=====
