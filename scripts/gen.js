@@ -649,7 +649,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
       // 2026-10-13 图片：卡片只显示封面，其余图在弹窗里看（封面在顶部，其余排成图集）
       if (coverBox && imgsBox) {
         var _urls = Array.prototype.map.call(n.querySelectorAll('.image-list img'), function (i) {
-          return i.getAttribute('src') || i.getAttribute('data-src') || '';
+          return i.getAttribute('data-full') || i.getAttribute('src') || i.getAttribute('data-src') || '';
         }).filter(Boolean);
         // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
         coverBox.innerHTML = ''; imgsBox.innerHTML = '';
@@ -1141,6 +1141,82 @@ async function cleanupMarkedRawImages() {
 // （已撤销 #14 缩略图生成：站长要求图片恢复直连原图；t_ 文件已从仓库删除）
 async function makeThumb() { return false; }
 
+// ===== 缩略图（2026-10-14）: 列表页用小图，弹窗仍看原图 =====
+// 做法：<img src> 换成 assets/thumb/<name>@<w>x<h>.webp，原图 URL 存 data-full，
+//   并挂 onerror 兜底（缩略图缺失/失效 → 自动退回原图，绝不出现 404 空白）。
+//   介绍弹窗改读 data-full（见 nodeExpandScript），所以点开看大图仍是原图。
+//   尺寸：首页帖卡格子 60×60 → 120×120；帖子页卡片格子约 235×176 → 360×270。
+const THUMB_SIZES = { home: [120, 120], post: [360, 270] };
+const thumbJobs = new Map(); // 原图相对路径 -> { w, h, out }
+
+function thumbUrlOf(url, kind) {
+  const i = url.indexOf('/assets/');
+  if (i < 0) return null;
+  const rel = url.slice(i + 1).split(/[?#]/)[0];
+  if (rel.indexOf('assets/thumb/') === 0) return null; // 幂等：别把缩略图再缩一次
+  const size = THUMB_SIZES[kind];
+  const name = rel.replace(/^assets\//, '').replace(/\//g, '__').replace(/\.[^.]*$/, '');
+  const out = 'assets/thumb/' + name + '@' + size[0] + 'x' + size[1] + '.webp';
+  thumbJobs.set(rel, { w: size[0], h: size[1], out: out });
+  return url.slice(0, i + 1) + out;
+}
+
+function thumbifyImgTag(tag, kind) {
+  if (/\sdata-full=/.test(tag)) return tag; // 幂等：本 tag 已处理
+  let orig = null;
+  const out = tag.replace(/(\s(?:data-)?src)="([^"]+)"/g, function (m, attr, url) {
+    if (url.indexOf('/assets/') < 0) return m;
+    const t = thumbUrlOf(url, kind);
+    if (!t) return m;
+    if (!orig) orig = url;
+    return attr + '="' + t + '"';
+  });
+  if (!orig) return tag;
+  return out.replace(/^<img/i, '<img data-full="' + orig + '" onerror="this.onerror=null;this.src=this.dataset.full"');
+}
+
+function applyThumbs(html) {
+  // ① 首页帖卡右侧那排封面（无 class，靠 .covers 容器定位）
+  html = html.replace(/(<div class="covers">)([\s\S]*?)(<\/div>)/g, function (m, a, inner, c) {
+    return a + inner.replace(/<img\b[^>]*>/gi, function (t) { return thumbifyImgTag(t, 'home'); }) + c;
+  });
+  // ② 帖子页卡片主图（class 里含独立词 image）
+  html = html.replace(/<img\b[^>]*>/gi, function (t) {
+    const cm = t.match(/\bclass="([^"]*)"/);
+    const cls = cm ? cm[1].split(/\s+/) : [];
+    return cls.indexOf('image') >= 0 ? thumbifyImgTag(t, 'post') : t;
+  });
+  return html;
+}
+
+async function applyThumbsToPages() {
+  const files = fs.readdirSync('.').filter(function (f) {
+    return f.endsWith('.html') && f !== 'Tsinhoht.html' && !/-preview\.html$/.test(f) && !f.startsWith('_');
+  });
+  let n = 0;
+  for (const f of files) {
+    const src = fs.readFileSync(f, 'utf8');
+    const out = applyThumbs(src);
+    if (out !== src) { fs.writeFileSync(f, out); n++; }
+  }
+  console.log('thumb: 改写页面 ' + n + '/' + files.length + '，待生成 ' + thumbJobs.size + ' 张');
+}
+
+async function generateThumbs() {
+  if (!thumbJobs.size) return;
+  fs.mkdirSync('assets/thumb', { recursive: true });
+  let made = 0, skipped = 0, missing = 0, bad = 0;
+  for (const entry of thumbJobs) {
+    const rel = entry[0], job = entry[1];
+    try {
+      if (!fs.existsSync(rel)) { missing++; continue; } // 本地无图（图片只存线上）→ 交给 onerror 兜底
+      if (fs.existsSync(job.out) && fs.statSync(job.out).size > 0) { skipped++; continue; }
+      await sharp(rel).resize(job.w, job.h, { fit: 'cover' }).webp({ quality: 62, alphaQuality: 100, lossless: false }).toFile(job.out);
+      made++;
+    } catch (e) { bad++; if (bad <= 5) console.warn('  thumb 失败:', rel, e.message); }
+  }
+  console.log('thumb: 生成 ' + made + ' / 跳过(已存在) ' + skipped + ' / 源图本地缺失 ' + missing + ' / 失败 ' + bad);
+}
 let HIDDEN = {};
 if (fs.existsSync('hidden.json')) {
   try { HIDDEN = readJson('hidden.json'); } catch (e) { console.warn('hidden.json 解析失败，忽略'); }
@@ -2543,7 +2619,7 @@ function relTime(iso){
       var _cv = d.querySelector('.mrhx-detail-cover');
       if (_cv) {
         _cv.innerHTML = '';
-        var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
+        var _ci = document.createElement('img'); _ci.src = im.getAttribute('data-full') || im.getAttribute('src') || ''; _ci.alt = '';
         if (_ci.src) _cv.appendChild(_ci);
       }
       d.classList.add('show');
@@ -2932,6 +3008,9 @@ ${likeScript}
     'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\nDisallow: /Tsinhoht.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
   console.log('robots.txt ok');
   await cleanupMarkedRawImages();
+  // ===== 缩略图（2026-10-14）：全部页面写完后再统一改写 + 生成（必须在 verify 之后）=====
+  await applyThumbsToPages();
+  await generateThumbs();
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理；--verify 模式不发布）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {
