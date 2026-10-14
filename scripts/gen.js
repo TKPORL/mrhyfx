@@ -170,6 +170,14 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 #mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
 .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+/* 2026-10-14（站长）手机端顶栏按钮加文字：只显示图标时不好认。
+   断点与抽屉一致（≤540px），桌面端保持原来的圆形图标按钮不变。 */
+.hd-bar .icon-btn .ico-label{display:none}
+@media (max-width:540px){
+  .hd-bar .icon-btn{width:auto;min-width:40px;height:36px;border-radius:99px;gap:5px;padding:0 12px}
+  .hd-bar .icon-btn .ico-label{display:inline;font-size:12px;font-weight:600;color:#666}
+}
+
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
 .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -231,6 +239,7 @@ ${navLinksHtml('    ', current, false)}
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+      <span class="ico-label">搜索</span>
     </button>
     <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
       <svg viewBox="0 0 24 24" style="stroke:none">
@@ -238,6 +247,7 @@ ${navLinksHtml('    ', current, false)}
         <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
         <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
       </svg>
+      <span class="ico-label">菜单</span>
     </button>
   </div>
 </div>
