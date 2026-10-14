@@ -405,7 +405,7 @@ function relTime(iso){
       var _cv = d.querySelector('.mrhx-detail-cover');
       if (_cv) {
         _cv.innerHTML = '';
-        var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
+        var _ci = document.createElement('img'); _ci.src = im.getAttribute('data-full') || im.getAttribute('src') || ''; _ci.alt = '';
         if (_ci.src) _cv.appendChild(_ci);
       }
       d.classList.add('show');
