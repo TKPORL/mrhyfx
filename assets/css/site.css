@@ -365,3 +365,13 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 
 /* ===== 2026-10-14 「数据已丢失」标记（copycode.js 在缺下载行的卡片上自动打点；补回链接自动消失）===== */
 .mrhx-lost{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#9aa0a6;white-space:nowrap}
+
+
+/* ===== 2026-10-14 评论区三件（站长反馈）=====
+   ① 「缩短评论」原来吸底悬浮（sticky + 白色渐隐底带），会压住评论区上方内容，
+      实测在短页面上正好切到"发表评论"表单的邮箱栏。改为绝对定位到"评论区"标题行右侧，
+      和标题同一水平线：既不再遮挡正文，位置也固定可预期。
+   ② .mrhx-comments 加底部留白：评论区后面有落脚空间，滚到底时表单不会贴在屏幕底边被切。 */
+.mrhx-comments{position:relative;padding-bottom:110px}
+.mrhx-comments .mrhx-cfbar{position:absolute;top:2px;right:0;bottom:auto;left:auto;margin:0;padding:0;text-align:right;background:none;box-shadow:none;pointer-events:auto;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.06)}
