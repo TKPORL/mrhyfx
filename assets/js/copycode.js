@@ -41,3 +41,33 @@
     } else { window.prompt('复制' + label + '：', code); }
   });
 })();
+
+
+/* ===== 2026-10-14 「数据已丢失」标记（站长要求）=====
+   背景：历史上有卡片在「草稿/表单与页面不同步」的保存路径里，把下载链接连同介绍一起丢了
+   （发布器里现存同类事故注释：「草稿里是粘贴前的旧数据，恢复后链接会落到别的卡片上」），
+   从 git 全历史 + 本地全部备份里都已无法还原（最早记录 09-20 就已是空的）。
+   处理：不手工列名单，按规则自动显形 —— 卡片有封面但没有下载行 → 打上标记。
+   好处：① 以后再丢会立刻在页面上可见，不再无声无息；
+         ② 站长把链接补回去后，标记自动消失，不需要再改代码。 */
+(function () {
+  function markLost() {
+    try {
+      var cards = document.querySelectorAll('li.node.heading3, .node.heading3');
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (card.getAttribute('data-lostdone')) continue;
+        if (!card.querySelector('.image-list img, .image-row img')) continue;
+        if (card.querySelector('.mrhx-dl')) { card.setAttribute('data-lostdone', '1'); continue; }
+        var tag = document.createElement('span');
+        tag.className = 'mrhx-lost';
+        tag.textContent = '数据已丢失';
+        tag.title = '这张卡的下载链接与介绍在历史数据里丢了，站长正在补档';
+        var holder = card.querySelector('.content.mm-editor > span') || card.querySelector('.content > span') || card.querySelector('.content');
+        if (holder) holder.appendChild(tag); else card.appendChild(tag);
+        card.setAttribute('data-lostdone', '1');
+      }
+    } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', markLost); else markLost();
+})();

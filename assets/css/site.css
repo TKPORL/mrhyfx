@@ -361,3 +361,7 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 #mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
 #mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
+
+
+/* ===== 2026-10-14 「数据已丢失」标记（copycode.js 在缺下载行的卡片上自动打点；补回链接自动消失）===== */
+.mrhx-lost{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#9aa0a6;white-space:nowrap}
