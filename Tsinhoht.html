@@ -201,6 +201,13 @@ body.gate-pending main{display:none!important}
 /* 2026-10-14（站长）自定义链接多行框：后台全局规则已同时覆盖 textarea（宽/边框/圆角/内边距一致），
    所以这里只补高度相关的项 —— 默认与旁边单行输入框等高，需要时可向下拉伸。 */
 textarea.g-customUrl{min-height:38px;max-height:220px;resize:vertical;line-height:1.5;overflow-y:auto}
+
+/* 2026-10-14（站长反馈「三个竖的一个横的」）根因：.links{display:flex} 但只写了 .links input{flex:1}，
+   后半段改成 textarea 的那一格拿不到 flex，只继承全局 width:100%，于是在 flex 行里独霸一整行。
+   这里补上 textarea（min-width:0 防止内容撑破 flex），并给「游戏内容」卡片的标题行留出下边距，
+   避免三个按钮与下方游戏框贴在一起。 */
+.links textarea{flex:1;min-width:0}
+.card > .row:first-child{margin-bottom:12px}
 </style>
 </head>
 <body class="gate-pending">
