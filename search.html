@@ -69,16 +69,6 @@ header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,2
 #mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
 .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
-/* 2026-10-14（站长）顶栏按钮加文字备注（第二版）：
-   第一版把按钮改成"图标+文字"的胶囊，站长说太怪 —— 改回原样：
-   圆形图标按钮完全不动，只在图标下方加一行 10px 小字（放大镜下「搜索」、三点下「菜单」）。 */
-.hd-bar .icon-btn{position:relative}
-.hd-bar .icon-btn .ico-label{display:none}
-@media (max-width:540px){
-  .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
-  .hd-bar .acts{margin-bottom:12px}
-}
-
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
 .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -158,6 +148,7 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 .mrhx-detail-box .mrhx-detail-close{position:absolute;top:14px;right:16px;border:none;background:#f4f2ef;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;transition:.2s}
 .mrhx-detail-box .mrhx-detail-close:hover{background:#e5484d;color:#fff}
 .mrhx-detail-box h2{font-size:15px;margin-bottom:12px;color:#2b2b2b}
+.mrhx-detail-box .mrhx-detail-cover{margin:-2px 0 12px} .mrhx-detail-box .mrhx-detail-cover img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid #ecebe9;display:block}
 .mrhx-detail-box .mrhx-detail-from{font-size:12px;color:#999;margin-bottom:10px;line-height:1.5}
 .mrhx-detail-box .mrhx-detail-from b{color:#e5484d;font-weight:600}
 .mrhx-detail-box .mrhx-detail-text{font-size:14px;line-height:1.9;color:#444;white-space:pre-wrap;word-break:break-word}
@@ -206,7 +197,6 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
-      <span class="ico-label">搜索</span>
     </button>
     <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
       <svg viewBox="0 0 24 24" style="stroke:none">
@@ -214,7 +204,6 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
         <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
         <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
       </svg>
-      <span class="ico-label">菜单</span>
     </button>
   </div>
 </div>
@@ -260,17 +249,6 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 <script src="assets/js/nav.js?v=4fcd5d5b"></script>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <script>
-  /* 缩略图 URL 推导（2026-10-14）：与 gen.js 的 thumbUrlOf 规则一致，纯字符串运算——
-     本脚本被塞在 gen.js 的模板串里，写正则会被吃掉反斜杠（AGENTS.md 有记录）。 */
-  function thumbOf(u) {
-    u = String(u == null ? '' : u); var i = u.indexOf('/assets/');
-    if (i < 0) return u;
-    var rel = u.slice(i + 1).split('?')[0].split('#')[0];
-    if (rel.indexOf('assets/thumb/') === 0) return u;
-    var name = rel.slice(7).split('/').join('__');
-    var dot = name.lastIndexOf('.'); if (dot > 0 && dot > name.lastIndexOf('__')) name = name.slice(0, dot);
-    return u.slice(0, i + 1) + 'assets/thumb/' + name + '@360x270.webp';
-  }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function relTime(iso){
   if(!iso) return '';
@@ -323,7 +301,7 @@ function relTime(iso){
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -415,7 +393,7 @@ function relTime(iso){
   bindHistClick();
 })();
 </script>
-<div class="mrhx-detail" id="mrhxSD"><div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" id="mrhxSDClose" aria-label="关闭">✕</button><h2 id="mrhxSDTitle"></h2><div class="mrhx-detail-from"><b>游戏介绍</b></div><div class="mrhx-detail-text" id="mrhxSDText"></div><button type="button" class="mrhx-detail-back" id="mrhxSDBack">返回</button></div></div>
+<div class="mrhx-detail" id="mrhxSD"><div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" id="mrhxSDClose" aria-label="关闭">✕</button><h2 id="mrhxSDTitle"></h2><div class="mrhx-detail-cover" id="mrhxSDCover"></div><div class="mrhx-detail-from"><b>游戏介绍</b></div><div class="mrhx-detail-text" id="mrhxSDText"></div><button type="button" class="mrhx-detail-back" id="mrhxSDBack">返回</button></div></div>
 <script>
 (function(){
   var d = document.getElementById('mrhxSD'); if (!d) return;
@@ -428,7 +406,7 @@ function relTime(iso){
       var _cv = d.querySelector('.mrhx-detail-cover');
       if (_cv) {
         _cv.innerHTML = '';
-        var _ci = document.createElement('img'); _ci.src = im.getAttribute('data-full') || im.getAttribute('src') || ''; _ci.alt = '';
+        var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
         if (_ci.src) _cv.appendChild(_ci);
       }
       d.classList.add('show');
@@ -439,6 +417,6 @@ function relTime(iso){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') d.classList.remove('show'); });
 })();
 </script>
-<script src="assets/js/copycode.js?v=d92d6a51"></script>
+<script src="assets/js/copycode.js?v=d6197836"></script>
   </body>
 </html>

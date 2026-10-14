@@ -196,25 +196,6 @@ body.gate-pending main{display:none!important}
 #gateLock .gate-err{font-size:12px;color:#c93a3f;margin-top:10px;min-height:16px}
 #gateLock button{margin-top:14px;width:100%;padding:10px;border:none;border-radius:8px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
 #gateLock button:hover{background:#c93a3f}
-
-
-/* 2026-10-14（站长）自定义链接多行框：后台全局规则已同时覆盖 textarea（宽/边框/圆角/内边距一致），
-   所以这里只补高度相关的项 —— 默认与旁边单行输入框等高，需要时可向下拉伸。 */
-textarea.g-customUrl{min-height:38px;max-height:220px;resize:vertical;line-height:1.5;overflow-y:auto}
-
-/* 2026-10-14（站长反馈「三个竖的一个横的」）根因：.links{display:flex} 但只写了 .links input{flex:1}，
-   后半段改成 textarea 的那一格拿不到 flex，只继承全局 width:100%，于是在 flex 行里独霸一整行。
-   这里补上 textarea（min-width:0 防止内容撑破 flex），并给「游戏内容」卡片的标题行留出下边距，
-   避免三个按钮与下方游戏框贴在一起。 */
-.links textarea{flex:1;min-width:0}
-.card > .row:first-child{margin-bottom:12px}
-
-/* 2026-10-14（站长）自定义链接＝点按钮加一行 */
-.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.clrows{margin-top:8px;display:flex;flex-direction:column;gap:8px}
-.clrow{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:center}
-.clrow .cldel{padding:6px 12px;background:#f3f1ee;color:#666}
-@media (max-width:720px){.links{grid-template-columns:1fr}.clrow{grid-template-columns:1fr 1fr auto}}
 </style>
 </head>
 <body class="gate-pending">
@@ -1106,7 +1087,7 @@ function collectDraft() {
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
         // cid 必须一起存：草稿恢复时靠它把IndexedDB 里的图片对回本卡（2026-10-06 修串位）
-        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
+        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, sponsor: c.sponsor, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       }),
       removedImageUrls: [...removedImageUrls]
     },
@@ -1360,23 +1341,7 @@ function gameHtml(c, imgPaths) {
   const buttons = [];
    if (c.linkB) buttons.push(`<a class="mrhx-btn mrhx-btn-b" href="${esc(c.linkB)}" target="_blank" rel="noreferrer">百度网盘</a>`);
    if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-u" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">UC网盘</a>`);
-   if (c.customUrl) {
-     // 2026-10-14（站长）自定义链接支持多条：每行一条，格式「链接 ｜ 名称 ｜ 颜色」（后两项可省）。
-     // 颜色省略时自动识别：百度→浅绿、UC→浅蓝、其它→灰。
-     // 兼容旧数据：只有一行且没写名称时仍用「自定义按钮名称」，旧卡片渲染结果完全不变。
-     String(c.customUrl).split(/\r?\n/).forEach(function (line, idx) {
-       const parts = String(line).split(/[|｜]/);
-       const u = (parts[0] || '').trim();
-       if (!u) return;
-       const nm = (parts[1] || '').trim() || (idx === 0 ? (c.customName || '').trim() : '') || '下载';
-       const col = (parts[2] || '').trim().toLowerCase();
-       let cls = 'mrhx-btn-qk';
-       if (col) cls = (col === '百度' || col === '绿' || col === 'baidu' || col === 'green') ? 'mrhx-btn-b' : (col === '蓝' || col === 'uc' || col === 'blue') ? 'mrhx-btn-u' : 'mrhx-btn-qk';
-       else if (/pan\.baidu\.com|baidu\.com/.test(u)) cls = 'mrhx-btn-b';
-       else if (/uc\.cn|drive\.uc/.test(u)) cls = 'mrhx-btn-u';
-       buttons.push(`<a class="mrhx-btn ${cls}" href="${esc(u)}" target="_blank" rel="noreferrer">${esc(nm)}</a>`);
-     });
-   }
+   if (c.customName && c.customUrl) buttons.push(`<a class="mrhx-btn mrhx-btn-qk" href="${esc(c.customUrl)}" target="_blank" rel="noreferrer">${esc(c.customName)}</a>`);
    const links = buttons.length ? `<div class="mrhx-dl">${buttons.join('')}</div>` : '';
    return `<li class="node heading3">
     <div class="bullet">
@@ -1386,10 +1351,11 @@ function gameHtml(c, imgPaths) {
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
     ${(() => {
       // 2026-10-13 解压码：存进 note 文本（前台脚本会渲染成可一键复制的按钮），拼接前先清旧标记保证幂等
-      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
       const _nt = _ic
         + (c.unzip ? (_ic ? '\n' : '') + '解压码：' + c.unzip : '')
-        + (c.cheat ? '\n作弊码：' + c.cheat : '');
+        + (c.cheat ? '\n作弊码：' + c.cheat : '')
+    + (c.sponsor ? '\n赞助码：' + c.sponsor : '');
       return _nt ? `<div class="note mm-editor"><span>${esc(_nt)}</span></div>` : '';
     })()}
     ${links}
@@ -1423,6 +1389,7 @@ function addGameCard(data) {
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
   <div class="field"><label>解压码（选填）</label><input type="text" class="g-unzip" placeholder="如 xiebao，前台会显示成可一键复制的按钮"></div>
   <div class="field"><label>作弊码（选填）</label><input type="text" class="g-cheat" placeholder="如 agent17，前台显示「作弊码」按钮，点击即复制"></div>
+  <div class="field"><label>赞助码（选填）</label><input type="text" class="g-sponsor" placeholder="如 sponsor2024，前台显示「赞助码」按钮，点击即复制"></div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
     <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
@@ -1434,13 +1401,11 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-<input type="text" class="g-linkB" placeholder="百度网盘链接">
-<input type="text" class="g-linkM" placeholder="UC网盘链接">
-</div>
-<input type="hidden" class="g-customName">
-<input type="hidden" class="g-customUrl">
-<div class="clrows"></div>
-<button type="button" class="btn btn-s cladd" style="margin-top:8px">＋ 自定义链接</button>
+      <input type="text" class="g-linkB" placeholder="百度网盘链接">
+      <input type="text" class="g-linkM" placeholder="UC网盘链接">
+      <input type="text" class="g-customName" placeholder="自定义按钮名称">
+      <input type="text" class="g-customUrl" placeholder="自定义跳转链接">
+    </div>
   </div>
   <div class="move-box"></div>`;
   if (data) fillCard(d, data);
@@ -1551,6 +1516,7 @@ function readCard(el) {
     intro: el.querySelector('.g-intro').value.trim(),
     unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     cheat: el.querySelector('.g-cheat') ? el.querySelector('.g-cheat').value.trim() : '',
+sponsor: el.querySelector('.g-sponsor') ? el.querySelector('.g-sponsor').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -1634,11 +1600,12 @@ function fillCard(card, data) {
   if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
   if (data.unzip != null && card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = data.unzip;
   if (data.cheat != null && card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = data.cheat;
+    if (data.sponsor != null && card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = data.sponsor;
   if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
   if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
-  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
+  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
   card.querySelector('.g-imgs').dataset.lastImgs = card.querySelector('.g-imgs').value;
   renderImageLinks(card);
 }
@@ -1729,6 +1696,7 @@ function collectGames() {
     intro: el.querySelector('.g-intro').value.trim(),
     unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     cheat: el.querySelector('.g-cheat') ? el.querySelector('.g-cheat').value.trim() : '',
+sponsor: el.querySelector('.g-sponsor') ? el.querySelector('.g-sponsor').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -2392,10 +2360,11 @@ function parseCollectionDoc(doc) {
     // 2026-10-13 解压码：从介绍文本里提取（格式「解压码：xxx」），并从 intro 里剔除以免重复拼接
     const unzip = (intro.match(/解压码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
     const cheat = (intro.match(/作弊码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-    const introClean = intro.replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+  const sponsor = (intro.match(/赞助码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    const introClean = intro.replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
-      intro: introClean, unzip, cheat, imgs, linkM, linkB, customName, customUrl
+      intro: introClean, unzip, cheat, sponsor, imgs, linkM, linkB, customName, customUrl
     };
   });
 }
@@ -2489,13 +2458,14 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-intro').value = c.intro || '';
            if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            if (card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = c.cheat || '';
+if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c.sponsor || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
+           card.querySelector('.g-customUrl').value = c.customUrl || '';
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -2527,13 +2497,14 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-intro').value = c.intro || '';
            if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            if (card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = c.cheat || '';
+if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c.sponsor || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card); setTimeout(function(){ if(window.mrhxSnap) window.mrhxSnap(card); }, 0);
+           card.querySelector('.g-customUrl').value = c.customUrl || '';
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -3712,7 +3683,7 @@ function publishErrorHint(e) {
 //   两者发布前肉眼很难逐卡发现，所以点发布时先自动检查、一次报全所有问题卡片，中止发布。
 // 规则：游戏名必填；下载链接必须是纯链接（http/https/magnet 开头、不含空格与中文）。
 const LINK_FIELDS = [
-  { sel: '.g-linkM', label: 'UC网盘' },
+  { sel: '.g-linkM', label: '移动云盘' },
   { sel: '.g-linkB', label: '百度网盘' },
   { sel: '.g-customUrl', label: '自定义跳转' },
 ];
@@ -3737,59 +3708,24 @@ function validateCards() {
     const name = el.querySelector('.g-name').value.trim();
     if (!name) problems.push('第 ' + no + ' 张卡片：游戏名称是空的');
     LINK_FIELDS.forEach(f => {
-  // 2026-10-14（站长）多链接：自定义链接框支持「每行一条：链接 ｜ 名称 ｜ 颜色」，
-  // 所以先按行拆出「链接」部分再逐条校验；其它字段拆行结果还是它自己，行为不变。
-  const raw = el.querySelector(f.sel).value.trim();
-  const vals = f.sel === '.g-customUrl'
-    ? raw.split(/\r?\n/).map(s => s.split(/[|｜]/)[0].trim()).filter(Boolean)
-    : (raw ? [raw] : []);
-  vals.forEach(v => {
-    if (!isPureLink(v)) {
-      problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
-    }
-    const k = linkKey(v);
-    if (seen[k]) {
-      problems.push('第 ' + no + ' 张卡片「' + (name || '(无名字)') + '」的' + f.label +
-        '链接，与第 ' + seen[k].no + ' 张卡片「' + seen[k].name + '」完全相同（' +
-        v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
-    } else {
-      seen[k] = { no, name: name || '(无名字)', label: f.label };
-    }
-  });
+      const v = el.querySelector(f.sel).value.trim();
+      if (v && !isPureLink(v)) {
+        problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
+      }
+      if (!v) return;
+      const k = linkKey(v);
+      if (seen[k]) {
+        // 同一个链接给了两个游戏 —— 2026-10-07 实测 2026106pcaz 第 12/23 个游戏共用一条网盘链接。
+        // 成因是填卡片时链接贴错，肉眼极难发现（介绍框里常常没写游戏名，无从核对），
+        // 所以在这里硬拦，撞了直接中止发布。
+        problems.push('第 ' + no + ' 张卡片「' + (name || '(无名字)') + '」的' + f.label +
+          '链接，与第 ' + seen[k].no + ' 张卡片「' + seen[k].name + '」完全相同（' +
+          v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
+      } else {
+        seen[k] = { no, name: name || '(无名字)', label: f.label };
+      }
     });
   });
-  // ===== 2026-10-14（站长）2B：拦「越存越空」 =====
-  // 打开这张卡时本来有内容、现在要存成空 —— 这就是历史上「链接/介绍被洗掉」的真凶机制。
-  // 有意清空不算错：弹窗问你一次，确认就放行，并把确认后的状态设成新基线。
-  try {
-    if (typeof window.mrhxNow === 'function') {
-      const emptied = [];
-      [...$('gameBox').children].forEach((el, i) => {
-        const snap = el.__mrhxSnap; if (!snap) return;
-        const now = window.mrhxNow(el);
-        const nm = (el.querySelector('.g-name') || {}).value || snap.__name || '(无名字)';
-        Object.keys(snap).forEach(k => {
-          if (k === '__name') return;
-          if (snap[k] && !String(now[k] || '').trim()) {
-            const f = el.querySelector('.' + k);
-            let label = k;
-            try { if (f && f.closest('.field')) { const lb = f.closest('.field').querySelector('label'); if (lb && lb.textContent.trim()) label = lb.textContent.trim(); } } catch (e) {}
-            emptied.push('第 ' + (i + 1) + ' 张卡片「' + String(nm).trim() + '」的「' + label + '」会从有内容变成空');
-          }
-        });
-      });
-      if (emptied.length) {
-        const body = emptied.slice(0, 8).join('\n') + (emptied.length > 8 ? '\n…还有 ' + (emptied.length - 8) + ' 处' : '');
-        const go = confirm('发现 ' + emptied.length + ' 处内容会变空：\n\n' + body + '\n\n有意清空请点「确定」继续发布；否则点「取消」回去检查。');
-        if (go) {
-          [...$('gameBox').children].forEach(el => { delete el.__mrhxSnap; if (window.mrhxSnap) window.mrhxSnap(el); });
-        } else {
-          emptied.forEach(x => problems.push(x + '（已中止发布，防止内容静默丢失；确认要清空就再点一次发布并点「确定」）'));
-        }
-      }
-    }
-  } catch (e) {}
-
   return problems;
 }
 function showCardProblems(problems) {
@@ -3903,97 +3839,6 @@ function openPreview(cards, title) {
   $('previewModal').classList.add('show');
   $('previewModal').scrollTop = 0;
 }
-</script>
-<script>
-/*
-  2026-10-14（站长）自定义链接改成"点按钮加一行"：每行【按钮名称】+【链接】。
-  数据仍然写进原有的隐藏字段 .g-customUrl（每行：链接 ｜ 名称），所以生成按钮、发布体检、
-  保存、草稿这几条链路一行都不用改；编辑旧帖时由 mrhxClBuild 把字段还原成行。
-*/
-(function(){
-  function cardOf(el){ return (el.closest && (el.closest(".game") || el.closest("#gameBox > *"))) || null; }
-  function rowHtml(){
-    return '<div class="clrow">' +
-      '<input type="text" class="clname" placeholder="自定义按钮名称">' +
-      '<input type="text" class="clurl" placeholder="链接（http/https 开头）">' +
-      '<button type="button" class="btn btn-s cldel" title="删除这条">删除</button>' +
-      '</div>';
-  }
-  function lines(card){
-    return [].slice.call(card.querySelectorAll(".clrows .clrow")).map(function(r){
-      var u = r.querySelector(".clurl").value.trim();
-      if(!u) return "";
-      var n = r.querySelector(".clname").value.trim();
-      return n ? (u + " ｜ " + n) : u;
-    }).filter(Boolean);
-  }
-  function sync(card){ var f = card && card.querySelector(".g-customUrl"); if(f) f.value = lines(card).join("\n"); }
-  function build(card){
-    if(!card) return;
-    var box = card.querySelector(".clrows"), f = card.querySelector(".g-customUrl");
-    if(!box || !f) return;
-    box.innerHTML = "";
-    String(f.value || "").split(/\r?\n/).forEach(function(line){
-      var v = line.trim(); if(!v) return;
-      var p = v.split(/[|｜]/);
-      box.insertAdjacentHTML("beforeend", rowHtml());
-      var r = box.lastElementChild;
-      r.querySelector(".clurl").value = (p[0] || "").trim();
-      r.querySelector(".clname").value = (p[1] || "").trim();
-    });
-  }
-  window.mrhxClSync = sync; window.mrhxClBuild = build;
-  document.addEventListener("click", function(e){
-    var t2 = e.target;
-    if(t2.closest && t2.closest(".cladd")){
-      var c1 = cardOf(t2), b1 = c1 && c1.querySelector(".clrows");
-      if(b1){ b1.insertAdjacentHTML("beforeend", rowHtml()); b1.lastElementChild.querySelector(".clname").focus(); }
-      return;
-    }
-    if(t2.closest && t2.closest(".cldel")){
-      var c2 = cardOf(t2), r2 = t2.closest(".clrow");
-      if(r2){ r2.parentNode.removeChild(r2); sync(c2); }
-    }
-  }, true);
-  document.addEventListener("input", function(e){
-    var x = e.target;
-    if(x.classList && (x.classList.contains("clname") || x.classList.contains("clurl"))) sync(cardOf(x));
-  }, true);
-  /* 兜底对账：任何别处改了隐藏字段（例如插件式回填），这里把行重建回来，防止"看到的≠要保存的" */
-  document.addEventListener("focusin", function(e){
-    var c = cardOf(e.target); if(!c) return;
-    var f = c.querySelector(".g-customUrl"); if(!f) return;
-    if((f.value || "").trim() !== lines(c).join("\n").trim()) build(c);
-  }, true);
-  function boot(){ var b = document.getElementById("gameBox"); if(b) [].slice.call(b.children).forEach(build); }
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
-})();
-</script>
-<script>
-/* 2026-10-14（站长）2B 用：给卡片文本字段拍快照 / 取当前值（按 g-* 类名做键，稳定） */
-(function(){
-  function pick(card) {
-    var s = {};
-    var list = card.querySelectorAll('input[type=text], textarea, input:not([type])');
-    for (var i = 0; i < list.length; i++) {
-      var f = list[i];
-      var k = (f.className || '').split(/\s+/).filter(function(c){ return c.indexOf('g-') === 0; })[0];
-      if (!k) continue;
-      s[k] = String(f.value == null ? '' : f.value).trim();
-    }
-    var n = card.querySelector('.g-name');
-    s.__name = n ? String(n.value || '').trim() : '';
-    return s;
-  }
-  window.mrhxNow = function(card){ return card ? pick(card) : {}; };
-  window.mrhxSnap = function(card){ if (card && !card.__mrhxSnap) card.__mrhxSnap = pick(card); };
-  /* 兜底：用户只要碰过这张卡就先拍一张（防某些回填路径没触发） */
-  document.addEventListener('focusin', function(e){
-    var t2 = e.target;
-    var c = t2 && t2.closest ? (t2.closest('.game') || t2.closest('#gameBox > *')) : null;
-    if (c) window.mrhxSnap(c);
-  }, true);
-})();
 </script>
 </body>
 </html>
