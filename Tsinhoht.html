@@ -197,9 +197,10 @@ body.gate-pending main{display:none!important}
 #gateLock button{margin-top:14px;width:100%;padding:10px;border:none;border-radius:8px;background:#e5484d;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
 #gateLock button:hover{background:#c93a3f}
 
-/* 2026-10-14（站长）自定义链接改成多行输入后外观不齐（其余三格是 input，这一格是 textarea）：
-   把旁边输入框的样式原样复制过来，避免我猜尺寸；保留可上下拉伸，方便贴多条链接。 */
-textarea.g-customUrl{border-color:#e0a8a9box-sizing:border-box;font-family:inherit;line-height:1.5;resize:vertical;min-height:34px;overflow-y:auto;}
+
+/* 2026-10-14（站长）自定义链接多行框：后台全局规则已同时覆盖 textarea（宽/边框/圆角/内边距一致），
+   所以这里只补高度相关的项 —— 默认与旁边单行输入框等高，需要时可向下拉伸。 */
+textarea.g-customUrl{min-height:38px;max-height:220px;resize:vertical;line-height:1.5;overflow-y:auto}
 </style>
 </head>
 <body class="gate-pending">
@@ -1422,7 +1423,7 @@ function addGameCard(data) {
       <input type="text" class="g-linkB" placeholder="百度网盘链接">
       <input type="text" class="g-linkM" placeholder="UC网盘链接">
       <input type="text" class="g-customName" placeholder="自定义按钮名称">
-      <textarea class="g-customUrl" rows="2" placeholder="自定义链接（每行一条：链接 ｜ 名称 ｜ 颜色，后两项可省）" title="每行一条。格式：链接 ｜ 名称（可省）｜ 颜色（可省：百度/UC/灰）"></textarea>
+      <textarea class="g-customUrl" rows="1" placeholder="自定义链接（每行一条：链接 ｜ 名称 ｜ 颜色，后两项可省）" title="每行一条。格式：链接 ｜ 名称（可省）｜ 颜色（可省：百度/UC/灰）"></textarea>
     </div>
   </div>
   <div class="move-box"></div>`;
