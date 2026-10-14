@@ -1189,6 +1189,27 @@ function applyThumbs(html) {
   return html;
 }
 
+// ★从页面最终内容反推缩略图任务：页面可能已被上一轮改写并提交（幂等保护会跳过改写），
+//   若只把任务注册绑在「改写动作」上，缺失的缩略图将永远补不回来。这里按 src/data-src + data-full 反推。
+function collectThumbJobs(html) {
+  const RE = /<img\b[^>]*>/gi;
+  let m;
+  while ((m = RE.exec(html)) !== null) {
+    const tag = m[0];
+    const dm = tag.match(/\sdata-full="([^"]+)"/);
+    if (!dm) continue;
+    const i = dm[1].indexOf('/assets/');
+    if (i < 0) continue;
+    const rel = dm[1].slice(i + 1).split(/[?#]/)[0];
+    const am = tag.match(/\s(?:data-)?src="([^"]+)"/);
+    if (!am) continue;
+    const tm = am[1].match(/\/assets\/thumb\/(.+)@(\d+)x(\d+)\.webp/);
+    if (!tm) continue;
+    const out = 'assets/thumb/' + tm[1] + '@' + tm[2] + 'x' + tm[3] + '.webp';
+    thumbJobs.set(out, { src: rel, w: Number(tm[2]), h: Number(tm[3]), out: out });
+  }
+}
+
 async function applyThumbsToPages() {
   const files = fs.readdirSync('.').filter(function (f) {
     return f.endsWith('.html') && f !== 'Tsinhoht.html' && !/-preview\.html$/.test(f) && !f.startsWith('_');
@@ -1198,6 +1219,7 @@ async function applyThumbsToPages() {
     const src = fs.readFileSync(f, 'utf8');
     const out = applyThumbs(src);
     if (out !== src) { fs.writeFileSync(f, out); n++; }
+    collectThumbJobs(out); // 已有 data-full 的页面同样登记任务，缺失的缩略图才能补生成
   }
   console.log('thumb: 改写页面 ' + n + '/' + files.length + '，待生成 ' + thumbJobs.size + ' 张');
 }
