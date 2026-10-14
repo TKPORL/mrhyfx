@@ -1488,7 +1488,7 @@ html = (function reorderNodes(str) {
     const bar = `<header>
 ${navHeaderHtml('')}
 </header>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n${SMOOTH_SCRIPTS}\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image,.covers img,.gcard .cover img');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n${SMOOTH_SCRIPTS}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);

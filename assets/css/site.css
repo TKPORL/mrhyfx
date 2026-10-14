@@ -148,8 +148,13 @@
   /* 可点开的游戏卡图片：现在是可聚焦的触发元素（键盘 Enter/空格 也能打开弹窗） */
   .image-row img.image[role="button"]{cursor:pointer}
   .image-row img.image:focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:6px}
-  .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background:#f4f2ef;pointer-events:none}
-  .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
+  .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite;pointer-events:none}
+  /* 通用骨架屏（skeleton + shimmer）：带 .mrhx-img-loading 的图片本体显示「灰底 + 流光」。
+     图片本身不透明，加载完自动盖住灰底；类由注入脚本在 load/error 后移除。
+     覆盖首页缩略图 .covers img、网格卡 .gcard .cover img 等原本没有底色的图位。 */
+  img.mrhx-img-loading{background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite}
+  @keyframes mrhx-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+  @media (prefers-reduced-motion:reduce){img.mrhx-img-loading{animation:none}}
   @keyframes mrhxSpin{to{transform:rotate(360deg)}}
   /* 901-1280 小窗/中屏：导航收紧间距防截断（与 gen.js NAV_CSS 同步维护） */
   @media (min-width:901px) and (max-width:1280px){
