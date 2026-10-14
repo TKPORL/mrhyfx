@@ -414,7 +414,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       }
       for (var j = 0; j < g.items.length; j++) { g.items[j].setAttribute('data-grouped', '1'); box.appendChild(g.items[j]); }
       var hd = box.querySelector('.mrhx-cgroup-hd');
-      if (hd) hd.textContent = '↳ ' + box.querySelectorAll('.mrhx-creply-item').length + ' 条回复';
+      if (hd) hd.textContent = box.querySelectorAll('.mrhx-creply-item').length + ' 条回复';
     }
   }
   function kick() {
