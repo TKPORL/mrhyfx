@@ -1147,7 +1147,7 @@ async function makeThumb() { return false; }
 //   介绍弹窗改读 data-full（见 nodeExpandScript），所以点开看大图仍是原图。
 //   尺寸：首页帖卡格子 60×60 → 120×120；帖子页卡片格子约 235×176 → 360×270。
 const THUMB_SIZES = { home: [120, 120], post: [360, 270] };
-const thumbJobs = new Map(); // 原图相对路径 -> { w, h, out }
+const thumbJobs = new Map(); // 输出路径 -> { src, w, h, out }（★按输出路径去重：同一原图可同时要 120/360 两种尺寸，用原图路径当 key 会互相覆盖）
 
 function thumbUrlOf(url, kind) {
   const i = url.indexOf('/assets/');
@@ -1157,7 +1157,7 @@ function thumbUrlOf(url, kind) {
   const size = THUMB_SIZES[kind];
   const name = rel.replace(/^assets\//, '').replace(/\//g, '__').replace(/\.[^.]*$/, '');
   const out = 'assets/thumb/' + name + '@' + size[0] + 'x' + size[1] + '.webp';
-  thumbJobs.set(rel, { w: size[0], h: size[1], out: out });
+  thumbJobs.set(out, { src: rel, w: size[0], h: size[1], out: out });
   return url.slice(0, i + 1) + out;
 }
 
@@ -1207,7 +1207,7 @@ async function generateThumbs() {
   fs.mkdirSync('assets/thumb', { recursive: true });
   let made = 0, skipped = 0, missing = 0, bad = 0;
   for (const entry of thumbJobs) {
-    const rel = entry[0], job = entry[1];
+    const job = entry[1], rel = job.src;
     try {
       if (!fs.existsSync(rel)) { missing++; continue; } // 本地无图（图片只存线上）→ 交给 onerror 兜底
       if (fs.existsSync(job.out) && fs.statSync(job.out).size > 0) { skipped++; continue; }
@@ -1215,7 +1215,7 @@ async function generateThumbs() {
       made++;
     } catch (e) { bad++; if (bad <= 5) console.warn('  thumb 失败:', rel, e.message); }
   }
-  console.log('thumb: 生成 ' + made + ' / 跳过(已存在) ' + skipped + ' / 源图本地缺失 ' + missing + ' / 失败 ' + bad);
+  console.log('thumb: 待生成 ' + thumbJobs.size + ' / 新生成 ' + made + ' / 跳过(已存在) ' + skipped + ' / 源图本地缺失 ' + missing + ' / 失败 ' + bad);
 }
 let HIDDEN = {};
 if (fs.existsSync('hidden.json')) {
