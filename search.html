@@ -317,7 +317,7 @@ function relTime(iso){
     var ic = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>';
     var dl = (g.links || []).map(function (l, i) {
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
-      return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
+      return '<a class="' + cls + '" href="' + esc(l.url || g.url || 'index.html') + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +

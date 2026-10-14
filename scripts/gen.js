@@ -1008,6 +1008,16 @@ function verify(days, index, searchIndex) {
 
   // #10：搜索索引每条必须有非空 url 且指向的帖子文件存在，否则点击搜索结果 404
   const noUrl = searchIndex.filter(g => !g.url);
+
+    // 2026-10-14（站长）：上面只查了"游戏页面地址"，没查"下载按钮的链接"。
+    // 按钮链接为空时，搜索页会拼出 href="undefined" → 点击跳到 /mrhyfx/undefined（404）。
+    // 这里补上按钮级检查：任何一条下载按钮没有链接，发布时就报错拦下。
+    const badLinks = [];
+    searchIndex.forEach(gg => (gg.links || []).forEach(l => {
+      const u = (typeof l === 'string') ? l : (l && l.url);
+      if (!u) badLinks.push((gg.url || '(无页面地址)') + ' / ' + ((l && l.label) || '(无名称)'));
+    }));
+    if (badLinks.length) errors.push('搜索索引有 ' + badLinks.length + ' 条下载按钮缺少链接（点开就是 /undefined），如：' + badLinks[0]);
   if (noUrl.length) errors.push(`search_index.json 有 ${noUrl.length} 条缺少 url，如：${noUrl[0].title}`);
   const urlFiles = new Set(searchIndex.filter(g => g.url).map(g => g.url));
   for (const u of urlFiles) {
