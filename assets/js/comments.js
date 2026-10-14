@@ -118,6 +118,9 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     document.getElementById('mrhx-cnum').textContent = totalCount() ? '（' + totalCount() + ' 条）' : '';
     function buildRow(c) {
       var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
+    // 2026-10-14（站长）组框用：给每行打上「我是谁 / 我回复谁」，供渲染后的归组步骤使用
+    if (c.id) row.setAttribute('data-cid', c.id);
+    if (c.pid) row.setAttribute('data-pid', c.pid);
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -364,4 +367,68 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     }).catch(function (e) { var m = String((e && e.message) || e); alert(/fetch|network|Failed|Load|timeout/i.test(m) ? '发送失败：请检查网络，或开启 VPN（梯子）后重试' : '发送失败：' + m); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   load();
+})();
+
+
+/* ===== 2026-10-14（站长）父评论和它的回复套进同一个框 =====
+   背景：回复一直是「平铺的兄弟节点 + 行内缩进」，站长去掉缩进后分不清谁回复谁，
+         要求「父评论和子评论需要有一个框把它们框起来」。
+   做法：不动渲染函数（里面有序 / 置顶 / 补拉父评论 / 多级深度，改错会丢评论），
+         只在渲染完成后归组：把每条回复搬进它所属讨论组的组盒里。
+   安全：整段 try/catch；出错最坏只是「框没套上」，不会丢评论、不会错序。
+         组盒 + 已搬的行都带标记，重复扫描不会来回搬（观察器有次数保险）。 */
+(function () {
+  var timer = null, passes = 0, obs = null;
+  function rowMap(list) {
+    var m = {}, rows = list.querySelectorAll('.mrhx-citem');
+    for (var i = 0; i < rows.length; i++) { var id = rows[i].getAttribute('data-cid'); if (id) m[id] = rows[i]; }
+    return m;
+  }
+  function rootOf(row, m) {
+    var seen = {}, cur = row, pid = row.getAttribute('data-pid');
+    while (pid && m[pid] && !seen[pid]) { seen[pid] = 1; cur = m[pid]; pid = cur.getAttribute('data-pid'); }
+    return cur;
+  }
+  function regroup() {
+    var list = document.getElementById('mrhx-clist');
+    if (!list) return;
+    var m = rowMap(list);
+    var replies = list.querySelectorAll('.mrhx-creply-item[data-pid]:not([data-grouped])');
+    var groups = {}, order = [];
+    for (var i = 0; i < replies.length; i++) {
+      var r = replies[i], root = rootOf(r, m);
+      if (!root || root === r || !root.parentNode) continue;
+      var rid = root.getAttribute('data-cid') || ('k' + i);
+      if (!groups[rid]) { groups[rid] = { root: root, items: [] }; order.push(rid); }
+      groups[rid].items.push(r);
+    }
+    for (var k = 0; k < order.length; k++) {
+      var g = groups[order[k]], box, par = g.root.parentNode;
+      if (par && par.classList && par.classList.contains('mrhx-cgroup')) box = par;
+      else {
+        box = document.createElement('div'); box.className = 'mrhx-cgroup';
+        var hd0 = document.createElement('div'); hd0.className = 'mrhx-cgroup-hd'; hd0.textContent = '回复';
+        box.appendChild(hd0);
+        par.insertBefore(box, g.root.nextSibling);
+        box.appendChild(g.root);
+      }
+      for (var j = 0; j < g.items.length; j++) { g.items[j].setAttribute('data-grouped', '1'); box.appendChild(g.items[j]); }
+      var hd = box.querySelector('.mrhx-cgroup-hd');
+      if (hd) hd.textContent = '↳ ' + box.querySelectorAll('.mrhx-creply-item').length + ' 条回复';
+    }
+  }
+  function kick() {
+    if (timer) return;
+    timer = setTimeout(function () {
+      timer = null;
+      if (passes++ > 40) { if (obs) obs.disconnect(); return; }
+      try { regroup(); } catch (e) {}
+    }, 60);
+  }
+  function arm() {
+    var list = document.getElementById('mrhx-clist');
+    if (list && window.MutationObserver) { obs = new MutationObserver(kick); obs.observe(list, { childList: true }); }
+    kick();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
 })();

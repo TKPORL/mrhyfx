@@ -412,3 +412,12 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 .mrhx-comments h2{position:relative;display:flex;align-items:center;min-height:34px;margin-bottom:12px}
 .mrhx-comments h2 .mrhx-cfbar{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;margin:0;padding:0;background:none;box-shadow:none;pointer-events:none;z-index:6}
 .mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
+
+
+/* ===== 2026-10-14（站长）评论组框：父评论 + 它的回复 = 一个框 =====
+   组盒负责表达层级（取代左缩进），组内父/子评论仍保持同宽同底色（站长要的 UI 一致）。 */
+.mrhx-cgroup{background:#fcfbfa;border:1px solid #efeceb;border-radius:14px;padding:8px 8px 2px;margin:0 0 10px}
+.mrhx-cgroup .mrhx-cgroup-hd{font-size:11px;color:#a09590;margin:0 0 6px 2px;font-weight:500}
+.mrhx-cgroup > .mrhx-citem{margin-bottom:6px}
+.mrhx-cgroup .mrhx-creply-item{margin:0 0 6px}
+@media (max-width:720px){.mrhx-cgroup{padding:6px 6px 0;border-radius:12px}}
