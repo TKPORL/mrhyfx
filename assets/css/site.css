@@ -403,3 +403,12 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 /* 兜底：浏览器若还缓存着旧骨架（按钮是标题下方的独立块），也让它压在标题行正中 */
 .mrhx-comments .mrhx-cfbar{position:absolute;top:4px;left:0;right:0;bottom:auto;display:block;margin:0;padding:0;background:none;box-shadow:none;text-align:center;pointer-events:none;z-index:6}
 .mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
+
+
+/* ===== 2026-10-14（站长）：缩短评论与「评论区」字样叠在一起 =====
+   站长反馈：按钮和标题文字/评论列表叠在一起了，给的两种办法是"评论区往下降一降"或"按钮往上提一提"。
+   这里按第一种做：给标题行一个 34px 的固定高度（按钮在行内垂直居中），并让列表整体下移 12px。
+   这样按钮仍然和「评论区」同一行、仍然水平居中，但和上下内容都不再重叠。 */
+.mrhx-comments h2{position:relative;display:flex;align-items:center;min-height:34px;margin-bottom:12px}
+.mrhx-comments h2 .mrhx-cfbar{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;margin:0;padding:0;background:none;box-shadow:none;pointer-events:none;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
