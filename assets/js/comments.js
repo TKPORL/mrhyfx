@@ -278,7 +278,9 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
         flat.forEach(function(r) {
           var d = depthMap[r.id] || 1;
           var row = buildRow(r);
-          row.style.marginLeft = d > 0 ? '20px' : '';
+          // 2026-10-14（站长）：子评论原来靠行内 20px 左缩进表达层级，站长反馈"左边少了一截、看着不
+      //   顺眼"，要求父子 UI 一致 → 去掉缩进；层级改由评论顶部的「回复 @昵称」标记表达（本来就有）。
+      row.style.marginLeft = '';
           list.appendChild(row);
         });
       }

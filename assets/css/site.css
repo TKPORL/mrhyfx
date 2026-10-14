@@ -375,3 +375,14 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 .mrhx-comments{position:relative;padding-bottom:110px}
 .mrhx-comments .mrhx-cfbar{position:absolute;top:2px;right:0;bottom:auto;left:auto;margin:0;padding:0;text-align:right;background:none;box-shadow:none;pointer-events:auto;z-index:6}
 .mrhx-comments .mrhx-cfbar .mrhx-cfbtn{background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+
+/* ===== 2026-10-14（站长）父子评论 UI 一致 =====
+   原来：子评论 .mrhx-creply-item 是 width:auto + 粉色底 + 3px 粉色左边框 + 行内 20px 左缩进，
+        父评论 .mrhx-citem 是 width:100% + 白底 + 1px 灰边框 —— 两者像两个物种，且右边对齐、左边少一截。
+   现在：子评论与父评论同宽、同底(白)、同边框(1px 灰)、同圆角(10px)、同内边距，去掉缩进。
+        层级不改视觉差，改由顶部「回复 @昵称」标记表达（.mrhx-replyto 已有）。
+   注意：缩进是 comments.js 里的行内样式，所以必须同时改 JS，光改 CSS 无效。 */
+.mrhx-comments .mrhx-creply-item{width:100%;min-width:0;max-width:100%;background:#fff;border:1px solid #ecebe9;border-left:1px solid #ecebe9;border-radius:10px;padding:12px 14px;margin:0 0 6px}
+.mrhx-comments .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+@media (max-width:720px){.mrhx-comments .mrhx-creply-item{padding:8px 10px;margin:0 0 6px}}
