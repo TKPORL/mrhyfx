@@ -1018,7 +1018,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=cac51e39">
+<link rel="stylesheet" href="assets/css/site.css?v=4985d037">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image,.covers img,.gcard .cover img');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -1551,9 +1551,12 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
   // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
   function targetY() {
-    var el = document.querySelector('.mrhx-navrow') || document.getElementById('mrhx-comments');
+    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
+    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
+    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
     if (!el) return maxScroll();
-    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - 84, maxScroll());
+    var off = Math.min(Math.round((window.innerHeight || 800) * 0.3), 200);
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
   }
   // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
   //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
@@ -1733,51 +1736,6 @@ iOS端的适配实际上非常困难。综合来看，目前很难提供移动�
     if (e.target === modal || e.target === closeBtn || e.target === backBtn) closeModal();
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
-
-  // 2026-10-13 解压码/作弊码：从介绍里提取标记 → 生成「解压码」「作弊码」按钮（放在下载链接后面），点击即复制
-  (function () {
-    function mkBtn(label, code, cls) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'mrhx-code ' + cls;
-      b.setAttribute('data-code', code);
-      b.textContent = label;
-      return b;
-    }
-    document.querySelectorAll('.node.heading3').forEach(function (n) {
-      if (n.classList.contains('node-full')) return;
-      var nt = n.querySelector('.note.mm-editor');
-      if (!nt) return;
-      var sp = nt.querySelector(':scope > span') || nt;
-      var txt = sp.textContent || '';
-      var um = txt.match(/解压码[:：]s*([A-Za-z0-9]+)/);
-      var cm = txt.match(/作弊码[:：]s*([A-Za-z0-9]+)/);
-      if (!um && !cm) return;
-      // 标记从介绍正文里移除，避免重复显示
-      sp.innerHTML = sp.innerHTML.replace(/s*(?:解压码|作弊码)[:：]s*[A-Za-z0-9]+/g, '');
-      var box = document.createElement('div');
-      box.className = 'mrhx-codes';
-      if (um) box.appendChild(mkBtn('解压码', um[1], 'mrhx-code-u'));
-      if (cm) box.appendChild(mkBtn('作弊码', cm[1], 'mrhx-code-c'));
-      var dl = n.querySelector('.mrhx-dl');
-      if (dl) dl.insertAdjacentElement('afterend', box);
-      else nt.insertAdjacentElement('afterend', box);
-    });
-    document.addEventListener('click', function (e) {
-      var b = e.target && e.target.closest ? e.target.closest('.mrhx-code') : null;
-      if (!b) return;
-      e.preventDefault();
-      var code = b.getAttribute('data-code') || '';
-      var label = b.textContent;
-      var done = function () {
-        b.classList.add('ok'); b.textContent = '已复制：' + code;
-        setTimeout(function () { b.classList.remove('ok'); b.textContent = label; }, 2000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制' + label + '：', code); });
-      } else { window.prompt('复制' + label + '：', code); }
-    });
-  })();
 
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;

@@ -864,9 +864,12 @@ footer .disc-link:hover{text-decoration:underline}
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
   // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
   function targetY() {
-    var el = document.querySelector('.mrhx-navrow') || document.getElementById('mrhx-comments');
+    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
+    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
+    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
     if (!el) return maxScroll();
-    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - 84, maxScroll());
+    var off = Math.min(Math.round((window.innerHeight || 800) * 0.3), 200);
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
   }
   // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
   //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
