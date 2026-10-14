@@ -65,7 +65,7 @@
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
   /* 2026-10-13 解压码/作弊码按钮：在下载按钮行内，点击即复制（金黄/紫，虚线） */
-  .mrhx-unzip,.mrhx-cheat{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
+  .mrhx-unzip,.mrhx-cheat{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed;box-sizing:border-box;min-height:30px}
   .mrhx-unzip{background:#fffaf0;color:#b8860b;border-color:#e0a800}
   .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
   .mrhx-cheat{background:#EEEDFE;color:#534AB7;border-color:#7F77DD}
@@ -175,7 +175,10 @@
     .node{padding:12px;border-radius:12px}
     .node .bullet{display:none}
     .node .content{font-size:14px}
-    .mrhx-dl .mrhx-btn{flex:1 1 45%;max-width:48%;text-align:center;justify-content:center}
+    /* 下载行布局（2026-10-14 定稿）：行内所有按钮（下载 / 解压码 / 作弊码）由同一套规则管，
+   ★尺寸完全一致、一行两个自动换行，顺序即 DOM 顺序（下载 → 解压码 → 作弊码）。
+   4 个 = 2+2；3 个 = 2+1；2 个 = 同一行；1 个 = 半行宽（不拉满整行）。 */
+.mrhx-dl > *{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;text-align:center;flex:1 1 40%;max-width:calc(50% - 4px);min-width:0;min-height:30px}
     /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
     .mrhx-navrow{gap:6px}
     .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
@@ -193,9 +196,8 @@
     body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
     body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}
     body.mrhx-grid2 .node .exp-hint{margin:0 12px 12px}
-    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;max-width:48%;text-align:center;min-width:0;padding:6px 8px;font-size:12px;justify-content:center}
-body.mrhx-grid2 .mrhx-dl .mrhx-unzip,body.mrhx-grid2 .mrhx-dl .mrhx-cheat{padding:6px 10px;font-size:12px}
-    @media (max-width:380px){body.mrhx-grid2 .mrhx-dl .mrhx-btn{font-size:11px;padding:5px 4px}}
+    body.mrhx-grid2 .mrhx-dl > *{padding:6px 5px;font-size:12px}
+    @media (max-width:380px){body.mrhx-grid2 .mrhx-dl > *{font-size:11px;padding:5px 5px}}
     .image-list .image{max-width:100% !important}
   }
   .mrhx-comments{width:100%;max-width:100%;min-width:0;margin-top:24px;padding-top:16px;border-top:2px solid #ecebe9;box-sizing:border-box}
