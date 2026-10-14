@@ -155,7 +155,6 @@
   img.mrhx-img-loading{background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite}
   @keyframes mrhx-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
   @media (prefers-reduced-motion:reduce){img.mrhx-img-loading{animation:none}}
-  @keyframes mrhxSpin{to{transform:rotate(360deg)}}
   /* 901-1280 小窗/中屏：导航收紧间距防截断（与 gen.js NAV_CSS 同步维护） */
   @media (min-width:901px) and (max-width:1280px){
     .hd-bar{gap:10px}

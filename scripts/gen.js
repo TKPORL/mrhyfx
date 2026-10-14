@@ -1462,17 +1462,19 @@ html = (function reorderNodes(str) {
             '<li class="mrhx-announce"><div class="mra-t">' + ctA[1] + '</div><div class="mra-b">' + ntA[1] + '</div></li>');
         }
       }
-      // 2026-10-14：公告块自愈。后台「发布求助贴」会重建 node-list，把 li.mrhx-announce 元素洗掉
-      //   （2026-10-11 06:39「发布: 求助贴」就是这么整块丢的：页面只剩 CSS，公告随之消失）。
-      //   这里按 site.json 的 announcement 幂等补回——源里没有就插到 node-list 最前；已有则原样保留
-      //   （站长手改 .mra-b 文案不被覆盖）。与首页公告弹窗同源，后台改一次全站一致。
-      if (!/<li class="mrhx-announce">/.test(qztInner) &&
-          SITE.announcement && SITE.announcement.enabled !== false &&
-          SITE.announcement.lines && SITE.announcement.lines.length) {
+      // 2026-10-14：求助帖公告块自愈 + 校正。后台「发布求助贴」会重建 node-list，把 li.mrhx-announce 洗掉
+      //   （2026-10-11 06:39「发布: 求助贴」就是这么整块丢的）。注意：求助帖公告与首页弹窗公告是
+      //   **两份不同文案**，唯一真源是 qzt-announce.json（不是 site.json.announcement）。
+      //   每次都用它重建：源里没有就插到最前，已有则先删再插——幂等，且能自动纠正历史错误内容。
+      let qztAnn = null;
+      try { if (fs.existsSync('qzt-announce.json')) qztAnn = readJson('qzt-announce.json'); }
+      catch (e) { console.warn('qzt-announce.json 解析失败，忽略'); }
+      if (qztAnn && qztAnn.lines && qztAnn.lines.length) {
+        qztInner = qztInner.replace(/<li class="mrhx-announce">[\s\S]*?<\/li>\s*/g, '');
         qztInner = '<li class="mrhx-announce"><div class="mra-t">' +
-          String(SITE.announcement.title || '公告').replace(/^【|】$/g, '') +
+          String(qztAnn.title || '求助公告') +
           '</div><div class="mra-b"><span>' +
-          SITE.announcement.lines.join('\n') + '</span></div></li>\n' + qztInner;
+          qztAnn.lines.join('\n') + '</span></div></li>\n' + qztInner;
       }
     }
     return prefix + '<ul class="node-list">\n' + qztInner + '\n  </ul>' + suffix;
