@@ -91,12 +91,10 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     folded = true; applyFold();
   };
   if (moreBtnEl) moreBtnEl.onclick = function () {
-    // 底部按钮：一次性拉全部
+    // 底部按钮：每次再拉 20 条（2026-10-15 站长定稿：不再一次拉全量，省数据库读取——推广后流量上来也扛得住）
+    //   2026-10-14 修的「增量全量拉取不出现空白」继续有效：非 reset 路径本来就是增量 concat，界面不闪。
     moreBtnEl.disabled = true; moreBtnEl.textContent = '加载中…';
-    // 2026-10-14 修：原来传 reset=true → 会走 list.innerHTML='评论加载中...' 把已有评论全抹掉再重建，
-    //   视觉上"评论突然全没了、再刷一下"（站长反馈：很着急的样子）。改成增量全量拉取：all 被全量
-    //   替换后原样重渲染，界面不出现空白；loading 由按钮自己的「加载中…」承担。
-    fetchPage(false, true);
+    fetchPage(false);
   };
   var all = [];
   // 两段式分页：首次拉 20 条（秒开）；展开后点「加载更多评论」一次拉全部
@@ -323,17 +321,18 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
           // 2026-10-11 排序修复：首屏补拉「被回复的父评论」。
           //   回复是新的、但父评论很老，父评论排不进第一页 → 补进来后由前端按
           //   「最后活动时间」排序，被回复的评论就能浮到最前（站长要的效果）。
-          if (reset) {
-            var have = {};
-            all.forEach(function (c) { have[c.id] = 1; });
-            var missing = [];
-            d.forEach(function (c) { if (c.pid && !have[c.pid]) missing.push(c.pid); });
-            if (missing.length) {
-              var uniq = missing.filter(function (v, i, a) { return a.indexOf(v) === i; });
-              return fetch(SB + '/rest/v1/comments?id=in.(' + uniq.map(encodeURIComponent).join(',') + ')&select=id,pid,nick,email,is_admin,pinned,content,created_at', { headers: headers() })
-                .then(function (r2) { return r2.ok ? r2.json() : []; })
-                .then(function (extra) { all = dedupe(all.concat(extra || [])); render(); });
-            }
+          //   2026-10-15 改：从「只在首屏补」改为「每页都补」——分页后第 2 页回复的
+          //   父评论可能落在更早的页或还没加载的区间，不补的话回复行出不了
+          //   「回复 @谁」标签、也归不进组盒。
+          var have = {};
+          all.forEach(function (c) { have[c.id] = 1; });
+          var missing = [];
+          all.forEach(function (c) { if (c.pid && !have[c.pid]) missing.push(c.pid); });
+          if (missing.length) {
+            var uniq = missing.filter(function (v, i, a) { return a.indexOf(v) === i; });
+            return fetch(SB + '/rest/v1/comments?id=in.(' + uniq.map(encodeURIComponent).join(',') + ')&select=id,pid,nick,email,is_admin,pinned,content,created_at', { headers: headers() })
+              .then(function (r2) { return r2.ok ? r2.json() : []; })
+              .then(function (extra) { all = dedupe(all.concat(extra || [])); render(); });
           }
           all = dedupe(all);
         }

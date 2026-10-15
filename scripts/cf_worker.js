@@ -55,6 +55,8 @@ function corsBase(request) {
   if (o && allow.includes(o)) headers['Access-Control-Allow-Origin'] = o;
   headers['Access-Control-Allow-Headers'] = 'Content-Type, apikey, Authorization, X-Admin-Token, Prefer';
   headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS';
+  // 前端要读 Content-Range（评论总数），不暴露的话浏览器 JS 拿不到
+  headers['Access-Control-Expose-Headers'] = 'Content-Range, X-Data-Source';
   return headers;
 }
 function jok(data, status = 200) { return jres(data, status); }
@@ -213,7 +215,7 @@ async function sbFallbackList(request, table) {
   let rows = await r.json();
   const isAdmin = await adminOk(request, ENVREF);
   if (!isAdmin) rows = stripPrivate(table, rows);
-  return jres(rows, 200, table === 'comments' ? 30 : 0, { 'X-Data-Source': 'supabase-fallback' });
+  return jres(rows, 200, table === 'comments' ? 60 : 0, { 'X-Data-Source': 'supabase-fallback' });
 }
 async function listTable(request, env, table) {
   const u = new URL(request.url);
@@ -234,7 +236,14 @@ async function listTable(request, env, table) {
   }
   const isAdmin = await adminOk(request, env);
   if (!isAdmin) rows = stripPrivate(table, rows);
-  return jres(rows, 200, table === 'comments' ? 30 : 0);
+  // 2026-10-15：补真实总数（content-range，PostgREST 兼容形状 0-{页长-1}/{总数}）。
+  //   comments.js 靠它显示「共 N 条」并判断还有没有下一页——分页化之后没有它只能显示已加载数。
+  let extra;
+  try {
+    const c = await env.DB.prepare(`SELECT COUNT(*) n FROM ${table}${where}`).bind(...args).first();
+    extra = { 'Content-Range': '0-' + Math.max(0, (rows.length || 1) - 1) + '/' + (c.n || 0) };
+  } catch (e) { /* 总数拿不到不影响列表 */ }
+  return jres(rows, 200, table === 'comments' ? 60 : 0, extra);
 }
 
 /* ---------- RPC 实现 ---------- */
