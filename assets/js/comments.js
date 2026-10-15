@@ -2,7 +2,7 @@
  * 唯一真相在本文件；由 scripts/gen.js 旧评论模板逐字迁移而来。
  * 页面在引用本文件之前内联配置：window.MRHXC = { sb, key, ns, path }；
  * 评论区 DOM 骨架（MRHX_SKELETON）由本脚本注入到自身标签之前。 */
-var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrhx-comments\">\n  <h2>评论区<span class=\"mrhx-cnum\" id=\"mrhx-cnum\"></span></h2>\n  <div class=\"mrhx-cfbar\" id=\"mrhx-cfbar\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfbar-btn\">缩短评论</button></div>\n  <div class=\"mrhx-cfold-wrap\" id=\"mrhx-cfold-wrap\">\n    <div id=\"mrhx-clist\"></div>\n    <div class=\"mrhx-cfold-mask\" id=\"mrhx-cfold-mask\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfold-btn\">展开评论</button></div>\n  </div>\n  <div class=\"mrhx-cmore-wrap\" id=\"mrhx-cmore-wrap\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cmore-btn\">加载更多评论</button></div>\n  <form id=\"mrhx-cform\" class=\"mrhx-cform\">\n    <div style=\"position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden\" aria-hidden=\"true\">\n      <label>请不要填写此栏<input type=\"text\" id=\"mrhx-hp\" name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label>\n    </div>\n    <div class=\"mrhx-cform-title\">💬 发表评论</div>\n    <div class=\"mrhx-crow\">\n      <input type=\"text\" id=\"mrhx-nick\" placeholder=\"昵称\" maxlength=\"30\" required>\n      <input type=\"email\" id=\"mrhx-mail\" placeholder=\"常用邮箱（站长回复会发到这里）\" required>\n    </div>\n    <textarea id=\"mrhx-ctext\" placeholder=\"友善评论，请支持正版…\" maxlength=\"2000\" required></textarea>\n    <div class=\"mrhx-crow mrhx-csub\">\n      <span id=\"mrhx-creply\" class=\"mrhx-creply\"></span>\n      <button type=\"submit\">发表评论</button>\n    </div>\n  </form>\n</div>\n<div class=\"mrhx-cpop\" id=\"mrhx-cpop\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mrhx-cpop-title\">\n  <div class=\"mrhx-cpop-box\">\n    <h3 id=\"mrhx-cpop-title\">邮箱填写提示</h3>\n    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>\n    <button type=\"button\" class=\"mrhx-cpop-ok\" id=\"mrhx-cpop-ok\">知道了</button>\n  </div>\n</div>";
+var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrhx-comments\">\n  <h2>评论区<span class=\"mrhx-cnum\" id=\"mrhx-cnum\"></span><span class=\"mrhx-cfbar\" id=\"mrhx-cfbar\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfbar-btn\">缩短评论</button></span></h2>\n  \n  <div class=\"mrhx-cfold-wrap\" id=\"mrhx-cfold-wrap\">\n    <div id=\"mrhx-clist\"></div>\n    <div class=\"mrhx-cfold-mask\" id=\"mrhx-cfold-mask\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfold-btn\">展开评论</button></div>\n  </div>\n  <div class=\"mrhx-cmore-wrap\" id=\"mrhx-cmore-wrap\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cmore-btn\">加载更多评论</button></div>\n  <form id=\"mrhx-cform\" class=\"mrhx-cform\">\n    <div style=\"position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden\" aria-hidden=\"true\">\n      <label>请不要填写此栏<input type=\"text\" id=\"mrhx-hp\" name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label>\n    </div>\n    <div class=\"mrhx-cform-title\">💬 发表评论</div>\n    <div class=\"mrhx-crow\">\n      <input type=\"text\" id=\"mrhx-nick\" placeholder=\"昵称\" maxlength=\"30\" required>\n      <input type=\"email\" id=\"mrhx-mail\" placeholder=\"常用邮箱（站长回复会发到这里）\" required>\n    </div>\n    <textarea id=\"mrhx-ctext\" placeholder=\"友善评论，请支持正版…\" maxlength=\"2000\" required></textarea>\n    <div class=\"mrhx-crow mrhx-csub\">\n      <span id=\"mrhx-creply\" class=\"mrhx-creply\"></span>\n      <button type=\"submit\">发表评论</button>\n    </div>\n  </form>\n</div>\n<div class=\"mrhx-cpop\" id=\"mrhx-cpop\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mrhx-cpop-title\">\n  <div class=\"mrhx-cpop-box\">\n    <h3 id=\"mrhx-cpop-title\">邮箱填写提示</h3>\n    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>\n    <button type=\"button\" class=\"mrhx-cpop-ok\" id=\"mrhx-cpop-ok\">知道了</button>\n  </div>\n</div>";
 (function () {
   var C = window.MRHXC || {};
   if (!C.sb || !C.key || !C.path) return;
@@ -23,8 +23,28 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   var moreWrap = document.getElementById('mrhx-cmore-wrap');
   var moreBtnEl = document.getElementById('mrhx-cmore-btn');
   var folded = true;
+  var lastFolded = null;   // 2026-10-14：首次渲染不动画，只在用户真的切换折叠态时过渡
   // #39：折叠阈值由页面配置 MRHXC.fold 下发（site.json comments.foldThreshold，默认 6）
   var FOLD_MIN = (C.fold > 0 ? C.fold : 6);
+  // 2026-10-14：展开/收起加过渡。CSS 的 max-height 在 280px↔none 之间跳无法过渡，
+  //   所以 JS 先把 max-height 钉到当前真实高度(scrollHeight)，下一帧再改目标值 → 平滑；
+  //   展开动画结束后必须放开 max-height:none，否则长评论区会被永久截断。
+  function animateFold() {
+    if (!foldWrap) return;
+    var changed = (lastFolded !== null && lastFolded !== folded);
+    lastFolded = folded;
+    if (!changed) return;
+    var h = foldWrap.scrollHeight;
+    foldWrap.style.overflow = 'hidden';
+    foldWrap.style.maxHeight = h + 'px';
+    if (folded) {
+      requestAnimationFrame(function () { requestAnimationFrame(function () { foldWrap.style.maxHeight = '280px'; }); });
+    } else {
+      var off = function (e) { if (e && e.target !== foldWrap) return; foldWrap.style.maxHeight = 'none'; foldWrap.style.overflow = ''; foldWrap.removeEventListener('transitionend', off); };
+      foldWrap.addEventListener('transitionend', off);
+      setTimeout(off, 520);
+    }
+  }
   function applyFold() {
     if (!foldWrap) return;
     var need = all.length > FOLD_MIN;
@@ -39,14 +59,16 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       foldWrap.classList.add('mrhx-cfolded');
       foldMask.classList.add('mrhx-cfold-show');
       foldBtn.textContent = '展开评论（' + totalCount() + ' 条）';
+      animateFold();
       if (cfbar) cfbar.style.display = 'none';
       if (moreWrap) moreWrap.style.display = 'none';
     } else {
       foldWrap.classList.remove('mrhx-cfolded');
       foldMask.classList.remove('mrhx-cfold-show');
+      animateFold();
       // 顶部 cfbar 只显示「缩短评论」
       if (cfbar) {
-        cfbar.style.display = 'block';
+        cfbar.style.display = 'inline-block'; // 2026-10-14：容器变成 h2 里的 span，必须是 inline-block
         if (cfbarBtn) { cfbarBtn.disabled = false; cfbarBtn.textContent = '缩短评论'; }
       }
       // 底部 more-wrap：还有未加载→「加载更多评论」；已全量→隐藏
@@ -71,7 +93,10 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
   if (moreBtnEl) moreBtnEl.onclick = function () {
     // 底部按钮：一次性拉全部
     moreBtnEl.disabled = true; moreBtnEl.textContent = '加载中…';
-    fetchPage(true, true);
+    // 2026-10-14 修：原来传 reset=true → 会走 list.innerHTML='评论加载中...' 把已有评论全抹掉再重建，
+    //   视觉上"评论突然全没了、再刷一下"（站长反馈：很着急的样子）。改成增量全量拉取：all 被全量
+    //   替换后原样重渲染，界面不出现空白；loading 由按钮自己的「加载中…」承担。
+    fetchPage(false, true);
   };
   var all = [];
   // 两段式分页：首次拉 20 条（秒开）；展开后点「加载更多评论」一次拉全部
@@ -93,6 +118,9 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     document.getElementById('mrhx-cnum').textContent = totalCount() ? '（' + totalCount() + ' 条）' : '';
     function buildRow(c) {
       var row = h('div', 'mrhx-citem' + (c.is_admin ? ' mrhx-citem-admin' : '') + (c.pid ? ' mrhx-creply-item' : ''));
+    // 2026-10-14（站长）组框用：给每行打上「我是谁 / 我回复谁」，供渲染后的归组步骤使用
+    if (c.id) row.setAttribute('data-cid', c.id);
+    if (c.pid) row.setAttribute('data-pid', c.pid);
       var head = h('div', 'mrhx-chead');
       head.appendChild(h('span', 'mrhx-cav' + (c.is_admin ? ' mrhx-cav-admin' : ''), String(c.nick || '匿')[0].toUpperCase()));
       var meta = h('div', 'mrhx-cmeta');
@@ -253,7 +281,9 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
         flat.forEach(function(r) {
           var d = depthMap[r.id] || 1;
           var row = buildRow(r);
-          row.style.marginLeft = d > 0 ? '20px' : '';
+          // 2026-10-14（站长）：子评论原来靠行内 20px 左缩进表达层级，站长反馈"左边少了一截、看着不
+      //   顺眼"，要求父子 UI 一致 → 去掉缩进；层级改由评论顶部的「回复 @昵称」标记表达（本来就有）。
+      row.style.marginLeft = '';
           list.appendChild(row);
         });
       }
@@ -337,4 +367,68 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     }).catch(function (e) { var m = String((e && e.message) || e); alert(/fetch|network|Failed|Load|timeout/i.test(m) ? '发送失败：请检查网络，或开启 VPN（梯子）后重试' : '发送失败：' + m); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   load();
+})();
+
+
+/* ===== 2026-10-14（站长）父评论和它的回复套进同一个框 =====
+   背景：回复一直是「平铺的兄弟节点 + 行内缩进」，站长去掉缩进后分不清谁回复谁，
+         要求「父评论和子评论需要有一个框把它们框起来」。
+   做法：不动渲染函数（里面有序 / 置顶 / 补拉父评论 / 多级深度，改错会丢评论），
+         只在渲染完成后归组：把每条回复搬进它所属讨论组的组盒里。
+   安全：整段 try/catch；出错最坏只是「框没套上」，不会丢评论、不会错序。
+         组盒 + 已搬的行都带标记，重复扫描不会来回搬（观察器有次数保险）。 */
+(function () {
+  var timer = null, passes = 0, obs = null;
+  function rowMap(list) {
+    var m = {}, rows = list.querySelectorAll('.mrhx-citem');
+    for (var i = 0; i < rows.length; i++) { var id = rows[i].getAttribute('data-cid'); if (id) m[id] = rows[i]; }
+    return m;
+  }
+  function rootOf(row, m) {
+    var seen = {}, cur = row, pid = row.getAttribute('data-pid');
+    while (pid && m[pid] && !seen[pid]) { seen[pid] = 1; cur = m[pid]; pid = cur.getAttribute('data-pid'); }
+    return cur;
+  }
+  function regroup() {
+    var list = document.getElementById('mrhx-clist');
+    if (!list) return;
+    var m = rowMap(list);
+    var replies = list.querySelectorAll('.mrhx-creply-item[data-pid]:not([data-grouped])');
+    var groups = {}, order = [];
+    for (var i = 0; i < replies.length; i++) {
+      var r = replies[i], root = rootOf(r, m);
+      if (!root || root === r || !root.parentNode) continue;
+      var rid = root.getAttribute('data-cid') || ('k' + i);
+      if (!groups[rid]) { groups[rid] = { root: root, items: [] }; order.push(rid); }
+      groups[rid].items.push(r);
+    }
+    for (var k = 0; k < order.length; k++) {
+      var g = groups[order[k]], box, par = g.root.parentNode;
+      if (par && par.classList && par.classList.contains('mrhx-cgroup')) box = par;
+      else {
+        box = document.createElement('div'); box.className = 'mrhx-cgroup';
+        var hd0 = document.createElement('div'); hd0.className = 'mrhx-cgroup-hd'; hd0.textContent = '回复';
+        box.appendChild(hd0);
+        par.insertBefore(box, g.root.nextSibling);
+        box.appendChild(g.root);
+      }
+      for (var j = 0; j < g.items.length; j++) { g.items[j].setAttribute('data-grouped', '1'); box.appendChild(g.items[j]); }
+      var hd = box.querySelector('.mrhx-cgroup-hd');
+      if (hd) hd.textContent = box.querySelectorAll('.mrhx-creply-item').length + ' 条回复';
+    }
+  }
+  function kick() {
+    if (timer) return;
+    timer = setTimeout(function () {
+      timer = null;
+      if (passes++ > 40) { if (obs) obs.disconnect(); return; }
+      try { regroup(); } catch (e) {}
+    }, 60);
+  }
+  function arm() {
+    var list = document.getElementById('mrhx-clist');
+    if (list && window.MutationObserver) { obs = new MutationObserver(kick); obs.observe(list, { childList: true }); }
+    kick();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
 })();

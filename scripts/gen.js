@@ -170,6 +170,16 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 #mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
 .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+/* 2026-10-14（站长）顶栏按钮加文字备注（第二版）：
+   第一版把按钮改成"图标+文字"的胶囊，站长说太怪 —— 改回原样：
+   圆形图标按钮完全不动，只在图标下方加一行 10px 小字（放大镜下「搜索」、三点下「菜单」）。 */
+.hd-bar .icon-btn{position:relative}
+.hd-bar .icon-btn .ico-label{display:none}
+@media (max-width:540px){
+  .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
+  .hd-bar .acts{margin-bottom:12px}
+}
+
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
 .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -231,6 +241,7 @@ ${navLinksHtml('    ', current, false)}
   <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+      <span class="ico-label">搜索</span>
     </button>
     <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
       <svg viewBox="0 0 24 24" style="stroke:none">
@@ -238,6 +249,7 @@ ${navLinksHtml('    ', current, false)}
         <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
         <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
       </svg>
+      <span class="ico-label">菜单</span>
     </button>
   </div>
 </div>
@@ -566,51 +578,6 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
 
-  // 2026-10-13 解压码/作弊码：从介绍里提取标记 → 生成「解压码」「作弊码」按钮（放在下载链接后面），点击即复制
-  (function () {
-    function mkBtn(label, code, cls) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'mrhx-code ' + cls;
-      b.setAttribute('data-code', code);
-      b.textContent = label;
-      return b;
-    }
-    document.querySelectorAll('.node.heading3').forEach(function (n) {
-      if (n.classList.contains('node-full')) return;
-      var nt = n.querySelector('.note.mm-editor');
-      if (!nt) return;
-      var sp = nt.querySelector(':scope > span') || nt;
-      var txt = sp.textContent || '';
-      var um = txt.match(/解压码[:：]\s*([A-Za-z0-9]+)/);
-      var cm = txt.match(/作弊码[:：]\s*([A-Za-z0-9]+)/);
-      if (!um && !cm) return;
-      // 标记从介绍正文里移除，避免重复显示
-      sp.innerHTML = sp.innerHTML.replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '');
-      var box = document.createElement('div');
-      box.className = 'mrhx-codes';
-      if (um) box.appendChild(mkBtn('解压码', um[1], 'mrhx-code-u'));
-      if (cm) box.appendChild(mkBtn('作弊码', cm[1], 'mrhx-code-c'));
-      var dl = n.querySelector('.mrhx-dl');
-      if (dl) dl.insertAdjacentElement('afterend', box);
-      else nt.insertAdjacentElement('afterend', box);
-    });
-    document.addEventListener('click', function (e) {
-      var b = e.target && e.target.closest ? e.target.closest('.mrhx-code') : null;
-      if (!b) return;
-      e.preventDefault();
-      var code = b.getAttribute('data-code') || '';
-      var label = b.textContent;
-      var done = function () {
-        b.classList.add('ok'); b.textContent = '已复制：' + code;
-        setTimeout(function () { b.classList.remove('ok'); b.textContent = label; }, 2000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制' + label + '：', code); });
-      } else { window.prompt('复制' + label + '：', code); }
-    });
-  })();
-
   document.querySelectorAll('.node.heading3').forEach(function (n) {
     if (n.classList.contains('node-full')) return;
     var img = n.querySelector('.image-list img');
@@ -649,7 +616,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
       // 2026-10-13 图片：卡片只显示封面，其余图在弹窗里看（封面在顶部，其余排成图集）
       if (coverBox && imgsBox) {
         var _urls = Array.prototype.map.call(n.querySelectorAll('.image-list img'), function (i) {
-          return i.getAttribute('src') || i.getAttribute('data-src') || '';
+          return i.getAttribute('data-full') || i.getAttribute('src') || i.getAttribute('data-src') || '';
         }).filter(Boolean);
         // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
         coverBox.innerHTML = ''; imgsBox.innerHTML = '';
@@ -692,9 +659,15 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
   // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
   function targetY() {
-    var el = document.querySelector('.mrhx-navrow') || document.getElementById('mrhx-comments');
+    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
+    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
+    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
     if (!el) return maxScroll();
-    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - 84, maxScroll());
+    // 2026-10-14（站长实测反馈）：原来留视口 30%（最多 200px）会导致"钳到页面最底"时正好把
+    //   发表评论表单切在屏幕底边。改成小偏移：让"评论区"标题落在靠近顶部，整段评论区完整可见；
+    //   配合 site.css 给评论区加的底部留白，评论区后面有落脚空间。
+    var off = Math.min(Math.round((window.innerHeight || 800) * 0.08), 72);
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
   }
   // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
   //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
@@ -1035,6 +1008,16 @@ function verify(days, index, searchIndex) {
 
   // #10：搜索索引每条必须有非空 url 且指向的帖子文件存在，否则点击搜索结果 404
   const noUrl = searchIndex.filter(g => !g.url);
+
+    // 2026-10-14（站长）：上面只查了"游戏页面地址"，没查"下载按钮的链接"。
+    // 按钮链接为空时，搜索页会拼出 href="undefined" → 点击跳到 /mrhyfx/undefined（404）。
+    // 这里补上按钮级检查：任何一条下载按钮没有链接，发布时就报错拦下。
+    const badLinks = [];
+    searchIndex.forEach(gg => (gg.links || []).forEach(l => {
+      const u = (typeof l === 'string') ? l : (l && l.url);
+      if (!u) badLinks.push((gg.url || '(无页面地址)') + ' / ' + ((l && l.label) || '(无名称)'));
+    }));
+    if (badLinks.length) errors.push('搜索索引有 ' + badLinks.length + ' 条下载按钮缺少链接（点开就是 /undefined），如：' + badLinks[0]);
   if (noUrl.length) errors.push(`search_index.json 有 ${noUrl.length} 条缺少 url，如：${noUrl[0].title}`);
   const urlFiles = new Set(searchIndex.filter(g => g.url).map(g => g.url));
   for (const u of urlFiles) {
@@ -1051,7 +1034,6 @@ function verify(days, index, searchIndex) {
   }
   console.log('✅ 发布自检通过:', days.length, '个帖子');
 }
-
 
 // compress all existing images in assets/ to webp (quality 80)
 async function compressExistingAssets() {
@@ -1141,6 +1123,111 @@ async function cleanupMarkedRawImages() {
 // （已撤销 #14 缩略图生成：站长要求图片恢复直连原图；t_ 文件已从仓库删除）
 async function makeThumb() { return false; }
 
+// ===== 缩略图（2026-10-14）: 列表页用小图，弹窗仍看原图 =====
+// 做法：<img src> 换成 assets/thumb/<name>@<w>x<h>.webp，原图 URL 存 data-full，
+//   并挂 onerror 兜底（缩略图缺失/失效 → 自动退回原图，绝不出现 404 空白）。
+//   介绍弹窗改读 data-full（见 nodeExpandScript），所以点开看大图仍是原图。
+//   尺寸：首页帖卡格子 60×60 → 120×120；帖子页卡片格子约 235×176 → 360×270。
+const THUMB_SIZES = { home: [120, 120], post: [360, 270] };
+const thumbJobs = new Map(); // 输出路径 -> { src, w, h, out }（★按输出路径去重：同一原图可同时要 120/360 两种尺寸，用原图路径当 key 会互相覆盖）
+
+function thumbUrlOf(url, kind) {
+  const i = url.indexOf('/assets/');
+  if (i < 0) return null;
+  const rel = url.slice(i + 1).split(/[?#]/)[0];
+  if (rel.indexOf('assets/thumb/') === 0) return null; // 幂等：别把缩略图再缩一次
+  const size = THUMB_SIZES[kind];
+  const name = rel.replace(/^assets\//, '').replace(/\//g, '__').replace(/\.[^.]*$/, '');
+  const out = 'assets/thumb/' + name + '@' + size[0] + 'x' + size[1] + '.webp';
+  thumbJobs.set(out, { src: rel, w: size[0], h: size[1], out: out });
+  return url.slice(0, i + 1) + out;
+}
+
+function thumbifyImgTag(tag, kind) {
+  // 已经缩略图化过（src 已是 thumb）：只校正尺寸并登记任务，保持幂等
+  const dm0 = tag.match(/\sdata-full="([^"]+)"/);
+  const am0 = tag.match(/\s(?:data-)?src="([^"]+)"/);
+  if (dm0 && am0 && am0[1].indexOf("/assets/thumb/") >= 0) {
+    const want = thumbUrlOf(dm0[1], kind);
+    if (want && want !== am0[1]) return tag.replace(am0[1], want);
+    return tag;
+  }
+  let orig = null;
+  const out = tag.replace(/(\s(?:data-)?src)="([^"]+)"/g, function (m, attr, url) {
+    if (url.indexOf("/assets/") < 0) return m;
+    const t = thumbUrlOf(url, kind);
+    if (!t) return m;
+    if (!orig) orig = url;
+    return attr + '="' + t + '"';
+  });
+  if (!orig) return tag;
+  return out.replace(/^<img/i, '<img data-full="' + orig + '" onerror="this.onerror=null;this.src=this.dataset.full"');
+}
+
+function applyThumbs(html) {
+  // ① 首页帖卡右侧那排封面（无 class，靠 .covers 容器定位）
+  html = html.replace(/(<div class="covers">)([\s\S]*?)(<\/div>)/g, function (m, a, inner, c) {
+    return a + inner.replace(/<img\b[^>]*>/gi, function (t) { return thumbifyImgTag(t, 'home'); }) + c;
+  });
+  // ② 帖子页卡片主图（class 里含独立词 image）
+  html = html.replace(/<img\b[^>]*>/gi, function (t) {
+    const cm = t.match(/\bclass="([^"]*)"/);
+    const cls = cm ? cm[1].split(/\s+/) : [];
+    return cls.indexOf('image') >= 0 ? thumbifyImgTag(t, 'post') : t;
+  });
+  return html;
+}
+
+// ★从页面最终内容反推缩略图任务：页面可能已被上一轮改写并提交（幂等保护会跳过改写），
+//   若只把任务注册绑在「改写动作」上，缺失的缩略图将永远补不回来。这里按 src/data-src + data-full 反推。
+function collectThumbJobs(html) {
+  const RE = /<img\b[^>]*>/gi;
+  let m;
+  while ((m = RE.exec(html)) !== null) {
+    const tag = m[0];
+    const dm = tag.match(/\sdata-full="([^"]+)"/);
+    if (!dm) continue;
+    const i = dm[1].indexOf('/assets/');
+    if (i < 0) continue;
+    const rel = dm[1].slice(i + 1).split(/[?#]/)[0];
+    const am = tag.match(/\s(?:data-)?src="([^"]+)"/);
+    if (!am) continue;
+    const tm = am[1].match(/\/assets\/thumb\/(.+)@(\d+)x(\d+)\.webp/);
+    if (!tm) continue;
+    const out = 'assets/thumb/' + tm[1] + '@' + tm[2] + 'x' + tm[3] + '.webp';
+    thumbJobs.set(out, { src: rel, w: Number(tm[2]), h: Number(tm[3]), out: out });
+  }
+}
+
+async function applyThumbsToPages() {
+  const files = fs.readdirSync('.').filter(function (f) {
+    return f.endsWith('.html') && f !== 'Tsinhoht.html' && !/-preview\.html$/.test(f) && !f.startsWith('_');
+  });
+  let n = 0;
+  for (const f of files) {
+    const src = fs.readFileSync(f, 'utf8');
+    const out = applyThumbs(src);
+    if (out !== src) { fs.writeFileSync(f, out); n++; }
+    collectThumbJobs(out); // 已有 data-full 的页面同样登记任务，缺失的缩略图才能补生成
+  }
+  console.log('thumb: 改写页面 ' + n + '/' + files.length + '，待生成 ' + thumbJobs.size + ' 张');
+}
+
+async function generateThumbs() {
+  if (!thumbJobs.size) return;
+  fs.mkdirSync('assets/thumb', { recursive: true });
+  let made = 0, skipped = 0, missing = 0, bad = 0;
+  for (const entry of thumbJobs) {
+    const job = entry[1], rel = job.src;
+    try {
+      if (!fs.existsSync(rel)) { missing++; continue; } // 本地无图（图片只存线上）→ 交给 onerror 兜底
+      if (fs.existsSync(job.out) && fs.statSync(job.out).size > 0) { skipped++; continue; }
+      await sharp(rel).resize(job.w, job.h, { fit: 'cover' }).webp({ quality: 62, alphaQuality: 100, lossless: false }).toFile(job.out);
+      made++;
+    } catch (e) { bad++; if (bad <= 5) console.warn('  thumb 失败:', rel, e.message); }
+  }
+  console.log('thumb: 待生成 ' + thumbJobs.size + ' / 新生成 ' + made + ' / 跳过(已存在) ' + skipped + ' / 源图本地缺失 ' + missing + ' / 失败 ' + bad);
+}
 let HIDDEN = {};
 if (fs.existsSync('hidden.json')) {
   try { HIDDEN = readJson('hidden.json'); } catch (e) { console.warn('hidden.json 解析失败，忽略'); }
@@ -1341,7 +1428,6 @@ for (const file of files) {
       }
     }
 
-
     const iconRe = /(?:<link rel="icon"[^>]*>\s*<link rel="apple-touch-icon"[^>]*>\s*)+/g;    html = html.replace(iconRe, (m) => {
       const first = m.match(/<link rel="icon"[^>]*>/);
       const second = m.match(/<link rel="apple-touch-icon"[^>]*>/);
@@ -1462,17 +1548,19 @@ html = (function reorderNodes(str) {
             '<li class="mrhx-announce"><div class="mra-t">' + ctA[1] + '</div><div class="mra-b">' + ntA[1] + '</div></li>');
         }
       }
-      // 2026-10-14：公告块自愈。后台「发布求助贴」会重建 node-list，把 li.mrhx-announce 元素洗掉
-      //   （2026-10-11 06:39「发布: 求助贴」就是这么整块丢的：页面只剩 CSS，公告随之消失）。
-      //   这里按 site.json 的 announcement 幂等补回——源里没有就插到 node-list 最前；已有则原样保留
-      //   （站长手改 .mra-b 文案不被覆盖）。与首页公告弹窗同源，后台改一次全站一致。
-      if (!/<li class="mrhx-announce">/.test(qztInner) &&
-          SITE.announcement && SITE.announcement.enabled !== false &&
-          SITE.announcement.lines && SITE.announcement.lines.length) {
+      // 2026-10-14：求助帖公告块自愈 + 校正。后台「发布求助贴」会重建 node-list，把 li.mrhx-announce 洗掉
+      //   （2026-10-11 06:39「发布: 求助贴」就是这么整块丢的）。注意：求助帖公告与首页弹窗公告是
+      //   **两份不同文案**，唯一真源是 qzt-announce.json（不是 site.json.announcement）。
+      //   每次都用它重建：源里没有就插到最前，已有则先删再插——幂等，且能自动纠正历史错误内容。
+      let qztAnn = null;
+      try { if (fs.existsSync('qzt-announce.json')) qztAnn = readJson('qzt-announce.json'); }
+      catch (e) { console.warn('qzt-announce.json 解析失败，忽略'); }
+      if (qztAnn && qztAnn.lines && qztAnn.lines.length) {
+        qztInner = qztInner.replace(/<li class="mrhx-announce">[\s\S]*?<\/li>\s*/g, '');
         qztInner = '<li class="mrhx-announce"><div class="mra-t">' +
-          String(SITE.announcement.title || '公告').replace(/^【|】$/g, '') +
+          String(qztAnn.title || '求助公告') +
           '</div><div class="mra-b"><span>' +
-          SITE.announcement.lines.join('\n') + '</span></div></li>\n' + qztInner;
+          qztAnn.lines.join('\n') + '</span></div></li>\n' + qztInner;
       }
     }
     return prefix + '<ul class="node-list">\n' + qztInner + '\n  </ul>' + suffix;
@@ -1488,7 +1576,7 @@ html = (function reorderNodes(str) {
     const bar = `<header>
 ${navHeaderHtml('')}
 </header>`;
-    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n${SMOOTH_SCRIPTS}\n<!--mrhx-end-->`;
+    const injected = `<!--mrhx-->\n<link rel="stylesheet" href="assets/css/site.css?v=${CSS_VER}">\n<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image,.covers img,.gcard .cover img');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>\n${bar}\n<script src="assets/js/nav.js?v=${NAVJS_VER}"></script>\n${SMOOTH_SCRIPTS}\n<!--mrhx-end-->`;
     // Add lang="zh-CN" to <html> if missing
     html = html.replace(/<html(?![^>]*\slang)/i, '<html lang="zh-CN"');
     html = html.replace(/<body([^>]*)>/, (m, a) => a.includes('class') ? m : `<body class="narrow">`);
@@ -1537,6 +1625,9 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
     html = html.replace(/<script src="assets\/js\/cdn-fallback\.js" defer><\/script>\s*/g, '');
+    // 幂等（2026-10-14 补）：copycode.js 标签此前只插不清，每次 gen 都再追加一个
+    //   （实测 qzt 21 个、20261011pc 74 个）。重复 <script> = 重复 click 监听 → 复制文案卡住。
+    html = html.replace(/\s*<script src="assets\/js\/copycode\.js\?v=[0-9a-f]*"><\/script>/g, '');
     // 帖子页/qzt 不加任何 footer（保持加免责声明之前的原样）——但要清掉历史注入的副本
     html = html.replace(/<footer class="mrhx-foot">[\s\S]*?<\/footer>\s*/g, '');
     html = html.replace('</body>', `  ${topBtn}${commentBlock ? '\n  ' + commentBlock : ''}${vb ? '\n  ' + vb : ''}${staggerBlock}${nodeExpandScript}${copycodeScript}\n  </body>`);
@@ -1575,7 +1666,9 @@ ${navHeaderHtml('')}
     const games = searchBlocks.map(b => {
       const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
-      const img0 = (b.match(/src="([^"]+)"/) || [])[1] || '';
+      // ★缩略图系统上线后页面里的 src 已是缩略图、原图在 data-full（2026-10-14 踩过）：
+      //   索引/封面/og:image 必须取原图，否则搜索页弹窗大图与分享卡封面会把 360 缩略图拉大 → 糊
+      const img0 = (b.match(/data-full="([^"]+)"/) || b.match(/src="([^"]+)"/) || [])[1] || '';
       // 历史页面可能残留 t_ 缩略图引用（#14 已撤销），统一还原原图
       const img = img0.replace(/\/t_([^/"?]+\.webp)$/, '/$1');
       const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
@@ -1696,8 +1789,18 @@ ${navHeaderHtml('')}
     // 封面来源：站内 assets（jsDelivr 直链）+ 自建图床直链（图床模式发布的帖子）
     // 注意：导航 logo 也是图床直链，必须排除，否则会混进每帖的封面缩略图（2026-09-22 踩过）
     const _bedRe = [...IMGBED_BASES].map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    // 2026-10-14：日页会被就地缩略图化（src 变成 assets/thumb/xxx@360x270.webp），而首页封面
+    //   正是从日页里提取的——必须先用同一 <img> 上的 data-full 换回原图，否则首页会引用 360
+    //   尺寸缩略图（多耗约 4 倍流量）、丢掉 data-full（onerror 兜底失效）、也拿不到 120 的任务。
+    const _thumbOrig = new Map();
+    for (const _t of (dayHtml.match(/<img\b[^>]*>/gi) || [])) {
+      const _d = _t.match(/\sdata-full="([^"]+)"/);
+      const _s = _t.match(/\s(?:data-)?src="([^"]+)"/);
+      if (_d && _s && _s[1].indexOf("/assets/thumb/") >= 0) _thumbOrig.set(_s[1], _d[1]);
+    }
     const covers = [...new Set([...dayHtml.matchAll(new RegExp('src="(https:\\/\\/(?:cdn|gcore|fastly|testingcf)\\.jsdelivr\\.net\\/gh\\/TKPORL\\/mrhyfx@[^\\/]+\\/assets\\/[^"]+|https:\\/\\/tkporl\\.github\\.io\\/mrhyfx\\/assets\\/[^"]+|(?:' + _bedRe + ')\\/[^"]+)', 'g'))].map(m => m[1]))]
       .filter(src => src !== SITE_LOGO_IMG && src !== SITE_ICON_IMG).slice(0, 5)
+      .map(s => _thumbOrig.get(s) || s)
       .map(src => `<img src="${src}" alt="${esc(disp)}" loading="lazy">`).join('');
     const _pfile = path.basename(d.file);
     // 修复：分页后每页卡片重新触发入场动画，旧逻辑按全局序号递增延迟（第2页延迟长达 2.4s，看起来像空页）；
@@ -2102,6 +2205,11 @@ footer .disc-link:hover{text-decoration:underline}
   .grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .g-title{font-size:13px}
 }
+  /* 骨架屏（skeleton + shimmer）：带 .mrhx-img-loading 的图显示「灰底 + 流光」。
+     图片不透明，加载完自动盖住灰底；类由下方脚本在 load/error 后移除。 */
+  img.mrhx-img-loading{background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite}
+  @keyframes mrhx-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+  @media (prefers-reduced-motion:reduce){img.mrhx-img-loading{animation:none}}
 </style>
 ${SITE_ICON_TAGS}
 </head>
@@ -2123,6 +2231,7 @@ ${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScri
 ${indexScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}
+<script>(function(){function mark(im){if(im.complete)return;im.classList.add('mrhx-img-loading');im.addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});im.addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}function init(){var imgs=document.querySelectorAll('.covers img,.gcard .cover img,img.image');if(!('IntersectionObserver' in window)){for(var i=0;i<imgs.length;i++)mark(imgs[i]);return}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mark(e.target);io.unobserve(e.target)}})},{rootMargin:'300px'});for(var i=0;i<imgs.length;i++)io.observe(imgs[i])}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();</script>
 </body>
 </html>
 `;
@@ -2396,6 +2505,17 @@ ${navHeaderHtml('', 'q')}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer>${SITE_FOOTER}</footer>
 <script>
+  /* 缩略图 URL 推导（2026-10-14）：与 gen.js 的 thumbUrlOf 规则一致，纯字符串运算——
+     本脚本被塞在 gen.js 的模板串里，写正则会被吃掉反斜杠（AGENTS.md 有记录）。 */
+  function thumbOf(u) {
+    u = String(u == null ? '' : u); var i = u.indexOf('/assets/');
+    if (i < 0) return u;
+    var rel = u.slice(i + 1).split('?')[0].split('#')[0];
+    if (rel.indexOf('assets/thumb/') === 0) return u;
+    var name = rel.slice(7).split('/').join('__');
+    var dot = name.lastIndexOf('.'); if (dot > 0 && dot > name.lastIndexOf('__')) name = name.slice(0, dot);
+    return u.slice(0, i + 1) + 'assets/thumb/' + name + '@360x270.webp';
+  }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function relTime(iso){
   if(!iso) return '';
@@ -2459,7 +2579,7 @@ function relTime(iso){
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz ? mz[1] : '') + '" data-c="' + esc(zb ? zb[1] : '') + '" data-z="' + esc(zz ? zz[1] : '') + '"></div>' +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz ? mz[1] : '') + '" data-c="' + esc(zb ? zb[1] : '') + '" data-z="' + esc(zz ? zz[1] : '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -2577,7 +2697,7 @@ function relTime(iso){
       tx.textContent = im.getAttribute('data-i') || '（暂无介绍）';
       if (cv) {
         cv.innerHTML = '';
-        var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
+        var _ci = document.createElement('img'); _ci.src = im.getAttribute('data-full') || im.getAttribute('src') || ''; _ci.alt = '';
         if (_ci.src) cv.appendChild(_ci);
       }
       if (cd) {
@@ -2974,6 +3094,12 @@ ${likeScript}
     'User-agent: *\nAllow: /\nDisallow: /comments-preview.html\nDisallow: /email-preview.html\nDisallow: /site-preview.html\nDisallow: /Tsinhoht.html\n\nSitemap: ' + SITE_URL + 'sitemap.xml\n');
   console.log('robots.txt ok');
   await cleanupMarkedRawImages();
+  // ===== 缩略图（2026-10-14）：全部页面写完后再统一改写 + 生成（必须在 verify 之后）=====
+  // 搜索页卡片图也走缩略图：URL 由搜索页前端从原图推导（不写进 search_index.json，
+  //   否则每次搜索要多下载约 180KB）。这里为索引里的图登记生成任务，漏掉的也有 onerror 兜底回原图。
+  for (const g of searchIndex) { if (g && g.img) thumbUrlOf(g.img, 'post'); }
+  await applyThumbsToPages();
+  await generateThumbs();
 
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理；--verify 模式不发布）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {

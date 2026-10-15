@@ -25,6 +25,16 @@
   .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
   .hd-bar .acts{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px}
   .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
+/* 2026-10-14（站长）顶栏按钮加文字备注（第二版）：
+   第一版把按钮改成"图标+文字"的胶囊，站长说太怪 —— 改回原样：
+   圆形图标按钮完全不动，只在图标下方加一行 10px 小字（放大镜下「搜索」、三点下「菜单」）。 */
+.hd-bar .icon-btn{position:relative}
+.hd-bar .icon-btn .ico-label{display:none}
+@media (max-width:540px){
+  .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
+  .hd-bar .acts{margin-bottom:12px}
+}
+
   .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
   .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
   .hd-bar .icon-btn:hover svg{stroke:#e5484d}
@@ -65,7 +75,7 @@
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
   /* 2026-10-13 解压码/作弊码按钮：在下载按钮行内，点击即复制（金黄/紫，虚线） */
-  .mrhx-unzip,.mrhx-cheat,.mrhx-sponsor{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
+  .mrhx-unzip,.mrhx-cheat,.mrhx-sponsor{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed;box-sizing:border-box;min-height:30px}
   .mrhx-unzip{background:#fffaf0;color:#b8860b;border-color:#e0a800}
   .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
   .mrhx-cheat{background:#EEEDFE;color:#534AB7;border-color:#7F77DD}
@@ -150,9 +160,13 @@
   /* 可点开的游戏卡图片：现在是可聚焦的触发元素（键盘 Enter/空格 也能打开弹窗） */
   .image-row img.image[role="button"]{cursor:pointer}
   .image-row img.image:focus-visible{outline:2px solid #e5484d;outline-offset:2px;border-radius:6px}
-  .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background:#f4f2ef;pointer-events:none}
-  .image-row:has(> img.image.mrhx-img-loading)::after{content:'';position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid rgba(229,72,77,.15);border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .8s linear infinite;pointer-events:none}
-  @keyframes mrhxSpin{to{transform:rotate(360deg)}}
+  .image-row:has(> img.image.mrhx-img-loading)::before{content:'';position:absolute;inset:0;background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite;pointer-events:none}
+  /* 通用骨架屏（skeleton + shimmer）：带 .mrhx-img-loading 的图片本体显示「灰底 + 流光」。
+     图片本身不透明，加载完自动盖住灰底；类由注入脚本在 load/error 后移除。
+     覆盖首页缩略图 .covers img、网格卡 .gcard .cover img 等原本没有底色的图位。 */
+  img.mrhx-img-loading{background-color:#ececec;background-image:linear-gradient(100deg,#ececec 28%,#f7f6f5 50%,#ececec 72%);background-size:200% 100%;background-repeat:no-repeat;animation:mrhx-shimmer 1.15s linear infinite}
+  @keyframes mrhx-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+  @media (prefers-reduced-motion:reduce){img.mrhx-img-loading{animation:none}}
   /* 901-1280 小窗/中屏：导航收紧间距防截断（与 gen.js NAV_CSS 同步维护） */
   @media (min-width:901px) and (max-width:1280px){
     .hd-bar{gap:10px}
@@ -173,7 +187,10 @@
     .node{padding:12px;border-radius:12px}
     .node .bullet{display:none}
     .node .content{font-size:14px}
-    .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center}
+    /* 下载行布局（2026-10-14 定稿）：行内所有按钮（下载 / 解压码 / 作弊码）由同一套规则管，
+   ★尺寸完全一致、一行两个自动换行，顺序即 DOM 顺序（下载 → 解压码 → 作弊码）。
+   4 个 = 2+2；3 个 = 2+1；2 个 = 同一行；1 个 = 半行宽（不拉满整行）。 */
+.mrhx-dl > *{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;text-align:center;flex:1 1 40%;max-width:calc(50% - 4px);min-width:0;min-height:30px}
     /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
     .mrhx-navrow{gap:6px}
     .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
@@ -191,8 +208,8 @@
     body.mrhx-grid2 .node .mrhx-dl{margin:8px 12px 12px}
     body.mrhx-grid2 .node .img-tip{margin:0 12px 12px}
     body.mrhx-grid2 .node .exp-hint{margin:0 12px 12px}
-    body.mrhx-grid2 .mrhx-dl .mrhx-btn{flex:1 1 45%;text-align:center;min-width:0;padding:6px 8px;font-size:12px}
-    @media (max-width:380px){body.mrhx-grid2 .mrhx-dl .mrhx-btn{font-size:11px;padding:5px 4px}}
+    body.mrhx-grid2 .mrhx-dl > *{padding:6px 5px;font-size:12px}
+    @media (max-width:380px){body.mrhx-grid2 .mrhx-dl > *{font-size:11px;padding:5px 5px}}
     .image-list .image{max-width:100% !important}
   }
   .mrhx-comments{width:100%;max-width:100%;min-width:0;margin-top:24px;padding-top:16px;border-top:2px solid #ecebe9;box-sizing:border-box}
@@ -240,7 +257,7 @@
   .mrhx-csub button:hover{background:#c93a3f}
   .mrhx-csub button:disabled{opacity:.5;cursor:not-allowed}
   .mrhx-creply{font-size:12px;color:#e5484d;font-weight:500}
-  .mrhx-cfold-wrap{position:relative}
+  .mrhx-cfold-wrap{position:relative;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
   .mrhx-cfold-wrap.mrhx-cfolded{max-height:280px;overflow:hidden}
   .mrhx-cmore-wrap{text-align:center}
   .mrhx-cfold-mask{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px}
@@ -262,7 +279,9 @@
   .mrhx-cinline-to{font-size:12px;color:#e58d0a;font-weight:600}
   .mrhx-cinline-x{border:none;background:none;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:99px}
   .mrhx-cinline-x:hover{color:#e5484d;background:#fdf3f3}
-  .mrhx-cfbar{text-align:center;margin-top:6px;position:sticky;bottom:10px;z-index:50;pointer-events:none}
+  /* 2026-10-14 修「缩短评论压住评论」：吸底时按钮会盖在正文上。加白色渐隐底带 + 内边距，
+   按钮落在干净条带上，不再像"和评论叠在一起"。 */
+.mrhx-cfbar{text-align:center;margin-top:6px;position:sticky;bottom:10px;z-index:50;pointer-events:none;background:linear-gradient(to top,#fff 62%,rgba(255,255,255,0));padding:14px 0 6px}
   /* 展开后「缩短评论/加载更多」按钮吸底跟随：评论区很长时不用滚回底部才能点；按钮本体可点，周围透明区域不拦截页面点击 */
   .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)}
   @media (max-width:720px){.mrhx-crow{flex-direction:column;margin-bottom:6px}.mrhx-creply-item{padding:8px 10px;margin-top:3px}.mrhx-cav{width:20px;height:20px;font-size:10px}.mrhx-ccontent{padding-left:0;overflow-wrap:anywhere;word-break:break-word}.mrhx-cbar{padding-left:0}}
@@ -354,3 +373,80 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 #mrhxMoreDrop .plat-menu button.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6;font-weight:700}
 #mrhxMoreDrop .drop-menu a .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drop-menu a:hover .nic,#mrhxMoreDrop .drop-menu a.on .nic{stroke:#e5484d}
+
+
+/* ===== 2026-10-14 「数据已丢失」标记（copycode.js 在缺下载行的卡片上自动打点；补回链接自动消失）===== */
+.mrhx-lost{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;vertical-align:2px;letter-spacing:.5px;color:#fff;background:#9aa0a6;white-space:nowrap}
+
+
+/* ===== 2026-10-14 评论区三件（站长反馈）=====
+   ① 「缩短评论」原来吸底悬浮（sticky + 白色渐隐底带），会压住评论区上方内容，
+      实测在短页面上正好切到"发表评论"表单的邮箱栏。改为绝对定位到"评论区"标题行右侧，
+      和标题同一水平线：既不再遮挡正文，位置也固定可预期。
+   ② .mrhx-comments 加底部留白：评论区后面有落脚空间，滚到底时表单不会贴在屏幕底边被切。 */
+.mrhx-comments{position:relative;padding-bottom:110px}
+.mrhx-comments .mrhx-cfbar{position:absolute;top:2px;right:0;bottom:auto;left:auto;margin:0;padding:0;text-align:right;background:none;box-shadow:none;pointer-events:auto;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+
+/* ===== 2026-10-14（站长）父子评论 UI 一致 =====
+   原来：子评论 .mrhx-creply-item 是 width:auto + 粉色底 + 3px 粉色左边框 + 行内 20px 左缩进，
+        父评论 .mrhx-citem 是 width:100% + 白底 + 1px 灰边框 —— 两者像两个物种，且右边对齐、左边少一截。
+   现在：子评论与父评论同宽、同底(白)、同边框(1px 灰)、同圆角(10px)、同内边距，去掉缩进。
+        层级不改视觉差，改由顶部「回复 @昵称」标记表达（.mrhx-replyto 已有）。
+   注意：缩进是 comments.js 里的行内样式，所以必须同时改 JS，光改 CSS 无效。 */
+.mrhx-comments .mrhx-creply-item{width:100%;min-width:0;max-width:100%;background:#fff;border:1px solid #ecebe9;border-left:1px solid #ecebe9;border-radius:10px;padding:12px 14px;margin:0 0 6px}
+.mrhx-comments .mrhx-creply-item:hover{border-color:#f0b4b6;box-shadow:0 6px 18px rgba(229,72,77,.08)}
+@media (max-width:720px){.mrhx-comments .mrhx-creply-item{padding:8px 10px;margin:0 0 6px}}
+
+
+/* ===== 2026-10-14（站长）：缩短评论回到「评论区」标题旁边 =====
+   上一版我把它绝对定位到标题行最右边，站长反馈"跑到最右边去了"。
+   现在它就在标题文字旁边（骨架里已挪进 h2），这里只需把定位重置为行内。 */
+.mrhx-comments h2 .mrhx-cfbar{position:static;display:inline-block;margin:0 0 0 10px;vertical-align:middle;text-align:left;background:none;padding:0;z-index:auto}
+
+
+/* ===== 2026-10-14（站长）：缩短评论要"正中间" =====
+   站长要求：按钮与「评论区」字样同一行（平行）＋水平位置在正中间，不靠左不靠右。
+   上一版把它做成 h2 里的行内块 → 紧挨标题文字，电脑上看着靠左。
+   现在：钉在标题行上、横跨整行、内容水平垂直居中（标题文字仍在左边，互不遮挡）。 */
+.mrhx-comments h2{position:relative}
+.mrhx-comments h2 .mrhx-cfbar{position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center;justify-content:center;margin:0;padding:0;background:none;box-shadow:none;text-align:center;pointer-events:none;z-index:6}
+/* 兜底：浏览器若还缓存着旧骨架（按钮是标题下方的独立块），也让它压在标题行正中 */
+.mrhx-comments .mrhx-cfbar{position:absolute;top:4px;left:0;right:0;bottom:auto;display:block;margin:0;padding:0;background:none;box-shadow:none;text-align:center;pointer-events:none;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
+
+
+/* ===== 2026-10-14（站长）：缩短评论与「评论区」字样叠在一起 =====
+   站长反馈：按钮和标题文字/评论列表叠在一起了，给的两种办法是"评论区往下降一降"或"按钮往上提一提"。
+   这里按第一种做：给标题行一个 34px 的固定高度（按钮在行内垂直居中），并让列表整体下移 12px。
+   这样按钮仍然和「评论区」同一行、仍然水平居中，但和上下内容都不再重叠。 */
+.mrhx-comments h2{position:relative;display:flex;align-items:center;min-height:34px;margin-bottom:12px}
+.mrhx-comments h2 .mrhx-cfbar{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;margin:0;padding:0;background:none;box-shadow:none;pointer-events:none;z-index:6}
+.mrhx-comments .mrhx-cfbar .mrhx-cfbtn{pointer-events:auto}
+
+
+/* ===== 2026-10-14（站长）评论组框：父评论 + 它的回复 = 一个框 =====
+   组盒负责表达层级（取代左缩进），组内父/子评论仍保持同宽同底色（站长要的 UI 一致）。 */
+.mrhx-cgroup{background:#fcfbfa;border:1px solid #efeceb;border-radius:14px;padding:10px 12px 6px;margin:0 0 12px}
+.mrhx-cgroup .mrhx-cgroup-hd{font-size:11px;color:#a09590;margin:0 0 6px 2px;font-weight:500}
+.mrhx-cgroup > .mrhx-citem{margin-bottom:6px}
+.mrhx-cgroup .mrhx-creply-item{margin:0 0 6px}
+@media (max-width:720px){.mrhx-cgroup{padding:8px 10px 4px;border-radius:12px}}
+
+
+/* ===== 2026-10-14 评论区过渡动画（站长："都有一个过渡的动画效果 而不是瞬间就没了"）=====
+   纯 CSS、不动 JS：① 评论淡入（加载/加载更多时自然浮现）② 组框淡入 ③ 加载更多等待态
+   ④ 收起/展开遮罩透明度过渡 ⑤ 尊重系统"减少动态效果"。 */
+@keyframes mrhxCIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes mrhxGFade{from{opacity:0}to{opacity:1}}
+.mrhx-comments .mrhx-citem{animation:mrhxCIn .22s ease-out both}
+.mrhx-comments .mrhx-cgroup{animation:mrhxGFade .26s ease-out both}
+.mrhx-comments .mrhx-cfold-mask{transition:opacity .28s ease}
+.mrhx-comments .mrhx-cmore-wrap{transition:opacity .25s ease}
+.mrhx-comments #mrhx-cmore-btn{transition:opacity .2s ease,transform .2s ease}
+.mrhx-comments #mrhx-cmore-btn[disabled],.mrhx-comments #mrhx-cfbar-btn[disabled]{opacity:.55;cursor:progress}
+.mrhx-comments .mrhx-cloading{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0;font-size:12px;color:#a09590}
+.mrhx-comments .mrhx-cloading::before{content:'';width:12px;height:12px;border:2px solid #e5e0de;border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .7s linear infinite}
+@keyframes mrhxSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.mrhx-comments .mrhx-citem,.mrhx-comments .mrhx-cgroup,.mrhx-comments .mrhx-cloading::before{animation:none}}
