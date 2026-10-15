@@ -27,7 +27,7 @@
 
 const JSONH = { 'Content-Type': 'application/json;charset=UTF-8' };
 const LIMIT_MAX = 1000;
-const TABLES = ['comments', 'page_views', 'game_likes', 'daily_page_views', 'download_clicks'];
+const TABLES = ['comments', 'page_views', 'game_likes', 'daily_page_views', 'download_clicks', 'daily_snapshots'];
 // 公共 GET 不返回的字段（隐私）
 const PRIVATE_FIELDS = { comments: ['email'] };
 // D1 挂了才判定为「可降级」的错误（业务错误如限频/Token 无效不许降级）
@@ -53,7 +53,7 @@ function corsBase(request) {
   const allow = String((ENVREF && ENVREF.ALLOWED_ORIGINS) || '').split(',').map(s => s.trim().replace(/\/+$/, ''));
   const headers = { ...JSONH };
   if (o && allow.includes(o)) headers['Access-Control-Allow-Origin'] = o;
-  headers['Access-Control-Allow-Headers'] = 'Content-Type, apikey, Authorization, X-Admin-Token, X-Admin-Key, Prefer';
+  headers['Access-Control-Allow-Headers'] = 'Content-Type, apikey, Authorization, X-Admin-Token, X-Admin-Key, Prefer, Range';
   headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS';
   // 前端要读 Content-Range（评论总数），不暴露的话浏览器 JS 拿不到
   headers['Access-Control-Expose-Headers'] = 'Content-Range, X-Data-Source';
