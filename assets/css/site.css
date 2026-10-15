@@ -65,12 +65,14 @@
   .mrhx-btn-b:hover{background:#d8edde}
   .mrhx-btn-u{background:#e8f0ff;color:#1e6fff;border:1px solid #bcd4ff}
   /* 2026-10-13 解压码/作弊码按钮：在下载按钮行内，点击即复制（金黄/紫，虚线） */
-  .mrhx-unzip,.mrhx-cheat{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
+  .mrhx-unzip,.mrhx-cheat,.mrhx-sponsor{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
   .mrhx-unzip{background:#fffaf0;color:#b8860b;border-color:#e0a800}
   .mrhx-unzip:hover{background:#fff3d6;border-style:solid}
   .mrhx-cheat{background:#EEEDFE;color:#534AB7;border-color:#7F77DD}
   .mrhx-cheat:hover{background:#e3defb;border-style:solid}
-  .mrhx-unzip.ok,.mrhx-cheat.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
+.mrhx-sponsor{background:#eafaf1;color:#1a7f37;border-color:#1a7f37}
+.mrhx-sponsor:hover{background:#d5f2e1;border-style:solid}
+  .mrhx-unzip.ok,.mrhx-cheat.ok,.mrhx-sponsor.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
   /* 2026-10-13 解压码按钮：点击即复制（卡片/弹窗通用） */
   /* 2026-10-13 多图卡片：卡片上只显示封面（第一张），其余图在介绍弹窗里看 */
   .node .image-list .image-row:nth-child(n+2),body.mrhx-grid2 .node .image-list .image-row:nth-child(n+2){display:none}

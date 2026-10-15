@@ -2340,6 +2340,24 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 .mrhx-detail-box .mrhx-detail-text{font-size:14px;line-height:1.9;color:#444;white-space:pre-wrap;word-break:break-word}
 .mrhx-detail-box .mrhx-detail-back{margin-top:18px;width:100%;border:none;background:#e5484d;color:#fff;padding:11px 0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-detail-box .mrhx-detail-back:hover{background:#c93a3f}
+/* 2026-10-15：弹窗封面图 + 解压码/作弊码按钮（搜索页不引用 site.css，样式自带，与 site.css 保持同步） */
+.mrhx-detail-box .mrhx-detail-cover{margin:0 0 12px}
+.mrhx-detail-box .mrhx-detail-cover:empty{display:none}
+.mrhx-detail-box .mrhx-detail-cover img{width:100%;border-radius:10px;display:block}
+.mrhx-detail-box .mrhx-detail-codes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.mrhx-detail-box .mrhx-detail-codes:empty{display:none}
+.mrhx-unzip,.mrhx-cheat,.mrhx-sponsor{display:inline-flex;align-items:center;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;transition:.2s;border:1px dashed}
+.mrhx-unzip{background:#fffaf0;color:#b8860b;border-color:#e0a800}
+.mrhx-unzip:hover{background:#fff3d6;border-style:solid}
+.mrhx-cheat{background:#EEEDFE;color:#534AB7;border-color:#7F77DD}
+.mrhx-cheat:hover{background:#e3defb;border-style:solid}
+.mrhx-sponsor{background:#eafaf1;color:#1a7f37;border-color:#1a7f37}
+.mrhx-sponsor:hover{background:#d5f2e1;border-style:solid}
+.mrhx-unzip.ok,.mrhx-cheat.ok,.mrhx-sponsor.ok{background:#e6f4ea;border-color:#1a7f37;color:#1a7f37}
+/* 2026-10-15：弹窗滚动到底抖一下提醒 + 防滚动穿透（锁 body 由脚本负责） */
+.mrhx-detail-box{overscroll-behavior:contain}
+@keyframes mrhxBump{0%{transform:translateY(0)}35%{transform:translateY(7px)}70%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+.mrhx-detail-box.mrhx-bump{animation:mrhxBump .32s ease}
 .result.exact{border-color:#f0b4b6}
 .btn-dl{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13.5px;font-weight:600;text-decoration:none;transition:.2s}
 .btn-dl-m{background:#1a9e5c;color:#fff;border:1px solid #1a9e5c}
@@ -2422,15 +2440,26 @@ function relTime(iso){
   }
   function rowHtml(g, isExact) {
     var ic = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>';
+    // 2026-10-15：介绍里的 解压码/作弊码/赞助码 提取成按钮（copycode.js 的 enhance 只在页面加载时跑一次，
+    // 赶不上搜索结果异步渲染，所以这里直接在生成时拆出来渲染，点复制仍由 copycode.js 的全局点击委托处理）
+    // 注意：本段在模板字符串里，正则的反斜杠必须双写，否则转义被吃掉产出的正则是坏的
+    var raw = g.intro || '';
+    var mz = raw.match(/解压码[:：]\\s*([A-Za-z0-9]+)/);
+    var zb = raw.match(/作弊码[:：]\\s*([A-Za-z0-9]+)/);
+    var zz = raw.match(/赞助码[:：]\\s*([A-Za-z0-9]+)/);
+    var introTxt = raw.replace(/\\s*(?:解压码|作弊码|赞助码)[:：]\\s*[A-Za-z0-9]+/g, '').replace(/\\n\\s*\\n/g, '\\n').trim();
     var dl = (g.links || []).map(function (l, i) {
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
-    }).join('');
+    }).join('') +
+      (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz[1]) + '">解压码</button>' : '') +
+      (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb[1]) + '">作弊码</button>' : '') +
+      (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz[1]) + '">赞助码</button>' : '');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
-      (g.intro ? '<div class="intro">' + esc(g.intro) + '</div>' : '') +
+      (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(g.intro || '') + '"></div>' +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(g.img) + '" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz ? mz[1] : '') + '" data-c="' + esc(zb ? zb[1] : '') + '" data-z="' + esc(zz ? zz[1] : '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -2522,28 +2551,49 @@ function relTime(iso){
   bindHistClick();
 })();
 </script>
-<div class="mrhx-detail" id="mrhxSD"><div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" id="mrhxSDClose" aria-label="关闭">✕</button><h2 id="mrhxSDTitle"></h2><div class="mrhx-detail-from"><b>游戏介绍</b></div><div class="mrhx-detail-text" id="mrhxSDText"></div><button type="button" class="mrhx-detail-back" id="mrhxSDBack">返回</button></div></div>
+<div class="mrhx-detail" id="mrhxSD"><div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" id="mrhxSDClose" aria-label="关闭">✕</button><h2 id="mrhxSDTitle"></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-from"><b>游戏介绍</b></div><div class="mrhx-detail-text" id="mrhxSDText"></div><div class="mrhx-detail-codes"></div><button type="button" class="mrhx-detail-back" id="mrhxSDBack">返回</button></div></div>
 <script>
 (function(){
   var d = document.getElementById('mrhxSD'); if (!d) return;
   var ti = document.getElementById('mrhxSDTitle'), tx = document.getElementById('mrhxSDText');
+  var box = d.querySelector('.mrhx-detail-box'), cd = d.querySelector('.mrhx-detail-codes'), cv = d.querySelector('.mrhx-detail-cover');
+  function closePop() { d.classList.remove('show'); document.body.style.overflow = ''; }
+  // 2026-10-15：滚到最底部时抖一下，提醒已经到底了（450ms 冷却防连触）
+  var lastBump = 0;
+  box.addEventListener('scroll', function () {
+    if (box.scrollTop + box.clientHeight >= box.scrollHeight - 2) {
+      var now = Date.now();
+      if (now - lastBump < 450) return;
+      lastBump = now;
+      box.classList.remove('mrhx-bump');
+      void box.offsetWidth;
+      box.classList.add('mrhx-bump');
+    }
+  });
   document.addEventListener('click', function(e){
     var im = e.target && e.target.closest ? e.target.closest('.s-img') : null;
     if (im) {
       ti.textContent = im.getAttribute('data-t') + (im.getAttribute('data-p') ? ' [' + im.getAttribute('data-p') + ']' : '');
       tx.textContent = im.getAttribute('data-i') || '（暂无介绍）';
-      var _cv = d.querySelector('.mrhx-detail-cover');
-      if (_cv) {
-        _cv.innerHTML = '';
+      if (cv) {
+        cv.innerHTML = '';
         var _ci = document.createElement('img'); _ci.src = im.getAttribute('src') || ''; _ci.alt = '';
-        if (_ci.src) _cv.appendChild(_ci);
+        if (_ci.src) cv.appendChild(_ci);
+      }
+      if (cd) {
+        cd.innerHTML = '';
+        var _u = im.getAttribute('data-u'), _c = im.getAttribute('data-c'), _z = im.getAttribute('data-z');
+        if (_u) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + _u + '">解压码</button>');
+        if (_c) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + _c + '">作弊码</button>');
+        if (_z) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + _z + '">赞助码</button>');
       }
       d.classList.add('show');
+      document.body.style.overflow = 'hidden';
       return;
     }
-    if (e.target === d || e.target.id === 'mrhxSDClose' || e.target.id === 'mrhxSDBack') d.classList.remove('show');
+    if (e.target === d || e.target.id === 'mrhxSDClose' || e.target.id === 'mrhxSDBack') closePop();
   });
-  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') d.classList.remove('show'); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePop(); });
 })();
 </script>
 <script src="assets/js/copycode.js?v=${COPYCODE_VER}"></script>\n  </body>

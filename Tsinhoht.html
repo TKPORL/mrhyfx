@@ -1087,7 +1087,7 @@ function collectDraft() {
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
         // cid 必须一起存：草稿恢复时靠它把IndexedDB 里的图片对回本卡（2026-10-06 修串位）
-        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
+        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, sponsor: c.sponsor, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       }),
       removedImageUrls: [...removedImageUrls]
     },
@@ -1351,10 +1351,11 @@ function gameHtml(c, imgPaths) {
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
     ${(() => {
       // 2026-10-13 解压码：存进 note 文本（前台脚本会渲染成可一键复制的按钮），拼接前先清旧标记保证幂等
-      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
       const _nt = _ic
         + (c.unzip ? (_ic ? '\n' : '') + '解压码：' + c.unzip : '')
-        + (c.cheat ? '\n作弊码：' + c.cheat : '');
+        + (c.cheat ? '\n作弊码：' + c.cheat : '')
+    + (c.sponsor ? '\n赞助码：' + c.sponsor : '');
       return _nt ? `<div class="note mm-editor"><span>${esc(_nt)}</span></div>` : '';
     })()}
     ${links}
@@ -1388,6 +1389,7 @@ function addGameCard(data) {
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
   <div class="field"><label>解压码（选填）</label><input type="text" class="g-unzip" placeholder="如 xiebao，前台会显示成可一键复制的按钮"></div>
   <div class="field"><label>作弊码（选填）</label><input type="text" class="g-cheat" placeholder="如 agent17，前台显示「作弊码」按钮，点击即复制"></div>
+  <div class="field"><label>赞助码（选填）</label><input type="text" class="g-sponsor" placeholder="如 sponsor2024，前台显示「赞助码」按钮，点击即复制"></div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
     <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
@@ -1514,6 +1516,7 @@ function readCard(el) {
     intro: el.querySelector('.g-intro').value.trim(),
     unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     cheat: el.querySelector('.g-cheat') ? el.querySelector('.g-cheat').value.trim() : '',
+sponsor: el.querySelector('.g-sponsor') ? el.querySelector('.g-sponsor').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -1597,6 +1600,7 @@ function fillCard(card, data) {
   if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
   if (data.unzip != null && card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = data.unzip;
   if (data.cheat != null && card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = data.cheat;
+    if (data.sponsor != null && card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = data.sponsor;
   if (data.imgs != null) card.querySelector('.g-imgs').value = data.imgs;
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
@@ -1692,6 +1696,7 @@ function collectGames() {
     intro: el.querySelector('.g-intro').value.trim(),
     unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
     cheat: el.querySelector('.g-cheat') ? el.querySelector('.g-cheat').value.trim() : '',
+sponsor: el.querySelector('.g-sponsor') ? el.querySelector('.g-sponsor').value.trim() : '',
     imgs: el.querySelector('.g-imgs').value,
     linkM: el.querySelector('.g-linkM').value.trim(),
     linkB: el.querySelector('.g-linkB').value.trim(),
@@ -2355,10 +2360,11 @@ function parseCollectionDoc(doc) {
     // 2026-10-13 解压码：从介绍文本里提取（格式「解压码：xxx」），并从 intro 里剔除以免重复拼接
     const unzip = (intro.match(/解压码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
     const cheat = (intro.match(/作弊码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-    const introClean = intro.replace(/\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+  const sponsor = (intro.match(/赞助码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
+    const introClean = intro.replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
-      intro: introClean, unzip, cheat, imgs, linkM, linkB, customName, customUrl
+      intro: introClean, unzip, cheat, sponsor, imgs, linkM, linkB, customName, customUrl
     };
   });
 }
@@ -2452,6 +2458,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-intro').value = c.intro || '';
            if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            if (card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = c.cheat || '';
+if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c.sponsor || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
@@ -2490,6 +2497,7 @@ function bindPostButtons(box, token, repo) {
            card.querySelector('.g-intro').value = c.intro || '';
            if (card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = c.unzip || '';
            if (card.querySelector('.g-cheat')) card.querySelector('.g-cheat').value = c.cheat || '';
+if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c.sponsor || '';
            card.querySelector('.g-imgs').value = c.imgs || '';
            card.querySelector('.g-imgs').dataset.lastImgs = c.imgs || '';
            renderImageLinks(card);
@@ -3621,31 +3629,35 @@ $('disableCC').onclick = async () => {
 
 $('loadComments').onclick = loadComments;
 
-$('autoNumber').onclick = async () => {
-  const btn = $('autoNumber');
-  btn.disabled = true;
-  try {
-    const title = $('fTitle').value.trim();
-    const dateMatch = title.match(/(\d{1,2})\s*[月.\/-]\s*(\d{1,2})\s*[号日]?/);
-    if (dateMatch) {
-      const month = parseInt(dateMatch[1]), day = parseInt(dateMatch[2]);
-      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        const year = new Date().getFullYear();
-        const fname = String(year) + String(month).padStart(2, '0') + String(day).padStart(2, '0');
-        $('fName').value = fname;
-        show(stF, '检测到标题中的日期，已生成编号：' + fname, 'ok');
-        return;
-      }
-    }
-    const token = $('token').value.trim(), repo = $('repo').value.trim();
-    if (!token || !repo.includes('/')) throw new Error('请先填写 Token 和仓库');
-    const tree = await fetch(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`, { headers: { 'Authorization': 'token ' + token } }).then(r => r.json());
-    const nums = tree.tree.map(t => t.path.replace(/^games\//, '').replace(/\.html$/, '')).filter(n => /^\d+$/.test(n)).map(Number);
-    const next = Math.max(0, ...nums) + 1;
-    $('fName').value = String(next);
-    show(stF, '已自动生成下一个编号：' + next, 'ok');
-  } catch (e) { show(stF, e.message, 'err'); }
-  finally { btn.disabled = false; }
+// 2026-10-15：自动编号改为「选平台 → 按今天日期生成」。文件名全小写 pc / pcaz，
+// 标题 = M月D号黄油（平台）。旧逻辑（从标题抠日期 / 拉仓库求最大序号）已废弃。
+$('autoNumber').onclick = () => {
+  const old = document.getElementById('mrhxPlatPick');
+  if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'mrhxPlatPick';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center';
+  const bs = 'display:block;width:100%;padding:11px 0;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit';
+  ov.innerHTML = '<div style="background:#fff;border-radius:14px;padding:22px 24px;max-width:300px;width:88%">' +
+    '<div style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center">这期是什么平台？</div>' +
+    '<button type="button" data-plat="pc" style="' + bs + 'background:#e5484d;color:#fff;margin-bottom:10px">PC</button>' +
+    '<button type="button" data-plat="pcaz" style="' + bs + 'background:#1a9e5c;color:#fff;margin-bottom:10px">PC+安卓</button>' +
+    '<button type="button" data-plat="cancel" style="' + bs + 'background:#f1efe9;color:#666">取消</button>' +
+    '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => {
+    const b = e.target.closest('button[data-plat]');
+    if (!b) { if (e.target === ov) ov.remove(); return; }
+    const plat = b.getAttribute('data-plat');
+    ov.remove();
+    if (plat === 'cancel') return;
+    // 北京时间（后台任何时区打开都以北京日期为准）
+    const now = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+    const y = now.getFullYear(), m = now.getMonth() + 1, dd = now.getDate();
+    $('fName').value = String(y) + String(m).padStart(2, '0') + String(dd).padStart(2, '0') + plat;
+    $('fTitle').value = m + '月' + dd + '号黄油（' + (plat === 'pc' ? 'PC' : 'PC+安卓') + '）';
+    show(stF, '已自动编号：' + $('fName').value + '，标题已填好，可再手改', 'ok');
+  });
 };
 
 // 发布失败时的原因提示：网络级中断（Failed to fetch）跟 Token 无关，不要误报成 Token 问题。
