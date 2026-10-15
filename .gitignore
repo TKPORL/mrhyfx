@@ -17,3 +17,6 @@ gen_report.txt
 
 # Supabase 导出存档：含访客邮箱等隐私，只留本地不入库
 tsinho-supabase-export-*.json
+
+# Supabase 导出存档：含访客邮箱等隐私，只留本地不入库
+tsinho-supabase-export-*.json
