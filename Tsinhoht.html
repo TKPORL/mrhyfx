@@ -3214,7 +3214,10 @@ async function loadStats() {
     if (!valid) {
       box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">未填 GitHub Token/仓库，帖子总数按全部访问记录统计（可能包含已删除帖子的记录）。填好 Token 后刷新更准确。</p>');
     } else if (deadRows.length) {
-      box.insertAdjacentHTML('beforeend', '<p class="warn" style="margin-top:10px">发现 ' + deadRows.length + ' 条已失效路径的访问记录（已删除的帖子），累计 ' + deadRows.reduce((s, v) => s + v.count, 0) + ' 次：<br>' + deadRows.map(v => (String(v.url).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '（' + v.count + ' 次）')).join('，') + '</p>');
+      // 2026-10-16：失效路径明细默认折叠成一行（此前全量平铺，1900+ 条把页面拉得极长）
+      const deadSum = deadRows.reduce((s, v) => s + v.count, 0);
+      const deadList = deadRows.map(v => (String(v.url).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) + '（' + v.count + ' 次）')).join('，');
+      box.insertAdjacentHTML('beforeend', '<details class="warn" style="margin-top:10px"><summary style="cursor:pointer">发现 ' + deadRows.length + ' 条已失效路径的访问记录（已删除的帖子），累计 ' + deadSum + ' 次——点击展开/收起明细</summary><p style="margin-top:6px;word-break:break-all">' + deadList + '</p></details>');
     }
   } catch (e) {
     show(stS, '加载失败：' + e.message + '\n\n请确认 Supabase 配置正确且 page_views 表已创建。', 'err');
