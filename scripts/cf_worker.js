@@ -53,7 +53,7 @@ function corsBase(request) {
   const allow = String((ENVREF && ENVREF.ALLOWED_ORIGINS) || '').split(',').map(s => s.trim().replace(/\/+$/, ''));
   const headers = { ...JSONH };
   if (o && allow.includes(o)) headers['Access-Control-Allow-Origin'] = o;
-  headers['Access-Control-Allow-Headers'] = 'Content-Type, apikey, Authorization, X-Admin-Token, Prefer';
+  headers['Access-Control-Allow-Headers'] = 'Content-Type, apikey, Authorization, X-Admin-Token, X-Admin-Key, Prefer';
   headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS';
   // 前端要读 Content-Range（评论总数），不暴露的话浏览器 JS 拿不到
   headers['Access-Control-Expose-Headers'] = 'Content-Range, X-Data-Source';
