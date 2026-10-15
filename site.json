@@ -31,9 +31,8 @@
   },
   "comments": {
     "enabled": true,
-    "url": "https://api.tiho.us.ci",
-    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9",
-    "foldThreshold": 6
+    "url": "https://kydmccknlbpczeqppbtc.supabase.co",
+    "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
   },
   "build": {
     "excludePosts": [
