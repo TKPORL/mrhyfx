@@ -126,7 +126,12 @@
 ## 当前状态
 
 - 最后更新：**2026-10-15**（此后每次状态变化都要更新本段 —— 见下方「AI 维护义务」）
-- **★评论/计数数据源已切换（2026-10-15 晚）**：两站前端全部走 CF Worker `https://api.tiho.us.ci`（D1 主库 + Supabase 镜像热备双写，读超时自动回退）。真源 = `site.json` 的 `comments.url`；后台统计页「Project URL」填 worker 地址、「管理密钥」填 ADMIN_TOKEN。**改 Worker 代码 = 编辑 `scripts/cf_worker.js` 后去 CF Dashboard 粘贴部署**。迁移全记录与回滚方式见《【CF主用·Supabase备用·双写容灾设计】20261010.md》
+- **★评论/计数数据源：Supabase（2026-10-16 凌晨回滚）**：10-15 晚曾切到 CF Worker（api.tiho.us.ci），
+  因部署摩擦+若干 CORS/排序小坑，站长决定回滚 Supabase。**数据零丢失**（切换期间 Supabase 一直在收镜像写入）；
+  D1 里留有同步到 10-15 23:50 的全量副本。**Worker 与全部修复代码保留在 `scripts/cf_worker.js`（已入库），
+  CORS 白名单/多字段排序/daily_snapshots/总数头都修好了，将来想再切只需去 Dashboard 粘贴部署**——
+  迁移全记录、踩坑清单（X-Admin-Token 鉴权头、Range 头、x-admin-key 头、多字段排序截断）都在
+  《【CF主用·Supabase备用·双写容灾设计】20261010.md》
 - Git：是（`main`）；本地存在大量历史备份目录，占用体积较大
 - **求助帖 qzt.html：220 张游戏卡**（+1 个公告专用块 `li.mrhx-announce`）。**公告文案唯一真源 = `qzt-announce.json`**（2026-10-14 定）：gen.js 每次都用它**重建** `.mrhx-announce`（先删再插，幂等 + 自动纠错）。⚠️ **不要再改 qzt.html 里的文本**（后台「发布求助贴」会重建 node-list 把它洗掉）。注意：它与**首页弹窗公告**（`site.json.announcement`）是**两份不同文案**，不要混用——2026-10-14 曾因混用把首页那 12 行注进了求助帖
 - **独立页：已彻底停用**（2026-10-11）。gen.js 建页段 `return` 跳过、残页清理已加 `if (!kept.size)` 保护；

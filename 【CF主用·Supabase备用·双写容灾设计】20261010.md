@@ -1,6 +1,9 @@
 # 【CF主用·Supabase备用·双写容灾设计】20261010
 
-> 状态：**设计稿，等站长确认后才动代码**
+> 状态：**已实施并于 2026-10-16 00:10 回滚**——切 Worker 后当晚暴露一串小坑（评论发送 D1_TYPE_ERROR=线上
+> 是旧版 Worker、后台统计 CORS 三个头逐个放行、排序截断等），站长决定暂停迁移回滚 Supabase。
+> 回滚 = site.json/Tsinhoht/comments-preview + 备用站 3 文件域名改回，已全部完成并推送。
+> **所有修复已保留在 cf_worker.js**（已入库），再切只差 Dashboard 粘贴部署；本档案保留全部踩坑记录。
 > **2026-10-15 重启**：Supabase 国内被墙加剧，站长要求把计数+评论彻底迁走（备选 D1 / Turso）。
 > **结论：仍用 D1，不上 Turso。** 理由：
 > ① D1 侧全套工件 10-09 已建好并本地验证过（`cf_d1_schema.sql` / `cf_worker.js`（PostgREST 兼容层，前端换域名零改动）/ 导入导出工具 / 实施手册），Turso 要把 Worker 数据层+工具链全部重写；
