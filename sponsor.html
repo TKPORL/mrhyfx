@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>赞助支持 · Tsinho黄油站</title>
-<meta name="description" content="Tsinho黄油站赞助支持：站点建设与日常维护依赖大家的赞助，微信扫码 / 支付宝扫码均可。感谢每一份支持，会继续把站维护好。">
+<meta name="description" content="Tsinho黄油站赞助支持：本站永久免费、无广告，服务器与带宽是持续开销。如果对你有帮助，可以请站长喝杯奶茶，感谢每一份支持。">
 <meta name="author" content="Tsinho">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://tkporl.github.io/mrhyfx/sponsor.html">
@@ -40,6 +40,27 @@ footer b{color:#e5484d}
   /* 手机也保持两码并排（2026-10-06 用户要求）；只缩间距与内边距，不改列数 */
   .qr-grid{gap:8px}
   .qr-card{padding:9px;border-radius:12px}
+}
+
+/* ===== 2026-10-16 站长定稿新版（源自站长手改稿：暖色公告 + 双色码卡 + 特性格子） ===== */
+main .slogan{text-align:center;font-size:13px;color:#888;margin:-14px 0 22px}
+.content-box{background:#fef9f0;border-radius:12px;padding:24px 20px;margin-bottom:22px;text-align:center;font-size:14px;line-height:1.8;color:#555}
+.content-box p{margin:0}
+.content-box .title{font-size:15px;font-weight:bold;color:#e74c3c;margin-bottom:8px}
+.qr-cards{display:flex;gap:12px;margin:0 0 22px}
+.qr-card{flex:1;background:#f8f9fa;border-radius:12px;padding:16px;text-align:center;border:1px solid #eee;transition:transform .2s;max-width:none;width:auto;margin:0}
+.qr-card:hover{transform:translateY(-2px)}
+.qr-card.wechat{background:#f0f9f4;border-color:#e0f2e9}
+.qr-card.alipay{background:#f0f7ff;border-color:#e0edff}
+.qr-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;margin:0 auto 12px;background:#fff;border-radius:8px}
+.qr-card span{font-size:13px;font-weight:500;color:#444;display:block}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+.feature-item{background:#fafafa;border-radius:8px;padding:12px;font-size:12px;color:#666;text-align:center;line-height:1.4}
+.feature-item strong{display:block;font-size:14px;color:#333;margin-bottom:4px}
+@media (max-width:720px){
+  .qr-cards{gap:8px}
+  .qr-card{padding:10px}
+  .content-box{padding:18px 14px}
 }
 </style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
@@ -103,25 +124,33 @@ footer b{color:#e5484d}
 <div class="nav-mask" id="mrhxNavMask"></div>
 
 <main>
-  <div class="upd"><span class="tag">赞助支持</span>来自粉丝提议，自愿参与，不影响任何功能使用</div>
+  <div class="header" style="text-align:center;margin-bottom:8px">
+    <h1 style="font-size:20px;font-weight:bold;margin:0 0 8px 0;color:#222">赞助支持 · Tsinho黄油站</h1>
+    <div class="slogan">为热爱发电的纯净小站 ✨</div>
+  </div>
 
-  <div class="qr-grid">
-    <div class="qr-card">
+  <div class="content-box">
+    <p class="title">为爱发电，感谢有你 ❤️</p>
+    <p>本站坚持永久免费、无广告，只为给大家提供一个纯粹、干净的小站。</p>
+    <p>随着访问量增加，服务器和带宽是一笔持续的开销。如果你觉得这里的内容对你有帮助，可以请站长喝杯奶茶。</p>
+  </div>
+
+  <div class="qr-cards">
+    <div class="qr-card wechat">
       <img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386">
-      <div class="cap"><b>微信</b> 扫码赞赏</div>
+      <span>请黑猫喝杯奶茶 🧋</span>
     </div>
-    <div class="qr-card">
+    <div class="qr-card alipay">
       <img src="assets/sponsor/alipay.webp" alt="支付宝赞赏码" width="1146" height="1136">
-      <div class="cap"><b>支付宝</b> 扫码赞助</div>
+      <span>给服务器充点电 ⚡</span>
     </div>
   </div>
 
-  <div class="thanks">
-    <div class="h">说明</div>
-    <div class="tstep">本站永久免费，无广告，永不增设付费功能。</div>
-    <div class="tstep">后端服务、带宽存在持续成本，我个人能承担。</div>
-    <div class="tstep">赞助入口来自粉丝提议，自愿参与。</div>
-    <div class="tstep">大家的收入来之不易！不强求任何赞助！无论是否赞助！都不会影响您正常使用！</div>
+  <div class="features">
+    <div class="feature-item"><strong>📦 永久免费</strong>无广告，无付费功能</div>
+    <div class="feature-item"><strong>🚀 持续运营</strong>用于支付服务器与带宽</div>
+    <div class="feature-item"><strong>🎁 粉丝提议</strong>来自大家的自发支持</div>
+    <div class="feature-item"><strong>🛡️ 无拘无束</strong>不设特权，白嫖也OK</div>
   </div>
 </main>
 
