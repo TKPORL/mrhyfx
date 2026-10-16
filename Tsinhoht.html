@@ -133,7 +133,11 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .rbox textarea{width:100%;border:1px solid #dedcd6;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:8px}
 .rbox .btn{padding:7px 16px;font-size:13px;border-radius:6px}
 
-.links{display:flex;gap:10px}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 2026-10-14（站长）自定义链接＝点按钮加一行（2026-10-16 从 432d8e48e 找回） */
+.clrows{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.clrow{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:center}
+.clrow .cldel{padding:6px 12px;background:#f3f1ee;color:#666}
 .links input{flex:1}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none;transition:all .2s;gap:4px}
@@ -169,7 +173,8 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
   .card,.game{padding:14px 16px}
   .tabs{overflow-x:auto;gap:0;padding:0 2px}
   .tab{padding:8px 12px;font-size:12px}
-  .links{flex-direction:column}
+  .links{grid-template-columns:1fr}
+  .clrow{grid-template-columns:1fr 1fr auto}
   textarea{height:auto}
   .prow{flex-direction:column;gap:6px}
   .cactions{padding-left:0;margin-top:6px}
@@ -1341,7 +1346,24 @@ function gameHtml(c, imgPaths) {
   const buttons = [];
    if (c.linkB) buttons.push(`<a class="mrhx-btn mrhx-btn-b" href="${esc(c.linkB)}" target="_blank" rel="noreferrer">百度网盘</a>`);
    if (c.linkM) buttons.push(`<a class="mrhx-btn mrhx-btn-u" href="${esc(c.linkM)}" target="_blank" rel="noreferrer">UC网盘</a>`);
-   if (c.customName && c.customUrl) buttons.push(`<a class="mrhx-btn mrhx-btn-qk" href="${esc(c.customUrl)}" target="_blank" rel="noreferrer">${esc(c.customName)}</a>`);
+   if (c.customUrl) {
+     // 2026-10-14（站长）自定义链接支持多条：每行一条，格式「链接 ｜ 名称 ｜ 颜色」（后两项可省）。
+     // 颜色省略时自动识别：百度→浅绿、UC→浅蓝、其它→灰。
+     // 兼容旧数据：只有一行且没写名称时仍用「自定义按钮名称」，旧卡片渲染结果完全不变。
+     // （2026-10-16 找回：该功能在 10-15 的 143f38d53 提交中被旧版文件覆盖丢失，从 432d8e48e 原样恢复）
+     String(c.customUrl).split(/\r?\n/).forEach(function (line, idx) {
+       const parts = String(line).split(/[|｜]/);
+       const u = (parts[0] || '').trim();
+       if (!u) return;
+       const nm = (parts[1] || '').trim() || (idx === 0 ? (c.customName || '').trim() : '') || '下载';
+       const col = (parts[2] || '').trim().toLowerCase();
+       let cls = 'mrhx-btn-qk';
+       if (col) cls = (col === '百度' || col === '绿' || col === 'baidu' || col === 'green') ? 'mrhx-btn-b' : (col === '蓝' || col === 'uc' || col === 'blue') ? 'mrhx-btn-u' : 'mrhx-btn-qk';
+       else if (/pan\.baidu\.com|baidu\.com/.test(u)) cls = 'mrhx-btn-b';
+       else if (/uc\.cn|drive\.uc/.test(u)) cls = 'mrhx-btn-u';
+       buttons.push(`<a class="mrhx-btn ${cls}" href="${esc(u)}" target="_blank" rel="noreferrer">${esc(nm)}</a>`);
+     });
+   }
    const links = buttons.length ? `<div class="mrhx-dl">${buttons.join('')}</div>` : '';
    return `<li class="node heading3">
     <div class="bullet">
@@ -1401,11 +1423,13 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>下载链接</label>
     <div class="links">
-      <input type="text" class="g-linkB" placeholder="百度网盘链接">
-      <input type="text" class="g-linkM" placeholder="UC网盘链接">
-      <input type="text" class="g-customName" placeholder="自定义按钮名称">
-      <input type="text" class="g-customUrl" placeholder="自定义跳转链接">
-    </div>
+<input type="text" class="g-linkB" placeholder="百度网盘链接">
+<input type="text" class="g-linkM" placeholder="UC网盘链接">
+</div>
+<input type="hidden" class="g-customName">
+<input type="hidden" class="g-customUrl">
+<div class="clrows"></div>
+<button type="button" class="btn btn-s cladd" style="margin-top:8px">＋ 自定义链接</button>
   </div>
   <div class="move-box"></div>`;
   if (data) fillCard(d, data);
@@ -1605,7 +1629,7 @@ function fillCard(card, data) {
   if (data.linkM != null) card.querySelector('.g-linkM').value = data.linkM;
   if (data.linkB != null) card.querySelector('.g-linkB').value = data.linkB;
   if (data.customName != null) card.querySelector('.g-customName').value = data.customName;
-  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl;
+  if (data.customUrl != null) card.querySelector('.g-customUrl').value = data.customUrl; if(window.mrhxClBuild) window.mrhxClBuild(card);
   card.querySelector('.g-imgs').dataset.lastImgs = card.querySelector('.g-imgs').value;
   renderImageLinks(card);
 }
@@ -2465,7 +2489,7 @@ if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -2504,7 +2528,7 @@ if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c
            card.querySelector('.g-linkM').value = c.linkM || '';
            card.querySelector('.g-linkB').value = c.linkB || '';
            card.querySelector('.g-customName').value = c.customName || '';
-           card.querySelector('.g-customUrl').value = c.customUrl || '';
+           card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
@@ -3715,12 +3739,20 @@ function validateCards() {
     const name = el.querySelector('.g-name').value.trim();
     if (!name) problems.push('第 ' + no + ' 张卡片：游戏名称是空的');
     LINK_FIELDS.forEach(f => {
-      const v = el.querySelector(f.sel).value.trim();
-      if (v && !isPureLink(v)) {
-        problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
-      }
-      if (!v) return;
-      const k = linkKey(v);
+      // 2026-10-14（站长）多链接：自定义链接框支持「每行一条：链接 ｜ 名称 ｜ 颜色」，
+      // 所以先按行拆出「链接」部分再逐条校验；其它字段拆行结果还是它自己，行为不变。
+      // （2026-10-16 从 432d8e48e 找回）
+      const raw = el.querySelector(f.sel).value.trim();
+      const vals = f.sel === '.g-customUrl'
+        ? raw.split(/\r?\n/).map(s => s.split(/[|｜]/)[0].trim()).filter(Boolean)
+        : (raw ? [raw] : []);
+      if (!vals.length) return;
+      for (const v of vals) {
+        if (!isPureLink(v)) {
+          problems.push('第 ' + no + ' 张卡片：' + f.label + '链接里带了文字「' + v.slice(0, 30) + '」，请只保留纯链接');
+          continue;
+        }
+        const k = linkKey(v);
       if (seen[k]) {
         // 同一个链接给了两个游戏 —— 2026-10-07 实测 2026106pcaz 第 12/23 个游戏共用一条网盘链接。
         // 成因是填卡片时链接贴错，肉眼极难发现（介绍框里常常没写游戏名，无从核对），
@@ -3730,6 +3762,7 @@ function validateCards() {
           v.slice(0, 46) + '）——同一条链接不能给两个游戏，请检查是否贴错卡片');
       } else {
         seen[k] = { no, name: name || '(无名字)', label: f.label };
+      }
       }
     });
   });
@@ -3846,6 +3879,72 @@ function openPreview(cards, title) {
   $('previewModal').classList.add('show');
   $('previewModal').scrollTop = 0;
 }
+</script>
+<script>
+/*
+  2026-10-14（站长）自定义链接改成"点按钮加一行"：每行【按钮名称】+【链接】。
+  数据仍然写进原有的隐藏字段 .g-customUrl（每行：链接 ｜ 名称），所以生成按钮、发布体检、
+  保存、草稿这几条链路一行都不用改；编辑旧帖时由 mrhxClBuild 把字段还原成行。
+  （2026-10-16 找回：该功能在 10-15 的 143f38d53 提交中被旧版文件覆盖丢失，从 432d8e48e 原样恢复）
+*/
+(function(){
+  function cardOf(el){ return (el.closest && (el.closest(".game") || el.closest("#gameBox > *"))) || null; }
+  function rowHtml(){
+    return '<div class="clrow">' +
+      '<input type="text" class="clname" placeholder="自定义按钮名称">' +
+      '<input type="text" class="clurl" placeholder="链接（http/https 开头）">' +
+      '<button type="button" class="btn btn-s cldel" title="删除这条">删除</button>' +
+      '</div>';
+  }
+  function lines(card){
+    return [].slice.call(card.querySelectorAll(".clrows .clrow")).map(function(r){
+      var u = r.querySelector(".clurl").value.trim();
+      if(!u) return "";
+      var n = r.querySelector(".clname").value.trim();
+      return n ? (u + " ｜ " + n) : u;
+    }).filter(Boolean);
+  }
+  function sync(card){ var f = card && card.querySelector(".g-customUrl"); if(f) f.value = lines(card).join("\n"); }
+  function build(card){
+    if(!card) return;
+    var box = card.querySelector(".clrows"), f = card.querySelector(".g-customUrl");
+    if(!box || !f) return;
+    box.innerHTML = "";
+    String(f.value || "").split(/\r?\n/).forEach(function(line){
+      var v = line.trim(); if(!v) return;
+      var p = v.split(/[|｜]/);
+      box.insertAdjacentHTML("beforeend", rowHtml());
+      var r = box.lastElementChild;
+      r.querySelector(".clurl").value = (p[0] || "").trim();
+      r.querySelector(".clname").value = (p[1] || "").trim();
+    });
+  }
+  window.mrhxClSync = sync; window.mrhxClBuild = build;
+  document.addEventListener("click", function(e){
+    var t2 = e.target;
+    if(t2.closest && t2.closest(".cladd")){
+      var c1 = cardOf(t2), b1 = c1 && c1.querySelector(".clrows");
+      if(b1){ b1.insertAdjacentHTML("beforeend", rowHtml()); b1.lastElementChild.querySelector(".clname").focus(); }
+      return;
+    }
+    if(t2.closest && t2.closest(".cldel")){
+      var c2 = cardOf(t2), r2 = t2.closest(".clrow");
+      if(r2){ r2.parentNode.removeChild(r2); sync(c2); }
+    }
+  }, true);
+  document.addEventListener("input", function(e){
+    var x = e.target;
+    if(x.classList && (x.classList.contains("clname") || x.classList.contains("clurl"))) sync(cardOf(x));
+  }, true);
+  /* 兜底对账：任何别处改了隐藏字段（例如插件式回填），这里把行重建回来，防止"看到的≠要保存的" */
+  document.addEventListener("focusin", function(e){
+    var c = cardOf(e.target); if(!c) return;
+    var f = c.querySelector(".g-customUrl"); if(!f) return;
+    if((f.value || "").trim() !== lines(c).join("\n").trim()) build(c);
+  }, true);
+  function boot(){ var b = document.getElementById("gameBox"); if(b) [].slice.call(b.children).forEach(build); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
 </script>
 </body>
 </html>
