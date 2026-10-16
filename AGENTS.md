@@ -135,6 +135,15 @@
 - **★按钮标签按链接域名归一（2026-10-16）**：normalizeLegacyButtons 每次 gen 自愈（139→移动云盘（不限速）、
   uc.cn→UC网盘）——后台发布器 linkM 曾把移动链接写死「UC网盘」标签（Tsinhoht.html 已同步按域名判断）。
   新增网盘类型 = 在 gen.js DOWNLOAD_BUTTONS + Tsinhoht 发布器两处同步加映射。
+- - **★gen 跑完必看「search_index.json ok, games: N」行（2026-10-16 事故后立）**：N 应为 2086+（qzt 242、55 帖）。
+  gen 是「读输入→改写→写回」——**产出坏一次就落盘固化**，后续所有实验/重跑都拿坏输入跑（二分失效、
+  症状会自我伪装）。掉数/丢卡时的标准动作：`git checkout HEAD -- 全部根目录html`（恢复干净基线）→ 重跑 → 再排查。
+  排查红线：①搜卡禁用跨标签字符串匹配（gen 会在标题里插 `<em class="mrhx-plat">` 徽章拆串，用标题前缀或先剥标签）；
+  ②恢复输入清单必须覆盖**全部**帖子（含 qzt.html 和不以数字开头的帖子，别用 2026/8x 正则漏文件）；
+  ③改 gen 的文本替换时，替换串里绝不能重复捕获组已含的片段（10-01/10-16 两次同款事故）。
+- **★按钮标签按链接域名归一（2026-10-16）**：normalizeLegacyButtons 每次 gen 自愈（139→移动云盘（不限速）、
+  uc.cn→UC网盘）——后台发布器 linkM 曾把移动链接写死「UC网盘」标签（Tsinhoht.html 已同步按域名判断）。
+  新增网盘类型 = 在 gen.js DOWNLOAD_BUTTONS + Tsinhoht 发布器两处同步加映射。
 - - **★评论/计数数据源：Supabase（2026-10-16 凌晨回滚）**：10-15 晚曾切到 CF Worker（api.tiho.us.ci），
   因部署摩擦+若干 CORS/排序小坑，站长决定回滚 Supabase。**数据零丢失**（切换期间 Supabase 一直在收镜像写入）；
   D1 里留有同步到 10-15 23:50 的全量副本。**Worker 与全部修复代码保留在 `scripts/cf_worker.js`（已入库），
