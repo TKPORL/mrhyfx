@@ -1285,6 +1285,8 @@
     var gamePlat = '';
     if (contentEl) {
       var em = contentEl.querySelector('.mrhx-plat');
+      // 2026-10-16：平台徽章改到封面图上后 content 里不再有内联徽章，回退读封面徽章（弹窗标题 [平台] 不丢）
+      if (!em) em = n.querySelector('.image-list .mrhx-plat');
       gamePlat = em ? em.textContent.trim() : '';
       var clone = contentEl.cloneNode(true);
       var emInClone = clone.querySelector('.mrhx-plat');

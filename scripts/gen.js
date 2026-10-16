@@ -602,6 +602,8 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     var gamePlat = '';
     if (contentEl) {
       var em = contentEl.querySelector('.mrhx-plat');
+      // 2026-10-16：平台徽章改到封面图上后 content 里不再有内联徽章，回退读封面徽章（弹窗标题 [平台] 不丢）
+      if (!em) em = n.querySelector('.image-list .mrhx-plat');
       gamePlat = em ? em.textContent.trim() : '';
       var clone = contentEl.cloneNode(true);
       var emInClone = clone.querySelector('.mrhx-plat');
@@ -1534,11 +1536,14 @@ html = (function reorderNodes(str) {
           .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
           // 2026-10-16（站长定稿）：徽章叠加在封面图左下角（demo 确认）——图片永不截断，徽章必可见；
           //   无图卡（无 image-list）回退到标题行内原位置。徽章插进 imgBlock（重组时拼回卡内）。
+          // 2026-10-16 晚修复：徽章必须插进第一个 li.image-row 内部，不能当 ul 的直接子元素——
+          //   .image-row:nth-child(n+2){display:none}（多图卡只显示封面）按「全部子元素」计数，
+          //   em 占了第 1 位后所有 image-row 全部命中 n+2 被隐藏 → 帖子页/求助帖图片全消失（站长实测踩坑）。
           if (imgBlock) {
             imgBlock = imgBlock
               // 先删本轮之前插入的旧徽章（不删会每次 gen 累积堆叠——2026-10-16 实测 1020 个）
               .replace(/<em class="mrhx-plat[^"]*"[^>]*>[^<]*<\/em>/g, '')
-              .replace(/(<ul[^>]*image-list[^>]*>)/, `$1<em class="mrhx-plat mrhx-plat-cover">${plat}</em>`);
+              .replace(/(<ul[^>]*image-list[^>]*>\s*<li class="image-row[^"]*"[^>]*>)/, `$1<em class="mrhx-plat mrhx-plat-cover">${plat}</em>`);
           } else {
             contentBlock = contentBlock.replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
           }
