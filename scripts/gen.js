@@ -331,7 +331,7 @@ const DOWNLOAD_BUTTONS = (SITE.downloadButtons && Array.isArray(SITE.downloadBut
       { name: 'UC网盘', pattern: 'uc.cn', cls: 'mrhx-btn-u', type: 'uc' },
       // 2026-10-12 站长不再分享移动云盘；但存量帖子仍有 yun.139.com 链接——
       //   保留此规则（原名原样式）以免重跑生成时把存量按钮误判成「自定义」改色
-      { name: '移动云盘（不限速）', pattern: 'yun.139.com', cls: 'mrhx-btn-m', type: 'mobile' }
+      { name: '移动云盘', pattern: 'yun.139.com', cls: 'mrhx-btn-m', type: 'mobile' }
     ];
 
 const SITE_NAME = (SITE.site && SITE.site.name) || 'Tsinho黄油推荐站';
@@ -402,7 +402,9 @@ function injectImgFallback(html) {
 function normalizeLegacyButtons(html) {
   return html
     .replace(/<a class="mrhx-btn mrhx-btn-u"[^>]*?(href="https?:\/\/yun\.139\.com[^"]*")[^>]*>UC\u7f51\u76d8<\/a>/g,
-      '<a class="mrhx-btn mrhx-btn-m" data-type="mobile" $1 target="_blank" rel="noreferrer">\u79fb\u52a8\u4e91\u76d8\uff08\u4e0d\u9650\u901f\uff09</a>')
+      '<a class="mrhx-btn mrhx-btn-m" data-type="mobile" $1 target="_blank" rel="noreferrer">\u79fb\u52a8\u4e91\u76d8</a>')
+    // 2026-10-16（站长）：按钮文案「移动云盘（不限速）」太长占空间，统一缩短为「移动云盘」（存量自愈）
+    .replace(/(<a class="mrhx-btn mrhx-btn-m"[^>]*>)\u79fb\u52a8\u4e91\u76d8\uff08\u4e0d\u9650\u901f\uff09(<\/a>)/g, '$1\u79fb\u52a8\u4e91\u76d8$2')
     .replace(/<a class="mrhx-btn mrhx-btn-m"[^>]*?(href="https?:\/\/(?:drive\.)?uc\.cn[^"]*")[^>]*>(?:UC\u7f51\u76d8|\u79fb\u52a8\u4e91\u76d8\uff08\u4e0d\u9650\u901f\uff09)<\/a>/g,
       '<a class="mrhx-btn mrhx-btn-u" data-type="uc" $1 target="_blank" rel="noreferrer">UC\u7f51\u76d8</a>');
 }
