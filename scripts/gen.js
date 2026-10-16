@@ -1532,8 +1532,13 @@ html = (function reorderNodes(str) {
           .replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '')
           // 剥离游戏名文本末尾紧挨着的平台文字（可能带方括号/空格），避免与后加的标签重复
           .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
-          // 2026-10-16（站长）：徽章从标题文本末尾改插开头——原位置会被手机端标题两行截断裁掉（截图反馈）
-          .replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
+          // 2026-10-16（站长定稿）：徽章叠加在封面图左下角（demo 确认）——图片永不截断，徽章必可见；
+          //   无图卡（无 image-list）回退到标题行内原位置。徽章插进 imgBlock（重组时拼回卡内）。
+          if (imgBlock) {
+            imgBlock = imgBlock.replace(/(<ul[^>]*image-list[^>]*>)/, `$1<em class="mrhx-plat mrhx-plat-cover">${plat}</em>`);
+          } else {
+            contentBlock = contentBlock.replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
+          }
       }
       var openTag = clean.match(/<li class="node heading3"(?: hidden)?>[\s\S]*?<\/div>[\s\S]*?<\/div>/);
       var open = openTag ? openTag[0].replace(/\s+$/, '') + '\n  ' : '<li class="node heading3">\n  ';
