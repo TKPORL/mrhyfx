@@ -1399,17 +1399,19 @@ document.addEventListener('DOMContentLoaded',function(){
   // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
   if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
   var btn=document.getElementById('qztMoreBtn');
+  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
+  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
   if(btn) btn.addEventListener('click',function(){
-    var mask=document.getElementById('qztModal');
-    if(mask) mask.classList.add('show');
+    showBatch();
   });
-  var mask=document.createElement('div');
-  mask.className='qzt-modal-mask'; mask.id='qztModal';
-  mask.innerHTML='<div class="qzt-modal"><p>还有 '+(lis.length-shown)+' 款游戏未显示。<br>要继续怎么显示？</p><div class="row"><button type="button" id="qztBatch">再显示 '+FIRST+' 款</button><button type="button" class="pri" id="qztAll">显示全部 '+lis.length+' 款</button></div></div>';
-  document.body.appendChild(mask);
-  mask.addEventListener('click',function(e){ if(e.target===mask) mask.classList.remove('show'); });
-  document.getElementById('qztBatch').addEventListener('click',function(){ mask.classList.remove('show'); showBatch(); });
-  document.getElementById('qztAll').addEventListener('click',function(){ mask.classList.remove('show'); showAll(); });
+  if('IntersectionObserver' in window && document.getElementById('qztMore')){
+    var _io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && shown < lis.length){ showBatch(); }
+      });
+    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
+    _io.observe(document.getElementById('qztMore'));
+  }
 });
 </script><!--/qzt-page-assets-->
   </body>
