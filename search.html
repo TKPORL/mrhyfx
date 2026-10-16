@@ -348,7 +348,7 @@ function relTime(iso){
       (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz[1]) + '">解压码</button>' : '') +
       (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb[1]) + '">作弊码</button>' : '') +
       (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz[1]) + '">赞助码</button>' : '');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? esc(g.plat) + ' · ' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +

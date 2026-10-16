@@ -396,6 +396,16 @@ function injectImgFallback(html) {
   );
 }
 // jsDelivr 国内被墙/污染时封面全裂（2026-10-01 访客反馈）：给 jsDelivr gh 图链注入 onerror，
+// 2026-10-16（站长）：后台发布器曾把 linkM（移动云盘字段）按钮写死「UC网盘」标签——按链接域名归一：
+//   yun.139.com → 移动云盘（不限速）/mrhx-btn-m/mobile；真 UC 链接维持 UC网盘/mrhx-btn-u/uc。
+//   每次生成自愈存量帖，防止「移动云盘按钮变 UC」再次发生。
+function normalizeLegacyButtons(html) {
+  return html
+    .replace(/<a class="mrhx-btn mrhx-btn-u"[^>]*?(href="https?:\/\/yun\.139\.com[^"]*")[^>]*>UC\u7f51\u76d8<\/a>/g,
+      '<a class="mrhx-btn mrhx-btn-m" data-type="mobile" $1 target="_blank" rel="noreferrer">\u79fb\u52a8\u4e91\u76d8\uff08\u4e0d\u9650\u901f\uff09</a>')
+    .replace(/<a class="mrhx-btn mrhx-btn-m"[^>]*?(href="https?:\/\/(?:drive\.)?uc\.cn[^"]*")[^>]*>(?:UC\u7f51\u76d8|\u79fb\u52a8\u4e91\u76d8\uff08\u4e0d\u9650\u901f\uff09)<\/a>/g,
+      '<a class="mrhx-btn mrhx-btn-u" data-type="uc" $1 target="_blank" rel="noreferrer">UC\u7f51\u76d8</a>');
+}
 // 失败自动切 GitHub Pages 同路径（访客能打开网站 = Pages 域名在其网络下可达，图片就在仓库里）
 function injectJsdelivrFallback(html) {
   // 2026-10-01 定稿：jsDelivr 在国内反复被墙/挂起（访客图全裂+无限转圈），主链直接换成 GitHub Pages
@@ -1387,6 +1397,7 @@ for (const file of files) {
     html = await localize(html, tag);
     // 图床兜底：给图床直链加 onerror，图床挂了自动换 GitHub 备份图
     html = injectJsdelivrFallback(html);
+    html = normalizeLegacyButtons(html);
 
     // 图床图直换 GitHub(jsDelivr) 备份源（2026-09-27 用户要求）：有备份映射的图床直链直接改写为 jsDelivr，
     // 彻底不耗图床 KV 额度；无备份的图保持原样（继续走图床 + onerror 兜底）。
@@ -1521,6 +1532,7 @@ html = (function reorderNodes(str) {
           .replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '')
           // 剥离游戏名文本末尾紧挨着的平台文字（可能带方括号/空格），避免与后加的标签重复
           .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
+          // 2026-10-16（站长）：徽章从标题文本末尾改插开头——原位置会被手机端标题两行截断裁掉（截图反馈）
           .replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
       }
       var openTag = clean.match(/<li class="node heading3"(?: hidden)?>[\s\S]*?<\/div>[\s\S]*?<\/div>/);
@@ -2577,7 +2589,7 @@ function relTime(iso){
       (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz[1]) + '">解压码</button>' : '') +
       (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb[1]) + '">作弊码</button>' : '') +
       (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz[1]) + '">赞助码</button>' : '');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + relTime(g.d) + '</span>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? esc(g.plat) + ' · ' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
@@ -3064,7 +3076,11 @@ ${likeScript}
       url: g.url,
       img: g.img,
       plat: g.plat,
-      links: g.links,
+      links: (g.links || []).map(l => {
+        const u = l.url || '';
+        const b = DOWNLOAD_BUTTONS.find(x => x.pattern && u.includes(x.pattern));
+        return b ? { ...l, label: b.name } : l;
+      }),
       intro: (g.intro || ''), // 2026-10-12 不截断——原 80 字上限导致前台介绍少字/隔断；实测最长 2500 字，体积影响可忽略
       source: g.source,
       n: g2num.get(g) || null,
