@@ -33,6 +33,11 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;color:#2b2b2b}
   #postSearch{padding:8px 14px;border-radius:10px;border:1px solid #e9e6e2;font-size:13px;font-family:inherit;background:#faf9f7;outline:none;transition:.2s;color:#333}
   #postSearch:focus{border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
 .field{margin-bottom:14px;position:relative;transition:all .2s}
+/* 2026-10-16（站长）三个码框压缩卡片高度：解压码|作弊码同行，赞助码整行在下 */
+.codes3{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.codes3 .field{margin-bottom:14px}
+.codes3 .field:last-child{grid-column:1/-1}
+@media (max-width:720px){.codes3{grid-template-columns:1fr}}
 .field.act{transition:background .25s}
 /* #52：聚焦态只变色（label 红、输入框边框粉、角标），不加左条/背景/padding——旧版 inset 红条会压在 label 文字上造成“重叠”观感 */
 .field.act label{color:#e5484d;font-weight:700}
@@ -1409,9 +1414,11 @@ function addGameCard(data) {
     </div></div>
   <div class="field"><label>游戏名称</label><input type="text" class="g-name"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
+  <div class="codes3">
   <div class="field"><label>解压码（选填）</label><input type="text" class="g-unzip" placeholder="如 xiebao，前台会显示成可一键复制的按钮"></div>
   <div class="field"><label>作弊码（选填）</label><input type="text" class="g-cheat" placeholder="如 agent17，前台显示「作弊码」按钮，点击即复制"></div>
   <div class="field"><label>赞助码（选填）</label><input type="text" class="g-sponsor" placeholder="如 sponsor2024，前台显示「赞助码」按钮，点击即复制"></div>
+  </div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
     <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
