@@ -1528,14 +1528,17 @@ html = (function reorderNodes(str) {
       if (!plat && pageFallbackPlat) plat = pageFallbackPlat;
       if (plat && contentBlock) {
         contentBlock = contentBlock
-          .replace(/<em class="mrhx-plat">[^<]*<\/em>/g, '')
+          .replace(/<em class="mrhx-plat[^"]*"[^>]*>[^<]*<\/em>/g, '')  // 2026-10-16：类名含 mrhx-plat-cover 变体也要删（否则徽章每次 gen 累积堆叠）
           .replace(/(?:PC\s*\+\s*安卓|PC|安卓){2,}/g, '')
           // 剥离游戏名文本末尾紧挨着的平台文字（可能带方括号/空格），避免与后加的标签重复
           .replace(/[\s\[［]*(?:PC\s*[\+＋]\s*安卓|PC\s*安卓|安卓|PC)[\s\]］]*(?=<\/span><\/div>)/g, '')
           // 2026-10-16（站长定稿）：徽章叠加在封面图左下角（demo 确认）——图片永不截断，徽章必可见；
           //   无图卡（无 image-list）回退到标题行内原位置。徽章插进 imgBlock（重组时拼回卡内）。
           if (imgBlock) {
-            imgBlock = imgBlock.replace(/(<ul[^>]*image-list[^>]*>)/, `$1<em class="mrhx-plat mrhx-plat-cover">${plat}</em>`);
+            imgBlock = imgBlock
+              // 先删本轮之前插入的旧徽章（不删会每次 gen 累积堆叠——2026-10-16 实测 1020 个）
+              .replace(/<em class="mrhx-plat[^"]*"[^>]*>[^<]*<\/em>/g, '')
+              .replace(/(<ul[^>]*image-list[^>]*>)/, `$1<em class="mrhx-plat mrhx-plat-cover">${plat}</em>`);
           } else {
             contentBlock = contentBlock.replace(/<\/span><\/div>/, `<em class="mrhx-plat">${plat}</em></span></div>`);
           }
@@ -1683,14 +1686,14 @@ ${navHeaderHtml('')}
       if (i >= html.length) { searchBlocks.push(html.slice(h3)); break; }
     }
     const games = searchBlocks.map(b => {
-      const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
+      const title = ((b.match(/<div class="content mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '').replace(/<em class="mrhx-plat[^"]*"[^>]*>[^<]*<\/em>/g, '').replace(/<[^>]+>/g, '').trim();
       const intro = (b.match(/<div class="note mm-editor"[^>]*><span[^>]*>([\s\S]*?)<\/span><\/div>/) || [])[1] || '';
       // ★缩略图系统上线后页面里的 src 已是缩略图、原图在 data-full（2026-10-14 踩过）：
       //   索引/封面/og:image 必须取原图，否则搜索页弹窗大图与分享卡封面会把 360 缩略图拉大 → 糊
       const img0 = (b.match(/data-full="([^"]+)"/) || b.match(/src="([^"]+)"/) || [])[1] || '';
       // 历史页面可能残留 t_ 缩略图引用（#14 已撤销），统一还原原图
       const img = img0.replace(/\/t_([^/"?]+\.webp)$/, '/$1');
-      const plat = (b.match(/<em class="mrhx-plat"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
+      const plat = (b.match(/<em class="mrhx-plat[^"]*"[^>]*>([^<]*)<\/em>/) || [])[1] || '';
       const links = [...b.matchAll(/<a class="mrhx-btn[^"]*"[^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map(m => ({ url: m[1], label: m[2].replace(/[：:]\s*$/, '') }));
       // #10：帖子级 url（搜索结果标题跳转用）。缺失会导致点击结果 404/空链接
       return { title, intro, img, links, plat, url: file, source: TITLES[shortName] || shortName };
@@ -2444,6 +2447,7 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .result .rt{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .result .rt .name{font-size:16px;color:#2b2b2b;font-weight:600;padding-bottom:1px}
 .result .rt .src{font-size:11px;color:#888;background:#f1efe9;border-radius:99px;padding:2px 10px}
+.src-plat{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:600;font-style:normal;color:#fff;background:#e5484d;vertical-align:1px}
 .result .rt .detail-link{font-size:12px;font-weight:600;color:#e5484d;text-decoration:none;margin-left:auto;white-space:nowrap}
 .result .rt .detail-link:hover{text-decoration:underline}
 .result .intro{font-size:13px;color:#888;line-height:1.75;margin-bottom:12px;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -2594,7 +2598,7 @@ function relTime(iso){
       (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz[1]) + '">解压码</button>' : '') +
       (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb[1]) + '">作弊码</button>' : '') +
       (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz[1]) + '">赞助码</button>' : '');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? esc(g.plat) + ' · ' : '') + relTime(g.d) + '</span>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
       (dl ? '<div class="dl">' + dl + '</div>' : '') +
