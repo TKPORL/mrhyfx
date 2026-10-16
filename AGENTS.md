@@ -274,3 +274,5 @@
    **新教训：Tsinhoht.html 曾被旧版整文件覆盖丢功能——动后台文件前先 `git log -S <功能标记> -- Tsinhoht.html` 确认版本在链上。**
 3. **卡片下载区拉伸方案A+B**（2026-10-16 定稿）：grid2 卡片 `.mrhx-dl a:only-child` 拉伸整行、
    `a:first-child+a:last-child` 双网盘铺满。改按钮布局时注意码按钮（button 元素，搜索页专属）不参与拉伸选择器。
+4. **赞助页 2026-10-16 站长定稿新版**：暖色公告框 + 微信绿/支付宝蓝码卡（真图 assets/sponsor/*.webp）+ 2x2 特性格子。
+   sponsor.html 在 site.json build.excludePosts 里，gen 不重排；导航/页脚/SEO 保留手维护。回滚备份 sponsor.html.bak-20261016-换新版前。
