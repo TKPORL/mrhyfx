@@ -2425,6 +2425,58 @@ ${SMOOTH_SCRIPTS}
     console.log('day-nav ok:', chain.length + (qztDay ? 1 : 0), 'posts');
   }
 
+  // 2026-10-17（站长）：五个独立页（sponsor/tutorial/tools/download/mianze）顶栏统一——
+  //   每次 gen 用 navHeaderHtml 重写 <!--mrhx-header-start--> 标记区，与主站永远一致；
+  //   当前页高亮各自保留。标记首次由本步写入；mianze 原无站点头（其 <header> 是页内标题），
+  //   站点头插到 <body> 后、原标题改名 .page-head 防样式冲突，并补 site.css/nav.js。
+  {
+    const standalone = [
+      { file: 'sponsor.html',  current: 'sponsor.html' },
+      { file: 'tutorial.html', current: 'tutorial.html' },
+      { file: 'tools.html',    current: 'tools.html' },
+      { file: 'download.html', current: 'download.html' },
+      { file: 'mianze.html',   current: 'mianze.html' }
+    ];
+    const headerBlock = current => `<!--mrhx-header-start--><header>\n${navHeaderHtml(current)}\n</header><!--mrhx-header-end-->`;
+    standalone.forEach(({ file, current }) => {
+      let h = fs.readFileSync(file, 'utf8');
+      if (h.includes('<!--mrhx-header-start-->')) {
+        h = h.replace(/<!--mrhx-header-start-->[\s\S]*?<!--mrhx-header-end-->/, headerBlock(current));
+      } else if (file !== 'mianze.html') {
+        const m = h.match(/<header>[\s\S]*?<\/header>/);
+        if (!m) { console.warn('独立页顶栏: 未找到 header，跳过 ' + file); return; }
+        let consumed = m[0].length;
+        const rest = h.slice(m.index + m[0].length);
+        const drops = rest.match(/^(\s*(?:<div class="nav-drop"[\s\S]*?<\/div>\s*)*<div class="nav-mask"[^>]*><\/div>)/);
+        if (drops) consumed += drops[1].length;
+        h = h.slice(0, m.index) + headerBlock(current) + h.slice(m.index + consumed);
+      } else {
+        // mianze：原标题元素与样式改名 .page-head，站点头插到 <body> 后
+        h = h.replace('<header>', '<header class="page-head">')
+             .replace('header{text-align:center', '.page-head{text-align:center')
+             .replace('header .site{', '.page-head .site{')
+             .replace('header h1{', '.page-head h1{')
+             .replace('header .rule{', '.page-head .rule{')
+             .replace('header h1{font-size:24px}', '.page-head h1{font-size:24px}');
+        h = h.replace('<body>', '<body>\n' + headerBlock(current));
+      }
+      // 样式/脚本对齐（幂等）：css 与 nav.js 哈希统一、缺的补上
+      if (!h.includes('assets/css/site.css')) {
+        h = h.replace('</head>', '<link rel="stylesheet" href="assets/css/site.css?v=' + CSS_VER + '">\n</head>');
+      } else {
+        h = h.replace(/assets\/css\/site\.css\?v=[a-f0-9]+/, 'assets/css/site.css?v=' + CSS_VER);
+      }
+      if (!h.includes('assets/js/nav.js')) {
+        h = h.replace('</body>', '<script src="assets/js/nav.js?v=' + NAVJS_VER + '"></script>\n' + SMOOTH_SCRIPTS + '\n</body>');
+      } else {
+        h = h.replace(/assets\/js\/nav\.js\?v=[a-f0-9]+/g, 'assets/js/nav.js?v=' + NAVJS_VER);
+        if (!h.includes('lenis.min.js')) h = h.replace('</body>', SMOOTH_SCRIPTS + '\n</body>');
+      }
+      fs.writeFileSync(file, h);
+      console.log('独立页顶栏统一:', file);
+    });
+  }
+
   // 发布骨架（替代“拿 8.10.html 当模板”）：从最新帖子剥离所有帖子专属内容，
   //   生成干净的 assets/template-skeleton.html 供后台表单发布取壳。
   //   骨架里没有评论区/浏览量脚本/导航，gen.js 发布后会重新注入正确路径，从根上消除串帖/按钮嵌套两类中间态 bug
