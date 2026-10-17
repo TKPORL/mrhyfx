@@ -278,3 +278,6 @@
    sponsor.html 在 site.json build.excludePosts 里，gen 不重排；导航/页脚/SEO 保留手维护。回滚备份 sponsor.html.bak-20261016-换新版前。
 4. **赞助页 2026-10-16 站长定稿新版**：暖色公告框 + 微信绿/支付宝蓝码卡（真图 assets/sponsor/*.webp）+ 2x2 特性格子。
    sponsor.html 在 site.json build.excludePosts 里，gen 不重排；导航/页脚/SEO 保留手维护。回滚备份 sponsor.html.bak-20261016-换新版前。
+- **★冲突标记防线（2026-10-17 事故）**：merge 冲突后严禁继续跑 gen/commit/push；commit 前必查
+  `git grep -c '<<<<<<<' HEAD -- '*.html' '*.json'` = 0。冲突文件恢复 = `git show <bot父提交>:<file>` 取干净版再重跑 gen。
+  资源导航条：gen.js `RESOURCE_LINKS`（链接清单）/`RES_LOGO_URL`（横版Logo直链，待填）常量，site.css `.mrhx-resblock`。
