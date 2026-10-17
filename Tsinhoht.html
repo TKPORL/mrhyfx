@@ -566,15 +566,16 @@ body.gate-pending main{display:none!important}
 </div>
 <script>
 // ===== 密码门禁（防误入，非服务器级防护）=====
-// djb2 hash：避免密码明文直接暴露在源码里
+// 2026-10-18：改用 SHA-256 加盐哈希（旧版 djb2 玩家级算法+密码提示注释等于公开密码）；
+// 密码本身为 20 位混合强口令，源码中无任何明文/提示
 const GATE_KEY = 'mrhx_gate_ok';
+const GATE_SALT = 'mrhx-gate|';
+const PW_HASH = '94527a9edb4fead00869bd4bf7c1f7db287688f00bba1456b73ad9fee2f90822';
+async function gateSha256(s) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 (function () {
-  function djb2(s) {
-    let h = 5381;
-    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-    return h.toString(16);
-  }
-  const PW_HASH = 'e75649f0'; // Tsinho123 的 djb2
   const lock = document.getElementById('gateLock');
   const pw = document.getElementById('gatePw');
   const err = document.getElementById('gateErr');
@@ -582,9 +583,9 @@ const GATE_KEY = 'mrhx_gate_ok';
     lock.classList.remove('show');
     document.body.classList.remove('gate-pending');
   }
-  function tryPw() {
-    const v = pw.value;
-    if (djb2(v) === PW_HASH) {
+  async function tryPw() {
+    const h = await gateSha256(GATE_SALT + pw.value);
+    if (h === PW_HASH) {
       localStorage.setItem(GATE_KEY, PW_HASH);
       unlock();
     } else {
