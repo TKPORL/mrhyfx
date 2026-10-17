@@ -1158,6 +1158,18 @@ function thumbUrlOf(url, kind) {
 }
 
 function thumbifyImgTag(tag, kind) {
+  // 2026-10-17（站长）：动图源（.gif）不套静态缩略图——缩略图是单帧，动图会变静图；直接用原图让浏览器播
+  const dmGif = tag.match(/\sdata-full="([^"]+\.gif[^"]*)"/i);
+  const srcGif = tag.match(/\s(?:data-)?src="([^"]+\.gif[^"]*)"/i);
+  if (dmGif || srcGif) {
+    const gif = (dmGif && dmGif[1]) || (srcGif && srcGif[1]);
+    const am1 = tag.match(/\s(?:data-)?src="([^"]+)"/);
+    if (am1 && am1[1].indexOf('/assets/thumb/') >= 0) {
+      // 已被静态缩略图化的：src 还原为动图原图，data-full/onerror 兜底一并去掉（src 本身就是原图）
+      return tag.replace(am1[1], gif).replace(/\sdata-full="[^"]*"/, '').replace(/\sonerror="[^"]*"/, '');
+    }
+    return tag;
+  }
   // 已经缩略图化过（src 已是 thumb）：只校正尺寸并登记任务，保持幂等
   const dm0 = tag.match(/\sdata-full="([^"]+)"/);
   const am0 = tag.match(/\s(?:data-)?src="([^"]+)"/);
