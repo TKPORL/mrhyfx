@@ -3191,7 +3191,7 @@ async function loadStats() {
         const dRes = await _safeFetch(`${sbUrl}/rest/v1/daily_page_views?select=url,count&day=eq.${today}&order=count.desc&limit=${dPageSize}&offset=${dOffset}`, {
           headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
         }, 'daily_page_views');
-        if (!dRes) break;
+        if (!dRes) { _statsErrs.push('今日访问分页拉取失败（offset ' + dOffset + '），今日数字可能偏小'); break; }
         const batch = (await dRes.json()).filter(v => !valid || valid.has(v.url));
         todayArr = todayArr.concat(batch);
         if (batch.length < dPageSize) break;
@@ -3238,7 +3238,8 @@ async function loadStats() {
     // 自动保存今日快照
     saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
-    box.innerHTML = debugInfo;
+    const asOf = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    box.innerHTML = debugInfo + '<p class="hint" style="margin-top:6px"><b>数据截至 ' + asOf + '</b>（本次打开统计页时拉取；打开后新产生的访问不会自动计入，点「刷新」更新）。<b>注意：</b>「今日访问」只统计有效帖子路径，<b>「每日访问」图含已删除帖子的失效路径访问</b>——两个数字口径不同，图 ≥ 卡是正常的。</p>';
     if (_statsErrs.length) {
       box.insertAdjacentHTML('beforeend', '<div style="background:#fdecea;border:1px solid #e8a39a;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#a3361b"><b>查询出错 (' + _statsErrs.length + ' 条)：</b><br>' + _statsErrs.map(m => m.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join('<br>') + '</div>');
     }
@@ -3429,7 +3430,7 @@ async function loadDaily() {
         + '<div style="width:56px;flex:none;text-align:right;font-weight:700;color:#e5484d">' + r.count + '</div>'
         + '</div>';
     }).join('') + '</div>' + errBlock;
-    box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">最近 7 天合计 ' + weekTotal + ' 次访问。数据来自 daily_page_views 表，每天独立记录，历史不会被今天覆盖。</p>');
+    box.insertAdjacentHTML('beforeend', '<p class="hint" style="margin-top:10px">最近 7 天合计 ' + weekTotal + ' 次访问。<b>数据截至 ' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + '</b>（点「刷新」更新）。数据来自 daily_page_views 表，每天独立记录，历史不会被今天覆盖。<b>注意：本图含已删除帖子的失效路径访问，与上方「今日访问」（仅有效帖子）口径不同。</b></p>');
   } catch (e) {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 Supabase 配置正确，且 daily_page_views 表已创建。</p>';
   }

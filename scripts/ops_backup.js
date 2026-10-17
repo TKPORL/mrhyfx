@@ -93,7 +93,7 @@ async function safeFetch(url, opts, safetyOpts) {
         const views = await supabaseFetch('/rest/v1/page_views?select=*&order=page_viewed_at.asc&limit=50000');
         if (views.ok) { const j = await views.json(); tables.page_views = { count: j.length, rows: j }; }
         try {
-          const daily = await supabaseFetch('/rest/v1/daily_page_views?select=*&order=view_day.asc&limit=50000');
+          const daily = await supabaseFetch('/rest/v1/daily_page_views?select=*&order=day.asc&limit=50000');
           if (daily.ok) { const j = await daily.json(); tables.daily_page_views = { count: j.length, rows: j }; }
         } catch (e) {
           tables.daily_page_views = { count: 0, rows: [], note: (e.message || e) };
