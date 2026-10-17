@@ -110,6 +110,13 @@
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   /* 底部导航行：上一期 | 官网 全部黄油 解压教程 | 下一期，三段一行 */
   .mrhx-navrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:nowrap}
+  /* 2026-10-17（站长）帖子底部资源导航条：横版Logo通栏 + 等高链接网格（手机两列/电脑四列） */
+  .mrhx-resblock{border:1px solid #f0e3e3;border-radius:14px;background:#fffdfb;padding:12px;margin:22px 0 0}
+  .mrhx-resblock .res-logo{width:100%;display:block;border-radius:10px;margin-bottom:10px}
+  .mrhx-resblock .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mrhx-resblock .res-grid a{display:flex;align-items:center;justify-content:center;padding:9px 10px;min-height:42px;border-radius:10px;background:#6d6ff0;color:#fff;font-size:12.5px;font-weight:600;text-decoration:none;text-align:center;line-height:1.35;transition:.15s}
+  .mrhx-resblock .res-grid a:hover{background:#585ade}
+  @media (min-width:720px){.mrhx-resblock .res-grid{grid-template-columns:repeat(4,1fr)}}
   .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;white-space:nowrap}
   .mrhx-navmid{display:flex;gap:6px;flex:1;justify-content:center;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}

@@ -2362,13 +2362,35 @@ ${SMOOTH_SCRIPTS}
   // #28/#50/#51：底部导航行 =「← 上一期 ｜ 官网 全部黄油 解压教程 ｜ 下一期 →」。
   //   链序与首页一致（days 已按置顶在前+时间倒序）。求助贴 qzt 置顶且不是期数：上一期置灰、下一期指向最新一期；
   //   普通期帖之间按期数互链（上一期=更早一期，下一期=更新一期，不含 qzt）
+  // 2026-10-17（站长）：资源导航条（横版Logo通栏 + 等高链接网格）注入在导航行上方，链接清单改这里全站生效
+  {
+    const RES_LOGO_URL = '';  // ← 横版 Logo 的图床直链，拿到后填这里；空 = 不渲染 Logo 图
+    const RESOURCE_LINKS = [
+      { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
+      { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
+      { name: '影音娱乐', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67' },
+      { name: '看片软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya' },
+      { name: '成人壁纸', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww' },
+      { name: '游戏破解版合集', url: 'https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv' },
+      { name: '节点搭建教程', url: 'https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5' },
+      { name: '不限速工具', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr' },
+      { name: '不限速教程', url: 'https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp' },
+      { name: 'Tsinho资源库', url: 'https://tkporl.github.io/' },
+      { name: 'Tsinho资源库（在线版）', url: 'https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html' }
+    ];
+    var resBlockHtml = '<div class="mrhx-resblock">' +
+      (RES_LOGO_URL ? `<img class="res-logo" src="${esc(RES_LOGO_URL)}" alt="Tsinho黄油站">` : '') +
+      '<div class="res-grid">' +
+      RESOURCE_LINKS.map(l => `<a href="${esc(l.url)}"${/^https?:/i.test(l.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(l.name)}</a>`).join('') +
+      '</div></div>';
+  }
   {
     const chain = days.filter(d => path.parse(d.file).name !== 'qzt');
     const navBtn = (href, label, disabled) => disabled
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
     const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}"${/^https?:/i.test(n.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(n.label)}</a>`).join('\n    ');
-    const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
+    const mkNav = (older, newer) => `\n  <!--mrhx-daynav-->${resBlockHtml}<div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
       `<div class="mrhx-navmid">${navMid}</div>` +
       navBtn(newer ? newer.file : '', '下一期 →', !newer) +
