@@ -3192,7 +3192,8 @@ async function loadStats() {
           headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
         }, 'daily_page_views');
         if (!dRes) { _statsErrs.push('今日访问分页拉取失败（offset ' + dOffset + '），今日数字可能偏小'); break; }
-        const batch = (await dRes.json()).filter(v => !valid || valid.has(v.url));
+        // 2026-10-17（站长）：今日访问改为含全部路径（含已删除帖子的失效路径）——被删掉的帖子带来的访问也是真实访问，与「每日访问」图同口径
+        const batch = await dRes.json();
         todayArr = todayArr.concat(batch);
         if (batch.length < dPageSize) break;
         dOffset += dPageSize;
@@ -3239,7 +3240,7 @@ async function loadStats() {
     saveTodaySnapshot({ totalViews: total, totalPosts: postCount, avgViews: avg, todayViews: todayTotal, todayComments: todayCommentCount, todayDownloads: totalDlClicks });
     _deadRows = deadRows;
     const asOf = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-    box.innerHTML = debugInfo + '<p class="hint" style="margin-top:6px"><b>数据截至 ' + asOf + '</b>（本次打开统计页时拉取；打开后新产生的访问不会自动计入，点「刷新」更新）。<b>注意：</b>「今日访问」只统计有效帖子路径，<b>「每日访问」图含已删除帖子的失效路径访问</b>——两个数字口径不同，图 ≥ 卡是正常的。</p>';
+    box.innerHTML = debugInfo + '<p class="hint" style="margin-top:6px"><b>数据截至 ' + asOf + '</b>（本次打开统计页时拉取；打开后新产生的访问不会自动计入，点「刷新」更新）。「今日访问」与「每日访问」图同口径，均含已删除帖子的失效路径访问。</p>';
     if (_statsErrs.length) {
       box.insertAdjacentHTML('beforeend', '<div style="background:#fdecea;border:1px solid #e8a39a;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#a3361b"><b>查询出错 (' + _statsErrs.length + ' 条)：</b><br>' + _statsErrs.map(m => m.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join('<br>') + '</div>');
     }
