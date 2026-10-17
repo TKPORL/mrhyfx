@@ -115,8 +115,8 @@
   .mrhx-resblock{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0 0}
   .mrhx-resblock .res-logo{display:none}
   .mrhx-resblock .res-grid{display:contents}
-  .mrhx-resblock .res-grid a{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border:1px solid #f2c9c9;border-radius:9px;background:#fdf1f1;color:#e5484d;font-size:13px;font-weight:600;text-decoration:none;text-align:center;line-height:1.4;white-space:nowrap;transition:.15s}
-  .mrhx-resblock .res-grid a:hover{background:#fbe3e3}
+  .mrhx-resblock .res-grid a{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border:1px solid #e3e1de;border-radius:9px;background:#fff;color:#444;font-size:13px;font-weight:600;text-decoration:none;text-align:center;line-height:1.4;white-space:nowrap;transition:.15s}
+  .mrhx-resblock .res-grid a:hover{background:#f5f4f2}
   .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;white-space:nowrap}
   .mrhx-navmid{display:flex;gap:6px;flex:1;justify-content:center;min-width:0;flex-wrap:nowrap;overflow:hidden}
   .mrhx-grid{display:flex;flex-wrap:wrap;gap:10px;max-width:560px}
