@@ -2364,7 +2364,7 @@ ${SMOOTH_SCRIPTS}
   //   普通期帖之间按期数互链（上一期=更早一期，下一期=更新一期，不含 qzt）
   // 2026-10-17（站长）：资源导航条（横版Logo通栏 + 等高链接网格）注入在导航行上方，链接清单改这里全站生效
   {
-    const RES_LOGO_URL = '';  // ← 横版 Logo 的图床直链，拿到后填这里；空 = 不渲染 Logo 图
+    const RES_LOGO_URL = 'https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp';  // ← 横版 Logo 的图床直链，拿到后填这里；空 = 不渲染 Logo 图
     const RESOURCE_LINKS = [
       { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
       { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
