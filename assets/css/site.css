@@ -140,8 +140,10 @@
   body.mrhx-grid2 .node.exp .note{display:block;-webkit-line-clamp:unset;-webkit-box-orient:vertical;max-height:none;overflow:visible}
   body.mrhx-grid2 .node .mrhx-dl{order:3;margin:8px 14px 12px}
   /* 2026-10-16（站长）下载区所有按钮（网盘 + 解压/作弊/赞助码，码按钮由脚本运行时注入）一律
-     拉伸铺满整行、文字居中：单按钮整行、两个各半、三个三份；挤不下时 flex-wrap 换行仍各自铺满 */
-  body.mrhx-grid2 .node .mrhx-dl > *{flex:1 1 0;max-width:none;min-width:0;justify-content:center;text-align:center}
+     拉伸铺满整行、文字居中：单按钮整行、两个各半、三个三份；挤不下时 flex-wrap 换行仍各自铺满。
+     2026-10-17 修正：min-width 必须>0——11 条自定义链接时 flex-basis:0 会把每个按钮压成一字宽
+     （文字竖排，站长实测"本站其他资源"卡）；≥7em 保证可读，放不下自动换行成多行两列 */
+  body.mrhx-grid2 .node .mrhx-dl > *{flex:1 1 0;max-width:none;min-width:6em;box-sizing:border-box;justify-content:center;text-align:center}
   body.mrhx-grid2 .node .img-tip{order:4;display:block;margin:0 14px 12px;font-size:11px;color:#aaa;text-align:center}
   body.mrhx-grid2 .node.exp .img-tip{display:none}
   body.mrhx-grid2 .node .exp-hint{order:5;display:none;margin:0 14px 12px;padding:4px 12px;border-radius:99px;border:1px solid #e5e6e8;color:#666;font-size:11px;font-weight:600;width:max-content;max-width:calc(100% - 28px);cursor:pointer}
