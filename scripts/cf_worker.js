@@ -1,5 +1,12 @@
 /**
- * cf_worker.js — Tsinho黄油站 数据服务 v2（评论/点赞/浏览量/下载点击/后台管理）
+ * cf_worker.js — Tsinho黄油站 数据服务 v3（评论/点赞/浏览量/下载点击/后台管理）
+ *
+ * v3（2026-10-19 数据源模式开关 + 写入兜底）：
+ *   - DATA_MODE 三档：auto（默认，D1 主 SB 备）/ d1（只用 D1，禁回退）/ supabase（只用 SB，D1 维护时用）
+ *   - 模式优先级：D1 app_config 表（后台按钮写入，15s 缓存）> 环境变量 DATA_MODE > auto
+ *   - 写入兜底补全：聚合缓冲（浏览/点击）落 D1 失败时，原样转投 Supabase（浏览走 SB 自增 RPC、点击直插）
+ *   - /v1/admin/set-mode（POST {mode}）/ /v1/admin/mode（GET）——后台 Tsinhoht「数据源切换」按钮用
+ *   - 注意：强制 supabase 期间新数据只进 SB，切回 auto 后需跑一次对账脚本补 D1
  *
  * v2（2026-10-10 双写容灾 + 聚合上报）：
  *   - 主库 D1，备用 Supabase：GET 读 D1，失败/超时(3s)自动改读 Supabase（响应头 X-Data-Source 标注）
@@ -13,6 +20,7 @@
  *       POST /rest/v1/download_clicks（下载点击上报，track.js 直插）
  *       POST /rest/v1/rpc/{guard_comment,inc_page_view,inc_daily_view,inc_game_like,admin_reply_comment,admin_delete_comment,admin_pin_comment}
  *       POST /v1/admin/import（批量导数）
+ *       GET  /v1/admin/mode · POST /v1/admin/set-mode（数据源模式，v3）
  *       scheduled：每天汇总 daily_snapshots
  *
  * 绑定：Settings → Variables and Secrets
@@ -21,6 +29,7 @@
  *   VISITOR_SALT  访客指纹盐（随机字符串）
  *   ALLOWED_ORIGINS 逗号分隔，如 https://tkporl.github.io（同域两站共用）
  *   SITE_PREFIX_B 备用站前缀，如 /hyfxdyx/
+ *   DATA_MODE     可选，auto / d1 / supabase（缺省 auto；被 D1 app_config 覆盖）
  *   SUPABASE_URL      备用端地址，如 https://xxxx.supabase.co（不配则镜像自动跳过）
  *   SUPABASE_ANON_KEY 备用端公开 anon key
  */
@@ -92,6 +101,37 @@ function visitorHash(request, env) {
   return sha256hex(ip + '|' + ua + '|' + (env.VISITOR_SALT || 'salt'));
 }
 
+/* ---------- v3 数据源模式：auto（默认）/ d1（只用 D1）/ supabase（只用 SB） ---------- */
+let MODECACHE = { v: null, at: 0 };
+async function getMode(env) {
+  if (MODECACHE.v && Date.now() - MODECACHE.at < 15000) return MODECACHE.v;
+  let m = String(env.DATA_MODE || '').trim().toLowerCase();
+  if (!['d1', 'supabase'].includes(m)) m = 'auto';
+  try {
+    const r = await env.DB.prepare("SELECT v FROM app_config WHERE k='data_mode'").first();
+    if (r && ['d1', 'supabase', 'auto'].includes(String(r.v))) m = String(r.v);
+  } catch (e) { /* D1 不可用（含读额度爆）时退回环境变量/默认值，不影响 fallback */ }
+  MODECACHE = { v: m, at: Date.now() };
+  return m;
+}
+async function setMode(env, mode) {
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS app_config(k TEXT PRIMARY KEY, v TEXT)').run();
+  await env.DB.prepare("INSERT INTO app_config(k,v) VALUES('data_mode',?) ON CONFLICT(k) DO UPDATE SET v=excluded.v").bind(mode).run();
+  MODECACHE = { v: mode, at: Date.now() };
+}
+// 只用 SB 模式的读透传：带 count=exact，透传 Content-Range（后台统计依赖它）
+async function sbListPassthrough(request, table) {
+  if (!sbReady()) return jerr('SUPABASE_NOT_CONFIGURED', 503);
+  const u = new URL(request.url);
+  const r = await fetch(sbBase() + u.pathname + u.search, { headers: { apikey: ENVREF.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + ENVREF.SUPABASE_ANON_KEY, Prefer: 'count=exact' } });
+  if (!r.ok) return jerr('upstream ' + r.status, 502);
+  let rows = await r.json();
+  const isAdmin = await adminOk(request, ENVREF);
+  if (!isAdmin) rows = stripPrivate(table, rows);
+  const cr = r.headers.get('content-range');
+  return jres(rows, 200, table === 'comments' ? 60 : 0, cr ? { 'Content-Range': cr, 'X-Data-Source': 'supabase-mode' } : { 'X-Data-Source': 'supabase-mode' });
+}
+
 /* ---------- Supabase 镜像（备用端）：所有镜像均为 fire-and-forget，失败只记日志 ---------- */
 function sbReady() { return !!(ENVREF && ENVREF.SUPABASE_URL && ENVREF.SUPABASE_ANON_KEY); }
 function sbBase() { return String(ENVREF.SUPABASE_URL).replace(/\/+$/, ''); }
@@ -122,6 +162,18 @@ async function sbInsertComment(c) {
   } catch (e) { console.log('[sb-mirror] comments', String(e).slice(0, 120)); }
 }
 
+// 点赞镜像：先看 SB 当前值，SB 已领先（兜底期间自增过）就不回退，只补落后
+async function sbMirrorLike(id, cnt) {
+  if (!sbReady()) return;
+  try {
+    const r = await fetch(sbBase() + '/rest/v1/game_likes?select=count&game_id=eq.' + encodeURIComponent(id), { headers: { apikey: ENVREF.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + ENVREF.SUPABASE_ANON_KEY } });
+    const rows = await r.json().catch(() => []);
+    const cur = Array.isArray(rows) && rows[0] ? Number(rows[0].count) || 0 : -1;
+    if (cur >= cnt) return;
+    await fetch(sbBase() + '/rest/v1/game_likes', { method: 'POST', headers: sbHeaders(true), body: JSON.stringify({ game_id: id, count: cnt }) });
+  } catch (e) { console.log('[sb-mirror] game_likes', String(e).slice(0, 120)); }
+}
+
 /* ---------- 聚合缓冲：浏览/点击类写入先攒一批，满 50 条或 60 秒落一次库 ---------- */
 const AGG = { pv: new Map(), dv: new Map(), clicks: [], since: 0, timerSet: false };
 function aggTouch() { if (!AGG.since) AGG.since = Date.now(); aggSchedule(); }
@@ -137,26 +189,47 @@ function aggSchedule() {
 }
 async function aggFlush(env) {
   if (!aggSize()) return;
+  const snapshot = { pv: new Map(AGG.pv), dv: new Map(AGG.dv), clicks: AGG.clicks.slice() };
   const mirrors = [];
-  // 页面浏览：D1 累加，取回终值镜像给 Supabase（Supabase REST 不能做自增，直接覆盖成 D1 终值，两边最终一致）
-  for (const [url, n] of AGG.pv) {
-    const r = await env.DB.prepare('INSERT INTO page_views(url,count) VALUES(?,?) ON CONFLICT(url) DO UPDATE SET count=count+excluded.count RETURNING count').bind(url, n).first();
-    mirrors.push(['/rest/v1/page_views', { url, count: r ? r.count : n }, true]);
-  }
-  for (const [key, n] of AGG.dv) {
-    const i = key.indexOf('|'), day = key.slice(0, i), url = key.slice(i + 1);
-    const r = await env.DB.prepare('INSERT INTO daily_page_views(day,url,count) VALUES(?,?,?) ON CONFLICT(day,url) DO UPDATE SET count=count+excluded.count RETURNING count').bind(day, url, n).first();
-    mirrors.push(['/rest/v1/daily_page_views', { day, url, count: r ? r.count : n }, true]);
-  }
-  for (const c of AGG.clicks) {
-    await env.DB.prepare('INSERT INTO download_clicks(path,label,url,created_at) VALUES(?,?,?,?)')
-      .bind(esc(c.post_url || c.path || '').slice(0, 300), esc(c.game_name || c.label || '').slice(0, 200),
-        esc(c.link_url || c.url || '').slice(0, 500), esc(c.created_at || bjNow())).run();
-    mirrors.push(['/rest/v1/download_clicks', { post_url: c.post_url || c.path || '', game_name: c.game_name || c.label || '',
+  try {
+    // 页面浏览：D1 累加。镜像不再用「D1 终值覆盖 SB」（v2 做法）——那在 D1 曾挂过、SB 靠自增领先时
+    // 会把 SB 的数字倒退（100 变 80）。v3 改为镜像也走 SB 自增 RPC，两端各自独立累加，永不回退。
+    for (const [url, n] of snapshot.pv) {
+      const r = await env.DB.prepare('INSERT INTO page_views(url,count) VALUES(?,?) ON CONFLICT(url) DO UPDATE SET count=count+excluded.count RETURNING count').bind(url, n).first();
+      for (let i = 0; i < n; i++) mirrors.push(['/rest/v1/rpc/inc_page_view', { p_url: url }, false]);
+    }
+    for (const [key, n] of snapshot.dv) {
+      const i = key.indexOf('|'), day = key.slice(0, i), url = key.slice(i + 1);
+      const r = await env.DB.prepare('INSERT INTO daily_page_views(day,url,count) VALUES(?,?,?) ON CONFLICT(day,url) DO UPDATE SET count=count+excluded.count RETURNING count').bind(day, url, n).first();
+      for (let k = 0; k < n; k++) mirrors.push(['/rest/v1/rpc/inc_daily_view', { p_day: day, p_url: url }, false]);
+    }
+    for (const c of snapshot.clicks) {
+      await env.DB.prepare('INSERT INTO download_clicks(path,label,url,created_at) VALUES(?,?,?,?)')
+        .bind(esc(c.post_url || c.path || '').slice(0, 300), esc(c.game_name || c.label || '').slice(0, 200),
+          esc(c.link_url || c.url || '').slice(0, 500), esc(c.created_at || bjNow())).run();
+      mirrors.push(['/rest/v1/download_clicks', { post_url: c.post_url || c.path || '', game_name: c.game_name || c.label || '',
+        link_url: c.link_url || c.url || '', link_type: c.link_type || '', created_at: c.created_at || bjNow() }, false]);
+    }
+  } catch (e) {
+    // v3 写入兜底：D1 写不进去（挂/额度爆）时，把缓冲原样转投 Supabase，数据不丢（D1 侧回头对账补齐）
+    if (!sbReady() || !D1_DOWN.test(String(e.message || e) + ' D1_ERROR TIMEOUT')) throw e;
+    console.log('[agg-flush] D1 写入失败，转投 Supabase：', String(e).slice(0, 120));
+    const jobs = [];
+    for (const [url, n] of snapshot.pv) for (let i = 0; i < n; i++) jobs.push(['/rest/v1/rpc/inc_page_view', { p_url: url }, false]);
+    for (const [key, n] of snapshot.dv) {
+      const i = key.indexOf('|'), day = key.slice(0, i), url = key.slice(i + 1);
+      for (let k = 0; k < n; k++) jobs.push(['/rest/v1/rpc/inc_daily_view', { p_day: day, p_url: url }, false]);
+    }
+    for (const c of snapshot.clicks) jobs.push(['/rest/v1/download_clicks', {
+      post_url: c.post_url || c.path || '', game_name: c.game_name || c.label || '',
       link_url: c.link_url || c.url || '', link_type: c.link_type || '', created_at: c.created_at || bjNow() }, false]);
+    for (const [p, b, m] of jobs) await sbSend(p, b, m);
+    AGG.pv.clear(); AGG.dv.clear(); AGG.clicks = []; AGG.since = 0;
+    console.log('[agg-flush] 已转投 Supabase', jobs.length, '条');
+    return;
   }
   await env.DB.batch([]).catch(() => {}); // 占位：保持与旧版行为一致（无批量语句时 no-op）
-  const done = { pv: AGG.pv.size, dv: AGG.dv.size, clicks: AGG.clicks.length };
+  const done = { pv: snapshot.pv.size, dv: snapshot.dv.size, clicks: snapshot.clicks.length };
   AGG.pv.clear(); AGG.dv.clear(); AGG.clicks = []; AGG.since = 0;
   if (CTXREF) CTXREF.waitUntil(Promise.all(mirrors.map(([p, b, m]) => sbSend(p, b, m))));
   else mirrors.forEach(([p, b, m]) => sbSend(p, b, m));
@@ -218,6 +291,8 @@ async function sbFallbackList(request, table) {
   return jres(rows, 200, table === 'comments' ? 60 : 0, { 'X-Data-Source': 'supabase-fallback' });
 }
 async function listTable(request, env, table) {
+  const mode = await getMode(env);
+  if (mode === 'supabase') return await sbListPassthrough(request, table);
   const u = new URL(request.url);
   const { filters, orderBy, limit, offset } = parsePGQ(u);
   const args = [];
@@ -231,7 +306,7 @@ async function listTable(request, env, table) {
     ]);
     rows = r1.results || [];
   } catch (e) {
-    if (sbReady() && D1_DOWN.test(String(e.message || e) + ' D1_ERROR TIMEOUT')) return await sbFallbackList(request, table);
+    if (mode !== 'd1' && sbReady() && D1_DOWN.test(String(e.message || e) + ' D1_ERROR TIMEOUT')) return await sbFallbackList(request, table);
     throw e;
   }
   const isAdmin = await adminOk(request, env);
@@ -287,7 +362,7 @@ async function rpc(name, body, request, env) {
     }
     const r = await env.DB.prepare('INSERT INTO game_likes(game_id,count) VALUES(?,1) ON CONFLICT(game_id) DO UPDATE SET count=count+1 RETURNING count').bind(id).first();
     const cnt = r ? r.count : 1;
-    if (CTXREF) CTXREF.waitUntil(sbSend('/rest/v1/game_likes', { game_id: id, count: cnt }, true));
+    if (CTXREF) CTXREF.waitUntil(sbMirrorLike(id, cnt));
     return jres(cnt, 200);
   }
   if (name === 'admin_reply_comment' || name === 'admin_delete_comment' || name === 'admin_pin_comment') {
@@ -399,17 +474,27 @@ export default {
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsBase(request) });
       // 聚合落盘检查：缓冲满 50 条 或 首条进缓冲已超 60 秒，就先落库再处理本次请求
       if (aggSize() && (aggSize() >= 50 || Date.now() - AGG.since > 60000)) await aggFlush(env);
-      if (request.method === 'GET' && url.pathname === '/') return jres({ ok: true, service: 'tsinho-data', sbMirror: sbReady() }, 200);
+      if (request.method === 'GET' && url.pathname === '/') return jres({ ok: true, service: 'tsinho-data', sbMirror: sbReady(), mode: await getMode(env) }, 200);
       const m = /^\/rest\/v1\/rpc\/([\w]+)$/.exec(url.pathname);
       if (request.method === 'POST' && m) {
         const body = await request.json().catch(() => ({}));
+        const mode = await getMode(env);
+        // v3：强制 SB 模式——写请求直接透传 Supabase RPC，响应原样返回（inc_game_like 的计数要给前端）
+        if (mode === 'supabase') {
+          if (!sbReady()) return jerr('SUPABASE_NOT_CONFIGURED', 503);
+          const r2 = await fetch(sbBase() + '/rest/v1/rpc/' + m[1], { method: 'POST', headers: sbHeaders(false), body: JSON.stringify(body) });
+          const txt = await r2.text();
+          return new Response(txt, { status: r2.status, headers: jheaders(null, r2.status) });
+        }
         try {
           return await rpc(m[1], body, request, env);
         } catch (e) {
           // D1 写入不可用且配置了备用端：写请求直接落到 Supabase（内容不丢，回头对账补齐 D1）
-          if (sbReady() && D1_DOWN.test(String(e.message || e))) {
-            await fetch(sbBase() + '/rest/v1/rpc/' + m[1], { method: 'POST', headers: sbHeaders(false), body: JSON.stringify(body) });
-            return jok(null, 200);
+          // v3：d1 模式禁止兜底
+          if (mode !== 'd1' && sbReady() && D1_DOWN.test(String(e.message || e))) {
+            const r2 = await fetch(sbBase() + '/rest/v1/rpc/' + m[1], { method: 'POST', headers: sbHeaders(false), body: JSON.stringify(body) });
+            const txt = await r2.text();
+            return new Response(txt, { status: r2.status, headers: jheaders(null, r2.status) });
           }
           throw e;
         }
@@ -420,10 +505,22 @@ export default {
       }
       if (request.method === 'POST' && url.pathname === '/rest/v1/download_clicks') return await reportClick(request, env);
       if (request.method === 'POST' && url.pathname === '/v1/admin/import') return await adminImport(request, env);
+      // v3 数据源模式：查询 / 切换（后台「数据源切换」按钮用）
+      if (request.method === 'GET' && url.pathname === '/v1/admin/mode') {
+        return jres({ mode: await getMode(env), sbMirror: sbReady() }, 200);
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/admin/set-mode') {
+        if (!(await adminOk(request, env))) return jerr('TOKEN_INVALID', 401);
+        const b = await request.json().catch(() => ({}));
+        const mode = String(b.mode || '').trim().toLowerCase();
+        if (!['auto', 'd1', 'supabase'].includes(mode)) return jerr('mode 必须是 auto / d1 / supabase', 400);
+        try { await setMode(env, mode); } catch (e) { return jerr('D1 不可用，暂时无法保存模式：' + String(e.message || e).slice(0, 120), 502); }
+        return jres({ ok: true, mode }, 200);
+      }
       if (request.method === 'GET' && url.pathname === '/v1/admin/health') {
         if (!(await adminOk(request, env))) return jerr('TOKEN_INVALID', 401);
         const c = await env.DB.prepare('SELECT COUNT(*) n FROM comments').first();
-        return jres({ ok: true, comments: c.n, sbMirror: sbReady() }, 200);
+        return jres({ ok: true, comments: c.n, sbMirror: sbReady(), mode: await getMode(env) }, 200);
       }
       return jerr('Not Found: ' + url.pathname, 404);
     } catch (e) {
