@@ -487,9 +487,9 @@ body.gate-pending main{display:none!important}
         <h2>🏆 热门下载排行</h2>
         <button type="button" class="btn btn-s" id="refreshTopDl">刷新</button>
       </div>
-      <p class="hint" style="margin-top:2px">按下载次数排名，展示最受欢迎的游戏。支持切换「全部时间」和「今日」。</p>
+      <p class="hint" style="margin-top:2px">按下载次数排名，展示最受欢迎的游戏（最近 30 天口径，只显示前 30 名）。支持切换「30 天热门」和「今日」。</p>
       <div style="display:flex;gap:6px;margin:10px 0">
-        <button type="button" class="btn btn-s" id="topDlAll" style="border-color:#e5484d;color:#e5484d">全部时间</button>
+        <button type="button" class="btn btn-s" id="topDlAll" style="border-color:#e5484d;color:#e5484d">30 天热门</button>
         <button type="button" class="btn btn-s" id="topDlToday">今日</button>
       </div>
       <div id="topDlBox"><p class="hint">加载中…</p></div>
@@ -3690,13 +3690,24 @@ async function loadTopDl() {
         offset += pageSize;
       }
     } else {
-      // 2026-10-03：全表 3.7 万条要翻 38 页、40 秒。改为「最近 30 天」口径，1 次请求拿完。
+      // 2026-10-19 口径定稿「30 天热门」：分页拉全 30 天（修掉 10-03 的 5000 条静默截断），只显示前 30 名
       const since = new Date(Date.now() - 30 * 864e5).toISOString();
-      const res = await fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&created_at=gte.${since}&limit=5000`, {
-        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+      const head = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${since}`, {
+        headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' })
       });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      rows = await res.json();
+      if (!head.ok) throw new Error('HTTP ' + head.status);
+      const total = parseInt((((head.headers.get('content-range') || '').split('/')[1]) || '0'), 10) || 0;
+      const pageSize = 1000;
+      const starts = [];
+      for (let off = 0; off < Math.max(total, 1); off += pageSize) starts.push(off);
+      for (let i = 0; i < starts.length; i += 8) { // 8 页并发，3 万行约 4 轮拿完
+        const batch = await Promise.all(starts.slice(i, i + 8).map(off =>
+          fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&order=id.asc&limit=${pageSize}&offset=${off}`, {
+            headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
+          }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        ));
+        batch.forEach(b => rows = rows.concat(b));
+      }
     }
     if (!rows.length) {
       box.innerHTML = '<p class="hint" style="margin-top:8px">暂无下载记录。</p>';
@@ -3737,23 +3748,11 @@ async function loadTopDl() {
     let html = '<div style="margin-top:8px"><div id="topDlList">';
     for (let i = 0; i < Math.min(PAGE_SIZE, sorted.length); i++) html += rowHtml(sorted[i], i);
     html += '</div>';
-    shown = Math.min(PAGE_SIZE, sorted.length);
-    if (shown < sorted.length) {
-      html += '<div style="text-align:center;margin-top:10px"><button type="button" id="topDlMore" style="border:1px solid #ecebe9;background:#fff;color:#666;padding:7px 20px;border-radius:99px;font-size:12.5px;cursor:pointer;font-family:inherit">加载更多（还有 ' + (sorted.length - shown) + ' 款）</button></div>';
+    if (sorted.length > PAGE_SIZE) {
+      html += '<p class="hint" style="margin-top:10px">共 ' + sorted.length + ' 款有下载记录，只显示前 30 名。</p>';
     }
     html += '</div>';
     box.innerHTML = html;
-    const moreBtn = $('topDlMore');
-    if (moreBtn) moreBtn.onclick = function () {
-      const listEl = $('topDlList');
-      let newRows = '';
-      const end = Math.min(shown + PAGE_SIZE, sorted.length);
-      for (let i = shown; i < end; i++) newRows += rowHtml(sorted[i], i);
-      shown = end;
-      listEl.insertAdjacentHTML('beforeend', newRows);
-      if (shown >= sorted.length) moreBtn.remove();
-      else moreBtn.textContent = '加载更多（还有 ' + (sorted.length - shown) + ' 款）';
-    };
   } catch (e) {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
   }
