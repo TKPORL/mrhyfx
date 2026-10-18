@@ -3530,31 +3530,72 @@ async function loadSnapshots() {
       return;
     }
     const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    let html = '<div style="margin-top:10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
-    html += '<thead><tr style="border-bottom:2px solid #e8e6e0;text-align:left">';
-    html += '<th style="padding:8px 10px;color:#666;font-weight:600">日期</th>';
-    html += '<th style="padding:8px 10px;color:#e5484d;font-weight:600;text-align:right">累计访问</th>';
-    html += '<th style="padding:8px 10px;color:#1a5fb4;font-weight:600;text-align:right">帖子数</th>';
-    html += '<th style="padding:8px 10px;color:#1a7f37;font-weight:600;text-align:right">今日访问</th>';
-    html += '<th style="padding:8px 10px;color:#e58d0a;font-weight:600;text-align:right">今日评论</th>';
-    html += '<th style="padding:8px 10px;color:#7c3aed;font-weight:600;text-align:right">今日下载</th>';
-    html += '</tr></thead><tbody>';
     const todayKey = bjDay();
-    rows.forEach(r => {
+    // 2026-10-19 快照改版：每个数字带「较昨日增减」徽章 + 顶部总结条 + 7 天迷你趋势（数据不动，只加增量层）
+    const chron = rows.slice().reverse(); // 旧→新
+    const fmt = n => (n || 0).toLocaleString('zh-CN');
+    function badge(cur, prev) {
+      const d = (cur || 0) - (prev || 0);
+      if (d > 0) return '<span style="font-size:11px;font-weight:700;color:#1a7f37;background:#e6f4ea;border-radius:99px;padding:1px 7px;margin-left:5px">+' + d + '</span>';
+      if (d < 0) return '<span style="font-size:11px;font-weight:700;color:#c93a3f;background:#fdecec;border-radius:99px;padding:1px 7px;margin-left:5px">' + d + '</span>';
+      return '<span style="font-size:11px;color:#bbb;margin-left:5px">±0</span>';
+    }
+    const latest = chron[chron.length - 1] || {};
+    const prev = chron[chron.length - 2] || {};
+    const lv = latest.today_views || 0, pv = prev.today_views || 0;
+    const dv = lv - pv;
+    const pct = pv ? ((dv / pv) * 100).toFixed(1) : null;
+    const dCls = d => d > 0 ? '#1a7f37;background:#e6f4ea' : (d < 0 ? '#c93a3f;background:#fdecec' : '#888;background:#f0f0f0');
+    const dl = latest.today_downloads || 0, pdl = prev.today_downloads || 0;
+    const cm = latest.today_comments || 0, pcm = prev.today_comments || 0;
+    let html = '<div style="margin-top:10px">';
+    // 顶部总结条
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:linear-gradient(135deg,#fdf6ec,#fdfdfd);border:1px solid #f3e8d7;border-radius:10px;padding:12px 14px;margin-bottom:12px">';
+    html += '<span style="font-size:12px;color:#999">' + latest.day.slice(5) + ' 访问</span>';
+    html += '<span style="font-size:22px;font-weight:700;color:#e58d0a">' + fmt(lv) + '</span>';
+    html += '<span style="font-size:12.5px;font-weight:700;color:' + dCls(dv).split(';')[0] + ';background:' + dCls(dv).split(';')[1] + ';border-radius:99px;padding:2px 9px">' + (dv > 0 ? '+' + dv : dv) + '</span>';
+    html += '<span style="font-size:12px;color:#777">' + (pct !== null ? '较前一日 ' + (dv >= 0 ? '+' : '') + pct + '%' : '') + '</span>';
+    html += '<span style="font-size:12px;color:#999;margin-left:12px">下载</span><span style="font-size:17px;font-weight:700;color:#7c3aed">' + fmt(dl) + '</span>' + badge(dl, pdl);
+    html += '<span style="font-size:12px;color:#999;margin-left:12px">评论</span><span style="font-size:17px;font-weight:700;color:#1a7f37">' + fmt(cm) + '</span>' + badge(cm, pcm);
+    html += '</div>';
+    // 7 天迷你趋势（今日访问）
+    const maxV = Math.max.apply(null, chron.map(r => r.today_views || 0).concat([1]));
+    html += '<div style="display:flex;align-items:flex-end;gap:7px;height:64px;margin:2px 2px 14px">';
+    chron.forEach(r => {
+      const isToday = r.day === todayKey;
+      const h = Math.max(4, Math.round((r.today_views || 0) / maxV * 100));
+      html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+      html += '<span style="font-size:10.5px;color:#999">' + fmt(r.today_views || 0) + '</span>';
+      html += '<div style="width:100%;border-radius:4px 4px 2px 2px;min-height:4px;height:' + h + '%;background:' + (isToday ? '#e58d0a' : '#f3c98b') + '"></div>';
+      html += '<span style="font-size:10.5px;color:' + (isToday ? '#e58d0a' : '#bbb') + '">' + (isToday ? '今天' : r.day.slice(5).replace('/', '/')) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    // 明细表（每个数字带较前一日增减）
+    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<thead><tr style="border-bottom:2px solid #e8e6e0;text-align:left">';
+    html += '<th style="padding:7px 8px;color:#666;font-weight:600">日期</th>';
+    html += '<th style="padding:7px 8px;color:#e5484d;font-weight:600;text-align:right">累计访问</th>';
+    html += '<th style="padding:7px 8px;color:#1a5fb4;font-weight:600;text-align:right">帖子数</th>';
+    html += '<th style="padding:7px 8px;color:#1a7f37;font-weight:600;text-align:right">今日访问</th>';
+    html += '<th style="padding:7px 8px;color:#e58d0a;font-weight:600;text-align:right">今日评论</th>';
+    html += '<th style="padding:7px 8px;color:#7c3aed;font-weight:600;text-align:right">今日下载</th>';
+    html += '</tr></thead><tbody>';
+    chron.forEach((r, i) => {
+      const p = i > 0 ? chron[i - 1] : null;
       const dt = new Date(r.day + 'T00:00:00');
       const label = r.day.slice(5) + ' ' + weekNames[dt.getDay()];
       const isToday = r.day === todayKey;
-      const bg = isToday ? 'background:#fef6f6' : '';
-      html += '<tr style="border-bottom:1px solid #f0eee8;' + bg + '">';
-      html += '<td style="padding:8px 10px;color:#333">' + label + (isToday ? ' <span style="color:#e5484d;font-size:11px">今天</span>' : '') + '</td>';
-      html += '<td style="padding:8px 10px;text-align:right;font-weight:600;color:#e5484d">' + (r.total_views || 0) + '</td>';
-      html += '<td style="padding:8px 10px;text-align:right;color:#1a5fb4">' + (r.total_posts || 0) + '</td>';
-      html += '<td style="padding:8px 10px;text-align:right;color:#1a7f37">' + (r.today_views || 0) + '</td>';
-      html += '<td style="padding:8px 10px;text-align:right;color:#e58d0a">' + (r.today_comments || 0) + '</td>';
-      html += '<td style="padding:8px 10px;text-align:right;color:#7c3aed">' + (r.today_downloads || 0) + '</td>';
+      html += '<tr style="border-bottom:1px solid #f0eee8;' + (isToday ? 'background:#fef6f2;' : '') + '">';
+      html += '<td style="padding:8px 8px;color:#333">' + label + (isToday ? ' <span style="color:#e5484d;font-size:11px">今天</span>' : '') + '</td>';
+      html += '<td style="padding:8px 8px;text-align:right;font-weight:600;color:#e5484d;font-variant-numeric:tabular-nums">' + fmt(r.total_views || 0) + (p ? ' ' + badge(r.total_views, p.total_views) : '') + '</td>';
+      html += '<td style="padding:8px 8px;text-align:right;color:#1a5fb4">' + fmt(r.total_posts || 0) + '</td>';
+      html += '<td style="padding:8px 8px;text-align:right;color:#1a7f37;font-variant-numeric:tabular-nums">' + fmt(r.today_views || 0) + (p ? ' ' + badge(r.today_views, p.today_views) : '') + '</td>';
+      html += '<td style="padding:8px 8px;text-align:right;color:#e58d0a;font-variant-numeric:tabular-nums">' + fmt(r.today_comments || 0) + (p ? ' ' + badge(r.today_comments, p.today_comments) : '') + '</td>';
+      html += '<td style="padding:8px 8px;text-align:right;color:#7c3aed;font-variant-numeric:tabular-nums">' + fmt(r.today_downloads || 0) + (p ? ' ' + badge(r.today_downloads, p.today_downloads) : '') + '</td>';
       html += '</tr>';
     });
-    html += '</tbody></table></div>';
+    html += '</tbody></table></div></div>';
     box.innerHTML = html;
   } catch (e) {
     box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '<br>请确认 daily_snapshots 表已创建。SQL：<br><code style="font-size:11px;background:#f5f5f5;padding:4px 8px;border-radius:4px;display:block;margin-top:4px;white-space:pre-wrap">CREATE TABLE daily_snapshots (\n  day DATE PRIMARY KEY,\n  total_views INT DEFAULT 0,\n  total_posts INT DEFAULT 0,\n  avg_views INT DEFAULT 0,\n  today_views INT DEFAULT 0,\n  today_comments INT DEFAULT 0,\n  today_downloads INT DEFAULT 0,\n  created_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE daily_snapshots ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow all\" ON daily_snapshots USING (true) WITH CHECK (true);</code></p>';
