@@ -245,8 +245,9 @@ function parsePGQ(url) {
   const reserved = ['select', 'order', 'limit', 'offset', 'apikey', 'authorization'];
   for (const k in q) {
     if (reserved.includes(k)) continue;
-    // 2026-10-19：补 gte/lte/gt/lt——后台快照/排行的日期范围过滤依赖它（SB 前端切过来后必须可用）
-    const m = /^(eq|like|gte|lte|gt|lt)\.(.*)$/.exec(q[k]);
+    // 2026-10-19：补 gte/lte/gt/lt/in——后台快照/排行的日期范围过滤、评论回复的 id in.() 都依赖
+    // （in.() 此前被无视 → 评论回复加载变成全表扫描，一天烧穿 500 万行读额度）
+    const m = /^(eq|like|gte|lte|gt|lt|in)\.(.*)$/.exec(q[k]);
     if (m) filters[k] = { op: m[1], val: m[2] };
   }
   // 2026-10-15 修复：多字段排序（如 comments 的 pinned.desc,created_at.desc）。
@@ -274,6 +275,12 @@ function buildWhere(filters, args) {
   for (const f in filters) {
     const { op, val } = filters[f];
     if (op === 'like') { conds.push(`${f} LIKE ?`); params.push(val.replace(/\*/g, '%')); }
+    else if (op === 'in') {
+      const items = val.split(',').map(s => s.trim()).filter(Boolean).map(s => s.replace(/^"|"$/g, ''));
+      if (!items.length) continue;
+      conds.push(`${f} IN (${items.map(() => '?').join(',')})`);
+      params.push(...items);
+    }
     else { conds.push(`${f} ${OPS[op] || '='} ?`); params.push(val); }
   }
   args.push(...params);
