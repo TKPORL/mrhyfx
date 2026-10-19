@@ -32,7 +32,7 @@
   }
   enhance(document);
   document.addEventListener('click', function (e) {
-    var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip,.mrhx-cheat') : null;
+    var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip,.mrhx-cheat,.mrhx-sponsor') : null;
     if (!b) return;
     e.preventDefault();
     var code = b.getAttribute('data-code') || '';
