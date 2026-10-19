@@ -481,14 +481,31 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
   modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
   document.body.appendChild(modal);
-  var box = modal.querySelector('.mrhx-detail-box');
-  var closeBtn = box.querySelector('.mrhx-detail-close');
+  var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
   var backBtn = box.querySelector('.mrhx-detail-back');
   var h2 = box.querySelector('h2');
   var coverBox = box.querySelector('.mrhx-detail-cover');
   var imgsBox = box.querySelector('.mrhx-detail-imgs');
   var from = box.querySelector('.mrhx-detail-from');
   var text = box.querySelector('.mrhx-detail-text');
+
+  // 2026-10-19 修复回归：帖子页弹窗此前没有「锁 body + 滚到底抖动提醒」，
+  //   滚到内容末尾后滚轮穿透到页面（用户反馈旧修复失效）。这里补齐：open 锁 body、restore 解锁、
+  //   盒内滚到底（或内容不足一屏）时抖一下并吞掉向下的滚轮。
+  var lastBump = 0;
+  function bump() {
+    var now = Date.now();
+    if (now - lastBump < 450) return;
+    lastBump = now;
+    box.classList.remove('mrhx-bump');
+    void box.offsetWidth;
+    box.classList.add('mrhx-bump');
+  }
+  function atBottom() { return box.scrollTop + box.clientHeight >= box.scrollHeight - 2; }
+  box.addEventListener('scroll', function () { if (atBottom()) bump(); }, { passive: true });
+  box.addEventListener('wheel', function (e) {
+    if (e.deltaY > 0 && atBottom()) { bump(); e.preventDefault(); }
+  }, { passive: false });
 
   // ===== 弹窗从「被点击的那张游戏卡片」长出来，关闭时原路收回同一张卡片 =====
   // 做法：分别量出触发卡片与弹窗在屏幕上的位置，把弹窗先摆到卡片上（起始帧），
@@ -529,6 +546,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   function openFrom(el) {
     trigger = el;
     isOpen = true;
+    document.body.style.overflow = 'hidden';
     box.style.willChange = 'transform';
     modal.classList.add('show');
     var a = reduce ? null : anchor();
@@ -554,6 +572,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
     box.style.opacity = '1';
     box.style.willChange = '';
     modal.classList.remove('show');
+    document.body.style.overflow = '';
     isOpen = false;
     closing = false;
     if (trigger && trigger.focus) {

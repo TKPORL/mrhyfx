@@ -318,7 +318,7 @@
   .mrhx-detail.show{display:flex}
   /* 「卡片弹出」：弹窗的位移与缩放由 gen.js 注入的脚本按触发卡片位置逐帧设置（FLIP），
      所以这里不能给 box 加 animation，否则会盖掉脚本写进去的 transform，变成从屏幕中央凭空出现 */
-  .mrhx-detail-box{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:24px 26px;position:relative;scrollbar-width:none;-ms-overflow-style:none}
+  .mrhx-detail-box{overscroll-behavior:contain;background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;padding:24px 26px;position:relative;scrollbar-width:none;-ms-overflow-style:none}
   .mrhx-detail-box::-webkit-scrollbar{display:none;width:0;height:0}
   .mrhx-detail-box .mrhx-detail-close{position:absolute;top:14px;right:16px;border:none;background:#f4f2ef;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;transition:.2s}
   .mrhx-detail-box .mrhx-detail-close:hover{background:#e5484d;color:#fff}
@@ -465,3 +465,7 @@ footer .foot-mail{font-size:13.5px;font-weight:600}
 .mrhx-comments .mrhx-cloading::before{content:'';width:12px;height:12px;border:2px solid #e5e0de;border-top-color:#e5484d;border-radius:50%;animation:mrhxSpin .7s linear infinite}
 @keyframes mrhxSpin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.mrhx-comments .mrhx-citem,.mrhx-comments .mrhx-cgroup,.mrhx-comments .mrhx-cloading::before{animation:none}}
+
+/* 2026-10-19：弹窗滚到底抖一下提醒（帖子页此前缺此样式，导致旧修复失效） */
+@keyframes mrhxBump{0%{transform:translateY(0)}35%{transform:translateY(7px)}70%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+.mrhx-detail-box.mrhx-bump{animation:mrhxBump .32s ease}

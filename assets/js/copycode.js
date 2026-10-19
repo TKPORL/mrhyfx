@@ -25,9 +25,9 @@
         dl = document.createElement('div'); dl.className = 'mrhx-dl';
         nt.insertAdjacentElement('afterend', dl);
       }
-      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz[1] + '" data-label="解压码">解压码</button>');
-      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb[1] + '" data-label="作弊码">作弊码</button>');
-      if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + zz[1] + '" data-label="赞助码">赞助码</button>');
+      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz + '" data-label="解压码">解压码</button>');
+      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb + '" data-label="作弊码">作弊码</button>');
+      if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + zz + '" data-label="赞助码">赞助码</button>');
     });
   }
   enhance(document);
