@@ -335,7 +335,7 @@ async function rpc(name, body, request, env) {
     // 站长前台回复识别（2026-10-19 站长要求）：昵称+邮箱同时匹配即打站长标记（is_admin），与后台回复等效
     const isSiteOwner = nick === 'Tsinho' && email.toLowerCase() === 'tsinhos@qq.com';
     // 限频：同访客每分钟 1 条
-    const vh = visitorHash(request, env), minute = bjNow().slice(0, 16);
+    const vh = await visitorHash(request, env), minute = bjNow().slice(0, 16);
     const ins = await env.DB.prepare('INSERT OR IGNORE INTO comment_rate(ip,minute) VALUES(?,?)').bind(vh, minute).run();
     if (!ins.meta || !ins.meta.changes) throw new Error('发言太频繁，稍后再试');
     const id = crypto.randomUUID(), created = bjNow();
@@ -359,7 +359,7 @@ async function rpc(name, body, request, env) {
   }
   if (name === 'inc_game_like') {
     const id = esc(b.p_id || '').slice(0, 200); if (!id) throw new Error('参数缺失');
-    const vh = visitorHash(request, env);
+    const vh = await visitorHash(request, env);
     const ins = await env.DB.prepare('INSERT OR IGNORE INTO like_marks(visitor,game_id) VALUES(?,?)').bind(vh, id).run();
     if (!ins.meta || !ins.meta.changes) { // 已赞过：返回当前数，不 +1
       const cur = await env.DB.prepare('SELECT count FROM game_likes WHERE game_id=?').bind(id).first();
