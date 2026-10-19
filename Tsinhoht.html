@@ -2912,6 +2912,7 @@ async function loadComments() {
       if (batch.length < PAGE_SIZE) break;
       offset += PAGE_SIZE;
     }
+      window.__adminAll = all; // 供 delComments 就地移除时同步内存数据（避免整列表刷新）
     if (!all.length) { box.innerHTML = '<p style="color:#999;font-size:13px">暂无评论</p>'; }
     else {
       const replyMap = {};
@@ -2996,10 +2997,10 @@ async function loadComments() {
       [...rootEl.querySelectorAll('[data-dcid]')].forEach(b => {
         b.onclick = () => {
           if (b.dataset.pid) {
-            delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该条回复（不影响其所在楼层）');
+            delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该条回复（不影响其所在楼层）', b.dataset.dcid);
             return;
           }
-          delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该评论及其全部回复');
+          delComments(`id=eq.${encodeURIComponent(b.dataset.dcid)}`, '该评论及其全部回复', b.dataset.dcid);
         };
       });
       [...rootEl.querySelectorAll('[data-pin]')].forEach(b => {
@@ -3768,7 +3769,7 @@ $('refreshTopDl').onclick = () => showRefreshDialog($('refreshTopDl'), loadTopDl
 $('topDlAll').onclick = () => { _topDlMode = 'all'; $('topDlAll').style.borderColor = '#e5484d'; $('topDlAll').style.color = '#e5484d'; $('topDlToday').style.borderColor = ''; $('topDlToday').style.color = ''; loadTopDl(); };
 $('topDlToday').onclick = () => { _topDlMode = 'today'; $('topDlToday').style.borderColor = '#e5484d'; $('topDlToday').style.color = '#e5484d'; $('topDlAll').style.borderColor = ''; $('topDlAll').style.color = ''; loadTopDl(); };
 
-async function delComments(filter, desc) {
+async function delComments(filter, desc, localId) {
   if (!$('sbSecret').value.trim()) { show(stC, '请先填写管理密钥（SQL 里设置的那串）', 'err'); return; }
   if (!confirm('确定删除吗？（' + desc + '，不可恢复）')) return;
   show(stC, '正在删除…', 'info');
@@ -3779,7 +3780,14 @@ async function delComments(filter, desc) {
     });
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.details)) || ('HTTP ' + res.status)); }
     show(stC, '已删除。', 'ok');
-    loadComments();
+    if (localId) {
+      // 就地移除：不整列表刷新，可连续删除多条（2026-10-19）
+      const node = document.querySelector('.cwrap[data-cid="' + localId + '"]');
+      if (node) node.remove();
+      if (window.__adminAll) window.__adminAll = window.__adminAll.filter(c => c.id !== localId);
+    } else {
+      loadComments();
+    }
   } catch (e) {
     show(stC, '删除失败：' + e.message + '\n\n常见原因：管理密钥和 SQL 里设置的不一致。', 'err');
   }
