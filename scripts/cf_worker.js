@@ -76,6 +76,8 @@ function jheaders(data, status, cacheSec, extra) {
   const allow = String((ENVREF && ENVREF.ALLOWED_ORIGINS) || '').split(',').map(s => s.trim().replace(/\/+$/, ''));
   const h = { ...JSONH, ...(extra || {}) };
   if (o && allow.includes(o)) { h['Access-Control-Allow-Origin'] = o; h['Vary'] = 'Origin'; }
+  // 前端要读 Content-Range（评论总数）/X-Data-Source，不暴露的话浏览器 JS 拿不到（2026-10-19 补——此前总数显示 21 条的根因）
+  h['Access-Control-Expose-Headers'] = 'Content-Range, X-Data-Source';
   if (cacheSec > 0) h['Cache-Control'] = 'public, max-age=' + cacheSec;
   return h;
 }
