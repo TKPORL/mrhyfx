@@ -422,6 +422,15 @@ async function adminCommentWrite(request, env, method) {
   if (!(await adminOk(request, env))) return jerr('TOKEN_INVALID', 401);
   if (!sbReady()) return jerr('SUPABASE_NOT_CONFIGURED', 503);
   const u = new URL(request.url);
+  // SB 直改模式（DATA_MODE=supabase）：完全不碰 D1（D1 读额度耗尽时连 DELETE 都会被阻断），直接透传 Supabase
+  if ((await getMode(env)) === 'supabase') {
+    const hdrs = {};
+    ['content-type', 'prefer', 'x-admin-key'].forEach(h => { const v = request.headers.get(h); if (v) hdrs[h] = v; });
+    const body = method === 'DELETE' ? undefined : await request.text();
+    const r = await fetch(sbBase() + u.pathname + u.search, { method, headers: hdrs, body });
+    const txt = await r.text();
+    return new Response(txt, { status: r.status, headers: jheaders(null, r.status) });
+  }
   const { filters } = parsePGQ(u);
   const args = [];
   const where = buildWhere(filters, args);
