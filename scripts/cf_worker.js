@@ -332,15 +332,17 @@ async function rpc(name, body, request, env) {
       email = esc(b.p_email || '').slice(0, 120), content = esc(b.p_content || '').trim().slice(0, 2000),
       pid = b.p_pid ? esc(b.p_pid) : null;
     if (!url || !content) throw new Error('参数缺失');
+    // 站长前台回复识别（2026-10-19 站长要求）：昵称+邮箱同时匹配即打站长标记（is_admin），与后台回复等效
+    const isSiteOwner = nick === 'Tsinho' && email.toLowerCase() === 'tsinhos@qq.com';
     // 限频：同访客每分钟 1 条
     const vh = visitorHash(request, env), minute = bjNow().slice(0, 16);
     const ins = await env.DB.prepare('INSERT OR IGNORE INTO comment_rate(ip,minute) VALUES(?,?)').bind(vh, minute).run();
     if (!ins.meta || !ins.meta.changes) throw new Error('发言太频繁，稍后再试');
     const id = crypto.randomUUID(), created = bjNow();
-    await env.DB.prepare('INSERT INTO comments(id,url,pid,nick,email,content,is_admin,pinned,created_at) VALUES(?,?,?,?,?,?,0,0,?)')
-      .bind(id, url, pid, nick || '匿名', email, content, created).run();
+    await env.DB.prepare('INSERT INTO comments(id,url,pid,nick,email,content,is_admin,pinned,created_at) VALUES(?,?,?,?,?,?,?,?,?)')
+      .bind(id, url, pid, nick || '匿名', email, content, isSiteOwner ? 1 : 0, 0, created).run();
     await bustCache(request);
-    if (CTXREF) CTXREF.waitUntil(sbInsertComment({ id, url, pid, nick: nick || '匿名', email, content, is_admin: 0, pinned: 0, created_at: created }));
+    if (CTXREF) CTXREF.waitUntil(sbInsertComment({ id, url, pid, nick: nick || '匿名', email, content, is_admin: isSiteOwner ? 1 : 0, pinned: 0, created_at: created }));
     return jok(null, 200);
   }
   if (name === 'inc_page_view') {
