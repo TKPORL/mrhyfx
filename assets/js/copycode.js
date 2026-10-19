@@ -9,10 +9,18 @@
       // 2026-10-19 修复：代码含「.」等符号（如 1435.kt）时旧正则 [A-Za-z0-9]+ 会截断，
       //   改为单趟替换同时收集三种码（解压/作弊/赞助）并从介绍里整段移除
       var found = { mz: null, zb: null, zz: null };
-      var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|作弊码|赞助码)[:：]\s*([^\s<。；，,！？]+)/g, function (m0, label, code) {
+      // 2026-10-19 二次修复：码后面常跟【备注】（如「64762908【这版本…】」），旧模式遇空格即断导致复制不全。
+      //   改为取到行尾，再用 cleanCode 去掉【】（）等备注块、取第一个空白前的完整码。
+      function cleanCode(s) {
+        var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
+        return v.split(/\s+/)[0] || '';
+      }
+      var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|作弊码|赞助码)[:：][ \t]*([^\n<]*)/g, function (m0, label, rest) {
         var key = label === '解压码' ? 'mz' : (label === '作弊码' ? 'zb' : 'zz');
+        var code = cleanCode(rest);
+        if (!code) return m0;
         if (!found[key]) found[key] = code;
-        return '';
+        return rest.replace(code, '');
       });
       var mz = found.mz, zb = found.zb, zz = found.zz;
       if (!mz && !zb && !zz) return;

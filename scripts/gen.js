@@ -2702,10 +2702,15 @@ function relTime(iso){
     // 注意：本段在模板字符串里，正则的反斜杠必须双写，否则转义被吃掉产出的正则是坏的
     var raw = g.intro || '';
     // 2026-10-19 修复：代码含「.」等符号（如 1435.kt）时旧正则 [A-Za-z0-9]+ 会截断，放宽为非空白/非全角标点
-    var mz = raw.match(/解压码[:：]\\s*([^\\s<。；，,！？]+)/);
-    var zb = raw.match(/作弊码[:：]\\s*([^\\s<。；，,！？]+)/);
-    var zz = raw.match(/赞助码[:：]\\s*([^\\s<。；，,！？]+)/);
-    var introTxt = raw.replace(/\\s*(?:解压码|作弊码|赞助码)[:：]\\s*[^\\s<。；，,！？]+/g, '').replace(/\\n\\s*\\n/g, '\\n').trim();
+    // 2026-10-19：码后常跟【备注】（如「64762908【这版本…】」），取到行尾再清洗，与原 copycode 逻辑一致
+    function _cleanCode(s) {
+      var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
+      return v.split(/\\s+/)[0] || '';
+    }
+    var mz = _cleanCode(((raw.match(/解压码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
+    var zb = _cleanCode(((raw.match(/作弊码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
+    var zz = _cleanCode(((raw.match(/赞助码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
+    var introTxt = raw.replace(/(?:解压码|作弊码|赞助码)[:：][ \\t]*([^\\n<]*)/g, function (m0, rest) { var c = _cleanCode(rest); return c ? rest.replace(c, '') : m0; }).replace(/\\n\\s*\\n/g, '\\n').trim();
     var dl = (g.links || []).map(function (l, i) {
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
