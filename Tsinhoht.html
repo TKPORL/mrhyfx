@@ -406,16 +406,9 @@ body.gate-pending main{display:none!important}
   <div class="panel" id="panelStats">
     <div class="card">
       <div class="row" style="justify-content:space-between">
-        <h2>数据源切换</h2>
-        <button type="button" class="btn btn-s" id="dsRefresh">查询当前模式</button>
+        <h2>数据源说明</h2>
       </div>
-      <p class="hint" style="margin-top:2px">auto=自动（D1 为主，D1 故障/额度耗尽时自动读写 Supabase）；d1=只用 D1（禁用兜底，排查用）；supabase=只用 Supabase（D1 维护期间手动切换用）。切换立即生效，无需重新部署。注意：只用 Supabase 期间产生的新数据只写进 Supabase，切回 auto 后跑一次对账脚本补齐 D1。</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
-        <button type="button" class="btn btn-s" id="dsAuto">自动（推荐）</button>
-        <button type="button" class="btn btn-s" id="dsD1">仅 D1</button>
-        <button type="button" class="btn btn-s" id="dsSB">仅 Supabase</button>
-      </div>
-      <div id="dsStatus"><p class="hint">点击「查询当前模式」查看。需要先在下方填写管理密钥。</p></div>
+      <p class="hint" style="margin-top:2px">评论区（访客发言/回复/置顶/删除）走 CF Worker（api.tiho.us.ci），国内访客可正常评论，D1 与 Supabase 双端同步；访问量/下载量/统计三件套走 Supabase 直连。二者互不影响。</p>
     </div>
     <div class="card">
       <div class="row" style="justify-content:space-between">
@@ -2358,7 +2351,7 @@ async function buildPostCleanupFiles(repo, tag) {
 }
 
 async function deletePostComments(tag) {
-  const base = sbBase();
+  const base = CM_BASE; // 评论管理写操作走 Worker（D1+SB 双写，2026-10-19）
   const anon = $('sbAnon').value.trim();
   const admin = $('sbSecret').value.trim();
   if (!base || !anon || !admin) throw new Error('Supabase 未配置，GitHub 数据已清理；请填写评论管理配置后重试评论清理');
@@ -2839,6 +2832,7 @@ const sbHeaders = () => {
   return { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
 };
 const SNAP_TABLE = 'daily_snapshots';
+const CM_BASE = 'https://api.tiho.us.ci'; // 评论管理写操作（回复/置顶/删除）走 Worker：D1+SB 双写，访客从 D1 读到
 let _topDlMode = 'all';
 // 配置就绪后再恢复上次激活的标签页
 restoreSavedTab();
@@ -3008,7 +3002,7 @@ async function loadComments() {
           const want = b.dataset.pinned === '0';
           b.disabled = true;
           try {
-            const res = await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.pin)}`, {
+            const res = await fetch(`${CM_BASE}/rest/v1/comments?id=eq.${encodeURIComponent(b.dataset.pin)}`, {
               method: 'PATCH',
               headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
               body: JSON.stringify({ pinned: want })
@@ -3041,7 +3035,7 @@ async function loadComments() {
           if (!admin) { show(stC, '请先填写管理密钥（站长回复需要验证身份）', 'err'); return; }
           show(stC, '正在发表回复…', 'info');
           try {
-            const res = await fetch(`${sbBase()}/rest/v1/comments`, {
+            const res = await fetch(`${CM_BASE}/rest/v1/comments`, {
               method: 'POST',
               headers: Object.assign(sbHeaders(), { 'Prefer': 'return=representation', 'x-admin-key': admin }),
               body: JSON.stringify({ url: b.dataset.rurl, pid: b.dataset.rtop || null, nick: nick, email: email, content: content, is_admin: true })
@@ -3086,7 +3080,7 @@ async function loadComments() {
           if (!admin) { show(stC, '请先填写管理密钥', 'err'); return; }
           b.disabled = true;
           try {
-            const res = await fetch(`${sbBase()}/rest/v1/comments?id=eq.${encodeURIComponent(id)}`, {
+            const res = await fetch(`${CM_BASE}/rest/v1/comments?id=eq.${encodeURIComponent(id)}`, {
               method: 'PATCH',
               headers: Object.assign(sbHeaders(), { 'x-admin-key': admin, 'Prefer': 'return=minimal' }),
               body: JSON.stringify({ content: content })
@@ -3280,39 +3274,10 @@ async function loadStats() {
 }
 $('refreshStats').onclick = () => showRefreshDialog($('refreshStats'), loadStats);
 
-/* ---- v3 数据源模式切换（api.tiho.us.ci Worker /v1/admin/mode·set-mode） ---- */
-const DS_WORKER = 'https://api.tiho.us.ci';
-function dsShow(mode, sbMirror) {
-  const names = { auto: '自动（D1 主，故障自动切 Supabase）', d1: '仅 D1（兜底已禁用）', supabase: '仅 Supabase（D1 暂停使用）' };
-  $('dsStatus').innerHTML = '<p class="hint">当前模式：<b>' + (names[mode] || mode || '(未知)') + '</b>'
-    + '　SB 镜像配置：' + (sbMirror ? '已配置' : '未配置') + '　（' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + ' 查询）</p>';
-}
-function dsErr(msg) { $('dsStatus').innerHTML = '<p class="warn" style="color:#c93a3f;font-size:13px">' + msg + '</p>'; }
-async function dsQuery() {
-  try {
-    const r = await fetch(DS_WORKER + '/v1/admin/mode', { cache: 'no-store' });
-    const j = await r.json();
-    dsShow(j.mode, j.sbMirror);
-  } catch (e) { dsErr('查询失败：' + (e.message || e)); }
-}
-async function dsSet(mode) {
-  const token = $('sbSecret').value.trim();
-  if (!token) { dsErr('请先在「评论功能配置」里填写管理密钥（Worker 的 ADMIN_TOKENS 之一）'); return; }
-  try {
-    const r = await fetch(DS_WORKER + '/v1/admin/set-mode', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-      body: JSON.stringify({ mode })
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) { dsErr('切换失败：' + (j.message || ('HTTP ' + r.status))); return; }
-    dsShow(j.mode, true);
-    show(stS, '数据源已切换为「' + mode + '」', 'ok');
-  } catch (e) { dsErr('切换失败：' + (e.message || e)); }
-}
-$('dsRefresh').onclick = dsQuery;
-$('dsAuto').onclick = () => dsSet('auto');
-$('dsD1').onclick = () => dsSet('d1');
-$('dsSB').onclick = () => dsSet('supabase');
+/* ---- v3 数据源切换卡片已移除：统计走 Supabase、评论走 Worker，无需模式切换（2026-10-19）----*/
+
+
+
 
 $('statTodayComments').onclick = () => {
   if (!todayComments.length) { show(stS, '今日暂无新增评论', 'info'); return; }
@@ -3766,7 +3731,7 @@ async function delComments(filter, desc) {
   if (!confirm('确定删除吗？（' + desc + '，不可恢复）')) return;
   show(stC, '正在删除…', 'info');
   try {
-    const res = await fetch(`${sbBase()}/rest/v1/comments?${filter}`, {
+    const res = await fetch(`${CM_BASE}/rest/v1/comments?${filter}`, {
       method: 'DELETE',
       headers: Object.assign(sbHeaders(), { 'x-admin-key': $('sbSecret').value.trim() })
     });

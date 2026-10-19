@@ -774,6 +774,8 @@ const popupHtml = (() => {
 
 // #12：帖子页不再内联重复的统计代码，改为引用公共文件 assets/js/track.js（构建时由 writeSharedAssets 写出）
 // #8：保留注释锚点，重跑时整段替换，不会重复注入
+// 2026-10-19 数据源拆分：评论(MRHXC)走 comments.url(CF Worker)，浏览/下载统计(MRHXT/gwScript)走 comments.statsUrl(Supabase)
+const statsUrl = () => ((SITE.comments && SITE.comments.statsUrl) || SITE.comments.url || '').replace(/\/+$/, '');
 const viewScript = (sb, key, path) => `<!--view-track-->
 <script>window.MRHXT={sb:'${sb}',key:'${key}',path:'${path}'};</script>
 <script src="assets/js/track.js"></script>
@@ -970,7 +972,7 @@ ${SMOOTH_SCRIPTS}
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
-${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(statsUrl(), SITE.comments.anonKey, '/index.html') : ''}
 </body>
 </html>
 `;
@@ -1661,7 +1663,7 @@ ${navHeaderHtml('')}
     html = html.replace(/<!--view-track-->[\s\S]*?<!--view-track-end-->\s*/g, '');
     html = html.replace(/<script>\s*\(function \(\) \{\s*try \{[\s\S]*?inc_page_view[\s\S]*?<\/script>\s*/g, '');
     const topBtn = topButton;
-    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(v.url.replace(/\/+$/, ''), v.anonKey, '/' + shortName + '.html') : '';
+    const vb = (v.enabled && v.url && v.anonKey) ? viewScript(statsUrl(), v.anonKey, '/' + shortName + '.html') : '';
     const staggerBlock = html.includes('<!--mrhx-stagger-->') ? '' : `\n  <!--mrhx-stagger--><style>\n${staggered}\n</style>`;
     html = html.replace(/<!--mrhx-expand-->[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/<script>\s*\(function\(\)\{\s*var SB=[\s\S]*?download_clicks[\s\S]*?\}\)\(\);\s*<\/script>/g, '');
@@ -1920,7 +1922,7 @@ ${navHeaderHtml('')}
   const gwScript = `<script>
 (function () {
   var FIRST = ${QZT_MORE_COUNT};
-  var SB = '${SITE.comments.url.replace(/\/+$/, '')}';
+  var SB = '${statsUrl()}';
   var KEY = '${SITE.comments.anonKey}';
   var NEWEST = '${days[0] ? days[0].file.replace(/\.html$/, '') : ''}';
   var grid = document.getElementById('gwGrid');
@@ -2268,7 +2270,7 @@ ${navHeaderHtml('')}
 <footer>${SITE_FOOTER}</footer>
 ${popupHtml}
 ${topButton}
-${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(SITE.comments.url.replace(/\/+$/, ''), SITE.comments.anonKey, '/index.html') : ''}
+${SITE.comments.enabled && SITE.comments.url && SITE.comments.anonKey ? viewScript(statsUrl(), SITE.comments.anonKey, '/index.html') : ''}
 ${indexScript}
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 ${SMOOTH_SCRIPTS}

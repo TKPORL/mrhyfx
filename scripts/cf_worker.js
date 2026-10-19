@@ -85,7 +85,8 @@ function jres(data, status = 200, cacheSec = 0, extra) {
 function jerr(msg, status = 400) { return jres({ message: msg }, status); }
 
 async function adminOk(request, env, bodyToken) {
-  const cand = [request.headers.get('X-Admin-Token') || '', bodyToken || ''];
+  // 2026-10-19：兼容 X-Admin-Key 头（后台 Tsinhoht 的评论管理用它带密钥）
+  const cand = [request.headers.get('X-Admin-Token') || '', request.headers.get('X-Admin-Key') || '', bodyToken || ''];
   const list = String(env.ADMIN_TOKENS || '').split(',').map(s => s.trim()).filter(Boolean);
   if (!list.length) return false;
   for (const c of cand) {
@@ -405,6 +406,51 @@ async function reportClick(request, env) {
   return jok(null, 201);
 }
 
+/* ---------- v3.1 评论管理直改通道（后台 Tsinhoht 用）：D1 为主、SB 镜像，保持两端一致 ---------- */
+async function adminCommentWrite(request, env, method) {
+  if (!(await adminOk(request, env))) return jerr('TOKEN_INVALID', 401);
+  if (!sbReady()) return jerr('SUPABASE_NOT_CONFIGURED', 503);
+  const u = new URL(request.url);
+  const { filters } = parsePGQ(u);
+  const args = [];
+  const where = buildWhere(filters, args);
+  if (method === 'POST') {
+    const b = await request.json();
+    const row = Array.isArray(b) ? b[0] : b;
+    if (!row || !row.url || !row.content) return jerr('参数缺失', 400);
+    const id = row.id || crypto.randomUUID();
+    const created = row.created_at || bjNow();
+    await env.DB.prepare('INSERT INTO comments(id,url,pid,nick,email,content,is_admin,pinned,replied,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+      .bind(esc(id), row.pid ? esc(row.pid) : null, esc(row.url), esc(row.nick || '匿名'), esc(row.email || ''), esc(row.content || ''), row.is_admin ? 1 : 0, row.pinned ? 1 : 0, row.replied ? 1 : 0, esc(created)).run();
+    const norm = { id, url: row.url, pid: row.pid || null, nick: row.nick || '匿名', email: row.email || '', content: row.content, is_admin: !!row.is_admin, pinned: !!row.pinned, replied: !!row.replied, created_at: created };
+    await sbInsertComment(norm);
+    await bustCache(request);
+    return jok(Array.isArray(b) ? [norm] : norm, 201);
+  }
+  if (method === 'PATCH') {
+    const b = await request.json();
+    const sets = [], vals = [];
+    const FLAGS = { pinned: 1, replied: 1, is_admin: 1 };
+    for (const k of ['pinned', 'replied', 'is_admin', 'content', 'nick', 'email']) {
+      if (k in b) { sets.push(`${k}=?`); vals.push(k in FLAGS ? (b[k] ? 1 : 0) : esc(b[k])); }
+    }
+    if (!sets.length || !filters.id) return jerr('参数缺失（需要 id=eq. 过滤和至少一个字段）', 400);
+    const r = await env.DB.prepare(`UPDATE comments SET ${sets.join(',')} WHERE id=?`).bind(...vals, filters.id.val).run();
+    if (!r.success) throw new Error('D1_ERROR');
+    await fetch(sbBase() + u.pathname + u.search, { method: 'PATCH', headers: sbHeaders(false), body: JSON.stringify(b) }).catch(e => console.log('[cm-mirror]', String(e).slice(0, 100)));
+    await bustCache(request);
+    return jok(null, 200);
+  }
+  if (method === 'DELETE') {
+    if (!Object.keys(filters).length) return jerr('参数缺失（需要过滤条件）', 400);
+    const r = await env.DB.prepare(`DELETE FROM comments${where}`).bind(...args).run();
+    await fetch(sbBase() + u.pathname + u.search, { method: 'DELETE', headers: sbHeaders(false) }).catch(e => console.log('[cm-mirror]', String(e).slice(0, 100)));
+    await bustCache(request);
+    return jok({ deleted: (r.meta && r.meta.changes) || 0 }, 200);
+  }
+  return jerr('不支持的方法', 405);
+}
+
 /* ---------- 管理：批量导入（浏览器导出的 JSON → POST 到这里） ---------- */
 async function adminImport(request, env) {
   if (!(await adminOk(request, env))) throw new Error('TOKEN_INVALID');
@@ -506,6 +552,10 @@ export default {
         if (t && TABLES.includes(t[1])) return await listTable(request, env, t[1]);
       }
       if (request.method === 'POST' && url.pathname === '/rest/v1/download_clicks') return await reportClick(request, env);
+      // v3.1 评论管理直改（后台 Tsinhoht 的回复/置顶/删除走这里，D1+SB 双写）
+      if (url.pathname === '/rest/v1/comments' && (request.method === 'POST' || request.method === 'PATCH' || request.method === 'DELETE')) {
+        return await adminCommentWrite(request, env, request.method);
+      }
       if (request.method === 'POST' && url.pathname === '/v1/admin/import') return await adminImport(request, env);
       // v3 数据源模式：查询 / 切换（后台「数据源切换」按钮用）
       if (request.method === 'GET' && url.pathname === '/v1/admin/mode') {
