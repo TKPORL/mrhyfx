@@ -425,7 +425,7 @@ async function adminCommentWrite(request, env, method) {
   // SB 直改模式（DATA_MODE=supabase）：完全不碰 D1（D1 读额度耗尽时连 DELETE 都会被阻断），直接透传 Supabase
   if ((await getMode(env)) === 'supabase') {
     const hdrs = {};
-    ['content-type', 'prefer', 'x-admin-key'].forEach(h => { const v = request.headers.get(h); if (v) hdrs[h] = v; });
+    ['content-type', 'prefer', 'x-admin-key', 'apikey', 'authorization'].forEach(h => { const v = request.headers.get(h); if (v) hdrs[h] = v; });
     const body = method === 'DELETE' ? undefined : await request.text();
     const r = await fetch(sbBase() + u.pathname + u.search, { method, headers: hdrs, body });
     const txt = await r.text();
