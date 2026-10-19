@@ -150,6 +150,8 @@
   CORS 白名单/多字段排序/daily_snapshots/总数头都修好了，将来想再切只需去 Dashboard 粘贴部署**——
   迁移全记录、踩坑清单（X-Admin-Token 鉴权头、Range 头、x-admin-key 头、多字段排序截断）都在
   《【CF主用·Supabase备用·双写容灾设计】20261010.md》
+  - ⚠️ **已被 2026-10-19 定稿取代**：现架构为「评论走 CF Worker（D1+SB 双写）、浏览量/下载/统计走 Supabase 直连」，
+    详见本文件末尾《2026-10-19 数据源迁移事故台账 + 新增铁律》与 `.workbuddy/memory/MEMORY.md` 的「当前架构」段。
 - Git：是（`main`）；本地存在大量历史备份目录，占用体积较大
 - **求助帖 qzt.html：220 张游戏卡**（+1 个公告专用块 `li.mrhx-announce`）。**公告文案唯一真源 = `qzt-announce.json`**（2026-10-14 定）：gen.js 每次都用它**重建** `.mrhx-announce`（先删再插，幂等 + 自动纠错）。⚠️ **不要再改 qzt.html 里的文本**（后台「发布求助贴」会重建 node-list 把它洗掉）。注意：它与**首页弹窗公告**（`site.json.announcement`）是**两份不同文案**，不要混用——2026-10-14 曾因混用把首页那 12 行注进了求助帖
 - **独立页：已彻底停用**（2026-10-11）。gen.js 建页段 `return` 跳过、残页清理已加 `if (!kept.size)` 保护；
@@ -281,3 +283,32 @@
 - **★冲突标记防线（2026-10-17 事故）**：merge 冲突后严禁继续跑 gen/commit/push；commit 前必查
   `git grep -c '<<<<<<<' HEAD -- '*.html' '*.json'` = 0。冲突文件恢复 = `git show <bot父提交>:<file>` 取干净版再重跑 gen。
   资源导航条：gen.js `RESOURCE_LINKS`（链接清单）/`RES_LOGO_URL`（横版Logo直链，待填）常量，site.css `.mrhx-resblock`。
+
+## 2026-10-19 数据源迁移（评论→CF / 统计→SB）事故台账 + 新增铁律
+
+> 当天连续迁移切主站、补 D1、切回 SB、修解压码，事故密度最高的一天。以下每条都是**真实发生过**的。
+
+### 事故清单（按时间）
+| # | 事故 | 根因 | 影响 |
+|---|---|---|---|
+| 1 | 评论/点赞发送必报 `D1_TYPE_ERROR: [object Promise]` | `visitorHash()` 内部调 async `sha256hex` 但调用处漏 `await`，Promise 被 bind 进 D1。**10-16 曾误判为"线上是旧版 Worker"，部署多少次都没用** | 评论写不进去，拖了 3 天 |
+| 2 | 一天烧穿 2 次 D1 日读额度（52M / 5M 行） | ① 全表 OFFSET 对账（77 页×76k 行）② `id in.(...)` 过滤器 Worker 不支持被无视 → 每个访客打开帖子全表扫评论 | 评论读被阻断，前台"能回复但不显示" |
+| 3 | 评论总数显示"21 条"（实际 752） | Worker GET 响应缺 `Access-Control-Expose-Headers`，浏览器读不到 Content-Range | 总数永远显示已加载数 |
+| 4 | D1 读额度耗尽时后台删评论"删了还在" | SB 模式下评论管理写通道仍先写 D1（DELETE 也要扫描行 → 被阻断），镜像没执行 | 删除失效 |
+| 5 | 后台切 SB 后删除报 `No API key found` | 透传 SB 时漏转发 `apikey/authorization` 头 | 删除全挂 |
+| 6 | **我提交时洗掉站长 10-19 两个新帖的首页条目** | soft reset 后用 `xargs git add` 批量提交全部 M 文件，把本地过时的 timestamps/titles/counts/search_index 等 9 个数据文件一并推上去（**与 2026-10-13 事故完全同款，我的方向重犯**） | 新帖从首页消失，需从 19b0dbad0 恢复 |
+| 7 | 解压码含符号被截断（1435.kt→1435） | 旧正则 `[A-Za-z0-9]+` 遇 `.` 即断，残留 `.kt` 留介绍 | 用户复制错码 |
+| 8 | **修完 #7 又造新 bug：复制只得到 1 个字符**（悦悦→悦、778003→7） | 重构时把 match 数组改为字符串，按钮拼装仍写 `mz[1]` → 字符串取下标 = 第 2 个字符 | 全部码复制错误 |
+| 9 | 弹窗滚动穿透回归 | 「锁 body + 滚到底抖动 + overscroll:contain」只存在于搜索页内联脚本，帖子页 nodeExpandScript 与 site.css 都没有；改一处忘了另一处 | 弹窗到底后背景跟着滚 |
+
+### 新增铁律（违反即事故）
+1. **数据文件永不批量提交**：`timestamps.json / titles.json / counts.json / games.json / game-added.json / game_index.json / icons.json / search_index.json / sitemap.xml / site.json / links.json` 由后台与机器人直推远端。提交前必须 `git diff origin/main -- <文件>` 逐个核对；本地旧版会洗掉后台新数据。**commit 时只 add 明确文件名，禁止 `xargs git add` 全量 M、禁止 `git add -A/-u`**。
+2. **异步函数结果禁止直接 bind**：任何 `async` 函数返回 Promise，bind/JSON.stringify 前必须 `await`。改 Worker 数据写入路径后，用真实请求跑一遍写操作。
+3. **先枚举前端查询语法，再谈兼容**：Worker 兼容层支持的 PostgREST 操作符（eq/like/gte/lte/gt/lt/in）必须覆盖前端所有 query 写法——改 comments.js/comments 相关前 `grep` 全部 filter 用法。未知操作符被静默忽略 = 全表扫描 = 烧额度。
+4. **兼容层必须暴露前端读取的响应头**（Content-Range、X-Data-Source 等），否则前端"静默降级"成错误数字。
+5. **重构数据结构后全文搜旧访问模式**：把数组改字符串、把对象改数组后，必须 `grep` 旧下标写法（`[1]`、`.length` 等）并逐个改正；改完用真实样例跑一遍输出比对。
+6. **同一功能有两份实现时改两处并逐页验证**：已知双份：搜索页内联 CSS/JS ↔ `site.css`+`gen.js` 模板；`NAV_CSS` ↔ `site.css`；弹窗逻辑（搜索页 vs 帖子页 nodeExpandScript）。改一处必须同步另一处。
+7. **按量计费服务（D1 行读取）先估成本再跑**：OFFSET 分页的累计读取 ≈ 页数²/2 × 页大小；全表查询 / 对账前先估算，超过日额度 20% 必须先问站长。
+8. **报错误判要留样本**：出现 D1_TYPE_ERROR / 兼容层报错时，先在同一环境复现并保存原始报错文本，禁止凭"部署版本不对"结案（10-16 的误判导致同一 bug 拖三天）。
+9. **模式切换必须覆盖所有写路径**："切 SB"要同时检查：访客写（rpc）、后台管理写（评论 POST/PATCH/DELETE）、导入、缓存失效；透传第三方时必须转发认证头（apikey/authorization）。
+10. **每次 push 前的三步核验不变**：① 暂存区 0 个 `^D`（尤其 assets/）② 只 add 具体文件 ③ 数据文件已与远端 diff 核对。另：本项目 git 输出会"说谎"（commit 报 `no changes added` 实际已成功），**一切以 `git log`/`git show` 二次核实为准**。
