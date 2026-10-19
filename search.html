@@ -416,7 +416,24 @@ function relTime(iso){
       _hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
       _hits.forEach(function (g) { g._exact = matchScore(g) <= 1; });
     }
-    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+    // 0 结果兜底（2026-10-19）：字符乱序匹配——用户记错字序（如「母三维持」）也能搜到
+    var relaxed = false;
+    if (!_hits.length && kw.length >= 2) {
+      function looseMatch(text, pattern) {
+        var t = (text || '').toLowerCase();
+        var counts = {};
+        for (var i = 0; i < t.length; i++) counts[t[i]] = (counts[t[i]] || 0) + 1;
+        for (var j = 0; j < pattern.length; j++) {
+          var ch = pattern[j];
+          if (!counts[ch]) return false;
+          counts[ch]--;
+        }
+        return true;
+      }
+      _hits = data.filter(function (g) { return looseMatch(g.title, kw); });
+      if (_hits.length) { relaxed = true; _hits.forEach(function (g) { g._exact = false; }); }
+    }
+    countEl.textContent = '（找到 ' + _hits.length + ' 个' + (relaxed ? ' · 已放宽匹配' : '') + '）';
     if (!_hits.length) {
       // Show random recommended games
       var shuffled = data.slice().sort(function () { return 0.5 - Math.random(); });
