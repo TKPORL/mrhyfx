@@ -1,1 +1,10 @@
-{"ok":false,"errors":["不允许的 host: api.tiho.us.ci"]}
+{
+  "at": "2026-10-17T08:00:56.880Z",
+  "ok": true,
+  "home": 200,
+  "supabase": "ok",
+  "backup": {
+    "comments": 910
+  },
+  "errors": []
+}

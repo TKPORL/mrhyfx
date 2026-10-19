@@ -6,12 +6,18 @@
       if (nt.getAttribute('data-codedone')) return;
       var sp = nt.querySelector(':scope > span') || nt;
       var html = sp.innerHTML || '';
-      var mz = html.match(/解压码[:：]\s*([A-Za-z0-9]+)/);
-      var zb = html.match(/作弊码[:：]\s*([A-Za-z0-9]+)/);
-      if (!mz && !zb) return;
+      // 2026-10-19 修复：代码含「.」等符号（如 1435.kt）时旧正则 [A-Za-z0-9]+ 会截断，
+      //   改为单趟替换同时收集三种码（解压/作弊/赞助）并从介绍里整段移除
+      var found = { mz: null, zb: null, zz: null };
+      var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|作弊码|赞助码)[:：]\s*([^\s<。；，,！？]+)/g, function (m0, label, code) {
+        var key = label === '解压码' ? 'mz' : (label === '作弊码' ? 'zb' : 'zz');
+        if (!found[key]) found[key] = code;
+        return '';
+      });
+      var mz = found.mz, zb = found.zb, zz = found.zz;
+      if (!mz && !zb && !zz) return;
       nt.setAttribute('data-codedone', '1');
-      sp.innerHTML = html
-        .replace(/\s*(?:<br\s*\/?>)?\s*(?:解压码|作弊码)[:：]\s*[A-Za-z0-9]+/g, '')
+      sp.innerHTML = html2
         .replace(/\n\s*\n/g, '\n').replace(/^\s*\n/, '');
       var root = nt.closest('.node.heading3') || nt.closest('.result') || nt.parentElement;
       var dl = root ? root.querySelector('.mrhx-dl') : null;
@@ -21,6 +27,7 @@
       }
       if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz[1] + '" data-label="解压码">解压码</button>');
       if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb[1] + '" data-label="作弊码">作弊码</button>');
+      if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + zz[1] + '" data-label="赞助码">赞助码</button>');
     });
   }
   enhance(document);
