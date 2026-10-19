@@ -3153,11 +3153,11 @@ async function loadStats() {
   const sbUrl = sbBase(), sbAnon = $('sbAnon').value.trim(), sbSecret = $('sbSecret').value.trim();
   _statsErrs.length = 0; // 每次刷新清空
   if (!sbUrl || !sbAnon || !sbSecret) {
-    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。当前统计读取的项目：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">' + (sbUrl || '(空)') + '</code>，写入端内联的是：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">https://kydmccknlbpczeqppbtc.supabase.co</code>。两者必须一致才能看到访问量数据。</p>';
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">请先在「评论管理」页签填写 Supabase 配置（Project URL + anon 公钥 + 管理密钥）。当前统计读取的项目：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">' + (sbUrl || '(空)') + '</code>，写入端内联的是：<code style="background:#f5f5f5;padding:2px 6px;border-radius:3px">https://api.tiho.us.ci</code>。两者必须一致才能看到访问量数据。</p>';
     $('statTotalViews').textContent = '-'; $('statTotalPosts').textContent = '-'; $('statAvgViews').textContent = '-'; $('statTodayViews').textContent = '-'; $('statTodayCommentCount').textContent = '-'; return;
   }
   // 顶部调试信息：当前项目 URL + 写入端对比
-  const debugInfo = '<div style="background:#fdf6e3;border:1px solid #e8d9a0;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#5a4a00"><b>调试信息：</b>读取项目 = <code>' + sbUrl + '</code>' + (sbUrl === 'https://kydmccknlbpczeqppbtc.supabase.co' ? ' <span style="color:#1a7f37">✓ 与写入端一致</span>' : ' <span style="color:#c93a3f">⚠ 与写入端 <code>https://kydmccknlbpczeqppbtc.supabase.co</code> 不一致，访问量将为 0</span>') + '</div>';
+  const debugInfo = '<div style="background:#fdf6e3;border:1px solid #e8d9a0;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;color:#5a4a00"><b>调试信息：</b>读取项目 = <code>' + sbUrl + '</code>' + (sbUrl === 'https://api.tiho.us.ci' ? ' <span style="color:#1a7f37">✓ 与写入端一致</span>' : ' <span style="color:#c93a3f">⚠ 与写入端 <code>https://api.tiho.us.ci</code> 不一致，访问量将为 0</span>') + '</div>';
   show(stS, '正在加载统计…', 'info');
   try {
     // 分页拉取所有 page_views 记录，绕过 Supabase 免费版 1000 行限制

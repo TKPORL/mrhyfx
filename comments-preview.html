@@ -2367,10 +2367,10 @@ rKnight – 把你变成 Gfurry</span></div>
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html' }) })
+    fetch('https://api.tiho.us.ci/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html' }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_page_view', e); });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html', p_day: day }) })
+    fetch('https://api.tiho.us.ci/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/8.10.html', p_day: day }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
   } catch (e) { console.error('[view-track]', e); }
@@ -2450,7 +2450,7 @@ rKnight – 把你变成 Gfurry</span></div>
 </div>
 <script>
 (function () {
-  var SB = 'https://kydmccknlbpczeqppbtc.supabase.co';
+  var SB = 'https://api.tiho.us.ci';
   var KEY = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
   var PATH = '/qzt.html';
   var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
@@ -2713,10 +2713,10 @@ rKnight – 把你变成 Gfurry</span></div>
     if (localStorage.getItem(k)) return;
     localStorage.setItem(k, '1');
     var h = { 'apikey': 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Authorization': 'Bearer sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9', 'Content-Type': 'application/json' };
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html' }) })
+    fetch('https://api.tiho.us.ci/rest/v1/rpc/inc_page_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html' }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_page_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_page_view', e); });
-    fetch('https://kydmccknlbpczeqppbtc.supabase.co/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html', p_day: day }) })
+    fetch('https://api.tiho.us.ci/rest/v1/rpc/inc_daily_view', { method: 'POST', headers: h, body: JSON.stringify({ p_url: '/qzt.html', p_day: day }) })
       .then(function (r) { if (!r.ok) console.error('[view-track] inc_daily_view HTTP', r.status); })
       .catch(function (e) { console.error('[view-track] inc_daily_view', e); });
   } catch (e) { console.error('[view-track]', e); }
@@ -2724,7 +2724,7 @@ rKnight – 把你变成 Gfurry</span></div>
 </script>
   <script>
 (function(){
-  var SB='https://kydmccknlbpczeqppbtc.supabase.co',K='sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',POST='/qzt.html';
+  var SB='https://api.tiho.us.ci',K='sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',POST='/qzt.html';
   var h={'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json'};
   document.addEventListener('click',function(e){
     var a=e.target.closest('a.mrhx-btn-m,a.mrhx-btn-b,a.mrhx-btn-qk');

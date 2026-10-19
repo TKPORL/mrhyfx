@@ -244,7 +244,8 @@ function parsePGQ(url) {
   const reserved = ['select', 'order', 'limit', 'offset', 'apikey', 'authorization'];
   for (const k in q) {
     if (reserved.includes(k)) continue;
-    const m = /^(eq|like)\.(.*)$/.exec(q[k]);
+    // 2026-10-19：补 gte/lte/gt/lt——后台快照/排行的日期范围过滤依赖它（SB 前端切过来后必须可用）
+    const m = /^(eq|like|gte|lte|gt|lt)\.(.*)$/.exec(q[k]);
     if (m) filters[k] = { op: m[1], val: m[2] };
   }
   // 2026-10-15 修复：多字段排序（如 comments 的 pinned.desc,created_at.desc）。
@@ -268,10 +269,11 @@ function parseOrder(raw) {
 }
 function buildWhere(filters, args) {
   const conds = [], params = [];
+  const OPS = { eq: '=', like: 'LIKE', gte: '>=', lte: '<=', gt: '>', lt: '<' };
   for (const f in filters) {
     const { op, val } = filters[f];
-    if (op === 'eq') { conds.push(`${f} = ?`); params.push(val); }
-    else { conds.push(`${f} LIKE ?`); params.push(val.replace(/\*/g, '%')); }
+    if (op === 'like') { conds.push(`${f} LIKE ?`); params.push(val.replace(/\*/g, '%')); }
+    else { conds.push(`${f} ${OPS[op] || '='} ?`); params.push(val); }
   }
   args.push(...params);
   return conds.length ? ' WHERE ' + conds.join(' AND ') : '';

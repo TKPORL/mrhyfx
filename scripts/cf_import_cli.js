@@ -25,8 +25,8 @@ const TOKEN = mTok[1];
 const WORKER = 'https://api.tiho.us.ci';
 // 各表增量水位（2026-10-15 经 Worker GET 实测的 D1 最新 created_at）
 const WATERMARK = {
-  comments: '2026-10-09T17:13:03',
-  download_clicks: '2026-10-10T00:00:14',
+  comments: '2026-10-15T13:46:59.219345+00:00',
+  download_clicks: '2026-10-16T12:26:30.408Z',
 };
 
 function postChunk(table, rows) {
