@@ -3528,7 +3528,8 @@ async function loadSnapshots() {
     // ④ 每日下载：download_clicks created_at 均为 UTC ISO，按北京日逐日 head count
     const dlByDay = {};
     for (const d of days) {
-      const g = new Date(new Date(d + 'T00:00:00+08:00').getTime() - 8 * 3600e3);
+      // 2026-10-20 修复：'T00:00:00+08:00' 已是北京零点的 UTC 时刻，原代码再多减 8h 会把窗口错移成「昨天 16:00 → 今天 16:00」，昨天傍晚的下载被算进今天
+      const g = new Date(d + 'T00:00:00+08:00');
       const l = new Date(g.getTime() + 864e5);
       const r = await fetch(`${sbUrl}/rest/v1/download_clicks?select=id&limit=1&created_at=gte.${g.toISOString()}&created_at=lt.${l.toISOString()}`,
         { headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret, 'Prefer': 'count=exact' }) });
