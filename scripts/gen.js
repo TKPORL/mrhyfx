@@ -2613,7 +2613,7 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
 /* 2026-10-21 骨架屏：搜索加载时先摆出卡片轮廓，扫光动效表示正在加载 */
 .skel{pointer-events:none}
-.skel .sk{display:inline-block;background:linear-gradient(100deg,#ecebe9 30%,#f8f7f5 50%,#ecebe9 70%);background-size:200% 100%;animation:mrhxSk 1.2s linear infinite}
+.skel .sk{display:inline-block;background:linear-gradient(100deg,#e2ded6 30%,#f6f4f0 50%,#e2ded6 70%);background-size:200% 100%;animation:mrhxSk 1.2s linear infinite}
 @keyframes mrhxSk{to{background-position:-200% 0}}
 .empty-box{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:28px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .empty-box h3{font-size:15px;color:#2b2b2b;margin-bottom:8px}
@@ -2783,7 +2783,7 @@ function relTime(iso){
   var hw = document.getElementById('histWrap');
   if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
   var _shardCache = {};
-  var SHARDS = 8; // 2026-10-21：大索引切 8 片（search_detail_0..7.json），补全只拉命中片，不再整库下载
+  var SHARDS = 16; // 2026-10-21：大索引切 8 片（search_detail_0..15.json），补全只拉命中片，不再整库下载
   function loadShard(s) {
     if (!_shardCache[s]) _shardCache[s] = fetch('search_detail_' + s + '.json').then(function (r) { return r.json(); });
     return _shardCache[s];
@@ -2878,7 +2878,7 @@ function relTime(iso){
     if (!hits.length) {
       countEl.textContent = '（全库检索中…）';
       resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，正在搜索完整介绍</p></div>';
-      loadShards([0, 1, 2, 3, 4, 5, 6, 7]).then(runFullSearch).catch(showErr);
+      loadShards(Array.from({length: SHARDS}, function (_, i) { return i; })).then(runFullSearch).catch(showErr);
       return;
     }
     hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
@@ -3313,13 +3313,13 @@ ${likeScript}
     fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
     console.log('search_index.json ok, games:', slimIndex.length, '(含编号)');
     // 2026-10-20 双层索引；2026-10-21 v3：小索引内联进 search.html（零请求），同时照常落盘留档；
-    // 大索引切 8 片（search_detail_0..7.json），搜索页补全只拉命中片；p = 条目在 slimIndex 里的片号
-    const SHARDS = 8;
+    // 大索引切 16 片（search_detail_0..15.json），搜索页补全只拉命中片；p = 条目在 slimIndex 里的片号
+    const SHARDS = 16;
     const titlesIndex = slimIndex.map((g, i) => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d, p: i % SHARDS }));
     for (let s = 0; s < SHARDS; s++) {
       fs.writeFileSync('search_detail_' + s + '.json', JSON.stringify(slimIndex.filter((_, i) => i % SHARDS === s)));
     }
-    console.log('search_detail_0..7.json ok: 每片', Math.ceil(slimIndex.length / SHARDS), '条');
+    console.log('search_detail_0..15.json ok: 每片', Math.ceil(slimIndex.length / SHARDS), '条');
     fs.writeFileSync('search_titles.json', JSON.stringify(titlesIndex));
     const titlesInline = JSON.stringify(titlesIndex).replace(/<\//g, '<\\/'); // 防 </script> 提前闭合
     fs.writeFileSync('search.html', searchPage.replace('__MRHX_TITLES__', titlesInline));
