@@ -2643,6 +2643,7 @@ ${navHeaderHtml('', 'q')}
   <div class="sect"><h2>搜索结果</h2><span id="count" role="status" aria-live="polite" aria-atomic="true"></span></div>
   <div id="res" aria-busy="false"></div>
 </main>
+<script>window.MRHX_TITLES=__MRHX_TITLES__;</script>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer>${SITE_FOOTER}</footer>
 <script>
@@ -2726,8 +2727,9 @@ function relTime(iso){
       (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz) + '">赞助码</button>' : '');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
-      // 2026-10-20 双层索引：小索引（_partial）先渲染标题卡片，介绍/码区显示占位，大索引到货后整卡补全
-      (g._partial ? '<div class="intro" style="color:#b6b2aa">介绍与提取码加载中…</div>' : (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '')) +
+      // 2026-10-21：小索引（_partial）先渲染标题卡，介绍/按钮/图片位放骨架扫光块（与最终布局同尺寸），分片到货后整卡补全
+      (g._partial ? '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span><span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span><div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div><span class="sk" style="display:block;width:120px;height:90px;border-radius:10px;margin-top:12px"></span>'
+        : (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '')) +
       (g._partial ? '' : (dl ? '<div class="dl">' + dl + '</div>' : '')) +
       (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz || '') + '" data-c="' + esc(zb || '') + '" data-z="' + esc(zz || '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
@@ -2780,15 +2782,18 @@ function relTime(iso){
   saveHist(q);
   var hw = document.getElementById('histWrap');
   if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
-  var _fullP = null;
+  var _shardCache = {};
+  var SHARDS = 8; // 2026-10-21：大索引切 8 片（search_detail_0..7.json），补全只拉命中片，不再整库下载
+  function loadShard(s) {
+    if (!_shardCache[s]) _shardCache[s] = fetch('search_detail_' + s + '.json').then(function (r) { return r.json(); });
+    return _shardCache[s];
+  }
+  function loadShards(list) {
+    return Promise.all(list.map(loadShard)).then(function (arr) { return arr.reduce(function (a, b) { return a.concat(b); }, []); });
+  }
   var _fullDone = false;
   var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
-  // 大索引只在需要时才开始拉：等小索引出完结果（不与首屏下载抢带宽）
-  function loadFull() {
-    if (!_fullP) _fullP = fetch('search_index.json').then(function (r) { return r.json(); });
-    return _fullP;
-  }
-  // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里
+  // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里（拉全部分片拼回整库）
   function runFullSearch(data) {
     if (_fullDone) return;
     _fullDone = true;
@@ -2863,14 +2868,17 @@ function relTime(iso){
     resBox.innerHTML = skelRow() + skelRow() + skelRow() + skelRow();
     countEl.textContent = '（搜索中…）';
   }
-  fetch('search_titles.json').then(function (r) { return r.json(); }).then(function (titles) {
-    var hits = titles.filter(function (g) {
+  // 2026-10-21 v3：小索引已内联进本页（window.MRHX_TITLES），零请求秒出标题结果；
+  // 补全按需拉命中分片；0 标题命中走全库兜底（拉全部分片）
+  (function () {
+    var TITLES = window.MRHX_TITLES || [];
+    var hits = TITLES.filter(function (g) {
       return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw);
     });
     if (!hits.length) {
       countEl.textContent = '（全库检索中…）';
       resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，正在搜索完整介绍</p></div>';
-      loadFull().then(runFullSearch).catch(showErr);
+      loadShards([0, 1, 2, 3, 4, 5, 6, 7]).then(runFullSearch).catch(showErr);
       return;
     }
     hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
@@ -2880,12 +2888,11 @@ function relTime(iso){
     _page = 0;
     resBox.innerHTML = '';
     renderMore();
-    // 结果已先出，大索引后台到货后补全介绍与码按钮（失败则保持标题卡片，不报错）
-    loadFull().then(enrichWithFull).catch(function () {});
-  }).catch(function () {
-    // 小索引失败（旧缓存/部署中）：直接走整库匹配
-    loadFull().then(runFullSearch).catch(showErr);
-  });
+    // 结果已先出，只拉命中条目所在分片补全（失败则保持标题卡片，不报错）
+    var ps = [];
+    _hits.forEach(function (h) { if (ps.indexOf(h.p || 0) < 0) ps.push(h.p || 0); });
+    loadShards(ps).then(enrichWithFull).catch(function () {});
+  })();
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
     delBtns.forEach(function (el) {
@@ -2951,8 +2958,7 @@ function relTime(iso){
 <script src="assets/js/copycode.js?v=${COPYCODE_VER}"></script>\n  </body>
 </html>
 `;
-  fs.writeFileSync('search.html', searchPage);
-  console.log('search.html ok');
+  // 2026-10-21：search.html 的写盘挪到下方 slimIndex 段——内联标题索引（MRHX_TITLES）要在那里才能注入
 
   // ===== 期A：独立游戏页生成（game/<自增编号>.html）=====
   // 设计确认书：【期A·独立页生成器·设计确认书】20261009.md
@@ -3306,11 +3312,18 @@ ${likeScript}
     }));
     fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
     console.log('search_index.json ok, games:', slimIndex.length, '(含编号)');
-    // 2026-10-20 双层索引：小索引只含标题/链接/平台/日期/n（2026-10-21 再砍掉 img，首屏再小一半），
-    // 搜索页先加载它秒出结果，介绍/图与下载/码按钮由上面的 search_index.json 出结果后再拉取补全
-    const titlesIndex = slimIndex.map(g => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d }));
+    // 2026-10-20 双层索引；2026-10-21 v3：小索引内联进 search.html（零请求），同时照常落盘留档；
+    // 大索引切 8 片（search_detail_0..7.json），搜索页补全只拉命中片；p = 条目在 slimIndex 里的片号
+    const SHARDS = 8;
+    const titlesIndex = slimIndex.map((g, i) => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d, p: i % SHARDS }));
+    for (let s = 0; s < SHARDS; s++) {
+      fs.writeFileSync('search_detail_' + s + '.json', JSON.stringify(slimIndex.filter((_, i) => i % SHARDS === s)));
+    }
+    console.log('search_detail_0..7.json ok: 每片', Math.ceil(slimIndex.length / SHARDS), '条');
     fs.writeFileSync('search_titles.json', JSON.stringify(titlesIndex));
-    console.log('search_titles.json ok:', titlesIndex.length, '条,', Math.round(fs.statSync('search_titles.json').size / 1024) + 'KB');
+    const titlesInline = JSON.stringify(titlesIndex).replace(/<\//g, '<\\/'); // 防 </script> 提前闭合
+    fs.writeFileSync('search.html', searchPage.replace('__MRHX_TITLES__', titlesInline));
+    console.log('search.html ok (titles 内联 ' + Math.round(titlesInline.length / 1024) + 'KB)');
   }
 
   // ===== SEO: sitemap.xml + robots.txt =====
