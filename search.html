@@ -341,7 +341,7 @@ function relTime(iso){
     // 2026-10-19 修复：代码含「.」等符号（如 1435.kt）时旧正则 [A-Za-z0-9]+ 会截断，放宽为非空白/非全角标点
     // 2026-10-19：码后常跟【备注】（如「64762908【这版本…】」），取到行尾再清洗，与原 copycode 逻辑一致
     function _cleanCode(s) {
-      var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|([^)]*)|（[^）]*）/g, ' ').trim();
+      var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
       return v.split(/\s+/)[0] || '';
     }
     var mz = _cleanCode(((raw.match(/解压码[:：][ \t]*([^\n<]*)/) || [])[1])) || null;
