@@ -189,6 +189,10 @@ footer{border-top:1px solid #ecebe9;margin-top:60px;padding:22px 20px 34px;text-
 .btn-dl-b{background:#fff;color:#444;border:1px solid #e2ded8}
 .btn-dl-b:hover{color:#1a9e5c;border-color:#b9e2cc;background:#f0faf4}
 .empty{text-align:center;color:#999;padding:40px 0;font-size:14px}
+/* 2026-10-21 骨架屏：搜索加载时先摆出卡片轮廓，扫光动效表示正在加载 */
+.skel{pointer-events:none}
+.skel .sk{display:inline-block;background:linear-gradient(100deg,#ecebe9 30%,#f8f7f5 50%,#ecebe9 70%);background-size:200% 100%;animation:mrhxSk 1.2s linear infinite}
+@keyframes mrhxSk{to{background-position:-200% 0}}
 .empty-box{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:28px 20px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
 .empty-box h3{font-size:15px;color:#2b2b2b;margin-bottom:8px}
 .empty-box p{font-size:13px;color:#999;margin-bottom:14px}
@@ -340,14 +344,15 @@ function relTime(iso){
     var raw = g.intro || '';
     // 2026-10-19 修复：代码含「.」等符号（如 1435.kt）时旧正则 [A-Za-z0-9]+ 会截断，放宽为非空白/非全角标点
     // 2026-10-19：码后常跟【备注】（如「64762908【这版本…】」），取到行尾再清洗，与原 copycode 逻辑一致
+    // 2026-10-21 三修：码本身可能含空格（如「天生牛牛 或者 脸红红」），不再按空白截断，备注清洗后整段作为码；
+    //   介绍里把「标签：码」整段移除（不再留残段）
     function _cleanCode(s) {
-      var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
-      return v.split(/\s+/)[0] || '';
+      return String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
     }
     var mz = _cleanCode(((raw.match(/解压码[:：][ \t]*([^\n<]*)/) || [])[1])) || null;
     var zb = _cleanCode(((raw.match(/作弊码[:：][ \t]*([^\n<]*)/) || [])[1])) || null;
     var zz = _cleanCode(((raw.match(/赞助码[:：][ \t]*([^\n<]*)/) || [])[1])) || null;
-    var introTxt = raw.replace(/(?:解压码|作弊码|赞助码)[:：][ \t]*([^\n<]*)/g, function (m0, rest) { var c = _cleanCode(rest); return c ? rest.replace(c, '') : m0; }).replace(/\n\s*\n/g, '\n').trim();
+    var introTxt = raw.replace(/(?:解压码|作弊码|赞助码)[:：][ \t]*([^\n<]*)/g, function (m0, rest) { return _cleanCode(rest) ? '' : m0; }).replace(/\n\s*\n/g, '\n').trim();
     var dl = (g.links || []).map(function (l, i) {
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
@@ -387,8 +392,8 @@ function relTime(iso){
   document.getElementById('mrhx-more').onclick = renderMore;
   setMore(false);
   if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
-  // 2026-10-20 双层索引：search_titles.json（仅标题/平台/图/日期，体积约 1/8）先到先渲染秒出结果，
-  // 介绍与下载/码按钮由 search_index.json（大索引）后台到货后补全；小索引 0 结果或失败时回退整库匹配
+  // 2026-10-20 双层索引；2026-10-21 v2：大索引改为结果出来后再后台拉（不再与首屏抢带宽），
+  // 进页先渲染骨架卡 + 扫光动效让用户看到「正在搜索」；小索引 0 结果或失败时回退整库匹配
   var kw = q.toLowerCase();
   function fuzzyMatch(text, pattern) {
     var t = (text || '').toLowerCase();
@@ -412,10 +417,14 @@ function relTime(iso){
   saveHist(q);
   var hw = document.getElementById('histWrap');
   if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
-  // 大索引后台并行拉取（不阻塞首屏）
-  var fullP = fetch('search_index.json').then(function (r) { return r.json(); });
+  var _fullP = null;
   var _fullDone = false;
   var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
+  // 大索引只在需要时才开始拉：等小索引出完结果（不与首屏下载抢带宽）
+  function loadFull() {
+    if (!_fullP) _fullP = fetch('search_index.json').then(function (r) { return r.json(); });
+    return _fullP;
+  }
   // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里
   function runFullSearch(data) {
     if (_fullDone) return;
@@ -478,20 +487,27 @@ function relTime(iso){
     for (var i = 0; i < pages; i++) renderMore();
     window.scrollTo(0, y);
   }
-  fullP.then(function (data) {
-    if (!_hits.length) runFullSearch(data);
-    else enrichWithFull(data);
-  }).catch(function () {
-    if (!_hits.length && !_fullDone) { resBox.innerHTML = _errBox; setMore(false); }
-  });
+  function showErr() { resBox.innerHTML = _errBox; setMore(false); }
+  // 骨架屏：先把标题/平台/介绍/按钮的轮廓摆好，扫光动效表示正在加载（不转圈）
+  function skelRow() {
+    return '<div class="result skel"><div class="rt"><span class="sk" style="width:38%;height:16px"></span><span class="sk" style="width:64px;height:20px;border-radius:99px"></span></div>' +
+      '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span>' +
+      '<span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span>' +
+      '<div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div>' +
+      '<span class="sk" style="display:block;width:120px;height:90px;border-radius:10px;margin-top:12px"></span></div>';
+  }
+  if (q) {
+    resBox.innerHTML = skelRow() + skelRow() + skelRow() + skelRow();
+    countEl.textContent = '（搜索中…）';
+  }
   fetch('search_titles.json').then(function (r) { return r.json(); }).then(function (titles) {
-    if (_fullDone) return; // 整库搜索已先出结果（罕见竞态），保留之
     var hits = titles.filter(function (g) {
       return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw);
     });
     if (!hits.length) {
-      resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，等完整索引到齐后再搜一遍介绍</p></div>';
-      fullP.then(function (data) { runFullSearch(data); });
+      countEl.textContent = '（全库检索中…）';
+      resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，正在搜索完整介绍</p></div>';
+      loadFull().then(runFullSearch).catch(showErr);
       return;
     }
     hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
@@ -501,9 +517,11 @@ function relTime(iso){
     _page = 0;
     resBox.innerHTML = '';
     renderMore();
+    // 结果已先出，大索引后台到货后补全介绍与码按钮（失败则保持标题卡片，不报错）
+    loadFull().then(enrichWithFull).catch(function () {});
   }).catch(function () {
     // 小索引失败（旧缓存/部署中）：直接走整库匹配
-    fullP.then(function (data) { runFullSearch(data); }).catch(function () { resBox.innerHTML = _errBox; setMore(false); });
+    loadFull().then(runFullSearch).catch(showErr);
   });
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
@@ -567,6 +585,6 @@ function relTime(iso){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePop(); });
 })();
 </script>
-<script src="assets/js/copycode.js?v=ab8d8ba5"></script>
+<script src="assets/js/copycode.js?v=c24faebb"></script>
   </body>
 </html>

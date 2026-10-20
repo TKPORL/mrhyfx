@@ -10,17 +10,18 @@
       //   改为单趟替换同时收集三种码（解压/作弊/赞助）并从介绍里整段移除
       var found = { mz: null, zb: null, zz: null };
       // 2026-10-19 二次修复：码后面常跟【备注】（如「64762908【这版本…】」），旧模式遇空格即断导致复制不全。
-      //   改为取到行尾，再用 cleanCode 去掉【】（）等备注块、取第一个空白前的完整码。
+      //   改为取到行尾，再用 cleanCode 去掉【】（）等备注块。
+      // 2026-10-21 三修：码本身可能含空格（如「天生牛牛 或者 脸红红」），不再按空白截断，备注清洗后整段作为码；
+      //   介绍里把「标签：码」整段移除（不再留残段）。
       function cleanCode(s) {
-        var v = String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
-        return v.split(/\s+/)[0] || '';
+        return String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
       }
       var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|作弊码|赞助码)[:：][ \t]*([^\n<]*)/g, function (m0, label, rest) {
         var key = label === '解压码' ? 'mz' : (label === '作弊码' ? 'zb' : 'zz');
         var code = cleanCode(rest);
         if (!code) return m0;
         if (!found[key]) found[key] = code;
-        return rest.replace(code, '');
+        return ''; // 整行移除：码不该再留在介绍里（截断的残段也不行）
       });
       var mz = found.mz, zb = found.zb, zz = found.zz;
       if (!mz && !zb && !zz) return;

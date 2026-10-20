@@ -1379,7 +1379,8 @@ function gameHtml(c, imgPaths) {
     <div class="content mm-editor" ><span>${esc(c.name)}</span></div>
     ${(() => {
       // 2026-10-13 解压码：存进 note 文本（前台脚本会渲染成可一键复制的按钮），拼接前先清旧标记保证幂等
-      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+      // 2026-10-21 修复：旧清洗正则只认英文数字码，中文/含空格码（如「天生牛牛 或者 脸红红」）清不掉会重复拼行 → 改为清整行
+      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码|赞助码)[:：][^\n]*/g, '').trim();
       const _nt = _ic
         + (c.unzip ? (_ic ? '\n' : '') + '解压码：' + c.unzip : '')
         + (c.cheat ? '\n作弊码：' + c.cheat : '')
@@ -2390,10 +2391,12 @@ function parseCollectionDoc(doc) {
     // 2026-10-11：兼容延迟加载卡（qzt 第 100 张之后图片是 data-src 无 src），否则后台读不到图
     const imgs = [...li.querySelectorAll('.image-list img')].map(i => i.getAttribute('src') || i.getAttribute('data-src') || '').filter(Boolean).join('\n');
     // 2026-10-13 解压码：从介绍文本里提取（格式「解压码：xxx」），并从 intro 里剔除以免重复拼接
-    const unzip = (intro.match(/解压码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-    const cheat = (intro.match(/作弊码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-  const sponsor = (intro.match(/赞助码[:：]\s*([A-Za-z0-9]+)/) || [])[1] || '';
-    const introClean = intro.replace(/\s*(?:解压码|作弊码|赞助码)[:：]\s*[A-Za-z0-9]+/g, '').trim();
+    // 2026-10-21 修复：旧正则只认英文数字且按空白截断，中文/含空格码（「天生牛牛 或者 脸红红」）会被截成「天生牛牛」→ 取整行、清洗备注块
+    const _cleanCodeSb = s => String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
+    const unzip = _cleanCodeSb((intro.match(/解压码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
+    const cheat = _cleanCodeSb((intro.match(/作弊码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
+  const sponsor = _cleanCodeSb((intro.match(/赞助码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
+    const introClean = intro.replace(/\s*(?:解压码|作弊码|赞助码)[:：][^\n]*/g, '').trim();
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
       intro: introClean, unzip, cheat, sponsor, imgs, linkM, linkB, customName, customUrl
