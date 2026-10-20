@@ -352,14 +352,16 @@ function relTime(iso){
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';
     }).join('') +
-      (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz[1]) + '">解压码</button>' : '') +
-      (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb[1]) + '">作弊码</button>' : '') +
-      (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz[1]) + '">赞助码</button>' : '');
+      // 2026-10-20：mz/zb/zz 是清洗后的字符串（不是 match 数组），旧写法 [1] 只取到码的第 2 个字符——之前提取恒为空掩盖了它
+      (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz) + '">解压码</button>' : '') +
+      (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb) + '">作弊码</button>' : '') +
+      (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz) + '">赞助码</button>' : '');
     return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
-      (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '') +
-      (dl ? '<div class="dl">' + dl + '</div>' : '') +
-      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz ? mz[1] : '') + '" data-c="' + esc(zb ? zb[1] : '') + '" data-z="' + esc(zz ? zz[1] : '') + '"></div>' +
+      // 2026-10-20 双层索引：小索引（_partial）先渲染标题卡片，介绍/码区显示占位，大索引到货后整卡补全
+      (g._partial ? '<div class="intro" style="color:#b6b2aa">介绍与提取码加载中…</div>' : (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '')) +
+      (g._partial ? '' : (dl ? '<div class="dl">' + dl + '</div>' : '')) +
+      (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz || '') + '" data-c="' + esc(zb || '') + '" data-z="' + esc(zz || '') + '"></div>' +
         '<span class="img-tip">点击图片查看完整介绍</span>' : '') +
       '</div>';
   }
@@ -385,36 +387,39 @@ function relTime(iso){
   document.getElementById('mrhx-more').onclick = renderMore;
   setMore(false);
   if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
-  fetch('search_index.json').then(function (r) { return r.json(); }).then(function (data) {
-    if (!q) {
-      // Direct access without query - show return to homepage message
-      setMore(false);
-      bindHistClick();
-      return;
+  // 2026-10-20 双层索引：search_titles.json（仅标题/平台/图/日期，体积约 1/8）先到先渲染秒出结果，
+  // 介绍与下载/码按钮由 search_index.json（大索引）后台到货后补全；小索引 0 结果或失败时回退整库匹配
+  var kw = q.toLowerCase();
+  function fuzzyMatch(text, pattern) {
+    var t = (text || '').toLowerCase();
+    var p = pattern.toLowerCase();
+    if (t.indexOf(p) > -1) return true;
+    var pi = 0;
+    for (var ti = 0; ti < t.length && pi < p.length; ti++) {
+      if (t[ti] === p[pi]) pi++;
     }
-    saveHist(q);
-    var hw = document.getElementById('histWrap');
-    if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
-    var kw = q.toLowerCase();
-    function fuzzyMatch(text, pattern) {
-      var t = (text || '').toLowerCase();
-      var p = pattern.toLowerCase();
-      if (t.indexOf(p) > -1) return true;
-      var pi = 0;
-      for (var ti = 0; ti < t.length && pi < p.length; ti++) {
-        if (t[ti] === p[pi]) pi++;
-      }
-      return pi === p.length;
-    }
-    function matchScore(g) {
-      var titleLower = (g.title || '').toLowerCase();
-      var introLower = (g.intro || '').toLowerCase();
-      if (titleLower === kw) return 0;
-      if (titleLower.indexOf(kw) > -1) return 1;
-      if (introLower.indexOf(kw) > -1) return 2;
-      if (titleLower.indexOf(kw.split('').join('%')) > -1) return 3;
-      return 4;
-    }
+    return pi === p.length;
+  }
+  function matchScore(g) {
+    var titleLower = (g.title || '').toLowerCase();
+    var introLower = (g.intro || '').toLowerCase();
+    if (titleLower === kw) return 0;
+    if (titleLower.indexOf(kw) > -1) return 1;
+    if (introLower.indexOf(kw) > -1) return 2;
+    if (titleLower.indexOf(kw.split('').join('%')) > -1) return 3;
+    return 4;
+  }
+  saveHist(q);
+  var hw = document.getElementById('histWrap');
+  if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
+  // 大索引后台并行拉取（不阻塞首屏）
+  var fullP = fetch('search_index.json').then(function (r) { return r.json(); });
+  var _fullDone = false;
+  var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
+  // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里
+  function runFullSearch(data) {
+    if (_fullDone) return;
+    _fullDone = true;
     _hits = data.filter(function (g) {
       return fuzzyMatch(g.title, kw) || fuzzyMatch(g.intro, kw) || fuzzyMatch(g.plat, kw);
     });
@@ -449,8 +454,57 @@ function relTime(iso){
       renderMore();
       return;
     }
+    _page = 0;
+    resBox.innerHTML = '';
     renderMore();
-  }).catch(function () { resBox.innerHTML = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>'; setMore(false); });
+  }
+  // 小索引命中后，大索引到货把已渲染的卡片按 n（备用 url+标题）补全成完整版，保留页数与滚动位置
+  function enrichWithFull(data) {
+    if (!_hits.length || !_hits[0]._partial) return;
+    var map = {};
+    data.forEach(function (g) {
+      if (g.n != null) map['n' + g.n] = g;
+      map['u' + (g.url || '') + '|' + (g.title || '')] = g;
+    });
+    _hits = _hits.map(function (h) {
+      var f = (h.n != null && map['n' + h.n]) || map['u' + (h.url || '') + '|' + (h.title || '')] || h;
+      f._exact = h._exact;
+      f._partial = false;
+      return f;
+    });
+    var pages = _page, y = window.pageYOffset;
+    _page = 0;
+    resBox.innerHTML = '';
+    for (var i = 0; i < pages; i++) renderMore();
+    window.scrollTo(0, y);
+  }
+  fullP.then(function (data) {
+    if (!_hits.length) runFullSearch(data);
+    else enrichWithFull(data);
+  }).catch(function () {
+    if (!_hits.length && !_fullDone) { resBox.innerHTML = _errBox; setMore(false); }
+  });
+  fetch('search_titles.json').then(function (r) { return r.json(); }).then(function (titles) {
+    if (_fullDone) return; // 整库搜索已先出结果（罕见竞态），保留之
+    var hits = titles.filter(function (g) {
+      return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw);
+    });
+    if (!hits.length) {
+      resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，等完整索引到齐后再搜一遍介绍</p></div>';
+      fullP.then(function (data) { runFullSearch(data); });
+      return;
+    }
+    hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
+    hits.forEach(function (g) { g._exact = matchScore(g) <= 1; g._partial = true; });
+    _hits = hits;
+    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+    _page = 0;
+    resBox.innerHTML = '';
+    renderMore();
+  }).catch(function () {
+    // 小索引失败（旧缓存/部署中）：直接走整库匹配
+    fullP.then(function (data) { runFullSearch(data); }).catch(function () { resBox.innerHTML = _errBox; setMore(false); });
+  });
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
     delBtns.forEach(function (el) {
