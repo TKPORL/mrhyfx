@@ -1,0 +1,4417 @@
+<!DOCTYPE html>
+    <html lang="zh-CN" lang="zh-CN">
+      <head>
+        <meta charset="utf-8" />
+        <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>10月23号黄油（PC） · 黄油分享</title>
+
+        <style>
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          html {
+            margin: 0;
+            padding: 0;
+          }
+
+          
+
+
+
+          .mention[data-type='1']::before,
+          .mention[data-type='3']::before,
+          .mention[data-type='8']::before,
+          .mention[data-type='11']::before,
+          .mention[data-type='12']::before,
+          .mention[data-type='15']::before,
+          .mention[data-type='16']::before {
+            content: '\e62f';
+            display: inline-block;
+            vertical-align: middle;
+            margin-top: -4px;
+            font-size: inherit;
+          }
+          .mention[data-type='3']::before {
+            content: '\e62c';
+          }
+          .mention[data-type='8']::before {
+            content: '\e62d';
+          }
+          .mention[data-type='11']::before {
+            content: '\e62b';
+          }
+          .mention[data-type='12']::before {
+            content: '\e62a';
+          }
+          .mention[data-type='15']::before {
+            content: '\e62e';
+          }
+          .mention[data-type='22']::before {
+            content: '\e602';
+          }
+
+          body {
+            margin: 50px 20px;
+            padding: 0;
+            color: #333;
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'PingFang SC',
+                  Helvetica, Arial, 'Microsoft YaHei', 微软雅黑, 黑体, Heiti, sans-serif,
+                  SimSun, 宋体, serif,
+                  'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+          }
+
+          body.narrow {
+            max-width: 790px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 20px;
+            padding-right: 20px;
+          }
+
+          .title {
+            min-height: 40px;
+            padding-left: 10px;
+            padding-bottom: 24px;
+            margin-bottom: 20px;
+            line-height: 40px;
+            font-size: 26px;
+            font-weight: 500;
+            border-bottom: 1px solid #e5e6e8;
+          }
+
+          .node-list {
+            margin: 0 0 0 28px;
+            padding: 0;
+            list-style: none;
+          }
+
+          .node {
+            position: relative;
+          }
+
+          .node.drill-node > .content {
+            margin-bottom: 15px;
+            font-size: 20px;
+            line-height: 28px;
+          }
+
+          .node.drill-node > .note {
+            margin-bottom: 10px;
+          }
+
+          .content {
+            min-height: 24px;
+            padding-top: 2px;
+            padding-bottom: 3px;
+            line-height: 24px;
+            font-size: 16px;
+          }
+
+          .note {
+            position: relative;
+            padding-bottom: 2px;
+            line-height: 22px;
+            font-size: 14px;
+            color: #888;
+            white-space: pre-wrap;
+          }
+
+          .content > *,
+          .note > * {
+            padding-top: 2px;
+            padding-bottom: 2px;
+          }
+
+          .note:empty {
+            padding-bottom: 0;
+          }
+
+          .node.finished .content,
+          .node.finished .note {
+            opacity: 0.5;
+          }
+
+          .node.finished > .content {
+            text-decoration: line-through;
+          }
+
+          .heading1 > .content {
+            min-height: 34px;
+            line-height: 34px;
+            font-size: 24px;
+            font-weight: 500;
+          }
+
+          .heading2 > .content {
+            min-height: 30px;
+            line-height: 30px;
+            font-size: 21px;
+            font-weight: 500;
+          }
+
+          .heading3 > .content {
+            min-height: 27px;
+            line-height: 27px;
+            font-size: 19px;
+            font-weight: 500;
+          }
+
+          .mention {
+            padding-left: 2px;
+            padding-right: 2px;
+            color: #5856d5;
+            word-break: break-all;
+            text-decoration: none;
+          }
+
+          .content-link {
+            color: unset;
+            opacity: 0.6;
+            word-break: break-all;
+          }
+
+          .tag {
+            text-decoration: underline;
+            opacity: 0.6;
+            text-underline-offset: 5px;
+          }
+
+          .bold {
+            font-weight: bold;
+          }
+
+          .italic {
+            font-style: italic;
+          }
+
+          .underline {
+            text-decoration: underline;
+            text-underline-offset: 5px;
+          }
+
+
+          .underline.mask {
+            text-decoration: none;
+            border-bottom: 2px solid #5856d5;
+          }
+
+         .mask {
+            // background-color: #e5e5ff; /* 浅紫色背景 */
+            text-decoration: underline;
+            text-decoration-color: #5856d5;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 5px;
+          }
+
+          .maskEnable .mask:hover {
+            cursor: pointer;
+          }
+
+          .maskEnable .mask {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+          }
+
+          .strikethrough {
+            text-decoration: line-through;
+            opacity: 0.5;
+          }
+
+          .strikethrough.underline{
+            text-decoration: line-through underline;
+            text-underline-offset: 5px;
+            opacity: 0.5;
+            border-bottom: 2px solid #5856d5;
+          }
+
+          .strikethrough.mask{
+            text-decoration: line-through;
+            opacity: 0.5;
+            border-bottom: 2px solid #5856d5;
+          }
+
+          .strikethrough.mask.underline{
+            text-decoration: line-through;
+            // opacity: 0.5;
+            border-bottom: 2px solid #5856d5;
+          }
+
+          .content .highlight-red,
+          .highlight-red > .content > * {
+            background-color: #ff8c8c99;
+          }
+
+          .content .highlight-yellow,
+          .highlight-yellow > .content > * {
+            background-color: #ffff2699;
+          }
+
+          .content .highlight-blue,
+          .highlight-blue > .content > * {
+            background-color: #8ce5ff99;
+          }
+
+          .content .highlight-cyan,
+          .highlight-cyan > .content > * {
+            background-color: #a3ffca99;
+          }
+
+          .content .highlight-pink,
+          .highlight-pink > .content > * {
+            background-color: #f3a6ff99;
+          }
+
+          .content .highlight-olive,
+          .highlight-olive > .content > * {
+            background-color: #c8ff8c99;
+          }
+
+          .content .highlight-grey,
+          .highlight-grey > .content > * {
+            background-color: #b1b6be99;
+          }
+
+          /* --- 为PDF打印生成的专用样式 --- */
+          /* 以下颜色是将原始带alpha通道的颜色与白色背景混合后的计算结果 */
+          @media print {
+            .content .highlight-red,
+            .highlight-red > .content > * {
+              /* from #ff8c8c99 */
+              background-color: #ffbaba;
+            }
+
+            .content .highlight-yellow,
+            .highlight-yellow > .content > * {
+              /* from #ffff2699 */
+              background-color: #ffff7d;
+            }
+
+            .content .highlight-blue,
+            .highlight-blue > .content > * {
+              /* from #8ce5ff99 */
+              background-color: #baefff;
+            }
+
+            .content .highlight-cyan,
+            .highlight-cyan > .content > * {
+              /* from #a3ffca99 */
+              background-color: #c8ffdf;
+            }
+
+            .content .highlight-pink,
+            .highlight-pink > .content > * {
+              /* from #f3a6ff99 */
+              background-color: #f8caff;
+            }
+
+            .content .highlight-olive,
+            .highlight-olive > .content > * {
+              /* from #c8ff8c99 */
+              background-color: #deffba;
+            }
+
+            .content .highlight-grey,
+            .highlight-grey > .content > * {
+              /* from #b1b6be99 */
+              background-color: #d0d3d8;
+            }
+          }
+
+          .text-color-red {
+            color: #dc2d1e;
+          }
+
+          .text-color-yellow {
+            color: #ffaf38;
+          }
+
+          .text-color-green {
+            color: #75c940;
+          }
+
+          .text-color-blue {
+            color: #3da8f5;
+          }
+
+          .text-color-purple {
+            color: #797ec9;
+          }
+
+          .bullet {
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 9px;
+          }
+
+          .node.collapsed > .bullet {
+            background-color: #dee0e3;
+          }
+
+          .heading1 > .bullet {
+            top: 10px;
+          }
+
+          .heading2 > .bullet {
+            top: 8px;
+          }
+
+          .heading3 > .bullet {
+            top: 6px;
+          }
+
+          .bullet-dot {
+            position: absolute;
+            left: 6px;
+            top: 6px;
+            width: 6px;
+            height: 6px;
+            background-color: rgb(100, 106, 115);
+            border-radius: 3px;
+          }
+
+          .image-list {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+          }
+
+          .image-item {
+            padding-top: 2px;
+            padding-bottom: 8px;
+          }
+
+          .image-row {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            gap: 8px;
+            padding-top: 2px;
+            padding-bottom: 8px;
+          }
+
+          .image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+          }
+
+          .children {
+            position: relative;
+          }
+
+          .note::before,
+          .image-list::before,
+          .children::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -17px;
+            width: 1px;
+            height: 100%;
+            background-color: #dee0e3;
+          }
+
+          .node.drill-node > .note::before,
+          .node.drill-node > .image-list::before,
+          .node.drill-node > .children::before,
+          body.noline .note::before,
+          body.noline .image-list::before,
+          body.noline .children::before {
+            display: none;
+          }
+
+          .node.drill-node > .note,
+          .node.drill-node > .content,
+          .node.drill-node > .image-list,
+          .node.drill-node > .children {
+            margin-left: 10px;
+          }
+
+          body.noline .node-list {
+            margin-right: 20px;
+          }
+
+          .publish {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+          }
+
+          .publish-link {
+            color: #4694FF;
+          }
+
+          .node .mention
+
+          .node .mention.mm-iconfont {
+             color: #5856d5;
+          }
+
+          .auto-table {
+            table-layout: auto;
+            // min-width: 100%;
+            border-collapse: collapse;
+            white-space: normal;
+            border: none;
+          }
+
+          .auto-table td,
+          .auto-table th {
+            // min-width: 120px;
+            max-width: 360px;
+            height: 16px; /* 替代min-height */
+            padding: 6px 9px;
+            text-align: start;
+            word-break: break-word;
+            vertical-align: middle;
+            border: 1px solid #bfc0c1;
+            font-weight: normal;
+          }
+
+          /* 为所有单元格设置最小高度 */
+          .auto-table td,
+          .auto-table th {
+            min-height: 16px;
+            height: 16px; /* 默认固定高度 */
+          }
+
+          /* 仅当有实际内容时才允许自动调整高度 */
+          .auto-table td:has(> :not(.column-select-btn, .row-select-btn):not(br):not(:empty)),
+          .auto-table th:has(> :not(.column-select-btn, .row-select-btn):not(br):not(:empty)) {
+            height: auto;
+          }
+
+          .auto-table td,
+          .auto-table th {
+            position: relative; /* 为伪元素定位做准备 */
+            /* 保留其他原有样式 */
+          }
+
+          /* 移除hover时的边框效果 */
+          .auto-table tr.selected-row td::after,
+          .auto-table tr.selected-row th::after,
+          .auto-table .selected-column::after {
+            display: none !important;
+          }
+
+          /* 保留原有的hover效果，但会被上面的规则覆盖 */
+          .auto-table td:hover::after,
+          .auto-table th:hover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            // border: 2px solid #5856d5;
+            pointer-events: none; /* 确保不会影响交互 */
+            z-index: 1;
+          }
+
+          .selected-row,
+          .selected-column {
+            outline: 2px solid #5856d5;
+            outline-offset: -2px; /* 调整outline与元素边缘的距离 */
+            position: relative;
+            z-index: 1;
+          }
+
+          .selected-column {
+            position: relative;
+            z-index: 1;
+            //background-color: rgba(88, 86, 213, 0.1); /* 可选：添加背景色以突出显示 */
+          }
+
+          /* 移除单个cell的outline */
+          .selected-column {
+            outline: none;
+          }
+
+          /* 在表格上添加一个伪元素来创建整列的外框 */
+          table {
+            position: relative;
+          }
+
+          table::after {
+            content: '';
+            position: absolute;
+            z-index: 2;
+            pointer-events: none;
+            top: 0;
+            bottom: 0;
+            outline: 2px solid #5856d5;
+            /* 宽度和位置会通过JavaScript动态设置 */
+            left: var(--column-left, 0);
+            width: var(--column-width, 0);
+            /* 添加这行来控制显示/隐藏 */
+            display: var(--column-display, none);
+          }
+
+          .column-select-btn,
+          .row-select-btn {
+            position: absolute;
+            background-color: #f4f4f5; /* 默认/hover状态的背景色 */
+            color: #bfc0c1; /* 默认/hover状态的文字颜色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+            z-index: 10;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            user-select: none; /* 防止选中文本 */
+            -webkit-user-select: none; /* Safari 支持 */
+            -moz-user-select: none; /* Firefox 支持 */
+            -ms-user-select: none; /* IE/Edge 支持 */
+            pointer-events: auto; /* 确保点击事件生效 */
+          }
+
+          .column-select-btn {
+            /* 修改位置计算方式，确保完全显示 */
+            top: 0;
+            left: 50%;
+            width: 24px;
+            height: 16px;
+            transform: translate(-50%, -50%); /* 改为向上偏移半个高度 */
+          }
+
+          .row-select-btn {
+            /* 修改位置计算方式，确保完全显示 */
+            left: 0;
+            top: 50%;
+            width: 16px;
+            height: 24px;
+            transform: translate(-50%, -50%); /* 改为向左偏移半个宽度 */
+          }
+
+          /* 阻止内部被编辑 */
+          .column-select-btn:focus,
+          .row-select-btn:focus {
+            outline: none;
+          }
+
+          /* 悬停时显示 */
+          td:hover .column-select-btn,
+          td:hover .row-select-btn,
+          th:hover .column-select-btn,
+          th:hover .row-select-btn {
+            opacity: 1;
+          }
+
+          /* 选中状态 */
+          .column-select-btn.selected,
+          .row-select-btn.selected {
+            background-color: #5856d5;
+            color: white;
+            opacity: 1; /* 确保选中状态始终可见 */
+          }
+
+          /* 提供按钮图标 */
+          .column-select-btn::after {
+            content: '⋯';
+          }
+
+          .row-select-btn::after {
+            content: '⋮';
+          }
+
+          .auto-table u {
+            text-underline-offset: 5px;
+          }
+
+          .editable-text-area {
+            outline: none;
+            min-height: 1.2em;
+          }
+
+          /* table-styles.css */
+
+          /* 不可编辑表格的样式 */
+          .non-editable {
+            user-select: none !important; /* 禁止选择文本 */
+            -webkit-user-select: none !important; /* Safari 支持 */
+            -moz-user-select: none !important; /* Firefox 支持 */
+            -ms-user-select: none !important; /* IE/Edge 支持 */
+            cursor: default !important; /* 使用默认光标 */
+          }
+
+          /* 仅表格内容不可交互，但保留容器的滚动功能 */
+          .non-editable table,
+          .non-editable thead,
+          .non-editable tbody,
+          .non-editable tr,
+          .non-editable th,
+          .non-editable td {
+            pointer-events: none !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            cursor: default !important;
+            outline: none !important; /* 防止获得焦点时出现轮廓 */
+          }
+
+          /* 表格容器允许滚动 */
+        .table-container {
+          overflow-x: auto !important; /* 启用水平滚动 */
+          width: 100%;
+          margin-top: 0;
+          margin-bottom: 0;
+          margin-right: 0;
+          padding: 8px !important;
+
+          max-width: 100%; /* 确保容器不会超出父元素 */
+          pointer-events: auto !important; /* 允许容器的交互，包括滚动 */
+          margin-left: -7px;
+        }
+
+
+          /* 强制所有表格相关元素不可编辑 */
+          table [contenteditable='false'] {
+            -webkit-user-modify: read-only !important; /* Safari 特定属性 */
+            -moz-user-modify: read-only !important; /* Firefox 特定属性 */
+            user-modify: read-only !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+          }
+
+
+          .task-checkbox {
+            position: absolute;
+            display: flex;
+            // left: 27px;
+            width: 18px;
+            height: 18px;
+            line-height: 24px;
+            z-index: 2;
+            top: 5px;
+            justify-content: flex-end;
+            appearance: none;
+            -webkit-appearance: none;
+            margin: 0;
+            cursor: pointer;
+          }
+
+          .task-checkbox-svg {
+            display: block;
+          }
+          .task-content {
+            margin-left: 21px;
+          }
+
+          .task-checkbox:focus-visible {
+            outline: none;
+          }
+
+          .task-content-completed {
+            // color: #bfc0c1 !important;
+            opacity: 0.5;
+            text-decoration: line-through;
+          }
+          .task-checkbox-container-div {
+            position: inherit;
+            z-index: 2;
+            width: 18px;
+            height: 18px;
+            line-height: 1; /* 避免 line-height 影响布局 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .task-checkbox-container-div[contenteditable='false'] .task-checkbox {
+            pointer-events: none;
+            z-index: 2;
+          }
+
+          .task-checkbox-container {
+            display: inline-flex;
+            align-items: center;
+            position: absolute;
+            height: 29px;
+          }
+
+          .task-date-container {
+            display: inline-flex;
+            white-space: nowrap;
+            align-items: center;
+            pointer-events: auto;
+            cursor: pointer;
+            color: #7f7f7d;
+            padding: 0px 0px;
+            vertical-align: middle; /* 或者 top, bottom 都可以试试 */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+          }
+
+          // .task-content::before {
+          //   content: ''; /* 或者 content: '​'; 使用零宽度空格 */
+          //   display: inline-block; /* 确保它在文档流中占据一个位置 */
+          //   width: 0;
+          // }
+
+          .task-date-container * {
+            /* 使用通配符 * 确保所有子元素都不可选 */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+          }
+
+          .task-date-overdue {
+            color: #ef042a;
+          }
+
+          .icon-calendar {
+            opacity: 0;
+          }
+
+          // .content:hover .icon-calendar,
+          // .content:focus .icon-calendar {
+          //   opacity: 1;
+          // }
+
+          @media (hover: none) {
+            .content:focus .icon-calendar {
+              opacity: 1;
+            }
+          }
+
+          /* 仅在支持 hover 的设备上（如桌面端），使用 hover 来显示图标 */
+          @media (hover: hover) {
+            .content:hover .icon-calendar {
+              opacity: 1;
+            }
+          }
+
+          .task-deadline-wrapper {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f0efee80;
+            border-radius: 999px;
+            padding: 0px 6px;
+            font-size: 12px !important;
+            height: 20px;
+            margin-left: 4px;
+            margin-bottom: 2px;
+          }
+
+          /* 日历图标-没有时间 */
+          .icon-calendar {
+            display: inline-block;
+            position: relative;
+            width: 18px;
+            height: 18px;
+            margin-left: 12px;
+            margin-bottom: 2px;
+            // top: 3px;
+            // vertical-align: 2px; /* 方便和文字对齐 */
+
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.667 12.667H14.667' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M10.667 1.333V4' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12.667 10.667V14.667' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M14 8.399V4c0-.354-.14-.693-.39-.943s-.587-.39-1.027-.39H3.333c-.44 0-.779.14-1.027.39S2 3.646 2 4v9.333c0 .354.14.693.39.943s.587.39 1.027.39H9' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 6.667H14' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5.333 1.333V4' stroke='%2375757D' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+          }
+
+          /* 日历图标-已有时间*/
+          // .icon-calendar-with-date {
+          //   display: inline-block;
+          //   position: relative;
+          //   width: 18px;
+          //   height: 18px;
+          //   // top: 3px;
+          //   vertical-align: middle;
+
+          //   background-color: var(--color);
+          //   mask-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.21727 16C3.47818 16 2.92269 15.8164 2.55079 15.4492C2.1836 15.0867 2 14.5406 2 13.811V4.18903C2 3.45935 2.1836 2.91327 2.55079 2.55079C2.92269 2.1836 3.47818 2 4.21727 2H13.8631C14.6022 2 15.1554 2.1836 15.5225 2.55079C15.8897 2.91327 16.0733 3.45935 16.0733 4.18903V13.811C16.0733 14.5406 15.8897 15.0867 15.5225 15.4492C15.1554 15.8164 14.6022 16 13.8631 16H4.21727ZM4.11135 14.8631H13.9549C14.2703 14.8631 14.5128 14.7784 14.6822 14.6089C14.8517 14.4441 14.9364 14.1993 14.9364 13.8745V6.21564C14.9364 5.89082 14.8517 5.64603 14.6822 5.48126C14.5128 5.31179 14.2703 5.22705 13.9549 5.22705H4.11135C3.80065 5.22705 3.56056 5.31179 3.39109 5.48126C3.22162 5.64603 3.13688 5.89082 3.13688 6.21564V13.8745C3.13688 14.1993 3.22162 14.4441 3.39109 14.6089C3.56056 14.7784 3.80065 14.8631 4.11135 14.8631ZM7.66323 7.76915C7.54083 7.76915 7.45374 7.74561 7.40196 7.69853C7.35488 7.65146 7.33134 7.56672 7.33134 7.44432V7.0277C7.33134 6.9053 7.35488 6.82292 7.40196 6.78055C7.45374 6.73348 7.54083 6.70994 7.66323 6.70994H8.07985C8.20225 6.70994 8.28698 6.73348 8.33406 6.78055C8.38584 6.82292 8.41173 6.9053 8.41173 7.0277V7.44432C8.41173 7.56672 8.38584 7.65146 8.33406 7.69853C8.28698 7.74561 8.20225 7.76915 8.07985 7.76915H7.66323ZM10.0076 7.76915C9.88521 7.76915 9.80047 7.74561 9.7534 7.69853C9.70632 7.65146 9.68278 7.56672 9.68278 7.44432V7.0277C9.68278 6.9053 9.70632 6.82292 9.7534 6.78055C9.80047 6.73348 9.88521 6.70994 10.0076 6.70994H10.4242C10.5513 6.70994 10.6384 6.73348 10.6855 6.78055C10.7326 6.82292 10.7561 6.9053 10.7561 7.0277V7.44432C10.7561 7.56672 10.7326 7.65146 10.6855 7.69853C10.6384 7.74561 10.5513 7.76915 10.4242 7.76915H10.0076ZM12.359 7.76915C12.2319 7.76915 12.1448 7.74561 12.0978 7.69853C12.0507 7.65146 12.0272 7.56672 12.0272 7.44432V7.0277C12.0272 6.9053 12.0507 6.82292 12.0978 6.78055C12.1448 6.73348 12.2319 6.70994 12.359 6.70994H12.7686C12.8957 6.70994 12.9828 6.73348 13.0299 6.78055C13.077 6.82292 13.1005 6.9053 13.1005 7.0277V7.44432C13.1005 7.56672 13.077 7.65146 13.0299 7.69853C12.9828 7.74561 12.8957 7.76915 12.7686 7.76915H12.359ZM5.31885 10.0782C5.19174 10.0782 5.10465 10.0547 5.05758 10.0076C5.0105 9.96053 4.98696 9.87579 4.98696 9.7534V9.34384C4.98696 9.21673 5.0105 9.13199 5.05758 9.08963C5.10465 9.04255 5.19174 9.01901 5.31885 9.01901H5.73547C5.85787 9.01901 5.9426 9.04255 5.98968 9.08963C6.03676 9.13199 6.06029 9.21673 6.06029 9.34384V9.7534C6.06029 9.87579 6.03676 9.96053 5.98968 10.0076C5.9426 10.0547 5.85787 10.0782 5.73547 10.0782H5.31885ZM7.66323 10.0782C7.54083 10.0782 7.45374 10.0547 7.40196 10.0076C7.35488 9.96053 7.33134 9.87579 7.33134 9.7534V9.34384C7.33134 9.21673 7.35488 9.13199 7.40196 9.08963C7.45374 9.04255 7.54083 9.01901 7.66323 9.01901H8.07985C8.20225 9.01901 8.28698 9.04255 8.33406 9.08963C8.38584 9.13199 8.41173 9.21673 8.41173 9.34384V9.7534C8.41173 9.87579 8.38584 9.96053 8.33406 10.0076C8.28698 10.0547 8.20225 10.0782 8.07985 10.0782H7.66323ZM10.0076 10.0782C9.88521 10.0782 9.80047 10.0547 9.7534 10.0076C9.70632 9.96053 9.68278 9.87579 9.68278 9.7534V9.34384C9.68278 9.21673 9.70632 9.13199 9.7534 9.08963C9.80047 9.04255 9.88521 9.01901 10.0076 9.01901H10.4242C10.5513 9.01901 10.6384 9.04255 10.6855 9.08963C10.7326 9.13199 10.7561 9.21673 10.7561 9.34384V9.7534C10.7561 9.87579 10.7326 9.96053 10.6855 10.0076C10.6384 10.0547 10.5513 10.0782 10.4242 10.0782H10.0076ZM12.359 10.0782C12.2319 10.0782 12.1448 10.0547 12.0978 10.0076C12.0507 9.96053 12.0272 9.87579 12.0272 9.7534V9.34384C12.0272 9.21673 12.0507 9.13199 12.0978 9.08963C12.1448 9.04255 12.2319 9.01901 12.359 9.01901H12.7686C12.8957 9.01901 12.9828 9.04255 13.0299 9.08963C13.077 9.13199 13.1005 9.21673 13.1005 9.34384V9.7534C13.1005 9.87579 13.077 9.96053 13.0299 10.0076C12.9828 10.0547 12.8957 10.0782 12.7686 10.0782H12.359ZM5.31885 12.3873C5.19174 12.3873 5.10465 12.3661 5.05758 12.3237C5.0105 12.2767 4.98696 12.1896 4.98696 12.0625V11.6529C4.98696 11.5258 5.0105 11.4411 5.05758 11.3987C5.10465 11.3516 5.19174 11.3281 5.31885 11.3281H5.73547C5.85787 11.3281 5.9426 11.3516 5.98968 11.3987C6.03676 11.4411 6.06029 11.5258 6.06029 11.6529V12.0625C6.06029 12.1896 6.03676 12.2767 5.98968 12.3237C5.9426 12.3661 5.85787 12.3873 5.73547 12.3873H5.31885ZM7.66323 12.3873C7.54083 12.3873 7.45374 12.3661 7.40196 12.3237C7.35488 12.2767 7.33134 12.1896 7.33134 12.0625V11.6529C7.33134 11.5258 7.35488 11.4411 7.40196 11.3987C7.45374 11.3516 7.54083 11.3281 7.66323 11.3281H8.07985C8.20225 11.3281 8.28698 11.3516 8.33406 11.3987C8.38584 11.4411 8.41173 11.5258 8.41173 11.6529V12.0625C8.41173 12.1896 8.38584 12.2767 8.33406 12.3237C8.28698 12.3661 8.20225 12.3873 8.07985 12.3873H7.66323ZM10.0076 12.3873C9.88521 12.3873 9.80047 12.3661 9.7534 12.3237C9.70632 12.2767 9.68278 12.1896 9.68278 12.0625V11.6529C9.68278 11.5258 9.70632 11.4411 9.7534 11.3987C9.80047 11.3516 9.88521 11.3281 10.0076 11.3281H10.4242C10.5513 11.3281 10.6384 11.3516 10.6855 11.3987C10.7326 11.4411 10.7561 11.5258 10.7561 11.6529V12.0625C10.7561 12.1896 10.7326 12.2767 10.6855 12.3237C10.6384 12.3661 10.5513 12.3873 10.4242 12.3873H10.0076Z' fill='%2375757D'/%3E%3C/svg%3E");
+
+          //   /* 确保蒙版完全显示 */
+          //   mask-repeat: no-repeat;
+          //   mask-position: center;
+          //   mask-size: contain;
+
+          //   /* 为了兼容性，有时需要 -webkit- 前缀 */
+          //   -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.21727 16C3.47818 16 2.92269 15.8164 2.55079 15.4492C2.1836 15.0867 2 14.5406 2 13.811V4.18903C2 3.45935 2.1836 2.91327 2.55079 2.55079C2.92269 2.1836 3.47818 2 4.21727 2H13.8631C14.6022 2 15.1554 2.1836 15.5225 2.55079C15.8897 2.91327 16.0733 3.45935 16.0733 4.18903V13.811C16.0733 14.5406 15.8897 15.0867 15.5225 15.4492C15.1554 15.8164 14.6022 16 13.8631 16H4.21727ZM4.11135 14.8631H13.9549C14.2703 14.8631 14.5128 14.7784 14.6822 14.6089C14.8517 14.4441 14.9364 14.1993 14.9364 13.8745V6.21564C14.9364 5.89082 14.8517 5.64603 14.6822 5.48126C14.5128 5.31179 14.2703 5.22705 13.9549 5.22705H4.11135C3.80065 5.22705 3.56056 5.31179 3.39109 5.48126C3.22162 5.64603 3.13688 5.89082 3.13688 6.21564V13.8745C3.13688 14.1993 3.22162 14.4441 3.39109 14.6089C3.56056 14.7784 3.80065 14.8631 4.11135 14.8631ZM7.66323 7.76915C7.54083 7.76915 7.45374 7.74561 7.40196 7.69853C7.35488 7.65146 7.33134 7.56672 7.33134 7.44432V7.0277C7.33134 6.9053 7.35488 6.82292 7.40196 6.78055C7.45374 6.73348 7.54083 6.70994 7.66323 6.70994H8.07985C8.20225 6.70994 8.28698 6.73348 8.33406 6.78055C8.38584 6.82292 8.41173 6.9053 8.41173 7.0277V7.44432C8.41173 7.56672 8.38584 7.65146 8.33406 7.69853C8.28698 7.74561 8.20225 7.76915 8.07985 7.76915H7.66323ZM10.0076 7.76915C9.88521 7.76915 9.80047 7.74561 9.7534 7.69853C9.70632 7.65146 9.68278 7.56672 9.68278 7.44432V7.0277C9.68278 6.9053 9.70632 6.82292 9.7534 6.78055C9.80047 6.73348 9.88521 6.70994 10.0076 6.70994H10.4242C10.5513 6.70994 10.6384 6.73348 10.6855 6.78055C10.7326 6.82292 10.7561 6.9053 10.7561 7.0277V7.44432C10.7561 7.56672 10.7326 7.65146 10.6855 7.69853C10.6384 7.74561 10.5513 7.76915 10.4242 7.76915H10.0076ZM12.359 7.76915C12.2319 7.76915 12.1448 7.74561 12.0978 7.69853C12.0507 7.65146 12.0272 7.56672 12.0272 7.44432V7.0277C12.0272 6.9053 12.0507 6.82292 12.0978 6.78055C12.1448 6.73348 12.2319 6.70994 12.359 6.70994H12.7686C12.8957 6.70994 12.9828 6.73348 13.0299 6.78055C13.077 6.82292 13.1005 6.9053 13.1005 7.0277V7.44432C13.1005 7.56672 13.077 7.65146 13.0299 7.69853C12.9828 7.74561 12.8957 7.76915 12.7686 7.76915H12.359ZM5.31885 10.0782C5.19174 10.0782 5.10465 10.0547 5.05758 10.0076C5.0105 9.96053 4.98696 9.87579 4.98696 9.7534V9.34384C4.98696 9.21673 5.0105 9.13199 5.05758 9.08963C5.10465 9.04255 5.19174 9.01901 5.31885 9.01901H5.73547C5.85787 9.01901 5.9426 9.04255 5.98968 9.08963C6.03676 9.13199 6.06029 9.21673 6.06029 9.34384V9.7534C6.06029 9.87579 6.03676 9.96053 5.98968 10.0076C5.9426 10.0547 5.85787 10.0782 5.73547 10.0782H5.31885ZM7.66323 10.0782C7.54083 10.0782 7.45374 10.0547 7.40196 10.0076C7.35488 9.96053 7.33134 9.87579 7.33134 9.7534V9.34384C7.33134 9.21673 7.35488 9.13199 7.40196 9.08963C7.45374 9.04255 7.54083 9.01901 7.66323 9.01901H8.07985C8.20225 9.01901 8.28698 9.04255 8.33406 9.08963C8.38584 9.13199 8.41173 9.21673 8.41173 9.34384V9.7534C8.41173 9.87579 8.38584 9.96053 8.33406 10.0076C8.28698 10.0547 8.20225 10.0782 8.07985 10.0782H7.66323ZM10.0076 10.0782C9.88521 10.0782 9.80047 10.0547 9.7534 10.0076C9.70632 9.96053 9.68278 9.87579 9.68278 9.7534V9.34384C9.68278 9.21673 9.70632 9.13199 9.7534 9.08963C9.80047 9.04255 9.88521 9.01901 10.0076 9.01901H10.4242C10.5513 9.01901 10.6384 9.04255 10.6855 9.08963C10.7326 9.13199 10.7561 9.21673 10.7561 9.34384V9.7534C10.7561 9.87579 10.7326 9.96053 10.6855 10.0076C10.6384 10.0547 10.5513 10.0782 10.4242 10.0782H10.0076ZM12.359 10.0782C12.2319 10.0782 12.1448 10.0547 12.0978 10.0076C12.0507 9.96053 12.0272 9.87579 12.0272 9.7534V9.34384C12.0272 9.21673 12.0507 9.13199 12.0978 9.08963C12.1448 9.04255 12.2319 9.01901 12.359 9.01901H12.7686C12.8957 9.01901 12.9828 9.04255 13.0299 9.08963C13.077 9.13199 13.1005 9.21673 13.1005 9.34384V9.7534C13.1005 9.87579 13.077 9.96053 13.0299 10.0076C12.9828 10.0547 12.8957 10.0782 12.7686 10.0782H12.359ZM5.31885 12.3873C5.19174 12.3873 5.10465 12.3661 5.05758 12.3237C5.0105 12.2767 4.98696 12.1896 4.98696 12.0625V11.6529C4.98696 11.5258 5.0105 11.4411 5.05758 11.3987C5.10465 11.3516 5.19174 11.3281 5.31885 11.3281H5.73547C5.85787 11.3281 5.9426 11.3516 5.98968 11.3987C6.03676 11.4411 6.06029 11.5258 6.06029 11.6529V12.0625C6.06029 12.1896 6.03676 12.2767 5.98968 12.3237C5.9426 12.3661 5.85787 12.3873 5.73547 12.3873H5.31885ZM7.66323 12.3873C7.54083 12.3873 7.45374 12.3661 7.40196 12.3237C7.35488 12.2767 7.33134 12.1896 7.33134 12.0625V11.6529C7.33134 11.5258 7.35488 11.4411 7.40196 11.3987C7.45374 11.3516 7.54083 11.3281 7.66323 11.3281H8.07985C8.20225 11.3281 8.28698 11.3516 8.33406 11.3987C8.38584 11.4411 8.41173 11.5258 8.41173 11.6529V12.0625C8.41173 12.1896 8.38584 12.2767 8.33406 12.3237C8.28698 12.3661 8.20225 12.3873 8.07985 12.3873H7.66323ZM10.0076 12.3873C9.88521 12.3873 9.80047 12.3661 9.7534 12.3237C9.70632 12.2767 9.68278 12.1896 9.68278 12.0625V11.6529C9.68278 11.5258 9.70632 11.4411 9.7534 11.3987C9.80047 11.3516 9.88521 11.3281 10.0076 11.3281H10.4242C10.5513 11.3281 10.6384 11.3516 10.6855 11.3987C10.7326 11.4411 10.7561 11.5258 10.7561 11.6529V12.0625C10.7561 12.1896 10.7326 12.2767 10.6855 12.3237C10.6384 12.3661 10.5513 12.3873 10.4242 12.3873H10.0076Z' fill='%2375757D'/%3E%3C/svg%3E");
+          //   -webkit-mask-repeat: no-repeat;
+          //   -webkit-mask-position: center;
+          //   -webkit-mask-size: contain;
+          // }
+
+          // /* 日历图标 */
+          // .icon-calendar-with-date:hover,
+          .icon-calendar:hover {
+            display: inline-block;
+            position: relative;
+            width: 18px;
+            height: 18px;
+            margin-left: 12px;
+            margin-bottom: 2px;
+            // top: 3px;
+            vertical-align: middle; /* 方便和文字对齐 */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.667 12.667H14.667' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M10.667 1.333V4' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12.667 10.667V14.667' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M14 8.399V4c0-.354-.14-.693-.39-.943s-.587-.39-1.027-.39H3.333c-.44 0-.779.14-1.027.39S2 3.646 2 4v9.333c0 .354.14.693.39.943s.587.39 1.027.39H9' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 6.667H14' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5.333 1.333V4' stroke='%231D1D1F' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            mask-image: none;
+            background-color: #00000000;
+          }
+
+          /* 闹钟图标 */
+          .icon-alarm {
+            display: inline-block;
+            position: relative;
+            width: 12px;
+            height: 12px;
+            // top: 1.45px;
+            vertical-align: middle;
+
+            background-color: var(--color);
+            mask-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.95323 16.0009C8.0622 16.0009 7.22742 15.8322 6.44889 15.4946C5.67036 15.1616 4.98409 14.7004 4.39007 14.1108C3.80055 13.5168 3.33703 12.8306 2.99952 12.052C2.66651 11.2735 2.5 10.4387 2.5 9.54769C2.5 8.65665 2.66651 7.82187 2.99952 7.04335C3.33703 6.26032 3.80055 5.57404 4.39007 4.98452C4.98409 4.3905 5.67036 3.92698 6.44889 3.59397C7.22742 3.25646 8.0622 3.0877 8.95323 3.0877C9.84426 3.0877 10.679 3.25646 11.4576 3.59397C12.2406 3.92698 12.9269 4.3905 13.5164 4.98452C14.1104 5.57404 14.5739 6.26032 14.9069 7.04335C15.24 7.82187 15.4065 8.65665 15.4065 9.54769C15.4065 10.4387 15.24 11.2735 14.9069 12.052C14.5739 12.8306 14.1104 13.5168 13.5164 14.1108C12.9269 14.7004 12.2406 15.1616 11.4576 15.4946C10.679 15.8322 9.84426 16.0009 8.95323 16.0009ZM8.95323 14.8466C9.68226 14.8466 10.3663 14.7094 11.0053 14.4349C11.6488 14.1604 12.2136 13.7801 12.6996 13.2941C13.1856 12.8081 13.5659 12.2455 13.8404 11.6065C14.1149 10.963 14.2522 10.2767 14.2522 9.54769C14.2522 8.81416 14.1149 8.12788 13.8404 7.48886C13.5659 6.84984 13.1856 6.28732 12.6996 5.8013C12.2136 5.31528 11.6488 4.93502 11.0053 4.66051C10.3663 4.386 9.68226 4.24875 8.95323 4.24875C8.2197 4.24875 7.53343 4.386 6.89441 4.66051C6.25538 4.93502 5.69286 5.31528 5.20685 5.8013C4.72083 6.28732 4.34057 6.84984 4.06606 7.48886C3.79155 8.12788 3.65429 8.81416 3.65429 9.54769C3.65429 10.2767 3.79155 10.963 4.06606 11.6065C4.34057 12.2455 4.72083 12.8081 5.20685 13.2941C5.69286 13.7801 6.25538 14.1604 6.89441 14.4349C7.53343 14.7094 8.2197 14.8466 8.95323 14.8466ZM3.41128 4.82252C3.32578 4.82252 3.24928 4.80002 3.18177 4.75501C3.11427 4.70551 3.06252 4.63801 3.02652 4.55251C2.99052 4.476 2.96127 4.37925 2.93877 4.26225C2.92077 4.14524 2.91176 4.02374 2.91176 3.89773C2.91176 3.54672 2.99502 3.22946 3.16152 2.94595C3.33253 2.65794 3.56204 2.42843 3.85005 2.25742C4.13806 2.08642 4.45757 2.00092 4.80858 2.00092C5.01109 2.00092 5.21585 2.03242 5.42285 2.09542C5.62986 2.15392 5.79862 2.24167 5.92912 2.35868C6.05063 2.47118 6.11138 2.59269 6.11138 2.72319C6.11138 2.8402 6.05513 2.94145 5.94262 3.02695L3.68129 4.73476C3.63179 4.77076 3.58679 4.79552 3.54629 4.80902C3.50579 4.81802 3.46078 4.82252 3.41128 4.82252ZM14.4952 4.82252C14.4457 4.82252 14.4007 4.81802 14.3602 4.80902C14.3197 4.79552 14.2747 4.77076 14.2252 4.73476L11.9706 3.02695C11.8536 2.94145 11.7951 2.8402 11.7951 2.72319C11.7951 2.59269 11.8558 2.47118 11.9773 2.35868C12.1078 2.24167 12.2766 2.15392 12.4836 2.09542C12.6906 2.03242 12.8954 2.00092 13.0979 2.00092C13.4489 2.00092 13.7684 2.08642 14.0564 2.25742C14.3444 2.42843 14.5717 2.65794 14.7382 2.94595C14.9092 3.22946 14.9947 3.54672 14.9947 3.89773C14.9947 4.02374 14.9857 4.14749 14.9677 4.269C14.9497 4.386 14.9227 4.4805 14.8867 4.55251C14.8462 4.63351 14.7922 4.69876 14.7247 4.74826C14.6572 4.79777 14.5807 4.82252 14.4952 4.82252ZM3.31003 15.8052C3.21103 15.7107 3.16152 15.5914 3.16152 15.4474C3.16152 15.3034 3.21328 15.1796 3.31678 15.0761L4.59933 13.8071L5.32835 14.5294L4.05256 15.7984C3.94905 15.9064 3.82305 15.9604 3.67454 15.9604C3.53054 15.9604 3.40903 15.9087 3.31003 15.8052ZM14.5964 15.8052C14.4974 15.9087 14.3737 15.9604 14.2252 15.9604C14.0812 15.9604 13.9574 15.9064 13.8539 15.7984L12.5849 14.5294L13.3071 13.8071L14.5897 15.0761C14.6977 15.1796 14.7494 15.3034 14.7449 15.4474C14.7449 15.5914 14.6954 15.7107 14.5964 15.8052ZM5.88187 10.2902C5.75137 10.2902 5.64111 10.2452 5.55111 10.1552C5.46111 10.0652 5.4161 9.95495 5.4161 9.82445C5.4161 9.68944 5.46111 9.57694 5.55111 9.48693C5.64111 9.39693 5.75137 9.35193 5.88187 9.35193H8.48071V5.7338C8.48071 5.59879 8.52572 5.48629 8.61572 5.39629C8.70572 5.30628 8.81598 5.26128 8.94648 5.26128C9.08149 5.26128 9.19399 5.30628 9.28399 5.39629C9.374 5.48629 9.419 5.59879 9.419 5.7338V9.82445C9.419 9.95495 9.374 10.0652 9.28399 10.1552C9.19399 10.2452 9.08149 10.2902 8.94648 10.2902H5.88187Z' fill='%2375757D'/%3E%3C/svg%3E");
+
+            /* 确保蒙版完全显示 */
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+
+            /* 为了兼容性，有时需要 -webkit- 前缀 */
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.95323 16.0009C8.0622 16.0009 7.22742 15.8322 6.44889 15.4946C5.67036 15.1616 4.98409 14.7004 4.39007 14.1108C3.80055 13.5168 3.33703 12.8306 2.99952 12.052C2.66651 11.2735 2.5 10.4387 2.5 9.54769C2.5 8.65665 2.66651 7.82187 2.99952 7.04335C3.33703 6.26032 3.80055 5.57404 4.39007 4.98452C4.98409 4.3905 5.67036 3.92698 6.44889 3.59397C7.22742 3.25646 8.0622 3.0877 8.95323 3.0877C9.84426 3.0877 10.679 3.25646 11.4576 3.59397C12.2406 3.92698 12.9269 4.3905 13.5164 4.98452C14.1104 5.57404 14.5739 6.26032 14.9069 7.04335C15.24 7.82187 15.4065 8.65665 15.4065 9.54769C15.4065 10.4387 15.24 11.2735 14.9069 12.052C14.5739 12.8306 14.1104 13.5168 13.5164 14.1108C12.9269 14.7004 12.2406 15.1616 11.4576 15.4946C10.679 15.8322 9.84426 16.0009 8.95323 16.0009ZM8.95323 14.8466C9.68226 14.8466 10.3663 14.7094 11.0053 14.4349C11.6488 14.1604 12.2136 13.7801 12.6996 13.2941C13.1856 12.8081 13.5659 12.2455 13.8404 11.6065C14.1149 10.963 14.2522 10.2767 14.2522 9.54769C14.2522 8.81416 14.1149 8.12788 13.8404 7.48886C13.5659 6.84984 13.1856 6.28732 12.6996 5.8013C12.2136 5.31528 11.6488 4.93502 11.0053 4.66051C10.3663 4.386 9.68226 4.24875 8.95323 4.24875C8.2197 4.24875 7.53343 4.386 6.89441 4.66051C6.25538 4.93502 5.69286 5.31528 5.20685 5.8013C4.72083 6.28732 4.34057 6.84984 4.06606 7.48886C3.79155 8.12788 3.65429 8.81416 3.65429 9.54769C3.65429 10.2767 3.79155 10.963 4.06606 11.6065C4.34057 12.2455 4.72083 12.8081 5.20685 13.2941C5.69286 13.7801 6.25538 14.1604 6.89441 14.4349C7.53343 14.7094 8.2197 14.8466 8.95323 14.8466ZM3.41128 4.82252C3.32578 4.82252 3.24928 4.80002 3.18177 4.75501C3.11427 4.70551 3.06252 4.63801 3.02652 4.55251C2.99052 4.476 2.96127 4.37925 2.93877 4.26225C2.92077 4.14524 2.91176 4.02374 2.91176 3.89773C2.91176 3.54672 2.99502 3.22946 3.16152 2.94595C3.33253 2.65794 3.56204 2.42843 3.85005 2.25742C4.13806 2.08642 4.45757 2.00092 4.80858 2.00092C5.01109 2.00092 5.21585 2.03242 5.42285 2.09542C5.62986 2.15392 5.79862 2.24167 5.92912 2.35868C6.05063 2.47118 6.11138 2.59269 6.11138 2.72319C6.11138 2.8402 6.05513 2.94145 5.94262 3.02695L3.68129 4.73476C3.63179 4.77076 3.58679 4.79552 3.54629 4.80902C3.50579 4.81802 3.46078 4.82252 3.41128 4.82252ZM14.4952 4.82252C14.4457 4.82252 14.4007 4.81802 14.3602 4.80902C14.3197 4.79552 14.2747 4.77076 14.2252 4.73476L11.9706 3.02695C11.8536 2.94145 11.7951 2.8402 11.7951 2.72319C11.7951 2.59269 11.8558 2.47118 11.9773 2.35868C12.1078 2.24167 12.2766 2.15392 12.4836 2.09542C12.6906 2.03242 12.8954 2.00092 13.0979 2.00092C13.4489 2.00092 13.7684 2.08642 14.0564 2.25742C14.3444 2.42843 14.5717 2.65794 14.7382 2.94595C14.9092 3.22946 14.9947 3.54672 14.9947 3.89773C14.9947 4.02374 14.9857 4.14749 14.9677 4.269C14.9497 4.386 14.9227 4.4805 14.8867 4.55251C14.8462 4.63351 14.7922 4.69876 14.7247 4.74826C14.6572 4.79777 14.5807 4.82252 14.4952 4.82252ZM3.31003 15.8052C3.21103 15.7107 3.16152 15.5914 3.16152 15.4474C3.16152 15.3034 3.21328 15.1796 3.31678 15.0761L4.59933 13.8071L5.32835 14.5294L4.05256 15.7984C3.94905 15.9064 3.82305 15.9604 3.67454 15.9604C3.53054 15.9604 3.40903 15.9087 3.31003 15.8052ZM14.5964 15.8052C14.4974 15.9087 14.3737 15.9604 14.2252 15.9604C14.0812 15.9604 13.9574 15.9064 13.8539 15.7984L12.5849 14.5294L13.3071 13.8071L14.5897 15.0761C14.6977 15.1796 14.7494 15.3034 14.7449 15.4474C14.7449 15.5914 14.6954 15.7107 14.5964 15.8052ZM5.88187 10.2902C5.75137 10.2902 5.64111 10.2452 5.55111 10.1552C5.46111 10.0652 5.4161 9.95495 5.4161 9.82445C5.4161 9.68944 5.46111 9.57694 5.55111 9.48693C5.64111 9.39693 5.75137 9.35193 5.88187 9.35193H8.48071V5.7338C8.48071 5.59879 8.52572 5.48629 8.61572 5.39629C8.70572 5.30628 8.81598 5.26128 8.94648 5.26128C9.08149 5.26128 9.19399 5.30628 9.28399 5.39629C9.374 5.48629 9.419 5.59879 9.419 5.7338V9.82445C9.419 9.95495 9.374 10.0652 9.28399 10.1552C9.19399 10.2452 9.08149 10.2902 8.94648 10.2902H5.88187Z' fill='%2375757D'/%3E%3C/svg%3E");
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+          }
+
+          .task-deadline-wrapper:hover .task-close {
+            display: inline-block;
+          }
+
+          .task-close {
+            display: none;
+            position: relative;
+            width: 18px;
+            height: 18px;
+            // top: 3px;
+            vertical-align: middle; /* 方便和文字对齐 */
+
+            background-color: var(--color);
+            mask-image: url('data:image/svg+xml,<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.42943 7.1776C6.18233 6.9305 6.10932 6.60287 6.35643 6.35577C6.60353 6.10867 6.93185 6.18098 7.17896 6.42808L8.99346 8.24257L10.8221 6.41397C11.0692 6.16687 11.3963 6.09339 11.6434 6.34049C11.8905 6.5876 11.8187 6.91643 11.5716 7.16354L9.74303 8.99214L11.5874 10.8365C11.8345 11.0836 11.9068 11.412 11.6597 11.6591C11.4126 11.9062 11.085 11.8332 10.8379 11.5861L8.9935 9.74167L7.16317 11.572C6.91607 11.8191 6.58723 11.8909 6.34013 11.6438C6.09303 11.3967 6.1665 11.0695 6.4136 10.8224L8.24393 8.9921L6.42943 7.1776Z" fill="%2375757D"/></svg>');
+
+            /* 确保蒙版完全显示 */
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+
+            /* 为了兼容性，有时需要 -webkit- 前缀 */
+            -webkit-mask-image: url('data:image/svg+xml,<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.42943 7.1776C6.18233 6.9305 6.10932 6.60287 6.35643 6.35577C6.60353 6.10867 6.93185 6.18098 7.17896 6.42808L8.99346 8.24257L10.8221 6.41397C11.0692 6.16687 11.3963 6.09339 11.6434 6.34049C11.8905 6.5876 11.8187 6.91643 11.5716 7.16354L9.74303 8.99214L11.5874 10.8365C11.8345 11.0836 11.9068 11.412 11.6597 11.6591C11.4126 11.9062 11.085 11.8332 10.8379 11.5861L8.9935 9.74167L7.16317 11.572C6.91607 11.8191 6.58723 11.8909 6.34013 11.6438C6.09303 11.3967 6.1665 11.0695 6.4136 10.8224L8.24393 8.9921L6.42943 7.1776Z" fill="%2375757D"/></svg>');
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+          }
+
+          /* --- 其他元素的样式 --- */
+
+          /* 正常显示的日期部分的样式 */
+          .task-deadline-wrapper {
+          }
+
+          /* 日期值的样式 */
+          .task-date-value {
+            margin-right: 4px;
+            margin-left: 4px;
+          }
+
+          .codespan:not(.pseudo-node) {
+            background-color: #ebecec;
+            color: #bc4e3a !important;
+            font-size: calc(1em - 2px);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: 0 2px;
+            font-family: SourceCodePro, monospace;
+          }
+
+          .codespan:not(.pseudo-node).highlight-red,
+          .codespan:not(.pseudo-node).highlight-yellow,
+          .codespan:not(.pseudo-node).highlight-pink,
+          .codespan:not(.pseudo-node).highlight-blue,
+          .codespan:not(.pseudo-node).highlight-cyan,
+          .codespan:not(.pseudo-node).highlight-olive,
+          .codespan:not(.pseudo-node).highlight-grey {
+            background-color: #ebecec;
+          }
+
+          .codespan:not(.pseudo-node).text-color-red,
+          .codespan:not(.pseudo-node).text-color-green,
+          .codespan:not(.pseudo-node).text-color-blue,
+          .codespan:not(.pseudo-node).text-color-purple,
+          .codespan:not(.pseudo-node).text-color-yellow {
+            color: #bc4e3a !important;
+          }
+
+          @media print {
+            body {
+              margin-top: 0;
+              margin-bottom: 0;
+            }
+          }
+
+          @page {
+            margin-left: 0.25in;
+            margin-right: 0.25in;
+            margin-top: 0.5in;
+            margin-bottom: 0.5in;
+          }
+        </style>
+        <style>
+            @font-face{font-family:KaTeX_AMS;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_AMS-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_AMS-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_AMS-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Caligraphic;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Bold.ttf) format("truetype");font-weight:700;font-style:normal}
+            @font-face{font-family:KaTeX_Caligraphic;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Caligraphic-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Fraktur;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Bold.ttf) format("truetype");font-weight:700;font-style:normal}
+            @font-face{font-family:KaTeX_Fraktur;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Fraktur-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Main;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Bold.ttf) format("truetype");font-weight:700;font-style:normal}
+            @font-face{font-family:KaTeX_Main;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-BoldItalic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-BoldItalic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-BoldItalic.ttf) format("truetype");font-weight:700;font-style:italic}
+            @font-face{font-family:KaTeX_Main;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Italic.ttf) format("truetype");font-weight:400;font-style:italic}
+            @font-face{font-family:KaTeX_Main;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Main-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Math;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-BoldItalic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-BoldItalic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-BoldItalic.ttf) format("truetype");font-weight:700;font-style:italic}
+            @font-face{font-family:KaTeX_Math;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Math-Italic.ttf) format("truetype");font-weight:400;font-style:italic}
+            @font-face{font-family:"KaTeX_SansSerif";src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Bold.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Bold.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Bold.ttf) format("truetype");font-weight:700;font-style:normal}
+            @font-face{font-family:"KaTeX_SansSerif";src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Italic.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Italic.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Italic.ttf) format("truetype");font-weight:400;font-style:italic}
+            @font-face{font-family:"KaTeX_SansSerif";src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_SansSerif-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Script;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Script-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Script-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Script-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Size1;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size1-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size1-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size1-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Size2;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size2-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size2-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size2-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Size3;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size3-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size3-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size3-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Size4;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size4-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size4-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Size4-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            @font-face{font-family:KaTeX_Typewriter;src:url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Typewriter-Regular.woff2) format("woff2"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Typewriter-Regular.woff) format("woff"),url(https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/fonts/KaTeX_Typewriter-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+            .katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;text-indent:0;text-rendering:auto;border-color:currentColor}.katex *{-ms-high-contrast-adjust:none!important}.katex .katex-version:after{content:"0.12.0"}.katex .katex-mathml{position:absolute;clip:rect(1px,1px,1px,1px);padding:0;border:0;height:1px;width:1px;overflow:hidden}.katex .katex-html>.newline{display:block}.katex .base{position:relative;white-space:nowrap;width:min-content}.katex .base,.katex .strut{display:inline-block}.katex .textbf{font-weight:700}.katex .textit{font-style:italic}.katex .textrm{font-family:KaTeX_Main}.katex .textsf{font-family:KaTeX_SansSerif}.katex .texttt{font-family:KaTeX_Typewriter}.katex .mathnormal{font-family:KaTeX_Math;font-style:italic}.katex .mathit{font-family:KaTeX_Main;font-style:italic}.katex .mathrm{font-style:normal}.katex .mathbf{font-family:KaTeX_Main;font-weight:700}.katex .boldsymbol{font-family:KaTeX_Math;font-weight:700;font-style:italic}.katex .amsrm,.katex .mathbb,.katex .textbb{font-family:KaTeX_AMS}.katex .mathcal{font-family:KaTeX_Caligraphic}.katex .mathfrak,.katex .textfrak{font-family:KaTeX_Fraktur}.katex .mathtt{font-family:KaTeX_Typewriter}.katex .mathscr,.katex .textscr{font-family:KaTeX_Script}.katex .mathsf,.katex .textsf{font-family:KaTeX_SansSerif}.katex .mathboldsf,.katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}.katex .mathitsf,.katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}.katex .mainrm{font-family:KaTeX_Main;font-style:normal}.katex .vlist-t{display:inline-table;table-layout:fixed;border-collapse:collapse}.katex .vlist-r{display:table-row}.katex .vlist{display:table-cell;vertical-align:bottom;position:relative}.katex .vlist>span{display:block;height:0;position:relative}.katex .vlist>span>span{display:inline-block}.katex .vlist>span>.pstrut{overflow:hidden;width:0}.katex .vlist-t2{margin-right:-2px}.katex .vlist-s{display:table-cell;vertical-align:bottom;font-size:1px;width:2px;min-width:2px}.katex .vbox{-ms-flex-direction:column;flex-direction:column;align-items:baseline}.katex .hbox,.katex .vbox{display:-ms-inline-flexbox;display:inline-flex}.katex .hbox{-ms-flex-direction:row;flex-direction:row;width:100%}.katex .thinbox{display:inline-flex;flex-direction:row;width:0;max-width:0}.katex .msupsub{text-align:left}.katex .mfrac>span>span{text-align:center}.katex .mfrac .frac-line{display:inline-block;width:100%;border-bottom-style:solid}.katex .hdashline,.katex .hline,.katex .mfrac .frac-line,.katex .overline .overline-line,.katex .rule,.katex .underline .underline-line{min-height:1px}.katex .mspace{display:inline-block}.katex .clap,.katex .llap,.katex .rlap{width:0;position:relative}.katex .clap>.inner,.katex .llap>.inner,.katex .rlap>.inner{position:absolute}.katex .clap>.fix,.katex .llap>.fix,.katex .rlap>.fix{display:inline-block}.katex .llap>.inner{right:0}.katex .clap>.inner,.katex .rlap>.inner{left:0}.katex .clap>.inner>span{margin-left:-50%;margin-right:50%}.katex .rule{display:inline-block;border:0 solid;position:relative}.katex .hline,.katex .overline .overline-line,.katex .underline .underline-line{display:inline-block;width:100%;border-bottom-style:solid}.katex .hdashline{display:inline-block;width:100%;border-bottom-style:dashed}.katex .sqrt>.root{margin-left:.27777778em;margin-right:-.55555556em}.katex .fontsize-ensurer.reset-size1.size1,.katex .sizing.reset-size1.size1{font-size:1em}.katex .fontsize-ensurer.reset-size1.size2,.katex .sizing.reset-size1.size2{font-size:1.2em}.katex .fontsize-ensurer.reset-size1.size3,.katex .sizing.reset-size1.size3{font-size:1.4em}.katex .fontsize-ensurer.reset-size1.size4,.katex .sizing.reset-size1.size4{font-size:1.6em}.katex .fontsize-ensurer.reset-size1.size5,.katex .sizing.reset-size1.size5{font-size:1.8em}.katex .fontsize-ensurer.reset-size1.size6,.katex .sizing.reset-size1.size6{font-size:2em}.katex .fontsize-ensurer.reset-size1.size7,.katex .sizing.reset-size1.size7{font-size:2.4em}.katex .fontsize-ensurer.reset-size1.size8,.katex .sizing.reset-size1.size8{font-size:2.88em}.katex .fontsize-ensurer.reset-size1.size9,.katex .sizing.reset-size1.size9{font-size:3.456em}.katex .fontsize-ensurer.reset-size1.size10,.katex .sizing.reset-size1.size10{font-size:4.148em}.katex .fontsize-ensurer.reset-size1.size11,.katex .sizing.reset-size1.size11{font-size:4.976em}.katex .fontsize-ensurer.reset-size2.size1,.katex .sizing.reset-size2.size1{font-size:.83333333em}.katex .fontsize-ensurer.reset-size2.size2,.katex .sizing.reset-size2.size2{font-size:1em}.katex .fontsize-ensurer.reset-size2.size3,.katex .sizing.reset-size2.size3{font-size:1.16666667em}.katex .fontsize-ensurer.reset-size2.size4,.katex .sizing.reset-size2.size4{font-size:1.33333333em}.katex .fontsize-ensurer.reset-size2.size5,.katex .sizing.reset-size2.size5{font-size:1.5em}.katex .fontsize-ensurer.reset-size2.size6,.katex .sizing.reset-size2.size6{font-size:1.66666667em}.katex .fontsize-ensurer.reset-size2.size7,.katex .sizing.reset-size2.size7{font-size:2em}.katex .fontsize-ensurer.reset-size2.size8,.katex .sizing.reset-size2.size8{font-size:2.4em}.katex .fontsize-ensurer.reset-size2.size9,.katex .sizing.reset-size2.size9{font-size:2.88em}.katex .fontsize-ensurer.reset-size2.size10,.katex .sizing.reset-size2.size10{font-size:3.45666667em}.katex .fontsize-ensurer.reset-size2.size11,.katex .sizing.reset-size2.size11{font-size:4.14666667em}.katex .fontsize-ensurer.reset-size3.size1,.katex .sizing.reset-size3.size1{font-size:.71428571em}.katex .fontsize-ensurer.reset-size3.size2,.katex .sizing.reset-size3.size2{font-size:.85714286em}.katex .fontsize-ensurer.reset-size3.size3,.katex .sizing.reset-size3.size3{font-size:1em}.katex .fontsize-ensurer.reset-size3.size4,.katex .sizing.reset-size3.size4{font-size:1.14285714em}.katex .fontsize-ensurer.reset-size3.size5,.katex .sizing.reset-size3.size5{font-size:1.28571429em}.katex .fontsize-ensurer.reset-size3.size6,.katex .sizing.reset-size3.size6{font-size:1.42857143em}.katex .fontsize-ensurer.reset-size3.size7,.katex .sizing.reset-size3.size7{font-size:1.71428571em}.katex .fontsize-ensurer.reset-size3.size8,.katex .sizing.reset-size3.size8{font-size:2.05714286em}.katex .fontsize-ensurer.reset-size3.size9,.katex .sizing.reset-size3.size9{font-size:2.46857143em}.katex .fontsize-ensurer.reset-size3.size10,.katex .sizing.reset-size3.size10{font-size:2.96285714em}.katex .fontsize-ensurer.reset-size3.size11,.katex .sizing.reset-size3.size11{font-size:3.55428571em}.katex .fontsize-ensurer.reset-size4.size1,.katex .sizing.reset-size4.size1{font-size:.625em}.katex .fontsize-ensurer.reset-size4.size2,.katex .sizing.reset-size4.size2{font-size:.75em}.katex .fontsize-ensurer.reset-size4.size3,.katex .sizing.reset-size4.size3{font-size:.875em}.katex .fontsize-ensurer.reset-size4.size4,.katex .sizing.reset-size4.size4{font-size:1em}.katex .fontsize-ensurer.reset-size4.size5,.katex .sizing.reset-size4.size5{font-size:1.125em}.katex .fontsize-ensurer.reset-size4.size6,.katex .sizing.reset-size4.size6{font-size:1.25em}.katex .fontsize-ensurer.reset-size4.size7,.katex .sizing.reset-size4.size7{font-size:1.5em}.katex .fontsize-ensurer.reset-size4.size8,.katex .sizing.reset-size4.size8{font-size:1.8em}.katex .fontsize-ensurer.reset-size4.size9,.katex .sizing.reset-size4.size9{font-size:2.16em}.katex .fontsize-ensurer.reset-size4.size10,.katex .sizing.reset-size4.size10{font-size:2.5925em}.katex .fontsize-ensurer.reset-size4.size11,.katex .sizing.reset-size4.size11{font-size:3.11em}.katex .fontsize-ensurer.reset-size5.size1,.katex .sizing.reset-size5.size1{font-size:.55555556em}.katex .fontsize-ensurer.reset-size5.size2,.katex .sizing.reset-size5.size2{font-size:.66666667em}.katex .fontsize-ensurer.reset-size5.size3,.katex .sizing.reset-size5.size3{font-size:.77777778em}.katex .fontsize-ensurer.reset-size5.size4,.katex .sizing.reset-size5.size4{font-size:.88888889em}.katex .fontsize-ensurer.reset-size5.size5,.katex .sizing.reset-size5.size5{font-size:1em}.katex .fontsize-ensurer.reset-size5.size6,.katex .sizing.reset-size5.size6{font-size:1.11111111em}.katex .fontsize-ensurer.reset-size5.size7,.katex .sizing.reset-size5.size7{font-size:1.33333333em}.katex .fontsize-ensurer.reset-size5.size8,.katex .sizing.reset-size5.size8{font-size:1.6em}.katex .fontsize-ensurer.reset-size5.size9,.katex .sizing.reset-size5.size9{font-size:1.92em}.katex .fontsize-ensurer.reset-size5.size10,.katex .sizing.reset-size5.size10{font-size:2.30444444em}.katex .fontsize-ensurer.reset-size5.size11,.katex .sizing.reset-size5.size11{font-size:2.76444444em}.katex .fontsize-ensurer.reset-size6.size1,.katex .sizing.reset-size6.size1{font-size:.5em}.katex .fontsize-ensurer.reset-size6.size2,.katex .sizing.reset-size6.size2{font-size:.6em}.katex .fontsize-ensurer.reset-size6.size3,.katex .sizing.reset-size6.size3{font-size:.7em}.katex .fontsize-ensurer.reset-size6.size4,.katex .sizing.reset-size6.size4{font-size:.8em}.katex .fontsize-ensurer.reset-size6.size5,.katex .sizing.reset-size6.size5{font-size:.9em}.katex .fontsize-ensurer.reset-size6.size6,.katex .sizing.reset-size6.size6{font-size:1em}.katex .fontsize-ensurer.reset-size6.size7,.katex .sizing.reset-size6.size7{font-size:1.2em}.katex .fontsize-ensurer.reset-size6.size8,.katex .sizing.reset-size6.size8{font-size:1.44em}.katex .fontsize-ensurer.reset-size6.size9,.katex .sizing.reset-size6.size9{font-size:1.728em}.katex .fontsize-ensurer.reset-size6.size10,.katex .sizing.reset-size6.size10{font-size:2.074em}.katex .fontsize-ensurer.reset-size6.size11,.katex .sizing.reset-size6.size11{font-size:2.488em}.katex .fontsize-ensurer.reset-size7.size1,.katex .sizing.reset-size7.size1{font-size:.41666667em}.katex .fontsize-ensurer.reset-size7.size2,.katex .sizing.reset-size7.size2{font-size:.5em}.katex .fontsize-ensurer.reset-size7.size3,.katex .sizing.reset-size7.size3{font-size:.58333333em}.katex .fontsize-ensurer.reset-size7.size4,.katex .sizing.reset-size7.size4{font-size:.66666667em}.katex .fontsize-ensurer.reset-size7.size5,.katex .sizing.reset-size7.size5{font-size:.75em}.katex .fontsize-ensurer.reset-size7.size6,.katex .sizing.reset-size7.size6{font-size:.83333333em}.katex .fontsize-ensurer.reset-size7.size7,.katex .sizing.reset-size7.size7{font-size:1em}.katex .fontsize-ensurer.reset-size7.size8,.katex .sizing.reset-size7.size8{font-size:1.2em}.katex .fontsize-ensurer.reset-size7.size9,.katex .sizing.reset-size7.size9{font-size:1.44em}.katex .fontsize-ensurer.reset-size7.size10,.katex .sizing.reset-size7.size10{font-size:1.72833333em}.katex .fontsize-ensurer.reset-size7.size11,.katex .sizing.reset-size7.size11{font-size:2.07333333em}.katex .fontsize-ensurer.reset-size8.size1,.katex .sizing.reset-size8.size1{font-size:.34722222em}.katex .fontsize-ensurer.reset-size8.size2,.katex .sizing.reset-size8.size2{font-size:.41666667em}.katex .fontsize-ensurer.reset-size8.size3,.katex .sizing.reset-size8.size3{font-size:.48611111em}.katex .fontsize-ensurer.reset-size8.size4,.katex .sizing.reset-size8.size4{font-size:.55555556em}.katex .fontsize-ensurer.reset-size8.size5,.katex .sizing.reset-size8.size5{font-size:.625em}.katex .fontsize-ensurer.reset-size8.size6,.katex .sizing.reset-size8.size6{font-size:.69444444em}.katex .fontsize-ensurer.reset-size8.size7,.katex .sizing.reset-size8.size7{font-size:.83333333em}.katex .fontsize-ensurer.reset-size8.size8,.katex .sizing.reset-size8.size8{font-size:1em}.katex .fontsize-ensurer.reset-size8.size9,.katex .sizing.reset-size8.size9{font-size:1.2em}.katex .fontsize-ensurer.reset-size8.size10,.katex .sizing.reset-size8.size10{font-size:1.44027778em}.katex .fontsize-ensurer.reset-size8.size11,.katex .sizing.reset-size8.size11{font-size:1.72777778em}.katex .fontsize-ensurer.reset-size9.size1,.katex .sizing.reset-size9.size1{font-size:.28935185em}.katex .fontsize-ensurer.reset-size9.size2,.katex .sizing.reset-size9.size2{font-size:.34722222em}.katex .fontsize-ensurer.reset-size9.size3,.katex .sizing.reset-size9.size3{font-size:.40509259em}.katex .fontsize-ensurer.reset-size9.size4,.katex .sizing.reset-size9.size4{font-size:.46296296em}.katex .fontsize-ensurer.reset-size9.size5,.katex .sizing.reset-size9.size5{font-size:.52083333em}.katex .fontsize-ensurer.reset-size9.size6,.katex .sizing.reset-size9.size6{font-size:.5787037em}.katex .fontsize-ensurer.reset-size9.size7,.katex .sizing.reset-size9.size7{font-size:.69444444em}.katex .fontsize-ensurer.reset-size9.size8,.katex .sizing.reset-size9.size8{font-size:.83333333em}.katex .fontsize-ensurer.reset-size9.size9,.katex .sizing.reset-size9.size9{font-size:1em}.katex .fontsize-ensurer.reset-size9.size10,.katex .sizing.reset-size9.size10{font-size:1.20023148em}.katex .fontsize-ensurer.reset-size9.size11,.katex .sizing.reset-size9.size11{font-size:1.43981481em}.katex .fontsize-ensurer.reset-size10.size1,.katex .sizing.reset-size10.size1{font-size:.24108004em}.katex .fontsize-ensurer.reset-size10.size2,.katex .sizing.reset-size10.size2{font-size:.28929605em}.katex .fontsize-ensurer.reset-size10.size3,.katex .sizing.reset-size10.size3{font-size:.33751205em}.katex .fontsize-ensurer.reset-size10.size4,.katex .sizing.reset-size10.size4{font-size:.38572806em}.katex .fontsize-ensurer.reset-size10.size5,.katex .sizing.reset-size10.size5{font-size:.43394407em}.katex .fontsize-ensurer.reset-size10.size6,.katex .sizing.reset-size10.size6{font-size:.48216008em}.katex .fontsize-ensurer.reset-size10.size7,.katex .sizing.reset-size10.size7{font-size:.57859209em}.katex .fontsize-ensurer.reset-size10.size8,.katex .sizing.reset-size10.size8{font-size:.69431051em}.katex .fontsize-ensurer.reset-size10.size9,.katex .sizing.reset-size10.size9{font-size:.83317261em}.katex .fontsize-ensurer.reset-size10.size10,.katex .sizing.reset-size10.size10{font-size:1em}.katex .fontsize-ensurer.reset-size10.size11,.katex .sizing.reset-size10.size11{font-size:1.19961427em}.katex .fontsize-ensurer.reset-size11.size1,.katex .sizing.reset-size11.size1{font-size:.20096463em}.katex .fontsize-ensurer.reset-size11.size2,.katex .sizing.reset-size11.size2{font-size:.24115756em}.katex .fontsize-ensurer.reset-size11.size3,.katex .sizing.reset-size11.size3{font-size:.28135048em}.katex .fontsize-ensurer.reset-size11.size4,.katex .sizing.reset-size11.size4{font-size:.32154341em}.katex .fontsize-ensurer.reset-size11.size5,.katex .sizing.reset-size11.size5{font-size:.36173633em}.katex .fontsize-ensurer.reset-size11.size6,.katex .sizing.reset-size11.size6{font-size:.40192926em}.katex .fontsize-ensurer.reset-size11.size7,.katex .sizing.reset-size11.size7{font-size:.48231511em}.katex .fontsize-ensurer.reset-size11.size8,.katex .sizing.reset-size11.size8{font-size:.57877814em}.katex .fontsize-ensurer.reset-size11.size9,.katex .sizing.reset-size11.size9{font-size:.69453376em}.katex .fontsize-ensurer.reset-size11.size10,.katex .sizing.reset-size11.size10{font-size:.83360129em}.katex .fontsize-ensurer.reset-size11.size11,.katex .sizing.reset-size11.size11{font-size:1em}.katex .delimsizing.size1{font-family:KaTeX_Size1}.katex .delimsizing.size2{font-family:KaTeX_Size2}.katex .delimsizing.size3{font-family:KaTeX_Size3}.katex .delimsizing.size4{font-family:KaTeX_Size4}.katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}.katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}.katex .nulldelimiter{display:inline-block;width:.12em}.katex .delimcenter,.katex .op-symbol{position:relative}.katex .op-symbol.small-op{font-family:KaTeX_Size1}.katex .op-symbol.large-op{font-family:KaTeX_Size2}.katex .op-limits>.vlist-t{text-align:center}.katex .accent>.vlist-t{text-align:center}.katex .accent .accent-body{position:relative}.katex .accent .accent-body:not(.accent-full){width:0}.katex .overlay{display:block}.katex .mtable .vertical-separator{display:inline-block;min-width:1px}.katex .mtable .arraycolsep{display:inline-block}.katex .mtable .col-align-c>.vlist-t{text-align:center}.katex .mtable .col-align-l>.vlist-t{text-align:left}.katex .mtable .col-align-r>.vlist-t{text-align:right}.katex .svg-align{text-align:left}.katex svg{display:block;position:absolute;width:100%;height:inherit;fill:currentColor;stroke:currentColor;fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}.katex svg path{stroke:none}.katex img{border-style:none;min-width:0;min-height:0;max-width:none;max-height:none}.katex .stretchy{width:100%;display:block;position:relative;overflow:hidden}.katex .stretchy:after,.katex .stretchy:before{content:""}.katex .hide-tail{width:100%;position:relative;overflow:hidden}.katex .halfarrow-left{position:absolute;left:0;width:50.2%;overflow:hidden}.katex .halfarrow-right{position:absolute;right:0;width:50.2%;overflow:hidden}.katex .brace-left{position:absolute;left:0;width:25.1%;overflow:hidden}.katex .brace-center{position:absolute;left:25%;width:50%;overflow:hidden}.katex .brace-right{position:absolute;right:0;width:25.1%;overflow:hidden}.katex .x-arrow-pad{padding:0 .5em}.katex .mover,.katex .munder,.katex .x-arrow{text-align:center}.katex .boxpad{padding:0 .3em}.katex .fbox,.katex .fcolorbox{box-sizing:border-box;border:.04em solid}.katex .cancel-pad{padding:0 .2em}.katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}.katex .sout{border-bottom-style:solid;border-bottom-width:.08em}.katex-display{display:block;margin:1em 0;text-align:center}.katex-display>.katex{display:block;text-align:center;white-space:nowrap}.katex-display>.katex>.katex-html{display:block;position:relative}.katex-display>.katex>.katex-html>.tag{position:absolute;right:0}.katex-display.leqno>.katex>.katex-html>.tag{left:0;right:auto}.katex-display.fleqn>.katex{text-align:left;padding-left:2em}
+        </style>
+<link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
+<link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
+
+</head>
+      <body class="narrow mrhx-grid2">
+  <!--mrhx-->
+<link rel="stylesheet" href="assets/css/site.css?v=c5f7fec1">
+<script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image,.covers img,.gcard .cover img');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
+<header>
+<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="sponsor.html">赞助</a>
+    <a href="tutorial.html">解压教程</a>
+    <a href="tools.html">游戏工具</a>
+    <a href="download.html">不限速教程</a>
+    <a href="mianze.html">免责声明</a>
+    <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">备用站</a>
+  </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
+  <div class="acts">
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+      <span class="ico-label">搜索</span>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+      <span class="ico-label">菜单</span>
+    </button>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <div class="drawer-head">
+        <img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站">
+        <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
+      </div>
+      <nav class="drop-menu" aria-label="站点导航">
+        <a href="index.html">首页</a>
+        <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
+        <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
+        <a href="tools.html"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏工具</a>
+        <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>不限速教程</a>
+        <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
+        <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/></svg>备用站</a>
+      </nav>
+    </div>
+  </div>
+</div>
+<div class="nav-mask" id="mrhxNavMask"></div>
+</header>
+<script src="assets/js/nav.js?v=4fcd5d5b"></script>
+<script src="assets/js/lenis.min.js?v=e4bb975a"></script>
+<script src="assets/js/smooth.js?v=26633810"></script>
+<!--mrhx-end-->
+  <div class="title">10月23号黄油（PC）</div>
+        <ul class="node-list">
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>扶她诱变</span></div>
+    <div class="note mm-editor"><span>【新作/AI汉化/步兵版/存档】【日式恐怖SLG/巨乳动态】 扶她诱变！ FUTAGENIC! Preview C 【PC 290M】
+✅作者：#Spark of Life
+▫️名称：扶她诱变！
+▫️原名：FUTAGENIC!
+▫️版本：Preview C
+▫️贩卖日：2026年10月13日
+▫️标签：#SLG #AI汉化 #PC #MTool #动态 #无码 #扶她 #女主人公 #恐怖 #巨乳 #丰满
+你独自在一个扭曲、混乱的疯人院中醒来，完全不记得自己是怎么来到这里的。
+想办法逃出去，揭开你被困于此的真相，
+躲避潜藏在其中的恐怖存在，
+为生存而战。祝你好运……你会需要的。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1yAR-DoW6yOwRKHA6oVDkZw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/hok384jpyn.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>废土之旅四部曲 全系列</span></div>
+    <div class="note mm-editor"><span>【中文/CG/RPG/3.2G/CG包】废土之旅四部曲 全系列 合集 凋零-觉醒-聚落-渴望 日系RPG游戏【PC 3.2G】
+隆重推出SEQUEL 系列作品，最近又添加了一部”渴望”：
+废土之旅四部曲 全系列中文合集 凋零-觉醒-聚落-渴望 日系RPG游戏+CG包+3.2G 09271507
+可惜了，么有安卓版本。。。。
+这是一个由[リーフジオメトリ]社团制作的极品日式RPG系列
+也是大家最喜欢的《 SEQUEL 》系列作品，现在已经制作了四部
+从17年发售的觉醒（SEQUEL blight）开始，就被这个系列圈粉的我
+决定郑重的向大家安利这个充满幻想，充满奇迹作品！
+首先，这次分享给大家的是全集作品，包含了【凋零-觉醒-聚落-渴望】四部曲的所有内容
+均为DL官方中文版，文本质量到位，而且都附带了全CG存档
+下载连接中包含了如下游戏资源：
+废土之旅·凋零  V2.1.0 DL官方中文版（第一部）
+废土之旅·觉醒 V1.10 DL官方中文版（第二部）
+废土之旅·聚落 V2.02 DL官方中文版（第三部）
+废土之旅·渴望 V1.01 DL官方中文版（第四部）
+全部官方中文，均已破解验证
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1r9cMlDMK-PgVjzXX7wZElQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/iskudk2jjz.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>兽人按摩</span></div>
+    <div class="note mm-editor"><span>【SLG/官中步兵/存档】兽人按摩 FURRY MASSAGE 🔞【PC 850M】
+2026 年 10 月 17 日
+你有一双魔法之手吗？证明给大家看！成为一座满是可爱兽娘的小镇里的新按摩师。从酸痛的翅膀到紧绷的尾巴，她们都渴望你的触碰。 选择你的顾客，找到完美姿势，精准按摩关键部位，带她进入极致的愉悦境界。
+FURRY MASSAGE —— 一座小镇、一家温馨的按摩店，还有一大群非常调皮的顾客！
+欢迎来到你的新工作！干净的毛巾已经准备好，按摩油也已就位，而不知为何，镇上突然有一半的人都需要一次非常彻底的按摩。
+巧合？才怪呢。
+认识一下镇上形形色色的兽人居民吧，每个人都有自己独特的癖好、欲望，以及对“放松”充满创意的定义。有些人害羞，有些人大胆，还有些人完全不知道该如何在按摩床上表现。不过嘛，付钱的顾客就是好顾客！
+通过有趣的迷你游戏尽情施展你的按摩技巧，找出每位顾客最喜欢的方式，将一次普通的预约变成难忘的体验。你的技术越娴熟，接下来的体验就越精彩。
+赚取金钱，升级你的按摩店，解锁全新的互动方式，让不断增加的熟客们获得极致满意的体验。
+不必匆忙，没有无聊的例行公事，只有轻松愉快的氛围、值得商榷的职业操守，以及大量亲自动手的乐趣。
+— 互动式按摩迷你游戏，包含时机挑战和评分系统
+— 关系系统，可解锁新内容和互动
+— 游戏内经济系统，支持设备升级和自定义
+— 每次按摩都有多种方式可选，自由打造自己的游戏风格
+— 随着游戏进度逐步解锁新机制和选项
+FURRY MASSAGE —— 为按摩而来，为美妙的结局而留下！
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1QzJoaHjhuQcNR19WGdtvCA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/olhshgyn5b.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>消失在洋馆里的娼妓少年</span></div>
+    <div class="note mm-editor"><span>【3D/官中/动态/逆推/后宫/全回想】消失在洋馆里的娼妓少年 洋館に消えた娼年【PC 2G】
+消失在洋馆里的娼妓少年
+坐落于深山密林深处的，是一座巨大的西式洋馆。
+那些突然从城镇中消失的娼妓少年们，如今依旧被关在这座与世隔绝的洋馆里，
+面对女主人以及前来拜访的客人，
+被迫提供性方面的服务——
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1vk1wjQi-1rwGRNFjc6rA2Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/g563ictnp5.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>精灵塔防 – 淫欲的魔物袭来！</span></div>
+    <div class="note mm-editor"><span>【更新/日式SLG/像素动态/官中版/存档】精灵塔防 – 淫欲的魔物袭来！森林村庄的大危机！ エルフTD- 淫欲の魔物襲来！森の村の大危機! v1.2 【PC 80M】
+在森林深处，精灵一族长久以来过着宁静祥和的生活。
+然而，某一天，成群的魔物从外界汹涌袭来。
+为了守护家园，精灵们奋起抵抗。
+倘若战败，等待他们的必将是惨痛的命运。
+这是一款传统的奇幻塔防游戏。
+你需要使用金币来部署并强化精灵战士，守护他们的故乡免受淫魔的侵犯。
+收集金币即可解锁游戏内的精美工口像素绘，所有解锁内容均可直接在画廊模式中欣赏。
+游戏时长约为2至3小时以上。
+CG插画数量：5张。
+工口像素绘：64枚（包含8种女性角色与8种魔物的组合）。
+游戏支持语言：日语、中文、英语。
+更新日志
+v1.2
+・新增2个挑战。
+・全面战争。（挑战9）
+・诺克斯反击。（挑战10）
+・击败挑战9后，精灵的皮肤可以改变颜色。可在选项中关闭。
+・击败挑战10后，新增小型附加剧情。
+・画廊界面更新。
+・能够显示精灵和敌人的待机姿势。
+・能够显示boss精灵图【通关基础游戏后】
+・能够切换精灵的皮肤【挑战9之后】
+・能够显示精灵和敌人的变体。
+漏洞修复
+・在某些关卡中，诺克斯仆从尝试生成敌人时游戏崩溃。
+・一些次要漏洞。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1_VWXB01shXrD1JYaSBqb1Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/hd9ydhp06n.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>抚摸狐仙大人</span></div>
+    <div class="note mm-editor"><span>【新作】【互动3D/抚摸触摸/动态】 抚摸狐仙大人 增量游戏 おきつねさまなでなでインクリメンタル v1.1.1 生肉版【PC 610M】
+作品内容
+通过抚摸狐仙大人来收集精华。
+推进技能树、精挑细选服装搭配，来强化你的“抚摸”效果。
+这是一款这样的增量（放置/点击）游戏。
+我们致力于打造一款既能享受思考 Build（配装/天天赋组合）乐趣，
+但就算随意游玩也终究能通关的游戏。
+– 服装种类：131 种
+– 场景数量：77 种
+– 技能树：157 个技能
+● 预估游玩时间
+– 技能树全满：10 小时～
+– 解锁全要素：15 小时～
+更新信息
+2026年09月29日BUG修复
+1.1.1
+いくつかの不具合を修正
+2026年09月26日BUG修复内容添加
+1.1.0
+セーブデータをバックアップできるようになりました。
+不具合の修正をしました。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/19pQtx_GOIZLALp4qG-gbIw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/w2zj9vjqyp.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>抓鬼/贪欲的精神狩猎</span></div>
+    <div class="note mm-editor"><span>【AI汉化版/日式/ACT游戏/700M/作弊码/日式ACT游戏】抓鬼/贪欲的精神狩猎（Lustful Spirit Hunt） Ver0.2.0.3【PC 700M】
+双人协作捉鬼，揭开恶灵释放的真相。你的选择将决定复仇还是守护，开启这场超自然冒险之旅！
+抓鬼/贪欲的精神狩猎（Lustful Spirit Hunt） Ver0.2.0.3 AI汉化版+作弊码+日式ACT游戏+700M 2602110928
+这是一款以捉鬼为主题的灵异冒险游戏。玩家将扮演幽灵猎人泰德，与助手露娜搭档前往各地闹鬼场所捕捉鬼魂。
+上次调查遭遇严重事故导致住院，如今出院后重返岗位，继续危险的捉鬼冒险。
+游戏融合探索解谜、鬼魂捕捉与伙伴协作，体验在超自然威胁中守护常人的惊险历程。
+– 双人协作捉鬼：泰德负责现场调查与捕捉设备操作，露娜提供灵体感知与后方支援
+– 闹鬼场所探索：废弃医院、古宅、学校等多样场景，每个都有独特的鬼魂类型与背景故事
+– 上次事故阴影：住院经历带来心理创伤，需在冒险中逐步克服恐惧
+– 危险升级机制：随着调查深入，遭遇的鬼魂越来越强，需升级装备与配合默契
+– 幽灵图鉴收集：记录捕捉的鬼魂信息，了解它们的生前故事与未了心愿
+泰德是”超自然调查局”的资深探员，搭档露娜拥有罕见的灵媒体质。三个月前调查”红寡妇古宅”时，
+泰德为救露娜被恶灵附身，紧急送医后昏迷两周。出院时医生警告”别再接触那些东西”，
+但泰德知道逃避无法解决问题。首个任务是城郊废弃医院——正是他昏迷期间灵魂游荡过的地方。
+露娜紧握他的手：”这次我感知，你捕捉，绝不分开。”随着调查深入，他们发现上次事故并非偶然，
+而是有人故意释放恶灵。当最终面对幕后黑手，泰德必须在复仇与守护之间做出选择，
+而露娜的存在让他记起：捉鬼不是为了战胜死亡，而是让生者安心。
+当前版本： v1.0 中文版（完整捉鬼剧情与多结局）
+平台支持： PC电脑端
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1C5FcJxq9_K-IxZ6thrwMpA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/7bnqzsl315.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>流星猎犬</span></div>
+    <div class="note mm-editor"><span>【ACT/汉化/动态】流星猎犬 v20260805/Hounds of the Meteor【PC 13.06GB】
+【ACT/PC/汉化/动态】流星猎犬 v20260805/Hounds of the Meteor【13.06GB】
+2026-10-21
+游戏
+这是一款主打【异星女搜查官VS各路罪饭】的横版ACT游戏 全程超高质量3D画面，不管是动作、手感、还是剧情都非常出色！ 不仅有非常丰富的动作关卡，而且日常生活剧情也是十分有意思 各种不同换装、互动、改造、强化内容应有尽有 全程步兵+高质量动态，绝对推荐大家尝试一番！
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1NEXnBO46blUSP_dv2v3dkg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/rb1u3qg8yq.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>欲望精选</span></div>
+    <div class="note mm-editor"><span>【SLG/中文/动态/官方中文步兵版/全回想】欲望精选 【新作】【PC 1.2G】
+一款融合了节奏游戏和成人视觉小说的游戏。用你的音乐俘获女性的芳心！
+你是DJ VIBE，
+你的任务：找到一个臭名昭著的黑手党头目。
+方法：潜入夜总会，利用你的DJ天赋与人们的脑芯片产生共鸣，并从中获取信息。你已经掌握了一份可能掌握信息的女性名单，你只需要找到她们，然后用你的音乐“入侵”她们。
+🔎
+众多不同的角色
+精彩的电子音乐
+成人动画场景
+高重玩性
+完整剧情约2小时。
+《欲望精选》是一款节奏游戏，你需要完美地执行输入链来诱惑和控制（性感）女性！ 完成歌曲即可解锁场景并推进剧情。
+在冒险旅程中达到里程碑并与斯嘉丽的关系日益亲密时，即可解锁性爱场景。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/10KmJeWDwMiRcNcp3faVOrA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/o8cm40q769.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>小镇物语：刚搬家就和镇长大人闹翻了！</span></div>
+    <div class="note mm-editor"><span>【更新/日式RPG/沙盒动态/官中步兵版】小镇物语：刚搬家就和镇长大人闹翻了！ Echoes Of The Town v3.9.3 【PC 1.60G】
+关于此游戏
+却因市长突然提及的『家族欠债』而彻底破灭！
+与神秘少女的偶然相遇，将她卷入小镇隐藏的阴谋漩涡，
+一场始料未及的冒险，就此展开——
+她继承的遗产竟附带惊人条件：天价继承税！
+随着利息不断累积，走投无路的她只能留在小镇打工还债。
+与性格各异的居民们携手，完成委托、探索多彩的风景，
+为了守护挚爱的祖宅，少女的奋斗剧现在开幕！」
+更新日志
+v3.9.3
+新更新!
+新用户界面(旧用户界面仍可通过选项访问)
+修复了错误。
+现在游戏会根据用户情况选择最佳运行时间。
+有一辆Akemi可以修理并使用的汽车，Lovense支持 (Solace pro)
+更新了队伍选择和烹饪菜单(将对EOTT基础游戏开放)
+巴士目的地预览和任务指示器(将在EOTT基础游戏中可用)
+在1E和市政厅进行抢劫(库尔特支线任务)
+更清晰的战斗信息(将在EOTT基础游戏中提供)
+更具信息性的存档槽位(将在EOTT基础游戏中提供)
+此外，如果您还不知道的话，《Echoes oftheTown》将会推出DLC!
+这将需要付费，但实质上是对游戏的一个完整的“扩展包”，包含全新区域、新剧情和大量新增内容!</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/19p0qRV06ITWHqhPk2At_iw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/8hy4a0wifc.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>公寓管理员</span></div>
+    <div class="note mm-editor"><span>【3D/官中/动态】公寓管理员 ～在不被她察觉的情况下，让她怀孕吧 v26.10.10/アパートの管理人 ～彼女に気づかれないまま、孕ませよう【PC 1.57GB】
+【3D/PC/官中/动态】公寓管理员 ～在不被她察觉的情况下，让她怀孕吧 v26.10.10/アパートの管理人 ～彼女に気づかれないまま、孕ませよう【1.57GB】
+2026-10-21
+游戏
+您是某栋公寓的管理员。
+白天趁着她出门时搜查房间，为夜晚做好准备；到了晚上，则必须小心翼翼地行动，以免吵醒熟睡的她，并陆续进行各种成人互动。
+本作品搭载了“怀孕判定系统”。白天的准备以及夜晚的行动都会影响怀孕的概率，其结果也会反映在故事的后续发展上。
+一边注意她的苏醒程度、一边小心前进的紧张感，搭配可自由切换镜头视角的3D动画表现，是本作品的主要特色。
+※本作品中登场的角色皆已年满18岁。
+居住在公寓的人妻女主角
+居住在主角担任管理员之公寓里的人妻女主角。
+拥有开朗 sudden可爱的笑容与丰满曼妙的身材，是极具魅力的人妻角色。
+通过实时3D（Real-time 3D）精细刻画出她白天与夜晚截然不同的表情与举止。
+您能以第一人称视角，尽情享受“NTR×怀孕”与“睡奸玩法”带来的乐趣。
+在安静卧室里展开的睡眠扮演
+以主角担任管理员的公寓房间为舞台，通过实时3D重现深夜卧室的情境。
+您可以通过近距离的镜头运镜，仔细观察并享受沉睡中人妻女主角的神情、呼吸声以及身体的细微动作。
+支持揉胸、指交、乳交等多种互动玩法。
+不只是单纯观看固定影片，根据玩家自身的各项操作，女主角的表情、姿势与身体反应都会进行实时变化。
+收录正常位、后背位等多种玩法情境。
+除了能享受不同体位带来的视角与动作变换外，从高潮射精后的残留表现，到进一步引发怀孕情节的一连串演出，皆有着浓密深入的描写。
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Li6w02afRG3fsbCMk5D3_w?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/judxbkqgcr.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>救生员狂热</span></div>
+    <div class="note mm-editor"><span>【更新/精品SLG/NTR调教/动态/官中步兵版/存档】救生员狂热 ライフガード・レジェンド v2.2 +补丁 【PC 1.60G】
+✅社团名：#Big S Studio #Tiramisu
+▫️名称：救生员狂热
+▫️原名：ライフガード・レジェンド / Lifeguard Holic
+▫️版本：v1.1.0
+▫️贩卖日：2026年08月18日
+▫️标签：#精品 #SLG #官中 #PC  #SM #动态 #NTL,调教,强X,露出,巨乳,CV
+关于此游戏
+《NTR狂热》(NTRaholic)精神续作。
+房东龙之介的堂哥「龙马」，曾经是大学游泳队的队长，因为受伤而被迫中止运动员生涯。
+某天龙马在一场赌局击败了当地企业家，赢得了一座游泳池的所有权，成为了一名「救生员」。
+在这座充满着美女的游泳池，龙马要一边经营游泳池，一边利用自己运动员的健壮身材与傲人体力，
+填满清纯害羞的女大生「水原苍唯」等美女们寂寞的身与心。
+无论她们有没有男朋友，感情多麽坚定，做为一个传奇的救生员，你必能将她们都抢夺过来！
+玩家要扮演救生员、兼游泳池经营者龙马，一边壮大游泳池的生意，一边享用游泳池的泳装美女们。
+每天分为两个时段，每个时段可以消耗行动值，进行不同的行动。
+可以专心经营游泳池，让游泳池的生意变好，击败竞争对手；
+同时透过不同的小游戏与女主角们更加亲近，最后将他们彻底夺走。
+&lt;游泳池经营&gt;
+-管理泳池入场售票口，赚取收入
+-派发传单，增加游泳池的知名度
+-修缮、升级游泳池不同区域的设施
+&lt;攻略女主角&gt;
+-与她对话，推进剧情，享受她逐渐堕落的过程
+-各种小游戏，在公开课、私课撩拨她的情慾
+-在游泳池的不同角落，与她尽情交欢
+游戏玩法
+游泳池拥有不同的区域，其中各式设施都需要维护与升级，才能与竞争对手抗衡。
+只有穿着合适的游泳衣物，才能够入场。
+在帮女主角「按摩」的时候，必须在她感觉不对劲的时候，赶紧将手抽开。
+性骚扰的过程如果被其他学员看到，警戒值就会提升。
+角色介绍
+水原 苍唯
+23岁，大学生。
+性格内向，有一个温柔的男朋友。
+因为成长过程中曾受到欺负，最近才比较能够表达自己的情感。
+乍看之下是一个清纯系的女友，但实际上男朋友不知道的是，她其实喜欢被拘束、粗暴的对待，渴望着各种硬核的Play。
+而这些没有被男友满足，无处宣洩的性慾，带着些许罪恶感，被她秘密写在了日记当中…
+北川 美波
+27岁，无职。目前借住在妹妹神楽的家里。
+有个秘密的性癖，在游泳池裸泳、穿着内衣裤游荡会感到无比兴奋。
+曾经是不良少女，大部分的时候都是狩猎的肉食女。如果变成了被狩猎的一方，会露出什麽样的表情呢？
+荒金 龙马
+前．大学游泳队的队长。
+在竞赛的梦想因为受伤的断绝后，领悟了人生苦短的道理，决心好好善用自己结实的体格，与女人们及时享乐。
+在一次的扑克比赛中从一位企业家手上赢得了一座地方游泳池的经营权，
+于是每天泡在这个充满泳装美女的天国里，用他的技巧展开一次次的「私人辅导」。
+游戏特色
+CG结合了漫画与动图，呈现多样的视觉演出。
+6种以上丰富的小游戏与任务。
+超过20组动态CG、20枚点阵H场景。
+拥有2个主要女性角色可以攻略。
+v2.2
+修复画廊中CG与动画无法正常显示的问题。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/12zofJGSW-nzdlLLXZKuW1Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/ef9akwd718.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>迷宫都市庇护所</span></div>
+    <div class="note mm-editor"><span>【官中/ARPG游戏/3.52G/全回想存档/日式ARPG游戏/官方中文版】迷宫都市庇护所 Ver1.0.11.1 作弊【PC 3.52G】
+操控堕落的圣女，在 5 层地牢中拼杀或沉沦——8 种结局等你揭晓！
+迷宫都市庇护所 Ver1.0.11.1 官方中文版 作弊+全回想存档+日式ARPG游戏+3.52G 08211641
+故事背景
+圣女伊莉丝与真祖一战后沦为吸血鬼，面临被教会除名。
+传闻迷宫都市地下藏有封印圣遗物，她决定孤身闯入 5 层地牢，
+寻找重返人类之身的办法。然而，魔族气息会不断侵蚀她的意志……
+核心玩法
+动作 RPG 探索
+5 层 3D 迷宫：陷阱、宝箱、捷径随层递进。
+基础战力爆表，但“堕落值”越高，敌人强度与事件难度同步上升。
+多状态 &amp; 逃脱机制
+晕眩／束缚／魅惑等 4 种负面状态触发即时 QTE。
+快速连击按键可挣脱，失败则进入特殊剧情。
+多结局设计
+8 条路线：从“救赎圣女”到“深渊女王”。
+结局由堕落值、关键战斗胜负与 NPC 互动共同决定。
+便利功能
+官方中文全语音；可跳过已看事件。
+自动存档 + 章节选择，便于多周目收集。
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1JCH-2HudYL1iKwf96HbPAA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/3t4gcdy7g2.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>我和妈妈的暑假</span></div>
+    <div class="note mm-editor"><span>【RPG/汉化/动态】我和妈妈的暑假 v2.1/カナエ ぼくとママの夏休み【PC 1.35GB】
+【RPG/PC/汉化/动态】我和妈妈的暑假 v2.1/カナエ ぼくとママの夏休み【1.35GB】
+2026-10-21
+游戏
+原名:カナエ ぼくとママの夏休み 贩卖日:#2022年10月22日
+小卫一家三口去乡下的爷爷家过夜。
+守护君和乡下的朋友们一起在山野中奔跑，享受暑假。 暂时和最喜欢的电视游戏告别。
+有一天，我和朋友在河边玩， 遇到了一个叫水雄的不可思议的少年。
+在这个溺水事故也增多的盛夏时节， 特别是在水边，这个世界和那个世界的界线变得模糊， 与这个世界上无人的存在相遇…
+金家父子面临新的危机!
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/177jgzHFqJUoWnuJ3md1JDg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/r4pr573wua.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>肉腿魔法：挺翘序章</span></div>
+    <div class="note mm-editor"><span>【STG/像素/动态/官中步兵/存档】肉腿魔法：挺翘序章 Thicc Magic. Perky Prelude 【PC 1G】
+注意！在这款游戏中，你可以必须帮助正义与秩序取得胜利！
+可怜的可悲的村民，早已臣服于黑暗女王、和她那群丑陋爪牙的威权之下！
+不过你一定能打败摧毁、烧死、杀光那群恶棍。
+再引领村民那迷失的、悖逆的、天真的、异端的灵魂，走上唯一正确的道路。
+那条路，通往光明痛苦、纯净痛苦、与秩序痛苦！
+• 一段简短的剧情向弹幕射击，配有多样化的升级与肉鸽系统。
+• 4 种武器。
+• 40+ 张「漫画」风格的插画。
+• 2 段 gif 动画，附带节奏小游戏。
+朋友你好。这里，我想回答两个常见的问题：这游戏为什么免费，以及为什么它是序章／背景故事。
+我曾带着这款游戏（肉腿魔法：挺翘序章）参加了一场小型的Game Jam。反响出奇的好，好到我下定决心：我要彻底重绘画面、扩写故事，把它做成终极完全版！
+我做到了。肉腿魔法：精灵一族的奇怪审美.gif 就此诞生。
+可朋友跟我说：这游戏出身 Game Jam 又怎样，你都已经做出改进版本了。把 Jam 版做完、打磨一下、免费发出来——有何不可？
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1RQhKQrRc1touHQmJ7kSUdw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/8wc8s9ki5j.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>异世界让你明白♡竞技场</span></div>
+    <div class="note mm-editor"><span>【新作/AI汉化版/存档】【日式RPG/调教堕落】 异世界让你明白♡竞技场 異世界わからせ♡コロシアム 【PC 2.10G】
+作品概要
+玩得尽兴，色情劲爆！
+想去异世界吗？想在异世界爽翻天吗？
+美少女成群♡ 美乳随心揉捏♡
+现在穿越还额外赠送独门特别技能哦~♪
+被神秘神明用这番花言巧语哄骗后，男主角大辉（Daiki）毅然踏上了异世界穿越之旅。
+然而……
+等待着他的，却是一个以圣女拉尼亚为首、所有女性都极度厌恶男性的畸形而残酷的世界！
+在这个世界里，想要重获自由，就必须在“神圣竞技场”中与代表这个世界最强实力的 12 位女性顶尖斗士（Graduria） 展开决斗，并取得全胜！
+大辉孤独而艰辛的讨伐之战由此拉开序幕。
+【核心机制与特色系统】
+《爱意复制》
+大辉的专属固有技能，神明赐予大辉的特殊能力。
+凡是与他发生过亲密关系的女性，大辉都能继承其拥有的其中一项专属技能。
+【以战养战策略系统】
+大辉可以自由指定下一位挑战的对手。
+※满足特定条件时
+12 位女斗士皆为绝顶高手，但每位女角色都存在可以破解其招式的克制技能。
+持有正确的克制技能并在战斗中以恰当的方式运用，是战胜她们的唯一途径！
+通过向位于竞技场通道内、精通女斗士情报的女兵询问信息，
+精准看穿下一个该挑战的对手吧！胜利的关键全凭玩家的洞察力与推理能力！
+【纯粹对决！无杂鱼战免刷级！无装备变更！】
+摒弃繁琐的刷怪升级与装备更换！全凭自身肉体、收集到的技能，
+以及每场战斗后会自动补满的有限恢复道具，在这极致受限的资源下彻底征服女斗士！
+【使某人认清♡♡♡】
+赛前还极其嚣张、肆意嘲讽主角的傲慢女斗士们，在败北后不知为何会主动来到被囚禁的大辉身边！
+尽情抚摸她们的娇躯，用粗壮的肉棒强行插入，用极具征服感的亲密互动将她们彻底降服！
+用H让她屈服！
+【奴♡坠落♡】
+被征服后的女斗士们无论是身体还是心灵都将彻底沦为大辉的俘虏！
+她们将穿上奴仆/女仆服装，整齐地排列在通往竞技场的通道两侧！
+场面极其壮观！
+【回想模式】
+所有已解锁的场景均可在牢房中随时重温。
+通关后还将开放附带额外福利要素的“回想通道”！
+更新信息
+2026年10月14日BUG修复
+VER2 不具合(キャノン・ドレイク戦のエラー)を修正
+※VER1でプレイ中の方は、セーブデータの移行を。
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1dfpEtwxMl4o7boqlenIZkw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/rqgxpdzqyd.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>傲娇公主与十日夜伽～在异世界被命令生子～</span></div>
+    <div class="note mm-editor"><span>【SLG/汉化】傲娇公主与十日夜伽～在异世界被命令生子～ / ツンデレ姫と夜伽の10日間 〜異世界で子作り命じられました〜 【PC 894M】
+“我不让任何人碰你！”春日优马（Yuma Kasuga），被召唤到另一个世界的兼职者。 醒
+来时，他发现自己身处衰落的埃尔格兰德王国。
+“英雄，和公主生个孩子。那是解除诅咒的唯一办法。”
+加迪斯国王传达的是与第一公主菲安娜一起前往“夜厅”的命令。
+银发紫色眼睛。 这位身材娇小但意志坚强的公主扔面包、咬人、大声喊叫。
+“这是我为国家的责任。我不会原谅你的身体。”
+但经过十天夜间的交锋，她忍不
+住开口，身体自行反应，深藏愤怒的真实情感
+开始溢出。
+「…… I …… 也许她想信任你……和傲娇公主共度
+的十天不可能只是出于义务。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1ESDkszO3l9jpZOAD739CHQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/ucjkutg58j.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>调教女鬼</span></div>
+    <div class="note mm-editor"><span>【官中/SLG/官方中文步兵版】调教女鬼～ 净化巨乳地缚灵 幽霊調教～ ムラムラ巨乳地縛霊を快t Ver0.4.3 - Demo【PC 700M】
+【PC/官中/SLG】调教女鬼～ 净化巨乳地缚灵 幽霊調教～ ムラムラ巨乳地縛霊を快t Ver0.4.3 - Demo 官方中文步兵版【700M】
+2026-10-21
+游戏
+发行日期: 2026 年第四季度
+身处江户时代——作为末代阴阳师的你，因接到新的除灵委托，来到了一座阴森诡异的大宅。 然而，引发灵异骚乱的并非普通恶灵，而是一个超级骚艳的爆乳女鬼！ 作为“苦痛绝顶流”的唯一传人，让恶灵彻底高潮并净化成佛，正是你唯一的目标！ ……不过，这次的恶灵似乎有些不同寻常，仿佛隐藏着不为人知的真相？
+身为阴阳师的你，接下了净化闹鬼宅邸的委托，却发现盘踞此地的并非普通怨灵——而是拥有丰满肉体的巨乳地缚灵！！
+玩法介绍
+作为阴阳师，你深知这是棘手的委托
+唯有通过特殊的「调教仪式」，才能一步步化解她的执念，让她高潮到极乐世界
+白天修行，夜晚净化
+白天行动时段：前往商店购买灵具与法器、修炼咒术与体术、与瞳对话建立关系
+夜间净化仪式：运用白天习得的咒术、器具与体术，对瞳进行深入的「调教」，逐步变成你的形状
+策略养成要素：合理分配时间与资源，解锁更强力的调教手段，才能达成你想要的结局
+淫荡兔女郎、女仆？全套衣装一次收集！
+每换一套即带来全新H表现与立绘
+养成、调教、从羞涩到彻底堕落，好好装饰你的小母鬼！
+不只女鬼，连式神都不放过你！
+让忠诚的式神们主动献身，阴阳调和，时时补充精力
+多重结局，由你主宰
+本作高达六种结局 + 海量H事件给您探索
+温柔净化或著终究是人鬼疏途？
+游戏设有多种结局路线，你与女鬼的关系走向，全由你的行动决定。
+解压码：唯ai雪莉酒</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1QpvqZ7GdxWTt2gk9jvJFSg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/zfxuxgetui.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>蛋壳被打破</span></div>
+    <div class="note mm-editor"><span>【新作/AI汉化版】【日式SLG】 蛋壳被打破 卵の殻は破られる v2.61 Demo【PC 870M】
+#蛋壳被打破
+#卵の殻は破られる
+v2.61 AI汉化版【2026年09月07日 更新】
+·游戏介绍·
+由于发现了一些较为严重的bug，现将下一部作品《卵壳将被打破》先行体验版更新至v2.61并公开。
+关于v2.60及之前的存档数据，在以下情况下请勿沿用：
+・在技能习得地图中存档的
+・在任务：盗贼团“Hypericum”讨伐开始后的地图中存档的
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1xVnG0cyNn0OoMgPmI1Fhdw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/37hik32m3e.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>忍の娘</span></div>
+    <div class="note mm-editor"><span>【新作/动作ACT/动态/步兵版】忍の娘 忍び NINJAGIRL Ver1.6.6 生肉【PC 1.70G】
+一款全面动作游戏，在战国时期，女忍者与忍者和死灵法师战斗。
+使用螺旋丸、武士刀和库马伊击败敌人，并在危急时刻运用三种特殊技能和五种忍术突破。
+攀爬阻挡你的前墙，并通过滑行避开坠落物!
+充满忍者般的动作，如悬挂在天花板上、沿着陡峭斜坡奔跑和在地板下爬行。
+场景间背景音乐变化丰富，细节精致，确保玩家不会感到无聊。
+5个关卡，约40个场景
+配备键位设置、简单模式、马赛克模式和无敌模式
+支持全屏模式，不支持Steam叠加层(如截图等)。
+不支持切换控制器。
+故事背景
+时代是战国时期:卡赞里城堡因吉冈家的袭击而陷入混乱，该盟友为替代城堡领主久云·加佐米而发动进攻。
+得知Gouda的目标是“OmishiroGOD”后，寄生神将它传给了向加津美公主，公主召唤了一位女忍者，并将“大神之神”托付给她。
+如果这种力量落入坏人之手，将会成为巨大的灾难来源。
+务必与Yuzen合作并将她交给住在Oumi的表亲但当古达的忍者军队发现后，他们转而追捕她。
+她能安全到达那里吗…</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1ys5iWjKodSID8esXs0ZHmw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/1dn9syw2dd.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>潘多拉之笼</span></div>
+    <div class="note mm-editor"><span>【汉化/内嵌AI汉化版/存档】新 【日式SLG/NTR堕落】 潘多拉之笼～宇宙调查员的恋人被触手生物寝取～ パンドラ・ケージ～宇宙調査員の恋人は触手生物に寝取られる～ v0.26.09.23 【PC 1.0G】
+✅社团名：#新世界寄り
+▫️名称：潘多拉之笼 ～宇宙调查员的恋人被触手生物寝取～
+▫️原名：パンドラ・ケージ～宇宙調査員の恋人は触手生物に寝取られる～
+▫️版本：v0.26.09.23
+▫️贩卖日：2026年09月22日 0时
+▫️标签：#SLG #生肉 #PC #青梅竹马#CV,NTR ,寝取,巨乳,凌辱,异种X ,触手,恐怖,堕落
+天空的鸟笼
+绝望的触手，缠绕包裹住我心爱的她——
+● 故事梗概
+人类开始迈向宇宙的近未来。
+“你”与青梅竹马兼恋人的水篠真理奈，一起在她父亲留下的街边工厂里工作。
+某天，一家巨大的跨国企业向你们发来了委托。
+为了重启某个边境星球的调查，需要对一座被长期废弃的宇宙空间站进行设备检查与修缮。
+“你”负责在星球地面的枢纽中心下达指令，而真理奈则独自一人登上高悬于天空的空间站，两人分头展开任务。
+……这本该是一份只需30天就能轻松完成的工作。
+然而，从无线电对讲机中传来的，却是她因极度恐惧而发出的尖叫声……——
+● 女主角
+水篠真理奈（22岁） CV：藤村莉央
+好胜且酷飒的青梅竹马兼恋人。
+从小时候起，她就是保护并引导性格软弱细腻的“你”的存在。
+主修宇宙工程学，凭借着扎实的专业知识与技术，经营着父亲留下的工厂。
+真理奈总是极力向“你”展现自己“强大且靠得住”的一面。
+在两人分隔两地、频繁进行视频通信的过程中，随着时间推移，她身上逐渐散发出某种“异样”，你是否能够察觉得到……？
+● 由“你”来决定恋人（女主）的命运
+只能在白天与真理奈进行通信。
+在此期间，“你”需要向她下达具体的行动指令。
+空间站内共有5个需要调查与修缮的关键地点：
+电力室
+空调室
+垃圾处理设施
+制氧室
+净水设施
+每次你都必须设定目的地，并根据地图规划从据点前往各个区域的行动路线。
+然而，本该空无一人的空间站内，却暗中潜伏着各种各样的“宇宙生物”。
+如果你规划的路线不幸与它们的栖息领地重合，你挚爱的真理奈身上将会遭遇不可名状的……
+● 远程入侵空间站的监控摄像头，探寻究竟发生了什么
+关于自己身上究竟发生了什么，真理奈绝不会主动提起。
+想要得知她真实遭遇的途径只有一个：
+利用白天的时间入侵空间站内部的监控摄像头，并复制其中记录下的影像。
+面对显示器上映照出的阴惨“悲剧”，你是否有勇气直视这一切……？
+● 接连不断的怀孕与分娩，她那逐渐异化的肉体
+在“你”注视的目光下，真理奈的身体展现出了不可逆转的异变。
+自己的恋人，正渐渐蜕变成你所不认识的模样……
+深沉的绝望，终将连同“你”也一并吞噬……——
+远离地球的遥远深空，在真空黑暗的深处，哀鸣、悲叹与快感交织纠缠。
+你是否能够将心爱之人从这场绝望中拯救出来，为她指引希望的光芒？
+精美绚丽的插画配合震撼的全语音演绎，为你呈上这部黑暗硬核的黑暗科幻模拟游戏——
+PS：需要下载汉化补丁自行安装一下</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Ms7mFEUHEEHWzD7OgIDEMA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/o0dect3nk4.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>快乐的历史</span></div>
+    <div class="note mm-editor"><span>【官中/NTR/SLG/存档】快乐的历史～因H的诅咒而堕落的勇者同伴们～快楽のイストリア～Hな呪いで堕ちていく勇者の仲間たち～ v1.04【PC 800M】
+【PC/官中/NTR/SLG】快乐的历史～因H的诅咒而堕落的勇者同伴们～快楽のイストリア～Hな呪いで堕ちていく勇者の仲間たち～ v1.04 存档【800M】
+2026-10-21
+游戏
+2026年10月19日 更新
+=逐渐堕落的女主角们
+与勇者一同踏上旅途、同村的青梅竹马，心地善良的圣女。
+性格内向、总是怯生生的，但对勇者的爱意比任何人都要强烈。
+在勇者无法握剑之后，她代替勇者手持圣光之枪，踏上讨伐魔王之路。
+【战斗方式】向附近的敌人降下圣枪，并以神圣加护进行回复、持续作战的续航型。
+【H弱点】丰腴的大腿与敏感的下半身。
+凛然高傲、剑术精湛的公主骑士。
+在异国与勇者相遇，一同旅行，数次跨越艰难险阻。
+性格直率、不服输，始终作为同伴的盾牌站在最前线。
+对勇者的心意，连同骑士的誓言一起深藏于心底——。
+【战斗方式】以剑横扫附近敌人，最高火力的近战型。HP也很高，属于耐久型。
+【H弱点】丰满好抓的臀部。
+操纵火焰魔导书的精灵魔法师。
+过去曾多次被勇者所救。
+身材娇小、说话带刺、我行我素，但魔力在一行人中是最强的。
+虽然心系同伴，但因为深爱勇者，也有无法坦率的一面。
+【战斗方式】以魔法呈扇形放出火焰，持续造成燃烧伤害的大范围歼灭型。
+【H弱点】与娇小身体不相称的J罩杯，以及敏感的乳头。
+你所要送出的，是魔王讨伐，还是王子的寝室——
+=故事
+掌管七大罪之一的魔王——色欲魔王苏醒了。
+因魔王散播的弱化魔法，身为勇者的你甚至无法握剑。
+能够战斗的，只有受勇者加护的三名同伴——
+圣女风音、公主骑士诺艾尔、魔法师卡农。
+然而魔王已在她们的子宫上刻下了色情的诅咒「淫纹」。
+在疼痛中坚持战斗的她们身边，未被魔法波及的强欲王子靠近了。
+过去就觊觎她们的王子，趁此机会想将她们据为己有，开始行动。
+「我能帮你们缓解她们的诅咒，交给我吧勇者君♡」——
+=游戏流程
+以王城为据点，选择一名战斗的女主角出击。
+用战斗收集的GOLD解锁武器，锻炼技能，以魔王所在的最深处为目标前进吧。
+另一方面，若将女主角送往王子的后宫进行为期三天的「警护」，就能获得高额报酬。
+但是，如果无视王子、不把她送去警护，王子就会等得不耐烦——……？
+重复战斗与王城中的H部分，完成她们对魔王的讨伐吧。
+=是什么样的游戏？
+用武器与必杀技横扫成群魔物的爽快Roguelite动作游戏。
+每次升级时选择武器与强化，在每次出击中组建只属于自己的构筑吧。
+不过，每次受到攻击都会在淫纹中积累诅咒，一旦溢出，就会在战场上绝顶——♡
+而送往王子后宫的次数越多，对勇者的爱情就越低，她们的身心都会逐渐改变。
+让谁去战斗，把谁交出去。她们的结局，取决于你的选择。
+=内容量
+・基本CG：490张以上
+・H场景：80个以上
+・各女主角 多结局
+・支持语言：4种语言（日语・English・繁體中文・한국어）
+※语言可在选项中随时切换。
+=游戏系统
+用丰富的武器与必杀技，将成群魔物一网打尽！
+每次升级时选择武器・遗物・强化，在每次出击中组建不同的构筑吧。
+武器30种以上。每位女主角都有3阶段必杀技，打倒敌人越多槽位积攒越快。
+用收集的GOLD解锁武器，在技能屋中锻炼，她们就会变得更强。
+但绝不可大意。每次受到攻击都会在淫纹中积累诅咒，一旦溢出，就会在战场上绝顶——♡
+绝顶次数过多，即使HP剩余也会败北。败北的她们所等待的，是无止境的快感……。
+将女主角送往王子的后宫，就能以三天「警护」为代价获得高额报酬。
+但是，警护之夜究竟发生了什么——若窥视真理之镜，便会映出那一夜的她。
+送得越多，对勇者的爱情就越低，身体与心灵都会被改造。
+被开发成王子喜好的样子，终有一夜两人会一起被召入后宫……。
+从城堡走廊的小窥孔中，今夜也会传来她的声音。
+她们的结局，会因你送出她的次数而改变。
+解压码：唯ai雪莉酒</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1vCfbx-Ir-lHABiWdK70I9Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/yeq2l2a763.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>快照：流浪海岸</span></div>
+    <div class="note mm-editor"><span>【官中步兵版/沙盒/3D游戏/1.0G/沙盒3D游戏】快照：流浪海岸 （Snapshot: Lewd Shores） Ver0.702【PC 1.0G】
+在10小时开放世界旅程中拍摄霓虹、樱花、涂鸦与猫咪，解锁6种影展结局，让快门声成为城市心跳！
+快照：流浪海岸 （Snapshot: Lewd Shores） Ver0.702 官中步兵版+沙盒3D游戏+1.0G   2610191011
+玩家扮演初到东京的街头摄影师，用镜头记录城市光影、街头艺术、季节风物与人物故事，
+通过完成任务、解锁镜头与滤镜，逐步提升摄影技术，最终举办个人影展，向世界展示属于自己的东京印象。
+游戏特色
+开放世界街拍：1:1还原东京部分街区（涩谷、下北泽、浅草），无缝探索，昼夜与天气实时变化
+光影任务系统：拍摄夜景霓虹、雨后倒影、樱花飘落、祭典烟火等限定光影，获得“光粒”兑换装备
+文化收集：收集街头涂鸦、复古招牌、传统建筑、猫咪日常等图鉴，解锁文化小故事与隐藏景点
+镜头升级：初始手机→微单→专业相机，逐步解锁长焦、广角、微距、无人机视角
+零侵犯拍摄：所有人物均为自愿入镜或活动NPC，无TOUKUI、无隐私侵犯，专注艺术与风景
+多结局图鉴：城市印象展、樱花主题展、街头文化纪录展等6种结果，单周目8-10小时
+故事概要
+你受东京摄影协会邀请，参加“城市光影”挑战：30天内提交30张主题作品。
+– 街头涂鸦艺术家，邀请记录涂鸦诞生
+– 复古咖啡店主人，讲述下北泽音乐故事
+– 神社猫咪“站长”，每日固定时间出现供拍摄
+完成三组主题后，解锁最终任务：举办个人影展，地点可选涩谷十字路口大屏或浅草寺传统会馆。
+A. 成为城市光影大使，继续留拍四季
+B. 回国举办东京巡展，成为国际街拍摄影师
+C. 留在下北泽，开设24小时光影画廊
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1ysMCInx-xNvQjD2Qln82Kg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/kxxjb0jjvm.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>我的乡村日常生活</span></div>
+    <div class="note mm-editor"><span>【SLG/汉化/动态】我的乡村日常生活 v0.3.5.2/Daily Lives of my Countryside【PC 2.16GB】
+【SLG/PC/汉化/动态】我的乡村日常生活 v0.3.5.2/Daily Lives of my Countryside【2.16GB】
+2026-10-21
+游戏
+✅作者:#Milda Sento
+Daily Lives of my Countryside是一款RPG Maker MV游戏。你将扮演一个名叫Callum的男孩，他回到了他出生的小镇。在这个小岛上享受乡村生活，发现不寻常的事物。
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1rptxAKZgdG1bDMLr6_K2IQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/6ngo1ifoig.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>九界之上</span></div>
+    <div class="note mm-editor"><span>【更新/电脑/官中】九界之上 / Above the immortality Realm / 仙境を超えし者 0.8.1-p【PC 1.2G】
+这是一款以修仙世界为背景的 NTR 主题成人游戏。
+你将扮演莫生 —— 玄门中一名天赋平平的普通弟子。
+过去，他常被师兄箫天羽欺负和羞辱。
+箫天羽拥有莫生所没有的一切：他是门派中最强大的年轻修仙者，
+是被命运眷顾的 “天选之子”。
+莫生既嫉妒他…… 又憎恨他。
+本作是一款以修仙世界观为主题的 R18 视觉小说游戏，结合轻度互动玩法。
+玩家将通过阅读剧情、做出关键选择、推进分支路线，
+并在若干交互环节中完成简单操作与事件触发，从而影响关系发展与后续内容解锁。
+游戏以大量 R18 Live2D 动画作为核心表现，强调强沉浸的视听体验与情绪张力；
+在剧情推进与互动选择之间循环，引导玩家不断探索不同路线、收集内容并逐步揭开更深层的走向。
+游戏内有丰富的文本和大量的动态画面表现，游戏内共有多位女角色。
+超越不朽境界
+修仙！NTR！
+故事背景
+我们的第一款游戏名为《超越仙境》——这意味着即使在已知最强修士之上，也可能存在一个未知的境界。
+彼岸究竟是什么？答案就在故事中。
+这是一个以修仙世界为背景的NTR题材成人游戏。
+你扮演的是莫生——玄门门派中一个天赋平平的普通弟子。过去，他曾被师兄萧天羽欺凌羞辱。
+萧天宇拥有莫生所不具备的一切：他是宗门中最强的年轻修士，是命运眷顾的“天选之子”。
+莫生既羡慕他……又恨他。
+某天，莫生偶然得到了一件神秘的宝物——一件能够窃取他人“气运”的宝物。
+在这个故事里，“气运”不仅仅是运气，它融合了天赋、命运、机遇以及那些造就“天生赢家”的无形优势。
+凭借这种力量，莫生开始了一个危险的计划：将萧天宇身边的女人一个个掳走，一步步夺走他的财产……直到他一无所有。
+但萧天宇的运气实在太好，他是这一代最顶尖的天才。
+莫生真的能成功吗？还是萧天宇会发现真相……并先下手为强？
+故事即将展开——敬请期待。
+什么是“修仙”？
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1FFLAlnesQ5vf-gzBckdAzA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/ryn2u4iydp.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>妖刀-幽惑学园七大不可思议-</span></div>
+    <div class="note mm-editor"><span>【AI汉化版/回合/RPG游戏/1.74G/全回想存档/回合RPG游戏】妖刀-幽惑学园七大不可思议- Ver1.10【PC 1.74G】
+胆小少年携手退魔少女，在午夜校园封印百鬼——每一次心跳，都是拯救世界的力量！
+妖刀-幽惑学园七大不可思议- Ver1.10 AI汉化版+全回想存档+回合RPG游戏+1.74G 08281635
+故事背景
+极度内向的少年片桐茉代，因一次夜间闯入学校而遭遇灵异袭击；
+危急关头，同班的退魔师少女“名刀”救下了他。随后，茉代被邀请成为“退魔辅助者”：
+通过共鸣装置将自己对怪异的恐惧能量转化为名刀的灵力。
+若精神崩溃，则会被幽灵反噬。两人必须在 7 天内联手净化校园，揭开怪异诞生的真相。
+核心玩法
+共鸣战斗：即时 QTE 收集“勇气点数”，为名刀充能释放强力退魔技。
+角色羁绊：对话、送礼、共同作战提升亲密度，解锁支援技能与专属剧情。
+– 真结局：封印所有怪异，校园重归平静；
+– 坏结局：精神值归零，被幽灵同化；
+– 隐藏结局：与特定 BOSS 和解，开启新章节。
+便利功能：剧情快进、二周目战斗跳过、云存档同步。
+更新亮点 v1.10
+新增 4 位 BOSS（千岁、妤兰、花子、雏乃）的专属战后剧情。
+恋人对话系统：与千岁成为伙伴后触发特殊事件。
+存档位扩充至 30 个，并显示章节进度。
+轻量体验
+官方 1.5 GB 完整版 + 800 MB 压缩版；键鼠即玩。
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1sl7H6PDTCBKDRB0Za_tOrA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/rqke3o4bj2.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>异界废墟</span></div>
+    <div class="note mm-editor"><span>【3D/生肉/动态】异界废墟 ~ 淫秽的黑暗祭祀 ~/異界廃墟～淫靡なる闇の贄～【PC 247MB】
+【3D/PC/生肉/动态】异界废墟 ~ 淫秽的黑暗祭祀 ~/異界廃墟～淫靡なる闇の贄～【247MB】
+2026-10-21
+游戏
+名称:异界废墟 ~ 淫秽的黑暗祭祀 ~ 原名:異界廃墟～淫靡なる闇の贄～ 贩卖日:2024年04月16日 0点
+第一人称视角的恐怖游戏。为了不被黑暗的居民抓住，一边逃跑一边隐藏，以逃离废墟为目标(即使被抓住也不会当场死亡)。 主人公是个手无缚鸡之力的少年。一旦被敌人抓住，就会被推倒、压榨。
+你遭遇了怪异，误入了谜一样的废墟。 在那里，在黑暗中蠕动的人横行跋扈。
+·游戏时间1 ~ 2小时左右
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1W4ptIzjrMU9aSuVOETXoHg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/vooubpyqtk.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>淫欲之罪</span></div>
+    <div class="note mm-editor"><span>【电脑/动态/官中】淫欲之罪 淫慾之罪 / The Sin Of Desire Demo【PC 2.35G】
+和性感人妻玲奈、可爱美少女绘里香同居。这在旁人眼中幸福无比的事，却把我拖入她们欲望与秘密交错的危险罗网。
+有意无意的，我将在工作和日常中不断窥探到她们的隐私。那些被层层掩盖的秘密，将一点点浮出水面。
+随着调查的深入，我对她们的情感开始变得复杂而危险…
+而我自己的欲望，也正逐渐失控… 最终，所有人会一起坠入欲望的深渊吗？
+主要角色
+白石 玲奈
+外表高冷、有些傲慢的人妻女上司，同时也是知名爱情小说作家。
+因为一次误会，她对我抱有强烈敌意，常在工作中刻意刁难我。然而她真正的想法…似乎远不止表面那么简单。
+神代 绘里香
+甜美可爱的女同事，玲奈的小姨子，也是公司的小财务。她对我关怀备至，常常依赖我、请求我帮忙。
+但她乖巧的外表下，也藏着不为人知的一面。
+游戏特色
+超过50张事件CG及插图。
+11组动态HCG。
+超过20万字的精致文本，体验和玲奈，绘里香的禁忌纠葛。
+在充满支线故事和收集元素的地图里自由探索。
+找到各种性爱道具，可用于与玲奈及绘里香的亲密互动。
+你的选择，将决定玲奈和绘里香的命运，通往不同的结局。
+所有主要剧情和H情节都有高质量的配音。
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1q-f28Dus0jU92IF-GXev1A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/xhub50w950.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>奥菲的任务：欲望统治</span></div>
+    <div class="note mm-editor"><span>【新作/日式SLG/巨乳动态/步兵版】奥菲的任务：欲望统治 Ophi’s Quest Reign of Lust Demo 生肉【PC 150M】
+关于此游戏
+《Ophi’sQuest Reign of Lust》是一款策略Boss速通游戏，你扮演的是奥菲莉亚
+一个偶然发现被附身的旧领主盔甲的小兔女郎。
+现在，奥菲莉亚和曾经被放逐的霸主拉哈马尔必须用情欲之力为魔法霸主塔提供能量，
+击败Boss、收集物品并俘虏女孩，以升级他们的单位和设施，试图征服高达的浮空岛。
+设施
+利用领主塔的力量召唤出提供物品制作、单位训练和可解锁内容等服务的维度空间。
+每个设施由一个领主指挥官管理。你可以与其互动并合作以升级领主塔。
+挑战强大的Boss
+准备由单位和魔法咒语组成的装备组合来击败强大的Boss。
+俘虏他们、他们的材料以及他们的下属，让他们为领主塔服务。
+每场战斗都需要多次尝试才能成功，但每次失败都会为你提供经验，用于升级当前战斗中的部队!
+升级
+战斗结束后，你将获得材料奖励。
+你也可以在设施中使用这些材料来升级你的单位和设施，包括非常性感且显眼的艺术作品，用于最大级别的升级!
+单位
+一系列拥有不同属性和机制的单位，以适应各种不同的游戏风格。
+如果你想专注于用野人进行治疗和防御，或是利用复活者的单位死亡机制，完全由你决定!
+混合搭配单位以应对每个Boss的战斗总是充满乐趣</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1PFgmK6fIYULCWheZ8oZQpg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/n3kbjing82.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>NTR学园 白光之箱庭与奸计-被侵蚀的名门女子们</span></div>
+    <div class="note mm-editor"><span>【AI汉化版/日式/RPG游戏/2.60G/日式RPG游戏】NTR学园 白光之箱庭与奸计-被侵蚀的名门女子们-【PC 2.60G】
+以异世界探索与学园阴谋为主线，在队伍协作与线索收集中逐步推进故事走向
+NTR学园 白光之箱庭与奸计-被侵蚀的名门女子们- AI汉化版+日式RPG游戏+2.60G 2608111136
+聚集众多名门子女的全寄宿制超名门学园——苍皇院学园。出身普通家庭的朝仓奏人，
+与姐姐美月一同作为特例编入该校。奏人等人加入的特别组织“白潮会”，其任务是探索异世界，
+回收能大幅改变现代文明的“文明级遗物”。原本通往异世界的入口只有学园女神像前出现的“女神渡口”，
+但某天，校工室地下发现了一条连接异世界的神秘航路——“力之淀”。白潮会的成员们为寻求文明级遗物，
+开始通过“力之淀”展开异世界探索。然而，在这探索背后，潜藏于学园中的“工具人”们的奸计也在悄然启动。
+异世界探索背后隐藏的阴谋，以及侵蚀白光庭园的奸计——奏人能否守护住珍视的人们呢？
+奏人在入学第一周跟随白潮会的队伍进行了第一次异世界探索。队伍穿过女神渡口后，进入一片从未见过的地形，地面由深色泥土和石块混合组成，远处的地平线上可以看到一些结构不规则的低矮建筑。他们在接近其中一座建筑时，发现入口处已被坍塌的石堆覆盖。队员们在附近搜索了其他可能的入口，最终在一处地势较低的位置找到了一道可通行的缝隙。奏人跟随队伍进入后，发现内部空间比外部看起来更大。队伍在内部搜索了约一小时，找到了一件具备结构特征的遗物，在确认没有异常后，将其装入收纳容器中，沿原路返回。
+当天傍晚，在返回后不久，奏人听到校工室外传来脚步声，随后声音停了下来。他等到脚步声完全消失才打开门，沿着走廊走向尽头，在门口蹲下查看地面，在一处灰尘较厚的位置发现了一道尚未完全干透的鞋印，边缘处带有均匀的纹路。他起身继续沿着走廊向前走去。
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1b70GFBxeAVp_hHl6VwpFxw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/h6axfrag39.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>夏日聚集地</span></div>
+    <div class="note mm-editor"><span>【3D/汉化/动态/AI汉化版/存档/去码】夏日聚集地 – 与辣妹们共度的秘密放学后 -V1.01 + + 补丁【更新】【PC 3.7G】
+某一天，我被班上的三名顶级辣妹盯上了。
+回过神来，我的家竟然成了这些辣妹们聚集玩耍的据点！？
+和这些毫无防备、身上散发着诱人香气的辣妹们相处，我们之间的关系也逐渐变得越来越亲密……
+悠闲而又色色的青春夏日，就这样开始了。
+◆推荐给这样的你！◆
+・想度过慵懒又色色的青春时光
+・想体验「今年夏天一直懒懒散散地玩着、做着色色的事情，不知不觉就结束了呢」这样的夏日
+・想和性格类型各不相同的三名辣妹一起度过最棒的夏天
+・想和辣妹们享受甜甜蜜蜜的亲密关系
+・想体验在还有其他人在客厅的情况下偷偷做亲密之事的背德感
+・想用成人玩具挑逗那些对性充满好奇的辣妹
+・想享受采用 Unreal Engine 打造的精美游戏画面
+◆游戏概要◆
+因为某些原因而独自生活的〇校三年级学生——我。
+某一天开始，我家竟然成了三名顶级辣妹经常聚集的地方……
+一开始，她们只是喜欢拿我开玩笑、捉弄我，但不知不觉间，我们之间竟发展成了亲密的关系……！？
+我们彼此都对这种关系守口如瓶，每天偷偷地做着亲密的事情。
+然而有一天，我和三个人全都保持着这种亲密关系的事情，最终还是暴露了……
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1r1NKQO1XfNon3qAPoyuQ4g?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/oujbohneug.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>支配神器与魅力勇者</span></div>
+    <div class="note mm-editor"><span>【RPG/生肉】支配神器与魅力勇者 ～堕落伙伴挑战死亡回归的魔王城～ / 支配の神器と魅了の勇者 〜仲間を堕として挑む死に戻りの魔王城〜 V1.0【PC 2.25G】
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1wh2LhDv5PAZB_e-PwyH4iQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/8eug8qfzcd.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>时雨・柔和时光</span></div>
+    <div class="note mm-editor"><span>【电脑】时雨・柔和时光 / シグレ・メロウタイム Demo v1.0.0生肉【PC 451M】
+这是一款♪
+你和半同居女友时雨幸城一起度过时光的游戏。用
+番茄钟计时器设定时间，她就会开始和你一起学习。
+加入♪
+游戏，做你喜欢
+的事（当然，你也可以♪把它当作“放置游戏”玩——所有功能都可以轻松♪解锁）。
+整个系列都是精美的像素动画♪
+，配有宁静的背景音乐和舒缓的全声优。 我们支持♪你所有的“工作”
+H部分
+你和Shiu，你们是情侣♪。有
+时间的时候，可以“稍微长一点”，性感一下…… ♪
+让我们♪在各种戏剧里和Shiuu来一场甜蜜的性爱
+吧。当然，H的场景也会全动画化♪。
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/17LuY2f64I2KA6mIsx0yVHA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/k6wffkpa4w.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>NTR之塔</span></div>
+    <div class="note mm-editor"><span>【汉化/动态/SLG/内嵌AI汉化版】NTR之塔 NTR Tower v0.1.1【PC 375M】
+【PC/汉化/动态/SLG】NTR之塔 NTR Tower v0.1.1 内嵌AI汉化版【375M】
+2026-10-21
+游戏
+#NTR之塔
+#NTR Tower
+v0.1.1 AI汉化版【2026年10月11日 更新】
+新增汉化
+·游戏介绍·
+加入娜奥米，踏上她战胜病痛的冒险之旅。
+在末日降临、丈夫离世之后，她如今还要对抗一场发烧重病带来的额外威胁。作为她的继子，你要帮助她在残酷的废土中生存下去，同时她也在寻找有价值的战利品。
+据说，NTR之塔里有解药。
+一条可疑的线索将娜奥米和她的继子引向了NTR之塔。塔里似乎有些人知道得更多……这解药真的值得吗？
+塔外的环境充满敌意。
+准备好一路射击，穿过成群的丧尸，搜刮有价值的物品。这将帮助你与娜奥米攀登这座塔，并找出真相。
+解压码：唯ai雪莉酒</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1h8FWJmzFZy8AuBndDUo6Ow?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/24ix1za206.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>快乐校园之光</span></div>
+    <div class="note mm-editor"><span>【新作/官中版】【日式RPG】 快乐校园之光 Happy School Light 体験版【PC 1.0G】
+·游戏介绍·
+體驗版2的內容新增了遊戲的第一章,在序章選定女主角後,第一章會分別進入到不同女主角的路線。
+以下有幾點須知
+與多黃毛有關的部分機制移到周回進行,讓初見先專注在女主角身上,例如黃毛詢問和黃毛威脅度。
+光線的序章保留處女玩法分歧,第一章暫時未整理後續差分,所以建議先不要從這個分歧展開,會出現BUG。
+有幾張大圖相關的劇情這個版本觸發不到,所以之前贊助看見的圖有幾張不包含在這個體驗版中,另外立繪差分也預計會再細化
+序章劇情沒有太大變動,調整提示並新增主線提示機制,另外降低序章白石燈攻略難度,並刪除失敗判定
+配角提示引導重整做到一半,占卜社暫時不開放。
+建議多多存檔。
+使用Ctrl快進文本,有時候速度太快跳過人物移動演出會讓角色卡住,重新讀檔就沒問題
+體驗版1存檔可以持續遊玩,除了上面提到的光線分歧之外應該都沒有問題,出房門會有個體驗版1BUG修復可以使用,不過角色有技能設定追加,如果用體驗版1的存檔展開就會看不到,不過不影響之後的劇情觸發
+可以藉由這個版本窺見大部分的機制與設計,後續章節都會基於這些基礎做變化延伸,可以當作是這款遊戲的體驗版。
+會有蠻多明顯的未完成痕跡,如果是條件整理好只差劇情的都會標上「目前未實裝」,當然也有部分能感受到沒做完,不過基本都是在配角部分,這部分就跟體驗版1一樣,畢竟就是體驗版。
+兩位女主角的遊玩體驗應該蠻不一樣的,都可以嘗試看看。
+當前因為都是套用初見狀態遊玩,沒有周回要素給玩家加成,所以有些劇情是有難度,可能很花時間,玩家自己斟酌。
+後續也預計會增加序章、第一章跳過機制,不過這個版本還沒有,所以節奏有點緩慢。
+由於家人開刀住院,這段時間有點忙,這幾天可能無法及時更新BUG。
+回報BUG除了再BUG文章下留言,也能去Discord群組回報哦!
+接下來我會先統整配角提示引導,之後再進入第二章的製作,祝大家玩得開心,謝謝。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1C8uVw-9wdhaN846OyFWy2g?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/3a0usloh40.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>魔少女可可亚</span></div>
+    <div class="note mm-editor"><span>【新作/日式RPG/AI汉化版/存档】魔少女可可亚 粪尿与凌辱的风暴 魔少女ココア スカトロと陵○の嵐【PC 920M】
+故事
+以惩恶扬善为己任的魔法协会引以为傲的S级魔法少女·可可亚。
+被派遣至桃别町的可可亚，借助同伴们的力量与邪恶展开对抗。
+诱拐女孩的研究者、企图颠覆城镇的教团、
+持续向城镇流入毒品的妓院老板、试图毁灭城镇的邪恶异世界人……
+在与这些邪恶战斗的过程中，可可亚遭遇了种种凌○。
+在学校被不良少年轮○。被研究者当作造子工具。
+成为教团的矿山奴○。被迫在妓院工作，等等。
+究竟可可亚能否顺利完成使命？
+H场景
+几乎全是带有阴毛的性爱，以及接连不断的粪尿描写。
+当然，受精导致的孕肚描写也一应俱全。
+附带回想房间的存档数据。
+游戏概要
+作为带有战斗的现代RPG也能正常游玩。
+是一部在遭遇种种色情事件的同时，与同伴一起击败强敌的故事。
+同伴包括专属战士、原外国特种部队剑士、十字教会的暗杀者。
+游玩时间
+约三小时
+更新信息
+2026年10月07日BUG修复
+回想のバグの修正。
+2026年10月06日BUG修复
+自宅で起きるバグの修正。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1LZw5-V5m7kEqw40qiRSF1Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/1ict884f2k.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>JK危机</span></div>
+    <div class="note mm-editor"><span>【ACT/汉化】JK危机 / JKハザード Ver4.0【PC 806M】
+介绍
+版本更新说明
+■ Ver 4.0
+应玩家要求，在文件夹中追加了单幅精美插画，方便直接以 JPG 格式预览。
+收录了涵盖体液差分、恍惚高潮表情等在动画中未曾呈现的丰富细节差分。
+■ Ver 3.0
+新增扩展关卡：追加实装了扩展模式第 5 关；
+新增关卡快捷指令：在扩展关卡中按下数字键 8 即可快速跳过并进入下一关。
+■ Ver 2.0
+感谢荣登 24 小时榜单榜首！
+为了表达感谢，特别追加实装了扩展模式第 4 关。在此可鉴赏此前未公开的点阵原画、草稿及分镜稿，其中包含 3 张精细绘制的单幅点阵特写插画，全点阵纯手绘呈现，极具视觉冲击力！
+剧情概要
+20XX年——位于市中心的淑神虫女子学园。
+在这座学园里，流传着一个“每隔 100 年便会遭到异形魔虫侵袭”的恐怖传说……
+游戏特色与机制
+本作是一款横版卷轴动作游戏。
+受到敌方攻击时战衣会被撕裂破损；一旦彻底赤裸，魔虫便会向着身体的核心要害蜂拥而至。被捕获后将面临残酷的异种强行缠绕与惩戒。
+进入教室后将无缝切换为 3D 视角动作玩法，开启拯救受困女学生的专属限时挑战。
+丰富场景表现：收录 60 组以上的场景，由精细点阵动画与全彩动态演出共同打造。动作细节高度注重点阵质感呈现。
+多结局分支：包含 3 种不同结局，根据拯救女学园的过程与完成度触发不同走向。
+高密度体验：各个关卡均设计了丰富的机制与关卡事件，好戏连台，保证长久的新鲜感。
+豪华全程配音：收录 400 种以上的专属语音（香织老师：间中紫织 / 校长：白夜あこ / 学生：花見るん）。
+极速上手设计：内置难度调节与快捷指令功能，即使是不擅长动作游戏的玩家也能轻松通关。通关后还可解锁试炼关卡与扩展模式。
+操作说明
+■ 系统按键
+E：切换手柄操作模式
+W：切换键盘操作模式
+Enter：暂停 / 取消暂停
+Esc：退出游戏
+■ 横版动作模式操作
+→ / ←：前进 / 后退
+Space：跳跃
+Z：射击攻击
+Z + ↑：向上高角度射击
+Z + ↓：向下低角度射击
+X：自我抚慰（仅在完全赤裸状态下可用，可恢复 3 点能量）
+在标记有“IN”的位置按 ↑ 键即可进入室内
+■ 3D 视角动作模式操作
+方向键：移动瞄准准星
+Z：射击攻击（※ 请注意千万不要误伤女学生，击中会导致生命值扣减）
+(※ 正式版说明书中记载有丰富的秘籍指令，可一键开启关卡选择、CG 鉴赏模式全开及扩展关卡等玩法)
+主角档案：香织老师（Kaori）
+“我是香织，这是我的个人档案哦。全名是圣之崎香织，其实……我还是个没有任何恋爱经验的纯洁少女呢。
+我的职业是教师，不过今年才第一年执教，还是个新米，偶尔也会搞砸一些事情。
+我之所以会被调任到这所学园，是因为我们家族代代都是‘魔物猎杀者’的后裔，传到我这里刚好是第 15 代。我天生背负着每隔 100 年退治降临的邪恶魔虫与异形怪物的宿命。
+但是……我的性格其实相当胆小，也完全没有实战经验，唯独正义感比常人强上一点。虽然心里想着‘为了学生哪怕献出生命也在所不惜’，但真的很担心自己能不能守护好大家。所以平时总是向神明祷告，希望在我这一代千万不要遇到魔虫降临……
+顺便一提，我的身高是 158cm，体重是秘密哦。
+胸围方面……虽然很害羞，但确实有 98cm 呢（F 罩杯），腰围是 58cm，臀围则是……啊，好害羞，是 90cm。是个相当显眼的大屁股呢。母亲以前经常说我‘带着这么夸张的胸部和屁股可没法顺利战斗’……
+我的血型是 A 型，平时最喜欢吃芒果和日式和菓子。
+至于讨厌的东西……其实我最怕的就是虫子了……呜呜，我真的能有信心战胜它们吗……”
+体验版与购买说明
+体验版内容：开放关卡 1~4 供试玩体验，收录了丰富的精彩场景。(试玩版为开发中版本，正式版将包含更加极致的视觉表现与丰富细节)
+存档与更新：为了方便接收后续修正与版本更新，建议在购买平台完成用户注册。
+图文展示与关卡亮点
+2D 基础关卡：纯正的横版动作探索大地图。
+强行展开与连带纠缠：香织老师一旦失手战败，就会面临严重的身体惩戒；在特定关卡中，受制期间甚至会有新的魔虫加入连带攻击。
+教室室内探秘：可随时进入各个教室展开探险。
+3D 视角救援关卡：3D 模式下每个关卡的敌方行动模式各不相同，请精准击退魔物、拯救受困的女子高中生！
+剧情解谜要素：深入收集各类情报，揭开学园异变背后隐藏的惊天真相。
+神秘的校内高层：看似举止古怪的校长，背后似乎隐藏着极其大胆的另一面……！
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1xyRRY43b8BQ89lHKe4560A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/nly4g3fzcb.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>暗狩红狼</span></div>
+    <div class="note mm-editor"><span>【更新/动作ACT/异种X/动态/官中步兵版/全回想/存档】暗狩红狼 闇狩紅狼 v2.0 【PC 1.40G】
+✅社团名：#PIEROCK GAMES
+▫️名称：暗猎红狼
+▫️原名：闇狩紅狼
+▫️版本：v1.11
+▫️贩卖日：2024年06月09日 0点
+▫️标签： #ACT #官中 #PC  #无码 #女主人公 #羞辱 #通奸  #变身女主#精品,CV,动态,巨乳,拘束,强X,异种X
+普通的牛马上班族「立夫」某天突然被传送到一个满是怪物的异世界。
+就在他遭到暗兽袭击的绝望时刻，一位拥有火红长发、身材傲人的美丽暗狩“红狼”救下了他。
+然而，在与红狼接触的瞬间，立夫竟然与她那特殊的战斗服装融合在了一起。
+就这样，立夫在战斗时将化为她的战斗服与之并肩作战，并一同寻找回到原本世界的方法。
+用爽快的战斗系统和HD画质的平滑的点动画被描绘的爆乳时尚动作!
+将破坏力超群的“暗技”和用围巾吸引敌人的“抓举”组合起来变幻自如地使出组合吧!
+超绝浓厚的H场景计33场景!!
+完善各场景丰富的差分和结束!
+当然全H场景女性角色全部声音!
+20种以上的丰富的h动画4阶段的速度变化结束也完整!
+其他，也有使用满画面的大尺寸动画+美丽的CG的固定的色情剧本!
+■推出时的H场景内分
+·H场景
+22种(+各场景有动作差)
+·动画H场景
+5种(+各场景有动作差)
+·色情脚本(CG&amp;文本)
+6种(基本6种+有差异)
+更新日志
+Ver2.0
+● 功能新增与调整
+在原有自动存档功能的基础上，新增了可手动存档的存档栏位。
+※ 点击“Continue”后，仍会像之前一样读取自动存档。
+在标题画面新增了“Load Game”选项。
+现在可以在关卡选择画面及据点的存档选项中手动保存和读取游戏进度。
+调整了键盘操作的默认按键配置。
+● 问题修复
+修复了第3-3章部分区域中，击败敌人后平台消失，导致游戏无法继续进行的问题。
+修复了在H场景回想中，刚解锁第一个场景后无法正常观看的问题。
+修复了部分图片仍残留马赛克的问题。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1IyqPzPtMO6Mlyjf3O-7Nww?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/4g6k6v7tns.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>惩罚触手修女～被弄到高潮迭起～</span></div>
+    <div class="note mm-editor"><span>【新作】【日式3D/拘束调教/像素动态】 惩罚触手修女～被弄到高潮迭起～ おしおき触手シスターズ～いじられてイグイグ～ 生肉版【PC 370M】
+――――― 基本操作方法 ―――――
+– 选择： 移动鼠标光标
+– 按下 / 触摸： 鼠标左键点击
+仅需单手即可轻松游玩。此外，需要拖拽（Drag &amp; Drop）操作的玩法环节也支持直接跳过。
+――――― 游戏内容 ―――――
+本作是一款可以休闲体验的“惩罚”点击类游戏。虽然开头附带了一小段探索环节，但很快就能享受到色色的玩法。
+预计游玩时间约为 30 分钟 ~ 1 小时（快速通关约 30 分钟，细细品味约 1 小时），整体属于轻松无负担的小体量。
+游戏共准备了 3 种结局：《Game Clear（通关结局）》、《Game Over（失败结局）》以及《Secret（隐藏结局）》。
+同时，为了能让大家体验到所有的游戏内容，游戏中内置了攻略 Wiki 以及部分内容的跳过功能。
+作品中的“惩罚”环节为 4 位女主角各制作了 1 个专属场景。每个场景内均收录了 8 种可通过点击等操作进行切换的动作动画。
+◆ 序幕 1 〜 Girls’ Side 〜
+深夜展开探索的 3 位实习修女。
+她们听闻了教祖大人“秘密宝物”的传闻，凭借着提灯微弱的灯光，走在阴暗的回廊中，
+试图潜入平时绝不允许实习修女进入的“仪式之间”。
+◆ 序幕 2 〜 Girls’ Side 〜
+然而，她们在仪式之间里找到的却并不是什么宝物。
+她们僵在原地，在门前惊恐地张大了嘴巴。
+推开门后，出现在眼前的是在门后蠕动的无数触手……
+◆ 序幕 3 〜 Girls’ Side 〜
+而在那触手丛中的中心，则是身着大家所熟悉的那件黑色长袍的教祖大人的真实姿态——
+——原来教祖大人竟是伪装成人类的触手怪物！！
+◆ 序幕 4 〜 Girls’ Side 〜
+教祖伸出触手，试图抓住目击了这一幕的她们……
+在极度的恐惧之下，三位实习修女一齐拔腿就跑，散开躲藏了起来。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1RSxqbk0Ck4pz_ZatdphmDQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/a5qapkwb9v.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>真品向内，赝品向外</span></div>
+    <div class="note mm-editor"><span>【3D/官中/动态/触摸SLG】真品向内，赝品向外。——识破魅魔所化之巫女—神篱之巫女─神篱之巫女 本物には中に、偽物には外に。─サキュバスが化けた巫女を見破れ─神籬之巫女【PC 3G】
+★★★真的，要射在里面。假的，要射在外面。
+躺在被褥上的巫女，
+究竟是真的——
+还是伪装成她的魅魔？
+亲自触摸、仔细确认，最后选择：
+「射在哪里」
+一旦选错，她身上的诅咒就会苏醒。
+★★★收录内容
+■ 7名巫女 × 每人2个夜晚 —— 共14个全3D触摸互动场景。
+■ 高性能物理模拟带来的身体晃动效果 —— 胸部、臀部、大腿都会随着手指的触碰而晃动、下陷。
+■ 手、嘴、道具 —— 根据触碰的不同部位，角色会产生不同的反应。
+■ 逐步叠加的白浊演出 —— 每次注入都会在肌肤上留下层层痕迹。
+■ 耳边语音 —— 通过立体声效，让人仿佛近距离听见角色的呼吸声。
+■ 自由操控镜头 —— 可以随心所欲地从喜欢的角度进行观察。
+■ 共14个章节 + 序章
+■ 支持5种语言（日语、英语、繁体中文、简体中文、韩语）
+★★★规则只有一条：「看清真伪，然后做出选择」
+当计量槽蓄满后，就可以选择射精的位置。
+对真正的巫女选择「射在里面」→ 抑制她身上的诅咒 ○
+对真正的巫女选择「射在外面」→ 她身上的诅咒将会发动 ×
+对假冒的巫女选择「射在里面」→ 你将会堕落 ×
+对假冒的巫女选择「射在外面」→ 当晚诅咒不会发动 ○
+辨别冒牌货的线索包括：「角」「发色」「肌肤上的纹路」。
+不要放过任何细微的差异。连续三次识破伪装，即可通关。
+★★★故事
+侍奉神篱神社的七名巫女。
+某一天，一只能够变身成任何人的魅魔潜入了神社。
+无论是外貌、声音，还是举止，都与本人毫无二致。然而，冒牌货身上仍然存在着些许「不同之处」。
+必须在一周之内，对七名巫女全部完成注入。
+这是唯一能够抑制巫女们身上诅咒的方法——
+★★★巫女角色介绍
+◆ 神篱日向子（首席巫女，22岁）
+◆ 爱宕焰（游击巫女，21岁）
+「你从刚才开始，就一直盯着我看呢～？」
+◆ 埴生巴（护卫巫女，22岁）
+「……没兴趣。」
+◆ 南宫铃（舞巫女，20岁）
+◆ 桂朔夜（占卜巫女，21岁）
+◆ 久能梢（监督巫女，23岁）
+「衣领歪了三毫米。把它整理好。」
+◆ 濑织澪（奏乐巫女，20岁）
+「……我的眼里，只看得见那个人。」
+◆ 魅魔 —— 能够变身成七名巫女中任意一人的入侵者。
+★★★额外内容：在线对战模式
+即使不参与对战，也可以完整体验本篇游戏。
+在 PvP 对战中获胜即可获得点数。
+使用抽卡系统即可解锁额外剧情。
+※ 完全没有任何付费内容。
+※ 根据网络连接状况，对战可能会中途结束。
+★★★不适合以下玩家
+追求宏大世界观或长篇剧情的玩家。
+只喜欢2D插画的玩家（本作采用3DCG）。
+主要为了在线对战而购买的玩家（对战仅为附加内容）。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1_Vo_pNpLqFNK4NBggHXAfA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/9uoobt6ig0.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>迷途少女</span></div>
+    <div class="note mm-editor"><span>【SLG/官中步兵】迷途少女 / No.HazedHeart【PC 89M】
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Qc87o-rHWJnUrCEeQi2q0g?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/3vx9davt0v.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>罗尔迪亚之翼</span></div>
+    <div class="note mm-editor"><span>【新作/日式ARPG/拘束调教/官中步兵版/存档】罗尔迪亚之翼 ロールディアの翼 v1.21 072 【PC 550M】
+✅社团名：#ウォータースプーン
+▫️名称：罗尔迪亚之翼/罗迪亚之翼
+▫️原名：ロールディアの翼
+▫️版本：v1.21
+▫️贩卖日：2026年10月14日（2018年08月04日）
+▫️标签：#精品 #ARPG #官中 #PC #CV #无码 #凌辱 #奇幻 #触手 #处女 #调教 #拘束 #异种
+◆游戏内容
+– 游戏中存在时间流动，从清晨、白天、黄昏直到夜晚，
+– 地图的光线与气氛也会随之改变。
+– 长时间旅行之后，阿尔玛会感到飢饿，也可能产生其他生理需求。
+– 你可以在城镇休息、用餐，或者利用旅途中取得的物品维持状态。
+– 由于是没有Game Over的自由故事，
+– 因此可以不用管故事主线，随心所欲地四处闲晃，单纯享受被凌辱的玩法。
+◆H事件
+包含37种基本H立绘+特写插图！
+本作主打透过立绘变化，带来无间断的H场景。
+体验过的经验都会被记录下来，累积越多经验，主角就变得越是敏感。
+◆100种以上的换装配件
+提供9个部位、总计100种以上的换装配件，以及变换颜色，让您自由搭配造型！
+发型也可以选择是要双马尾还是长直发。
+◆角色
+阿尔玛（名字可更改） CV 藍沢夏癒
+本作主角。沉默寡言的少女。
+为了解放遭到占领的卢马尼亚而踏上旅程。
+赛尔菲娜
+十分重视阿尔玛的卢马尼亚女战士。
+伊尔梅亚
+在卡鲁洛之村最初遇见的亲切男子。
+伊丽莎
+另一名「罗尔迪亚骑士」候补少女。
+柯尔米
+鬼族女战士。拥有极为出众的肉体能力
+莉妲
+有着红发双马尾、个性开朗而莽撞的女战士。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1vmHEI9Moo48U1w_Ab43-fw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/f9zk3t631w.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>艾登斯骑士格伦茨外传</span></div>
+    <div class="note mm-editor"><span>【ADV/汉化/AI汉化版/全CG】艾登斯骑士格伦茨外传 第1章 淫神之祭品的圣女蒂萨莉亚篇 / エデンズリッターグレンツェ外伝 第1章 淫神の贄の聖女ティサーリア編 + + 特典 + 安装包 26.09.18.0发售【PC 13.6G】
+·游戏介绍·
+诸神的庇护与诱惑交织，一部厚重的黑暗奇幻作品
+孕育疯狂的果实
+在艾尔阿拉德圣王国的边境，
+夺走人们理性的神秘果实“贝特尔之实”开始向各地蔓延。
+被委派调查此事的革命军“奥尔迪纳解放战线”的圣女，
+蒂萨莉亚/利特·瓦萨戈，
+与同伴雷夫、艾蒙一同踏入幽深的森林。
+随后，被卷入了一张精心编织的阴谋之网中。
+–来自百度网盘超级会员v2的分享
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1CYJIRgvmXBTv4cczJbYYtw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/kysz4qfddy.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>操灭巫女梅伊娜</span></div>
+    <div class="note mm-editor"><span>【RPG/AI汉化/存档】操灭巫女梅伊娜 操滅の巫女メイナ 体験版＋α版 v1.0.1 【PC 500M】
+这是一个由十二个国家组成的岛国联合体。
+在这座岛国中，存在着一种由负面情绪产生的无形存在，通常被称为 「妖气」。
+被妖气附身并因此失去控制的现象，被称为「妖人化」。
+而当情况进一步恶化，被妖气彻底吞噬时，则会变成 「妖魔化」。
+对于生活在日之国的人们而言，这些现象是时不时就会发生、令人头疼的祸患……
+然而，在日之国排名第四的国家——「丛恋之国」，却是十二个国家中远比其他国家更加和平的地方。
+丛恋之国的君主，同时也是拥有强大灵力的公主——「丛恋优音」。
+以及巧妙运用寄宿着优音灵力的操妖符，作为优音的另一半，负责驱除妖气的巫女——「丛恋梅伊娜」。
+多亏了这两位神人竭尽全力的守护，丛恋之国的和平才得以延续至今。
+接下来要为大家呈现的，便是以梅伊娜的视角，记录发生在这片丛恋之国上的一系列事件的故事……
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1_1lngRfXsUvfO1IPlpfg4A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/g69iazu9n9.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>黄泉归来的索瓦蕾</span></div>
+    <div class="note mm-editor"><span>【更新/日式RPG/NTR堕落/AI汉化版/存档】黄泉归来的索瓦蕾 黄泉下りのソワレ v26.10.15 【PC 1.80G】
+✅社团名：#PANぐるみ・ふぁみりぃ
+▫️名称：黄泉归来的索瓦蕾
+▫️原名：黄泉下りのソワレ
+▫️版本：———
+▫️贩卖日：2026年10月12日 16时
+▫️标签：#RPG #AI汉化 #PC #MTool #NTR #堕落 #姐姐 #小马 #出轨 #女主人公 #巨乳
+为了带回至爱之人，踏上寻找起死回生秘宝的旅程……
+寡妇冒険者的无惨/香艳地下城探索正式开始！
+★ CG基本CG： 90张以上
+★ 结局数量： 9种不同结局
+★ R18事件： 全开放功能 &amp; 备有回想房间
+★ 轻松模式： 搭载可快速推进游戏的 EASY 模式
+这是一款第一人称视角的地下城 RPG 游戏。
+城镇和地下城均采用 3D 制作，而 R18 事件则以 2D CG 形式呈现。
+玩家将在作为据点的城镇“柯尔德斯通（Coldstone）”与地下城“死者圣域”之间往返，逐步推进故事。
+通过接取冒険者公会委托的各种事件，隐藏在地下城中的秘密以及各角色背后的故事将逐一揭晓。
+在测试游玩中，扣除 R18 场景后，通关全结局大约需要 10 小时左右。
+可作为衡量游戏体量/内容的参考。
+故事背景
+这是一个由诸神创造魔法所诞生的世界。
+由于这片大地上至今仍残留着创造魔法的余韵，新的地下城不断被生成。
+而出现在地下城深处的“秘宝”，则被奉为至高无上的魔法道具。
+主角索瓦蕾（Soirée）自少女时代起便作为一名冒険者活动，
+在与同为冒険者的丈夫阿尔贝尔（Albert）结婚后选择退隐。
+然而好景不长，阿尔贝尔在一次冒険途中不幸离世。
+就在索瓦蕾因失去挚爱而沉溺于悲伤之中时，一则风闻传入了她的耳朵：
+“伴随着‘能使死者复生的秘宝’，一座全新的地下城浮现了——”
+曾一度退隐的索瓦蕾，为了让丈夫重获新生，毅然决定重操旧业复出。
+冒険的舞台——地下城出现的城镇名为“柯尔德斯通”。
+那是她过去曾与丈夫一同拜访过的地方。
+游戏特色
+★ 经典的地下城 RPG！
+★ 采用第一人称视角 3D 呈现，但核心玩法依然是易于上手的传统 RPG 模式！
+★ 正统奇幻世界观，包含触手/魔物陵辱要素！
+★ 虽然包含战败 H 场景，但击败敌人后会自动追加对应事件，因此无需故意战败！
+★ 试图复活丈夫的寡妇，却不可自拔地陷入各种香艳的纠葛中！
+★ 兼具部分纯爱要素与 NTR（被戴绿帽/绿茶）要素！
+★ 可以与冒険者小队中的男性谈恋爱，甚至还能召唤出丈夫的灵魂向他进行“被NTR报告”！
+★ 包含少量扶他（Futanari）场景！
+★ 搭载回想模式 &amp; 一键全解锁功能！教程结束后即可随时开启！
+★ 专为想轻松通关的玩家准备了包含丰富强化道具的 EASY 模式！保证人人都能通关！
+★ 9 种结局，9 段不同的故事！
+★ 达成本能结局后，可直接使用该存档返回至“结局前夕”，助您轻松收集全结局！
+★ 口碑极佳的剧情设定，本作依然拥有相当充实饱满的故事体量！</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Mi42KXshMQlrHlhK5Ugzkg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/cnfdcl9t4k.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>重生酒馆</span></div>
+    <div class="note mm-editor"><span>【更新/官中步兵版/存档】大 【模拟经营SLG/后宫/动态】 重生酒馆 Rebirth Pub 転生居酒屋 転生酒場 v1.2.0 【PC 3.60G】
+✅开发者：#Seikou Soft.
+▫️名称：重生酒馆
+▫️原名：Rebirth Pub
+▫️版本：———
+▫️贩卖日：2026 年 8 月 14 日
+▫️标签：#AI生成 #SLG #官中 #PC #动态 #无码 #CV #奇幻 #后宫 #喜剧 #魔物娘
+在一次意外的死亡之后，你迎来了第二次机会。
+在神的眷顾下，你转生为宁静的中世纪小镇中一间小酒馆的老板。
+全新的世界就此展开，冒险、邂逅与宝藏等待着你，与少女们一起拯救陷入危机的酒馆吧。
+重生酒馆是一款结合了酒馆经营、肉鸽冒险以及恋爱模拟的独特混合类型游戏。
+玩家需要在白天探索危险的地下城以收集稀有食材，并在夜晚利用这些材料运营酒馆，创造收益。
+利用通过冒险和经营获得的财富与名声，与充满魅力的女主角们发展关系，赢得真爱。
+一场突如其来的事故，让你结束了人生。
+然而，慈爱的神赐予了你最后一次机会。
+你选择的新人生，
+是在宁静的中世纪小镇中，经营一家小酒馆。
+在这间略显破旧的酒馆里，
+无数故事正等待着你——
+刺激的冒险、新的邂逅、温暖的爱情，
+以及隐藏其中的秘密。
+在这第二次人生中，
+你将书写怎样的故事呢？
+妮可（Nicole）
+年龄：22岁
+身高：161cm
+体重：55kg
+三围：B92(G) / W61 / H95
+妮可是从小便陪伴在主人公身边的继妹。
+性格开朗，体贴细心，
+无论是在酒馆还是日常生活中，
+她都会积极地帮助主人公。
+作为一起度过漫长时光的家人，
+两人却逐渐意识到，
+彼此的感情已经不再只是单纯的亲情。
+在悄然变化的距离与情感之中，
+期待两人之间那份微妙而甜美的转变吧。
+艾琳（Irene）
+年龄：20岁
+身高：153cm
+体重：44kg
+三围：B85(E) / W55 / H84
+艾琳是在森林深处邂逅的神秘猫少女。
+外表看似安静而纯真，
+但她对主人公的情感却是所有女主角中最深、最执着的。
+在她温柔的外表之下，
+隐藏着无人知晓的秘密。
+安静的执念、扭曲的憧憬，
+以及难以轻易表露的危险欲望。
+她看起来纯洁，
+但在爱情面前，艾琳是最危险的存在。
+塞蕾娜（Serena）
+年龄：25岁
+身高：172cm
+体重：64kg
+三围：B110(L) / W65 / H105
+塞蕾娜曾是主人公的恋人。
+他们一度是彼此最亲密的存在，
+却因为某个事件而分离。
+如今，她再次回到了主人公身边。
+突如其来的重逢令人欣喜，
+却也让人一时间难以坦然面对。
+在两人之间，
+仍然残留着未曾结束的过去，
+以及必须再次做出选择的现在。
+敬请期待塞蕾娜成熟而大胆的爱。
+冒险
+前往未知的地点展开战斗，
+获取魂珠与食谱。
+通过简单的操作迎战源源不断的敌人，
+目标是坚持到最后。
+酒馆系统
+与女主角们一同经营酒馆，度过每一天。
+菜单选择、工作分配与顾客应对
+都会自然影响酒馆的氛围与收益
+女主角互动 &amp; 服装
+对话、赠送礼物、约会、换装等
+多种互动内容已准备就绪。
+你的选择将改变关系，
+让你最中意的女主角变得更加迷人。
+魅力十足的NPC
+小镇中登场着各具特色的NPC。
+与他们的相遇
+可能会引发小事件或意想不到的发展。
+高品质CG与动画
+准备了60种以上的高品质CG。
+随着女主角关系的加深，
+特殊场景将逐步解锁。
+更新日志
+v1.2.0 大型更新公告
+H场景全语音实装
+现有H场景现已全部加入完整语音！
+通过妮可、艾琳和塞蕾娜充满魅力的声音，
+大家将能够更加真实地感受到每位女主角的情感，以及各个场景的独特氛围。
+享受更加沉浸的游戏体验，发现女主角们全新的魅力吧！
+新增4种后宫场景
+让大家久等了！本次更新正式加入了4种全新后宫场景！
+大家可以体验以下特别的角色组合：
+妮可 &amp; 艾琳
+艾琳 &amp; 塞蕾娜
+妮可 &amp; 塞蕾娜
+妮可 &amp; 艾琳 &amp; 塞蕾娜
+每个新场景都展现了女主角们独特的个性与魅力，快来亲自体验吧！</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1GHIUtoJLwA1lm7tLf3se-w?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/sytjb2c04w.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>天下功夫出少女demo</span></div>
+    <div class="note mm-editor"><span>【电脑/动态/官中步兵版】天下功夫出少女demo Kung Fu Waifus【PC 2.1G】
+你是落魄邪派云雨寨的唯一继承人，正打算卖掉门派财产前往现代大都市过上幸福生活时，一位身份神秘的功夫少女真兰忽然来踢馆，破坏了你离开武林的退休计划。但在阴差阳错之下，你发现门派传承下来、被武林唾弃的「纯阳金童宝典」竟然真的可以透过做色色的事情来让女性变强？ ！于是你与真兰订下了 30 天内助她成为武林霸主的约定……
+在 30 天内，你可以选择好好锻炼♂真兰，专心让她成为最强；可以选择主动拉近与真兰的关系，用你的爱打动她；可以选择深入♀了解性格各异的三大门派馆主、拯救因某种原因而饱受折磨的她们，与她们结下不解之缘。但是，请记得时间有限。如果你没有做好准备，当那道带有杀气的身影出现在眼前，一切都已经来不及……
+游戏特色
+✦32 段 H 剧情
+✦含差分超过 400 张 CG
+✦时间管理系统
+✦全动态 H 场景演出
+✦日语全语音配音
+✦丰富多变的换装系统
+✦身临其境的养成互动
+✦多位女性角色全动态立绘
+✦超过 10 万字的多结局剧本
+玩家需要精心分配手上的金钱与每天的行动点数去执行各项活动。 30 天的时限一到，你与真兰的故事将会根据游玩状况进入相应的结局……
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Wh4ayclAlb-dYOEcpfMm1Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/6v34jykknv.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>怪兽公主：集结！超超超生存大战略</span></div>
+    <div class="note mm-editor"><span>【SLG/中文/动态/官方中文】怪兽公主：集结！超超超生存大战略 DEMO版【新作】【PC 920M】
+探索幻境空间，打倒敌人！存活！直到找出离开的方法。 配合角色特性，从各种武器、能力、道具中做选择，构筑生存的力量。 快节奏的 Roguelike 生存游戏！
+正体不明、母星不明，每到一颗星球就会灭绝一切生命与文明，被称作「根绝者」的宇宙生命因为与地球人接触有了变化。
+与地球人建立联系后，本是精神体生命的根绝者们拥有了属于自己的地球人形象，并对地球文化有了各自的理解。
+如今，为了交流地球搭档的「饲养」心得，一场茶会将在意识空间举办，持有「怠惰」、「傲慢」、「暴食」特质的根绝者纷纷出席。
+「我和妳们这种没品味的家伙果然无话可说！」
+「没关系，反正人家也讨厌妳～♪」
+「呼哈…好困…我可以回去了吗…？」
+谁都认为自己的搭档才是最棒的，就在无法取得共识的几人即将不欢而散之际，却发现意识空间遭到了不明力量的封锁？ ！
+不断涌出的敌人、似曾相似的场景，曾经遭遇过的宿敌陆续出现，阻挡了少女们的归家之路。
+拥有能驱使、制造怪兽能力的美少女－－怪兽公主们为了回到搭档的身边，将拿出真本事把所有阻碍通通踹飞！
+游戏中玩家将操控被关在幻境空间中的角色们，一边对抗源源不绝的敌人，一边寻找离开的方法。
+在击退敌人后，可以用金币在商店中购买与替换更强力的武器，也可以购买各种道具，为角色提供强化效果。
+战斗过程中可以累积能量，当能量集满时可以消耗能量施放富有角色特色的强力必杀技，在危急时刻或许可以透过必杀技改变局势。
+游戏特色
+✦ 多角色 × 多特性，打造多样化的玩法
+✦ 华丽且充满特色的必杀技表演与效果
+✦ 精致的立绘、CG 以及生动的动态演出
+✦ 丰富的武器与道具选择
+✦ 简单上手的 Roguelike 波次制快节奏生存战
+✦ 轻松愉快的主线与支线剧情
+✦ 《怪兽公主》系列同世界观番外作
+人物介绍
+波奇Q
+象征「暴食」的宇宙生命。
+食欲深不见底的粉毛忠犬系大胃王。
+为了能吃到最喜欢的地球料理，与出身自地球的宇宙佣兵「厨师先生」组队。
+目前正被绝赞通缉中。
+开朗、活泼、热情洋溢，有很强的地盘意识。
+食物的第一口和最后一口绝对不会让给别人！
+卡欧
+象征「怠惰」的宇宙生命。
+原本为了毁灭地球而降临，但最后喜欢上了地球文化。
+目前驻扎于地球，享受着她长达365年的休假。
+极度懒散且欠缺表情，1天24小时里有20小时以上都是躺着的状态。
+茶来伸手、饭来张口，连洗澡都要人帮忙。
+黛奴
+象征「傲慢」的宇宙生命。
+为了彰显自己的优秀与强大征讨了多颗星球，有着宇宙暴君别称。
+本来只打算饲养一名地球人，回过神时却已经与对方培养了深厚的感情。
+一边鞭策「皇后」精进成长，一边享受对方无微不至的侍奉与逢迎拍马，傲7分娇3分的「暴君」成了荒淫无道的「昏君」，宇宙因此迎来了和平，可喜可贺。
+–来自百度网盘超级会员v2的分享
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1rzImiODZoYY4yOR843g86A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/gygoyjagvs.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>在时间停止的学校里2</span></div>
+    <div class="note mm-editor"><span>【生肉/日式/ADV游戏/2.20G/自带全回想/日式ADV游戏】在时间停止的学校里2 （時が止まった学校で2 ゲーム版） 生肉版 【PC 2.20G】
+收到寄件人不明的信，用时间停止探索学校，寻找寄件人
+在时间停止的学校里2 （時が止まった学校で2 ゲーム版） 生肉版+自带全回想+日式ADV游戏+2.20G 2610081136
+《时间停止》是一款以校园悬疑与时间停止为核心的叙事游戏。放学后15点。主人公收到了一封寄件人不明的信。
+“今天16点，在屋顶等你。”寄件人会是留在校内的少女们中的哪一位呢。主人公一边用智能手机停止时间，一边探索整个学校，寻找信件的寄件人。
+他在收到信后，在教室外的走廊上停下脚步，用手机停止了时间。周围的一切静止下来，窗外的树叶停在半空中，走廊里也没有任何声响。他在静止的走廊中向前走去，在楼梯口遇到了留在校内的第一位少女，她在时间恢复时转过头来看他，但他没有停留，继续向楼上走去。他在二楼的美术室前停下，在时间再次停止后推门进入，看到另一位少女正站在画架前，她没有注意到他进入教室。他在确认了画架上的内容后，退出了美术室，继续向屋顶的方向移动。在通往屋顶的楼梯上，他第三次停止了时间，在台阶上坐下，翻开那封信重新看了一遍，然后站起来，推开了通往屋顶的门。
+当前版本：v1.0 官方中文版
+平台支持：PC平台
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/14Dwl-0Iu8dMc_e2L6V1qoQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/3rau0poy8e.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>超能干撸主日和酱～禁止性骚扰弹幕哦?～</span></div>
+    <div class="note mm-editor"><span>【电脑/官中】超能干撸主日和酱～禁止性骚扰弹幕哦?～ / Hiyorichan Demo【PC 340M】
+与主播进行色色互动 ◆◇
+超级性爱按摩周日酱~ 禁止性骚扰评论！ ~ [想吃心]
+本作为前作《废柴主播未来酱》弹幕评论系统的进化版,是一款可以全语音体验自称
+“工作能力强”的新人主播“日和酱”直播过程的互动交流游戏。
+虽然外表性感,但她其实是个害羞又被动的女孩。
+只要你直接输入性骚扰弹幕让她感到困扰,
+她就会做出虽然困惑但又十分卖力的可爱反应。
+随着日和酱逐渐适应直播,她也会开始回应色色的弹幕……
+直播内容也会变得越来越过激！
+请务必享受在聊天互动中她不断变化的回应,
+以及渐渐只对你敞开心扉的特别关系。
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/19jqNqvf-z8E4u9ER_cNpCA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/aurmeopen2.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>潘多拉密码2：绝对武器</span></div>
+    <div class="note mm-editor"><span>【官中/日系/2D/ACI/3.7G/官方中文版】潘多拉密码2：绝对武器 (CODE PANDORA) +日系2D ACI【PC 3.7G】
+把权谋、炮火与身体写进同一本宇宙G略，让你在床上与战场上同时Z服星系！
+潘多拉密码2：绝对武器 (CODE PANDORA) 官方中文版+日系2D ACI+3.7G 11211440
+剧情速览
+潘多拉星系暗流汹涌：黑暗领主外交官德莉普丽+太空海军莉卡，嘴炮+炮火+身T三重攻势，
+揭开“绝对武器”阴谋，宇宙未来由你床上/战场上决定。
+核心玩法
+双视角策略
+外交官：言语YOUHOU+政治联姻，解锁星系议会HUANG事jian
+陆战队：火力突袭+近战征服，解锁战场H差分
+渔网武器系统
+每套服装=不同势力好感+战斗Buff，渔网装可触发“SE诱”即时胜利
+多结局
+银河女皇/黑暗NU隶/双女共治/宇宙毁灭，共6种终章
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1_dRbHvp--KEZuzKT3yProA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/p9rssu11ex.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>项目赛娜</span></div>
+    <div class="note mm-editor"><span>【ACT/官中/动态】项目赛娜 – Project Sena – v1.301/プロジェクトセナ – Project Sena –【PC 2.74GB】
+【ACT/PC/安卓/官中/动态】项目赛娜 – Project Sena – v1.301/プロジェクトセナ – Project Sena –【2.74GB】
+2026-10-21
+游戏
+社团名:#Huuuuge 名称:项目赛娜 – Project Sena – 原名:プロジェクトセナ – Project Sena – 贩卖日:2024年08月30日
+HUuuUGe首次推出的游戏《项目赛娜》是一款横版卷轴动作游戏。 玩家将扮演名为“赛娜”的安卓机器人，为夺回被病毒变异生物夺走的地面而执行任务。
+请在体验版中确认操作是否正常。 在小数点使用「,」的一些国家中，存在无法执行的问题，正在修复该错误。 因不明原因的病毒爆发，人类正面临灭绝的危机。感染病毒的生物暴力和性欲被极度放大，失去自我，变成了僵尸。人类未能找到病毒的发源地或治疗方法，只得建造了地下大型生存设施“方舟”，作为最后的堡垒接纳难民。
+在“方舟”中，为了夺回地面，进行武器制造和病毒研究，同时在地面各地设置了前哨基地，以应对僵尸的袭击。各前哨基地派驻了研究人员和军人，执行病毒样本采集、研究和与僵尸的战斗任务。
+xiaoqiqi69
+改成 .zip 后使用 WinRAR 解压
+百度WinRAR双端解压工具：
+点击下载
+点击下载
+解压码：xiaoqiqi69</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1B2tbesQP4N25N9Q-Zs_VYg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/wfa8c2cz0k.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>办公室的窥视Demo</span></div>
+    <div class="note mm-editor"><span>【电脑/动态/官中】办公室的窥视Demo Peeping Office Worker【PC 1.0G】
+你入职来到一间有名但神秘的大公司”万见”
+才发现自己被赋予了不为人知的神秘工作……？
+随着深入了解这间公司、逐渐掌控更多秘密吧……
+玩法介绍
+发起对话，查找线索，寻找隐藏在字里行间的「关键字」
+分析整理获得的关键字，发掘更多深藏的秘密！
+完成任务获得「业绩」，升职并获得更大的权力！
+透过各种情报与优势攻略美女们，让他们成为你的玩物吧！
+解压遇到问题？
+不会解压、密码错误或提示文件损坏？可先查看完整解压教程。
+查看详细解压教程
+→
+解压码：ykacg</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1KKypeD06StWPFlSFJg88xQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/zb0s5z5f1n.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>修仙•母珠传</span></div>
+    <div class="note mm-editor"><span>【对战SLG/中文/官方中文步兵版/C2】修仙•母珠传V0.76 【更新】【PC 2.8G】
+玩家将在游戏中扮演一位炼丹阁楼的掌门人。击败各位女修使她们化为自己的战力
+当然，你也可以与游戏内的女角色互动，在乡间卖货的老板娘，东山的各位女修, 异国的少女…
+你继承了老糊涂师傅遗留下来的炼丹房。
+普通的丹药根本无法用常规材料合成，但是师傅告诉你了一些线索。
+为何一个山间的炼丹阁里会有养猪房？
+为何东山女子频频失踪？
+这一切由你来探索。
+复制这段内容后打开迅雷，查看更方便</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1jrv1q3-fWUU3rpS8T5YAXA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/fkoww0ut7f.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>一次性母猪 无战斗版 拯救世界后的 我的日常『性』活</span></div>
+    <div class="note mm-editor"><span>【更新/爆款RPG/像素动态/AI汉化版/存档】一次性母猪 无战斗版 拯救世界后的 我的日常『性』活 ヤリステナイメスブター 世界を救った後の ボクの日常『性』活 v1.02 【PC 2.10G】
+✅社团名：#にゅう工房
+▫️名称：一次性母猪 无战斗版 拯救世界后的 我的日常『性』活
+▫️原名：ヤリステナイメスブター 世界を救った後の ボクの日常『性』活
+▫️版本：正式版
+▫️贩卖日：2026年10月15日
+▫️标签：#爆款 #精品 #RPG #AI汉化 #PC 安卓APK #MTool #动态 #凌辱 #催眠 #特殊癖好 #排泄物 #精神支配 #通奸 #野外
+作品内容
+无战斗的《ヤリステメスブター》相关作品！
+距离本体销量（不含DLC）50万份的前作《ヤリステメスブター》已过去3年，
+作为相关新作，《ヤリステナイメスブター》即将发售。
+★★★请注意，本作并非DLC，也没有战斗内容★★★
+本作是一款探索游戏，让您追随《ヤリステメスブター》世界约3个月后
+主人公以情色无双姿态活跃的世界观。
+因为没有战斗，所以说是续作可能有点不同，
+大概就是“只有情色的《ヤリステメスブター》”这种感觉。
+在制作进度和告知投稿中，有约250张游戏未使用的插画，
+这次将它们全部用上，制作了253个支线事件场景。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1NjU2L7-PALE4t1mv94AVDg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/6x0vn2eefr.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>命运交汇点</span></div>
+    <div class="note mm-editor"><span>【AI汉化版/拨作/RPG游戏/470M/全回想存档/拔作RPG游戏】命运交汇点（Crossroads of Fate）Ver1.1【PC 470M】
+将反手握剑的”坏习惯”化为独特战斗风格，在帝国忠诚与地下文明之间做出命运抉择，体验从落选者成长为传奇的宏大冒险！
+命运交汇点（Crossroads of Fate）Ver1.1 AI汉化版+全回想存档+拔作RPG游戏+470M 2602281445
+玩家扮演立志成为骑士的训练生西柚，因战斗习惯未能通过入团考试。
+在青梅竹马卡娜的安慰下，她意外获得帝国骑士的秘密委托——调查巴尔德利亚帝国流传的”地下迷宫”传说。
+为实现骑士夙愿，西柚踏入地下延伸的另一个国家，等待她的是将彻底改变命运的宏大故事。
+地下世界探索： 深入帝国地下的神秘国度，发现与地上文明截然不同的生态与社会结构。
+秘密任务叙事： 以非官方身份展开调查，在帝国势力与地下居民之间周旋，获取关键情报。
+战斗风格成长： 从反手握剑的”坏习惯”出发，逐步发展为独特战斗流派，证明自身价值。
+命运抉择系统： 调查过程中面临忠于帝国或理解地下世界的选择，影响故事走向与最终结局。
+一次失败的考试，开启意想不到的传奇之路。
+梦想受挫： 训练生西柚因反手握剑的独特习惯落选骑士团，正失落时被青梅竹马卡娜安慰。
+秘密委托： 帝国骑士考官看中其潜力，委托她调查官方不便介入的地下迷宫传说。
+踏入未知： 为证明自己、实现夙愿，西柚独自进入地下，发现另一个自成体系的古老国度。
+视野颠覆： 地下居民并非传说所言的怪物，而是拥有独立文明的人类，帝国历史存在隐瞒。
+命运抉择： 当真相与忠诚冲突，西柚必须决定是完成委托晋升骑士，还是为地下世界挺身而出，这个选择将重塑巴尔德利亚的未来。
+当前版本： 正式版（中文优化）
+平台支持： PC平台
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1XaL_mRaFVq-3-6hXKYKC9A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/hgak33pxcj.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>关于利用时间停止催眠随意恶作剧JK的事件</span></div>
+    <div class="note mm-editor"><span>【SLG/动态/生肉】关于利用时间停止催眠随意恶作剧JK的事件 時間停止催●でJKにいたずらし放題な件について v2.1.0 生肉版【PC 3.18G】
+游戏概述
+某所学校里，一名不起眼的校工偶然捡到了一只神秘的秒表。
+这只秒表拥有让时间停止、控制他人意识等不可思议的能力。
+长期以来受到他人轻视的主人公，决定利用这件神奇道具展开报复。
+《关于使用时间停止催眠对JK为所欲为这件事》是一款结合了时间停止、校园、解谜、互动以及全动画演出等元素的游戏。
+作品为各位女主角准备了大量高画质动画内容，并配有音效与角色语音。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1b-osiAOmcQXNgsESdMOPQw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/4ise5ase4c.gif"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>腐败之城</span></div>
+    <div class="note mm-editor"><span>【官中步兵版/欧美/SLG游戏/7.80G/自带全回想/欧美SLG游戏】腐败之城（Corruption Town） Ver0.10.7【PC 7.80G】
+逃离至都市深渊，为生存而战！《腐败之城》Ver0.10.7官方中文版上线。扮演被迫流落至格里姆斯堡市
+的角色，在充满敌意的环境中从零开始，依靠智慧与抉择艰难求生。体验一段关于成长、背叛与坚韧的
+3D都市叙事。官方中文保障沉浸式体验。
+腐败之城（Corruption Town） Ver0.10.7 官中步兵版+自带全回想+欧美SLG游戏+7.80G 2603171550
+《腐败之城》是一款欧美风格的3D都市生存与成长叙事游戏。故事围绕一位被迫逃离家园的角色“和亨利”
+展开，他来到了宏伟却暗藏危机的格里姆斯堡市。在这座充满敌意与心怀叵测之人的城市中，他在“跛脚鸭”
+客栈老板奥托的帮助下，必须奋力挣扎以求生存，否则就会被残酷的环境所吞噬。游戏采用纯粹的腐败与
+成长主题，通过循序渐进的玩法和精心编排的剧情序列来推进故事。官方中文版确保您能无障碍沉浸于这
+段艰难的都市奋斗史。
+官方中文支持：完整的本地化翻译，确保对复杂都市剧情与生存选项的准确理解。
+都市生存与成长：在一个充满敌意的城市环境中，从底层开始，通过努力与抉择逐步提升地位、积累资源。
+循序渐进叙事：游戏节奏较为缓慢，注重通过日常事件、任务与关键选择来积累角色成长与剧情推进。
+策略性人际关系：与客栈老板奥托及其他城市居民互动，您的选择将决定您能获得何种帮助、信任以及生存机会。
+精美3D都市风貌：采用3D画面呈现格里姆斯堡市宏伟而压抑的城市景观与生活场景。
+和亨利被迫逃离了家园，来到了宏伟的格里姆斯堡市。这座城市挤满了心怀不轨之人。在“跛脚鸭”客栈
+老板奥托的帮助下，他们必须在这个充满敌意的环境中奋力打拼，否则就会被其无情吞噬。《腐败之城》
+是一款纯粹聚焦于逆境成长与城市生存的游戏，其进度通过细致的玩法与脚本事件逐步展开。
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/10Xq7DuluBW8ufRg21cFVpw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/35asz1kke7.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>不小心被妖狐辣妹包养的那件事</span></div>
+    <div class="note mm-editor"><span>【SLG/官中步兵】不小心被妖狐辣妹包养的那件事 / Suger-Mommied by a Fox Babe! Demo 【PC 1.09G】
+【故事简介】
+你在社会与黑心公司的打击下失去一切，甚至被陷害背上债务、遭黑道抓走准备卖到海外。
+就在绝望之际，一名陌生的辣妹突然拿出巨款将你救下。
+半信半疑之下，你被她哄骗回家。不料一进门，对方崭露的真实身分，竟是回眸一笑百媚生的三尾妖狐！ ？
+一无所有的你，就此被妖狐辣妹收养。在与她共度脸红心跳的同居生活中，你的人生究竟会彻底坠落，还是因这场奇异邂逅迎来新的转机？
+《不小心被妖狐辣妹包养的那件事》就此展开！
+【游戏内容】
+高自由度的Live2D
+游戏主线内容使用Live2D制作，除了主线的故事以外，玩家将于互动介面中可依序解锁手、舌头、肉棒，以及道具与妖狐进行深入交流。
+每日行动
+早上化身家务超人照顾生活废人的辣妹妖狐，下午触发只属于两人的约会行程！夜晚与妖狐共享秘密与生活。
+深夜交流
+随着故事推进，玩家可以选择进行各种不同体位的深夜小游戏。口交、乳交、本番、肛交、足交等内容一应俱全。共10种场景等着你来探索！
+【角色】
+稲光阳葵: 自开天辟地以来便存在的三尾妖狐，有着金色的皮毛与绝美的外貌。在现代她以活泼外向、性感诱人的辣妹形象生活在人世间。同时是一名天赋异禀的小说家，她的文字能俘虏人心，并在过去带来灾祸……
+【游戏特色】
+8个精美Live2D互动场景
+超过30张精美CG，含差分超过120张
+13种服装
+超过80,000字精美文本
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1CJ2r3n54ulr_C48HagwFMQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/h8p9h108xm.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>肉偿游戏</span></div>
+    <div class="note mm-editor"><span>【官中/SLG】肉偿游戏 PaidInFlesh Demo【PC 2.1G】
+【PC/官中/SLG】肉偿游戏 PaidInFlesh Demo【2.1G】
+2026-10-21
+游戏
+关于此游戏
+你扮演一名事业有成的黑道老大，五名急需用钱的女孩子前来向你求助，
+透过一场又一场的21点扑克牌游戏，你将深入了解的她们的故事，深挖出她们内心的欲望。
+如果她们输了，她们将接受你的性爱挑战！
+各种性爱挑战
+可以作弊的21点
+充满晃动感的小游戏
+角色介绍
+无业｜小爱 Aimee
+啦啦队长｜美羽 Miu
+老师｜砂织 Saori
+人妻｜唯香 Yuika
+黑道大小姐｜凌华 Reika
+游戏特色
+女主角全日文配音
+可以发动作弊能力的21点扑克牌玩法
+充满晃动感的小游戏
+HCG数量共 20 组
+解压码：唯ai雪莉酒</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1R2T88OHSw7l1ULRcRcRnnQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/cbb2oyrq1i.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>特务搜查官蕾娜</span></div>
+    <div class="note mm-editor"><span>【新作/内嵌AI汉化版/全回想】【日式SLG】 特务搜查官蕾娜 屈辱的娼馆奉仕 特務捜査官レナ 屈辱の娼館奉仕 Demo【PC 370M】
+#特务搜查官蕾娜 屈辱的娼馆奉仕
+#特務捜査官レナ 屈辱の娼館奉仕
+体验版 AI汉化版【2026年11月上旬 发售】
+·游戏介绍·
+被邪恶组织抓获、被迫在妓院工作的特务搜查官蕾娜。
+蕾娜一边被迫接待客人，一边寻找从妓院逃脱的办法。
+究竟蕾娜能否平安地从妓院逃出去呢！？
+基本CG：28种
+色情场景：48种
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1B652tUWy7rJHVpJTJ0PVEQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/sd09vmnr6m.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>剑与项圈的奴隶商</span></div>
+    <div class="note mm-editor"><span>【AI汉化版/日式/RPG游戏/670M/全回想存档/日式RPG游戏】剑与项圈的奴隶商 （剣と首輪の奴隷商） Ver1.0.12【PC 670M】
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1HS0bPI2SIdqn8_CPCHZG2Q?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/k0uwxc7j0v.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>璀璨时刻</span></div>
+    <div class="note mm-editor"><span>【SLG/官中步兵】璀璨时刻～与女同事暧昧不清的亲密关系～ / A Dazzling Affair Demo【PC 1.29G】
+※ Demo 版仅开放部分剧情与小游戏，完整版将带来更多成人向剧情与多样化的小游戏！
+Story
+璀璨時刻是一款選擇導向的視覺小說遊戲，在遊戲中你扮演不僅感情被綠，工作又突然出現急件的IT人員，公司還安排你與頂尖工程師「黃金」與實力派新人「Ruby」一起完成專案。在這最後一個月中你也漸漸與他們發展出預期外的關係
+Character
+黃金
+主角的組長，外表冷淡看起來總是睡眠不足。公司中的程式大神。因「知識就是黃金」而被公司的人稱作黃金。
+Ruby
+在主角接到緊急專案後加入的新人，自稱「新人的Ruby」。觀察力強、節儉、行事果決、因為身材有點堤防異性。
+Feature
+選擇導向視覺小說，讓遊戲不只一個結局
+遊戲中有數種小遊戲讓你增加你的專案進度
+全程滑鼠操作，你可以輕鬆體驗遊戲中的人物互動與關係
+除了Live2D 作為動態圖，遊戲也包含許多精美靜態CG
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1_tYPL9aS8hlLgMs3WVo5Hg?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/q5olu2z1me.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>转生记2</span></div>
+    <div class="note mm-editor"><span>【新作/日式RPG/催眠NTR/官中版】转生记2 ～在转生后的学园里为所欲为～ 転ヤり2 ～転生した学園でヤりたい放題～ v1.1【PC 570M】
+作品内容
+即使未玩过前作《転ヤり》，本作品也设计为可单独游玩
+如果您喜欢本作品，若能也游玩前作《転ヤり》将不胜荣幸
+[类型]
+主角为枪魔栗夫（やりまくりお）
+在转生后的学园中为所欲为地大干一场的凌○系RPG
+中出、口交、肛交、轮○、机械○、怪物奸、NTR、催○等
+可享受各种情境
+[CG数]
+基本H事件CG 165张
+[系统]
+只需搭话后通过干命令推进的简单操作
+可在画廊模式中浏览已查看过的所有CG、回放剧情
+[预计游玩时间]
+约1小时～2小时</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1yyLOgK1sXKKBgFNCUS_isw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/oxg1esbp1a.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>美女保镖的护驾</span></div>
+    <div class="note mm-editor"><span>【更新/动作ACT/后宫动态/官中步兵版】美女保镖的护驾 Beauty Escort v26.07.08【PC 980M】
+关于此游戏
+这是一款清版动作游戏，融合中国僵尸和美女后宫。
+你将领导后宫探索恐怖世界，面对多样化的中国僵尸敌人，发掘它们的弱点，制定战略击败之。
+同时，招募美女，建设后宫，根据随从的特点制定战斗策略。
+游戏拥有精美画面，多样的场景，自由搭配的技能系统，丰富的音效营造恐怖氛围。
+特色列表
+1.策略玩法：玩家需要在游戏中制定有效的战略，管理金币、建设后宫、选择多样的美女随从出战，并带领队伍应对各种战斗和考验。
+2.美女后宫：游戏中，你可以招募来自各种异世界风的美丽女性角色，建立你的美女后宫。
+每位女性角色都有独特的攻击方式和作用，通过探索随从的优缺点，提升队伍战斗力。
+3.中国僵尸神秘力量：游戏中的中国僵尸将是主要敌人，每种僵尸都有不同的特点和弱点。
+玩家需要探索它们的弱点，利用合适的策略来击败它们。
+4.视觉盛宴：游戏采用精美的画面和视觉效果，将中国古代玄幻的恐怖与幻想元素相结合，为玩家呈现一个华丽的中国僵尸与你的美女后宫的游戏世界。
+5.丰富的配音：游戏加入了许多声音用以渲染氛围，用音效来体现出战斗与成人要素，还有中国僵尸的恐怖。
+6.独创美女捏脸系统：通过创新的捏脸工具，你可以完全自定义你的美女角色。
+自由切换服装，调整五官、肤色、发型、妆容，甚至微小的细节都在你的掌握之中，创造出你心中完美的美女。
+将你的美女角色带入精美的游戏世界，并在成人主题中体验你自定义的美女角色。
+7.创新的自由搭配技能系统，让你在战斗中独领风骚。
+v26.07.08
+加入新的口交动画
+1.加入新的口交动画。
+2.加入新的功能，现在切换POV之后，男主角头部会隐去的功能。
+后续会继续更新更多内容。
+1.隐身男性角色，留住Dick。
+2.女角色属性。
+3.更多怪物，更多关卡。
+后面的开发继续增加这些内容。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1j6mvh1InOrav9ZsjKnLy1A?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/f3b5cdlj1h.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>天下功夫出少女</span></div>
+    <div class="note mm-editor"><span>【SLG/官中步兵】天下功夫出少女 Kung Fu Waifus Ver0.0.29【PC 11.3G】
+※ 体验版仅开放部分剧情，正式版将带来更多成人向剧情与深入发展！
+可游玩至第4天，不包括第5天
+双修只开放第一阶段的内容
+真兰的初始数值比正式版更高
+习武只开放心/技/体之习武的第一个项目
+武林只开放梦蕴宫/铁家山庄/醉帮第一阶段的内容
+远足前往任一目的地达到100%远足进度时，不会触发任何特殊事件
+【游戏概述】
+你是落魄邪派云雨寨的唯一继承人，正打算卖掉门派财产前往现代大都市过上幸福生活时，一位身份神秘的功夫少女真兰忽然来踢馆，破坏了你离开武林的退休计划。但在阴差阳错之下，你发现门派传承下来、被武林唾弃的「纯阳金童宝典」竟然真的可以透过做色色的事情来让女性变强？！于是你与真兰订下了30天内助她成为武林霸主的约定……
+在30天内，你可以选择好好锻炼♂真兰，专心让她成为最强；可以选择主动拉近与真兰的关係，用你的爱打动她；可以选择深入♀了解性格各异的三大门派馆主、拯救因某种原因而饱受折磨的她们，与她们结下不解之缘。但是，请记得时间有限。如果你没有做好准备，当那道带有杀气的身影出现在眼前，一切都已经来不及……
+【游戏特色】
+✦32段H剧情
+✦含差分超过400张CG
+✦时间管理系统
+✦全动态H场景演出
+✦日语全语音配音
+✦丰富多变的换装系统
+✦身临其境的养成互动
+✦多位女性角色全动态立绘
+✦超过10万字的多结局剧本
+玩家需要精心分配手上的金钱与每天的行动点数去执行各项活动。 30天的时限一到，你与真兰的故事将会根据游玩状况进入相应的结局……
+【人物介绍】
+名称：真兰
+所属门派：少女寺
+不服输、做事经常全力以赴的努力派，但十分单纯愚笨且容易受骗，过于率直的性格也很容易得罪人，是一个只懂得用蛮力的武痴。她突如其来的踢馆破坏了男主角离开武林的计划，最后还强迫男主角订下了30天内助她成为武林霸主的约定，不过她为什么会异常执着于短时间内在武林打出名堂？她为什么不是留在「少女寺」练功变强？
+名称：酒井
+所属门派：醉帮
+醉帮的掌门、擅长使用醉拳的武林强者，总是一幅慵懒傻笑的醉酒模样，大大咧咧、似乎对任何事情都没所谓。平易近人且活泼开朗的她非常受武林人士喜爱，很多人为了接近她而特地光顾醉帮的酒馆，但唯独对着男主角时，酒井好像特别喜欢用各种大胆的动作和言语去挑逗他。她看似无忧无虑，其实也有自己的烦恼……
+名称：铃
+所属门派：梦蛊宫
+梦蛊宫的掌门，擅长使用阴谋与精神手段影响敌人，毒舌且高傲优雅，同时也是整个武林中最富裕的人。即使偶尔露出逊炮的一面，但她总会掩饰得很好、相当重视自己的形象。从小接受精英教育的她不仅贪财，也总觉得自己高人一等、未曾输过给任何人，特别看不起男主角与真兰。直至她第一次战败，一切都开始变得不一样了……
+名称：莲华
+所属门派：铁家山庄
+铁家山庄的掌门，擅长使用摔跤的天才格斗家。虽然拥有健壮的肌肉与惊人的怪力，但个性非常胆小、阴沉内向，为自己的外观感到自卑，害怕与他人交谈，特别是极少与男性沟通。不懂爱情是怎么一回事、却一直很憧憬恋爱和婚姻，原本想说一边锻炼一边寻找最强的男人当伴侣，但不知不觉间自己就变得太强了所以很苦恼。不过谁也不知道的是，在她阴沉的外表之下竟然还有那样的另一面……
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1VlKWYwTrbtvy3lQYB9cKiw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/h2x8wvsb42.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>乳欲之馆</span></div>
+    <div class="note mm-editor"><span>【新作/日式SLG/像素动态】乳欲之馆 – 欲望之家 – 乳欲の館-HOUSE OF LUST- Ver1.1.4 生肉版 【PC 30M】
+你走进森林中一座神秘的豪宅。
+这是一座充满性感怪物的鬼屋……
+在森林里迷路只是你麻烦的开始吗?
+探索这座黑暗而被遗忘的大宅，寻找线索并度过这场奇异又性感的冒险。
+采用经典像素画风与日式恐怖游戏般的阴暗氛围。
+拒绝诱惑，逃离豪宅!!!
+然而，如果你哪怕稍微被胸部吸引……你的
+你的体力将被耗尽，让你成为攻击的目标。
+你会用脑子解开谜题，继续活下去吗?
+还是让内心控制身体，爱上性感的怪物女孩!
+遇见许多拥有巨大胸部的怪物，它们会试图偷走你的灵魂。
+遇到幽灵女孩、史莱姆女孩和幽灵女孩!
+许多淫秽物品装饰着大厅，你可以‘享受’它们。
+2到3小时的大胸游戏时间!
+大量谜题!受钟楼启发的游戏玩法，包含致敬《生化危机》等经典游戏风格的解谜关卡!
+足交、手交、女上位等!大量性感动画让你沉浸于豪宅之中!
+不喜欢恐怖游戏?游戏中设置有助于消除氛围，让你专注于真正重要的事情!
+《Houseof Lust》中的所有角色均为18岁以上。
+PS：如果黑屏就开梯子启动游戏</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1aGrK5_i2eFi3NAmVu5LR3w?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/hgskn2gflq.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>永恒的欠损</span></div>
+    <div class="note mm-editor"><span>【官中版/动作/ACT游戏/3.80G/存档/动作ACT游戏】永恒的欠损 （永恆的欠損 La Vitalis Immortal Loss） Ver0.60.0【PC 3.80G】
+病毒可愈，人心难医！在金色废墟中，寻找最后的解药与真相！
+永恒的欠损 （永恆的欠損 La Vitalis Immortal Loss） Ver0.60.0 官中版+存档+动作ACT游戏+3.80G  2610161154
+天才瘟疫医生Vita为拯救被未知瘟疫撕裂的故乡，踏上寻找解药与炼金真相的旅程。
+病毒、魔物与人性的赤裸恶意交织，比瘟疫更可怕的是人心。
+单周目约10小时，多结局收集18小时。
+核心玩法
+1. 瘟疫调查系统
+– 采集样本、解剖病灶、配制解药，失败将提升“感染值”并触发特殊事件。
+2. 炼金术配方
+– 收集“金色残渣”与怪物器官，在炼金台合成武器、解毒剂或YOUHOU香水。
+3. 病毒异变
+– 感染值越高，Vita外观与技能越向“瘟疫侧”进化，可解锁独特战斗风格。
+4. 恶意事件
+– 魔物、贵族、佣兵等对人类医生垂涎，战败或选择错误会进入凌辱分支。
+5. 多结局
+– 治愈之光：感染值≤20，完成解药，王国复兴；
+– 金色怪物：感染值100，Vita成为新瘟疫源头（True End）；
+– 被吞噬的医生：多次战败，被炼金术反噬（Bad End）。
+故事梗概
+金色王国突遭未知瘟疫→Vita出征调查→炼金术黑幕浮现→病毒与人性双重考验→结局分支。
+Beta 0.60.0 released
+更新内容
+– 全新 CG：新增腐化者战败 CG。
+– 全新功能：新增腐化者幼虫寄生系统。
+– 全新动画与贴图：新增与上述内容相关的骨骼动画及角色/怪物贴图。
+– 全新任务指引系统：新增任务状态追踪与指引系统。
+– 全新地图查看功能：新增地图交互与查看功能。
+– 音效修补：修复了部分音效音调异常的问题。
+– 贴图修补：修复了项圈与斗篷之间的贴图图层冲突/穿模问题。
+解压码：天生牛牛 或者 脸红红</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1Gji-dgo3BmEI9DzBzqPDSw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/f79btuehws.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>背信淫纹</span></div>
+    <div class="note mm-editor"><span>【新作/日式RPG/NTR寝取/官中步兵版】背信淫纹 Brand of Betrayal Demo【PC 1.60G】
+关于此游戏
+魔王即将复活，这个时代迫切需要一位勇者。
+按照传统，每个时代都会由众神选出一名勇者，以及一名能够与之并肩作战的纹章之主，共同对抗魔王。
+这一次，被选中的勇者是骑士团长莱茵，而让他倍感欣慰的是，他的妻子亚莉亚被选为纹章之主。
+然而，亚莉亚所得到的纹章却来自一位邪恶的神明。
+这位神只会把祝福与力量赐予那些做出背叛之举的人。
+为了阻止魔王的复活，他们必须与伙伴们一同承担背信之印的代价——
+包括性格高傲的武器店老板艾尔谢，以及温柔善良的年轻修女玛丽艾尔。
+只有共同背负这份沉重的印记，他们才有可能阻止灾难降临。
+在这款NTR题材的RPG中，你将带领一支由四位伙伴组成的队伍，踏上前往魔王巢穴的旅程。
+你可以通过战斗与升级不断变强，也可以选择释放背信之印的力量。
+这个纹章能够赋予你强大的能力，但代价就是；莱茵所珍爱的妻子与伙伴，将会被其他男人夺走。
+是接受这份堕落的力量，换取对抗魔王的资本，还是抗拒命运，即使遍体鳞伤，也要守住所爱之人？
+角色介绍
+刺激的回合制战斗
+击败所有阻挡在你与魔王之间的敌人。
+在战斗过程中，队伍成员的衣服甚至会被破坏！
+变强的方式不止一种
+你可以通过战斗升级逐步提升实力，
+也可以强化背信之印，借助它的力量迅速变强。
+多结局分支
+你可以在NTR路线中使用背信之印的力量，
+也可以选择拒绝这股力量来努力守护自己所珍视的爱情。
+水镜魔法
+你可以在任何时候查看队伍成员的H状态，以及她们现在在干嘛。
+不过需要注意的是，有些画面或信息，可能并不是你愿意看到的。</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1JkRnmfN0ebbs3wdnpjhAkQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/jsuiixaga6.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+<li class="node heading3">
+    <div class="bullet">
+    <div class="bullet-dot"></div>
+  </div>
+    
+    <div class="content mm-editor" ><span>XX女王计划</span></div>
+    <div class="note mm-editor"><span>【SLG/AI汉化】XX女王计划 / Project XX Queen Ver0.0.0.1【PC 1.03G】
+幸福岛幻想制作组新作
+故事介绍
+过度劳累的公司奴隶「XX」面临着青梅竹马「Mina」即将与他人订婚的困境。在他试图破坏相亲晚宴时，突然被时空裂缝吸入神秘的魔法大陆「Valvis」，获得净化能力，与来自异世界的同伴们一同踏上旅程，肩负起拯救女王们的重任。
+这款游戏偏向街机动作玩法，融入了适度的Roguelike和RPG元素。透过简单而爽快的战斗体验冒险故事，与同伴们一同净化身陷危险的女王们，与她们建立深厚的友情，一起拯救世界。
+游戏特色
+【1】单手可操作的战斗系统，简单爽快；
+【2】轻度Roguelike关卡系统，难度适中，流程顺畅；
+【3】经典拯救女王剧情，打造你的后宫；
+【4】丰富的动态CG动画，每一个细节都充满动作感；
+【5】持续更新的游戏内容，让游戏更加丰富充实；
+角色介绍
+精灵女王「Tidritiss」：性格活泼开朗，拥有能激发天赋的神圣力量。
+森林女王「Miuna」：温柔体贴的女王，深受人民爱戴，其标志是一对丰满的巨乳。
+沙漠女王「Latifa」：身材火辣的沙漠统治者，性格大胆奔放，充满个人魅力。
+冰霜女王「Anisha」：掌控冰雪之力，性格冷静寡言，是端庄优雅的女性。
+骑士女王「Charlotte」：拥有骑士精神的女王，聪明机敏，是所有人最信赖的女战士。
+复制这段内容后打开迅雷，查看更方便
+解压码：acgyxyz</span></div>
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" href="https://pan.baidu.com/s/1lx4NewZTFSmJmQluaSLu2w?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <ul class="image-list">
+    <li class="image-row">
+    <img
+      src="https://tkporl.github.io/mrhyfx/assets/20261023pc/atcycel1fl.webp"
+      style="width: 400px;"
+      
+      class="image"
+    />
+  </li>
+  </ul>
+    
+  </li>
+  </ul>
+  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->
+  <div class="publish" style="display: flex; align-items: center; justify-content: center;">
+        <span>by&nbsp;</span>
+        <span style="color:#dc9b04">Tsinho</span>
+        <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
+      </div>
+<button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
+  // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
+  function targetY() {
+    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
+    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
+    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
+    if (!el) return maxScroll();
+    // 2026-10-14（站长实测反馈）：原来留视口 30%（最多 200px）会导致"钳到页面最底"时正好把
+    //   发表评论表单切在屏幕底边。改成小偏移：让"评论区"标题落在靠近顶部，整段评论区完整可见；
+    //   配合 site.css 给评论区加的底部留白，评论区后面有落脚空间。
+    var off = Math.min(Math.round((window.innerHeight || 800) * 0.08), 72);
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
+  }
+  // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
+  //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
+  //   改为自绘逐帧滚动：每帧实时取最新页高、速度从慢到快，页面被撑高也无缝跟进，不经过浏览器 smooth 动画不会停顿；
+  //   用户滚轮/触摸/键盘打断时自动停止
+  function toBottom() {
+    if (b._auto) return;
+    b._auto = true;
+    var stop = function () {
+      b._auto = false;
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchstart', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    var v = 0;
+    var frame = function () {
+      if (!b._auto) return;
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var h = maxScroll();
+      var ty = targetY();
+      if (y >= ty - 2) { stop(); return; }
+      v = Math.min(v + 2.5, 120);
+      window.scrollTo(0, Math.min(y + v, ty));
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var h = maxScroll();
+    // 方向感知：最近一次是往下滑就提供“去底部↓”，往上滑就“回顶部↑”；贴顶强制↓、贴底强制↑。
+    //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+    var dirDown = y >= lastY; lastY = y;
+    var nearTop = y < 100;
+    var nearBottom = targetY() - y < 100;
+    if (nearTop || (!nearBottom && dirDown)) { b.textContent = '↓'; b.title = '滚动到底部'; b.onclick = toBottom; }
+    else { b.textContent = '↑'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    b.classList.add('show');
+  }
+  var lastY = 0;
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+  
+  <!--mrhx-expand--><script>
+(function () {
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // 创建模态框容器
+  var modal = document.createElement('div');
+  modal.className = 'mrhx-detail';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', '游戏介绍');
+  // data-lenis-prevent：Lenis 平滑滚动接管了全页 wheel，弹窗内盒子有 overflow:auto 却不告诉它，
+  //   滚轮就全被拿去滚底层页面（2026-10-06 用户反馈：点开游戏介绍滑不动，滚的是帖子）。
+  //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
+  modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
+  document.body.appendChild(modal);
+  var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
+  var backBtn = box.querySelector('.mrhx-detail-back');
+  var h2 = box.querySelector('h2');
+  var coverBox = box.querySelector('.mrhx-detail-cover');
+  var imgsBox = box.querySelector('.mrhx-detail-imgs');
+  var from = box.querySelector('.mrhx-detail-from');
+  var text = box.querySelector('.mrhx-detail-text');
+
+  // 2026-10-19 修复回归：帖子页弹窗此前没有「锁 body + 滚到底抖动提醒」，
+  //   滚到内容末尾后滚轮穿透到页面（用户反馈旧修复失效）。这里补齐：open 锁 body、restore 解锁、
+  //   盒内滚到底（或内容不足一屏）时抖一下并吞掉向下的滚轮。
+  var lastBump = 0;
+  function bump() {
+    var now = Date.now();
+    if (now - lastBump < 450) return;
+    lastBump = now;
+    box.classList.remove('mrhx-bump');
+    void box.offsetWidth;
+    box.classList.add('mrhx-bump');
+  }
+  function atBottom() { return box.scrollTop + box.clientHeight >= box.scrollHeight - 2; }
+  box.addEventListener('scroll', function () { if (atBottom()) bump(); }, { passive: true });
+  box.addEventListener('wheel', function (e) {
+    if (e.deltaY > 0 && atBottom()) { bump(); e.preventDefault(); }
+  }, { passive: false });
+
+  // ===== 弹窗从「被点击的那张游戏卡片」长出来，关闭时原路收回同一张卡片 =====
+  // 做法：分别量出触发卡片与弹窗在屏幕上的位置，把弹窗先摆到卡片上（起始帧），
+  //       再过渡到最终位置（FLIP）。起点锚定在触发元素上，不会从屏幕中央凭空出现。
+  var ANIM_IN = 'transform .36s cubic-bezier(.2,1.16,.32,1),opacity .18s ease';
+  var ANIM_OUT = 'transform .26s cubic-bezier(.4,0,.72,.35),opacity .2s ease';
+  var trigger = null;
+  var isOpen = false;
+  var closing = false;
+
+  // 取弹窗「未变形」时的位置：动画途中（弹窗正被缩放）关闭时，直接量会拿到缩小后的矩形，
+  // 算出来的落点会偏。这里临时清掉 transform 再量，同一帧内还原，不会闪。
+  function boxRect() {
+    var prev = box.style.transform;
+    box.style.transform = 'none';
+    var r = box.getBoundingClientRect();
+    box.style.transform = prev;
+    return r;
+  }
+
+  function anchor() {
+    if (!trigger || !trigger.getBoundingClientRect) return null;
+    var t = trigger.getBoundingClientRect();
+    var b = boxRect();
+    if (!b.width || !b.height) return null;
+    // 触发卡片滚出视口后，把锚点夹回视口内，避免弹窗朝屏幕外飞走
+    var cx = Math.min(Math.max(t.left + t.width / 2, 0), window.innerWidth);
+    var cy = Math.min(Math.max(t.top + t.height / 2, 0), window.innerHeight);
+    var sx = Math.max(Math.min(t.width / b.width, 1), .04);
+    var sy = Math.max(Math.min(t.height / b.height, 1), .04);
+    return { dx: cx - (b.left + b.width / 2), dy: cy - (b.top + b.height / 2), sx: sx, sy: sy };
+  }
+
+  function at(a) {
+    return 'translate(' + a.dx.toFixed(1) + 'px,' + a.dy.toFixed(1) + 'px) scale(' + a.sx.toFixed(4) + ',' + a.sy.toFixed(4) + ')';
+  }
+
+  function openFrom(el) {
+    trigger = el;
+    isOpen = true;
+    document.body.style.overflow = 'hidden';
+    box.style.willChange = 'transform';
+    modal.classList.add('show');
+    var a = reduce ? null : anchor();
+    box.style.transition = 'none';
+    if (a) {
+      box.style.transformOrigin = 'center center';
+      box.style.transform = at(a);   // 起始帧就贴在触发卡片上
+      box.style.opacity = '0';
+      void box.offsetWidth;          // 强制回流，保证起始帧先渲染出来再动
+      box.style.transition = ANIM_IN;
+      box.style.transform = 'translate(0px,0px) scale(1,1)';
+      box.style.opacity = '1';
+    } else {
+      box.style.transform = 'none';
+      box.style.opacity = '1';
+    }
+    try { closeBtn.focus({ preventScroll: true }); } catch (err) { closeBtn.focus(); }
+  }
+
+  function restore() {
+    box.style.transition = 'none';
+    box.style.transform = 'none';
+    box.style.opacity = '1';
+    box.style.willChange = '';
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    isOpen = false;
+    closing = false;
+    if (trigger && trigger.focus) {
+      try { trigger.focus({ preventScroll: true }); } catch (err) { trigger.focus(); }
+    }
+    trigger = null;
+  }
+
+  function closeModal() {
+    if (!isOpen || closing) return;
+    closing = true;
+    var a = reduce ? null : anchor();
+    if (!a) { restore(); return; }
+    var finished = false;
+    var finish = function () {
+      if (finished) return;
+      finished = true;
+      box.removeEventListener('transitionend', onEnd);
+      restore();
+    };
+    var onEnd = function (e) {
+      if (e && (e.target !== box || e.propertyName !== 'transform')) return;
+      finish();
+    };
+    box.style.transition = ANIM_OUT;
+    box.style.transform = at(a);
+    box.style.opacity = '0';
+    box.addEventListener('transitionend', onEnd);
+    setTimeout(finish, 420);   // 兜底：过渡被中断时也要收干净
+  }
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal || e.target === closeBtn || e.target === backBtn) closeModal();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
+
+  document.querySelectorAll('.node.heading3').forEach(function (n) {
+    if (n.classList.contains('node-full')) return;
+    var img = n.querySelector('.image-list img');
+    if (!img) return;
+    var tip = document.createElement('span');
+    tip.className = 'img-tip';
+    tip.textContent = '点击图片查看完整介绍';
+    n.appendChild(tip);
+    // 提取游戏名（从 content 的 em.mrhx-plat 前的文本）
+    var contentEl = n.querySelector('.content');
+    var gameName = '';
+    var gamePlat = '';
+    if (contentEl) {
+      var em = contentEl.querySelector('.mrhx-plat');
+      // 2026-10-16：平台徽章改到封面图上后 content 里不再有内联徽章，回退读封面徽章（弹窗标题 [平台] 不丢）
+      if (!em) em = n.querySelector('.image-list .mrhx-plat');
+      gamePlat = em ? em.textContent.trim() : '';
+      var clone = contentEl.cloneNode(true);
+      var emInClone = clone.querySelector('.mrhx-plat');
+      if (emInClone) emInClone.remove();
+      gameName = clone.textContent.replace(/s+/g, ' ').trim();
+    }
+    // 提取来源（从 note 或 content）
+    var noteEl = n.querySelector('.note');
+    var fromText = '';
+    if (noteEl) {
+      var noteClone = noteEl.cloneNode(true);
+      noteClone.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+      fromText = noteClone.textContent.replace(/s+/g, ' ').trim();
+    }
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', '查看完整介绍：' + gameName);
+    function activate(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (closing) return;
+      h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
+      // 2026-10-13 图片：卡片只显示封面，其余图在弹窗里看（封面在顶部，其余排成图集）
+      if (coverBox && imgsBox) {
+        var _urls = Array.prototype.map.call(n.querySelectorAll('.image-list img'), function (i) {
+          return i.getAttribute('data-full') || i.getAttribute('src') || i.getAttribute('data-src') || '';
+        }).filter(Boolean);
+        // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
+        coverBox.innerHTML = ''; imgsBox.innerHTML = '';
+        if (_urls[0]) { var _c = document.createElement('img'); _c.src = _urls[0]; _c.alt = ''; _c.loading = 'lazy'; coverBox.appendChild(_c); }
+        _urls.slice(1).forEach(function (u) { var _m = document.createElement('img'); _m.src = u; _m.alt = ''; _m.loading = 'lazy'; imgsBox.appendChild(_m); });
+      }
+      from.innerHTML = '<b>游戏介绍</b>';
+      text.textContent = gamePlat || '';
+      // note 区域的游戏描述放到弹窗正文
+      if (noteEl) {
+        var noteDesc = noteEl.cloneNode(true);
+        noteDesc.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+        var descText = noteDesc.textContent.replace(/s+/g, ' ').trim();
+        if (descText) text.textContent = descText;
+      }
+      openFrom(img);
+    }
+    img.addEventListener('click', activate);
+    // 键盘同样可打开（图片原本只响应鼠标点击）
+    img.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(e);
+    });
+  });
+})();
+</script>
+<script src="assets/js/copycode.js?v=c24faebb"></script>
+    <!--qzt-page-assets--><style>
+/* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
+.node[hidden]{display:none!important}
+.qzt-more{margin:26px 0 10px;text-align:center}
+.qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.qzt-more button:hover{background:#e5484d;color:#fff}
+.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
+.qzt-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.qzt-modal-mask.show{display:flex}
+.qzt-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.qzt-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.qzt-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.qzt-modal button:hover{opacity:.9}
+/* 2026-10-10 求助公告专用块（替代 node-full 游戏卡结构）：自有样式，不受游戏卡布局规则影响 */
+li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px solid #f0dcdc;border-radius:12px;padding:2px 16px 8px;margin:0}
+li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
+li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var ul=document.querySelector('ul.node-list'); if(!ul) return;
+  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
+  var FIRST=100; if(lis.length<=FIRST) return;
+  var box=document.getElementById('qztMore'); if(!box) return;
+  var info=document.getElementById('qztMoreInfo');
+  var shown=FIRST;
+  function fill(li){
+    li.removeAttribute('hidden');
+    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
+    });
+  }
+  function refresh(){
+    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
+    if(shown>=lis.length) box.style.display='none';
+  }
+  function showBatch(){
+    var end=Math.min(shown+FIRST,lis.length);
+    for(var j=shown;j<end;j++) fill(lis[j]);
+    shown=end; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
+  }
+  function showAll(){
+    lis.forEach(fill);
+    shown=lis.length; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
+  }
+  box.removeAttribute('hidden');
+  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
+  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
+  var _saved = null;
+  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
+  if (_saved === 'all') { showAll(); }
+  else if (_saved && parseInt(_saved, 10) > 0) {
+    var _n = parseInt(_saved, 10);
+    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
+  }
+  refresh();
+  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
+  if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
+  var btn=document.getElementById('qztMoreBtn');
+  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
+  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
+  if(btn) btn.addEventListener('click',function(){
+    showBatch();
+  });
+  if('IntersectionObserver' in window && document.getElementById('qztMore')){
+    var _io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && shown < lis.length){ showBatch(); }
+      });
+    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
+    _io.observe(document.getElementById('qztMore'));
+  }
+});
+</script><!--/qzt-page-assets-->
+  </body>
+    </html>
+  
