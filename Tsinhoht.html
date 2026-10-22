@@ -139,6 +139,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .rbox .btn{padding:7px 16px;font-size:13px;border-radius:6px}
 
 .links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.links input[type=text]{padding-top:13px;padding-bottom:13px}
 /* 2026-10-14（站长）自定义链接＝点按钮加一行（2026-10-16 从 432d8e48e 找回） */
 .clrows{margin-top:8px;display:flex;flex-direction:column;gap:8px}
 .clrow{display:grid;grid-template-columns:1fr 1.6fr auto;gap:8px;align-items:center}
@@ -1423,8 +1424,7 @@ function addGameCard(data) {
   </div>
   <div class="field"><label>封面图片（二选一：上传文件 或 粘贴 URL）</label>
     <input type="file" class="g-files" accept="image/*" multiple hidden>
-    <div class="filebtn" role="button" tabindex="0">📁 选择图片<span class="fb-name"></span></div>
-    <div class="filebtn upnow" role="button" tabindex="0" title="把已选图片立刻上传并转成链接，之后刷新也不会丢">立即上传转链接</div>
+    <div class="filebtn upnow" role="button" tabindex="0" title="选择图片后立刻上传并转成链接，之后刷新也不会丢">选择图片并上传</div>
     <p class="hint">上传的图片直接保存到站内，永不失效（推荐）；或粘贴图片 URL，每行一个。</p>
     <textarea class="g-imgs"></textarea>
     <div class="g-img-list"></div>
@@ -1459,11 +1459,49 @@ function addGameCard(data) {
     e.target.dataset.lastImgs = e.target.value;
     renderImageLinks(d); saveDraft();
   });
-  // #53：自定义选择按钮（原生 input 隐藏），点击/回车触发文件选择
-  const fb = d.querySelector('.filebtn');
-  fb.onclick = () => { delete fileInput.dataset.replaceIndex; delete fileInput.dataset.addNow; fileInput.value = ''; fileInput.click(); };
-  fb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); delete fileInput.dataset.replaceIndex; delete fileInput.dataset.addNow; fileInput.value = ''; fileInput.click(); } };
-  // 立即上传转链接：不等发布，图片先传上去转成外链，刷新/关机都不会丢
+  // 2026-10-23：游戏介绍粘贴长标题自动换行 + 自动填游戏名称
+  // 用户习惯：先粘「【SLG/中文/…】欲望精选 【新作】【PC 1.2G】」这类单行标题，再换行写介绍。
+  // 现在粘贴单行含「】」的内容时自动在末尾补换行，省一次回车；
+  // 同时提取游戏名称填进名称框——跳过开头连续【…】标签组，取第一段文字空格前的内容（仅名称框为空，绝不覆盖手填）。
+  // ★插入必须走 execCommand（浏览器原生编辑命令，进撤销栈）：直接改 .value 会把原生 Ctrl+Z
+  // 撤销栈弄乱——真实 bug：删空两栏再粘新标题，Ctrl+Z 后名称框串出「新名+旧名」拼接。
+  const intro = d.querySelector('.g-intro');
+  intro.addEventListener('paste', e => {
+    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+    if (!text) return;
+    // 名称规则（2026-10-23 定）：跳过开头连续的【…】标签组，取后面第一段文字里的第一个空格前内容。
+    // 「【新作】【互动3D/…】抚摸狐仙大人 増量游戏 …【PC 610M】」→「抚摸狐仙大人」；
+    // 「【SLG/…】欲望精选 【新作】【PC 1.2G】」→「欲望精选」。日文副标题/版本号/容量都不要。
+    const m = text.match(/^(?:\s*【[^】]{1,80}】)+\s*([^【\r\n]{1,60})/);
+    const name = (m && m[1]) ? (m[1].trim().split(/\s+/)[0] || '') : '';
+    const wantNewline = !/[\r\n]/.test(text) && text.includes('】');
+    if (!m && !wantNewline) return;
+    e.preventDefault();
+    const ins = wantNewline ? text + '\n' : text;
+    let ok = false;
+    try { ok = document.execCommand('insertText', false, ins); } catch (_) { ok = false; }
+    if (!ok) {
+      const s = intro.selectionStart != null ? intro.selectionStart : intro.value.length;
+      const epos = intro.selectionEnd != null ? intro.selectionEnd : s;
+      intro.value = intro.value.slice(0, s) + ins + intro.value.slice(epos);
+      intro.selectionStart = intro.selectionEnd = s + ins.length;
+    }
+    if (name) {
+      const nameInput = d.querySelector('.g-name');
+      if (nameInput && !nameInput.value.trim()) {
+        const active = document.activeElement;
+        let nameOk = false;
+        try {
+          nameInput.focus();
+          nameOk = document.execCommand('insertText', false, name);
+        } catch (_) { nameOk = false; }
+        if (!nameOk) nameInput.value = name;
+        if (active && active.focus) active.focus();
+      }
+    }
+  });
+  // 2026-10-23：原「选择图片」+「添加图片到本卡」两个按钮合并成一个 —— 用户只用后者，
+  // 「选择图片」纯预览路径已废弃，选完图直接走 uploadCardNow 立即上传转链接。
   const upnow = d.querySelector('.upnow');
   upnow.textContent = '添加图片到本卡';
   upnow.onclick = () => { delete fileInput.dataset.replaceIndex; fileInput.dataset.addNow = '1'; fileInput.value = ''; fileInput.click(); };
@@ -1943,13 +1981,9 @@ async function uploadCardNow(card, replaceIndex) {
   const fbName = card.querySelector('.fb-name');
   if (fbName) fbName.textContent = '';
   const prev = card.querySelector('.g-prev');
+  // 2026-10-23：上传成功后不再渲染「已上传 ✓」缩略图 —— 下面 g-img-list 已有同样的图
+  //（带「换这张/移除」按钮），两处同时显示纯占位置
   prev.innerHTML = '';
-  lines.forEach(u => {
-    const fig = document.createElement('figure');
-    const img = document.createElement('img'); img.src = u; img.alt = '已上传';
-    const cap = document.createElement('figcaption'); cap.textContent = '已上传 ✓';
-    fig.appendChild(img); fig.appendChild(cap); prev.appendChild(fig);
-  });
   renderImageLinks(card);
   saveDraft();
   saveCardImages();
