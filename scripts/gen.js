@@ -2754,7 +2754,7 @@ function relTime(iso){
   moreWrap.style.marginTop = '6px';
   moreWrap.style.marginBottom = '6px';
   resBox.appendChild(moreWrap);
-  document.getElementById('mrhx-more').onclick = renderMore;
+  document.getElementById('mrhx-more').onclick = function () { renderMore(); prefetchPage(); };
   setMore(false);
   if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
   // 2026-10-20 双层索引；2026-10-21 v2：大索引改为结果出来后再后台拉（不再与首屏抢带宽），
@@ -2782,14 +2782,65 @@ function relTime(iso){
   saveHist(q);
   var hw = document.getElementById('histWrap');
   if (hw) { hw.innerHTML = renderHist(); bindHistClick(); }
-  var _shardCache = {};
-  var SHARDS = 16; // 2026-10-21：大索引切 8 片（search_detail_0..15.json），补全只拉命中片，不再整库下载
+  var _shardCache = {}, _fastSrc = '';
+  // 2026-10-24：16 片 → 256 片。单片约 10 条（gzip 约 5KB），命中一条只拉一个几 KB 的小文件；
+  // 旧的 16 片单片 189KB，国内弱网下一次请求就要几十秒到几分钟，卡片只剩标题（真实反馈）。
+  var SHARDS = 256;
+  var CDN_MIRROR = 'https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/';
+  // 带超时的取数：本地相对路径 / jsDelivr 两条腿，都是 8 秒上限
+  function fetchJson(url, ms) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var tm = setTimeout(function () {
+        if (settled) return; settled = true;
+        if (ctrl) { try { ctrl.abort(); } catch (e) {} }
+        reject(new Error('timeout'));
+      }, ms || 6000);
+      fetch(url, ctrl ? { signal: ctrl.signal } : undefined).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (j) {
+        if (settled) return; settled = true; clearTimeout(tm); resolve(j);
+      }).catch(function (e) {
+        if (settled) return; settled = true; clearTimeout(tm); reject(e);
+      });
+    });
+  }
   function loadShard(s) {
-    if (!_shardCache[s]) _shardCache[s] = fetch('search_detail_' + s + '.json').then(function (r) { return r.json(); });
+    if (_shardCache[s]) return _shardCache[s];
+    var name = 'search_detail_' + s + '.json';
+    var p;
+    if (_fastSrc === 'local') {
+      p = fetchJson(name, 8000);
+    } else if (_fastSrc === 'cdn') {
+      p = fetchJson(CDN_MIRROR + name, 8000).catch(function () { _fastSrc = ''; return fetchJson(name, 8000); });
+    } else {
+      // 首次：本地与 jsDelivr 同时发，谁先回用谁，并记住赢家（之后不再双发）
+      p = new Promise(function (res, rej) {
+        var settled = false, fails = 0;
+        function ok(src, v) { if (settled) return; settled = true; _fastSrc = src; res(v); }
+        function bad() { if (settled) return; if (++fails >= 2) { settled = true; rej(new Error('both failed')); } }
+        fetchJson(name, 8000).then(function (v) { ok('local', v); }, bad);
+        fetchJson(CDN_MIRROR + name, 8000).then(function (v) { ok('cdn', v); }, bad);
+      });
+    }
+    _shardCache[s] = p.catch(function (e) { delete _shardCache[s]; throw e; }); // 失败不缓存，允许下次重试
     return _shardCache[s];
   }
-  function loadShards(list) {
-    return Promise.all(list.map(loadShard)).then(function (arr) { return arr.reduce(function (a, b) { return a.concat(b); }, []); });
+  // 并发上限 6（与浏览器同域连接数一致），避免几十个请求排队把后面的卡片饿死
+  function loadShards(list) { return loadShardsLimited(list, 6); }
+  // 全库兜底时限制并发（256 片一起发会挤爆连接池）
+  function loadShardsLimited(list, limit) {
+    var out = [], i = 0;
+    function next() {
+      if (i >= list.length) return Promise.resolve();
+      var s = list[i++];
+      return loadShard(s).then(function (d) { out = out.concat(d); }).catch(function () {}).then(next);
+    }
+    var runs = [];
+    for (var k = 0; k < Math.min(limit || 8, list.length); k++) runs.push(next());
+    return Promise.all(runs).then(function () { return out; });
   }
   var _fullDone = false;
   var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
@@ -2837,7 +2888,11 @@ function relTime(iso){
   }
   // 小索引命中后，大索引到货把已渲染的卡片按 n（备用 url+标题）补全成完整版，保留页数与滚动位置
   function enrichWithFull(data) {
-    if (!_hits.length || !_hits[0]._partial) return;
+    if (!_hits.length) return;
+    // 2026-10-24：原来只看首条是否 _partial，分批补全时首条已补全会导致后续批次不再刷新
+    var anyPending = false;
+    for (var q = 0; q < _hits.length; q++) { if (_hits[q]._partial) { anyPending = true; break; } }
+    if (!anyPending) return;
     var map = {};
     data.forEach(function (g) {
       if (g.n != null) map['n' + g.n] = g;
@@ -2856,6 +2911,29 @@ function relTime(iso){
     window.scrollTo(0, y);
   }
   function showErr() { resBox.innerHTML = _errBox; setMore(false); }
+  // 2026-10-24：只补当前这一页涉及的片。原来一次拉「全部命中条目」的片，
+  // 热门词命中几十上百条会同时发起几十个请求，弱网下反而更慢。
+  function prefetchPage() {
+    if (!_hits.length) return;
+    var from = (_page - 1) * ALL; if (from < 0) from = 0;
+    var slice = _hits.slice(from, _page * ALL), ps = [];
+    for (var i = 0; i < slice.length; i++) {
+      var h = slice[i];
+      if (h._partial && ps.indexOf(h.p || 0) < 0) ps.push(h.p || 0);
+    }
+    if (!ps.length) return;
+    loadShards(ps).then(enrichWithFull).catch(markPartialFail);
+  }
+  // 两条腿都超时：不要把骨架永远转下去，直接告诉用户点标题进帖子页
+  function markPartialFail() {
+    var cards = resBox.querySelectorAll('.result.skel');
+    for (var i = 0; i < cards.length; i++) {
+      var rt = cards[i].querySelector('.rt');
+      if (!rt || cards[i].getAttribute('data-fail')) continue;
+      cards[i].setAttribute('data-fail', '1');
+      cards[i].innerHTML = rt.outerHTML + '<div class="intro" style="color:#999">详情加载超时，点右上「查看详情」进帖子页</div>';
+    }
+  }
   // 骨架屏：先把标题/平台/介绍/按钮的轮廓摆好，扫光动效表示正在加载（不转圈）
   function skelRow() {
     return '<div class="result skel"><div class="rt"><span class="sk" style="width:38%;height:16px"></span><span class="sk" style="width:64px;height:20px;border-radius:99px"></span></div>' +
@@ -2876,9 +2954,12 @@ function relTime(iso){
       return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw);
     });
     if (!hits.length) {
+      // 标题没命中 → 仍需查介绍（runFullSearch 里已有 fuzzy + 乱序放宽 + 推荐三级兜底，
+      // 顺序不能提前到本地，否则「标题没有、介绍里有」的精确查询会退化成乱序匹配）。
+      // 分片变小后整库只有约 1.3MB（gzip），限并发拉取，避免挤爆连接池。
       countEl.textContent = '（全库检索中…）';
       resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，正在搜索完整介绍</p></div>';
-      loadShards(Array.from({length: SHARDS}, function (_, i) { return i; })).then(runFullSearch).catch(showErr);
+      loadShardsLimited(Array.from({length: SHARDS}, function (_, i) { return i; }), 10).then(runFullSearch).catch(showErr);
       return;
     }
     hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
@@ -2888,10 +2969,8 @@ function relTime(iso){
     _page = 0;
     resBox.innerHTML = '';
     renderMore();
-    // 结果已先出，只拉命中条目所在分片补全（失败则保持标题卡片，不报错）
-    var ps = [];
-    _hits.forEach(function (h) { if (ps.indexOf(h.p || 0) < 0) ps.push(h.p || 0); });
-    loadShards(ps).then(enrichWithFull).catch(function () {});
+    // 结果已先出，只拉「首屏这一页」涉及的几片补全（失败则保持标题卡片，不报错）
+    prefetchPage();
   })();
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
@@ -3313,13 +3392,25 @@ ${likeScript}
     fs.writeFileSync('search_index.json', JSON.stringify(slimIndex));
     console.log('search_index.json ok, games:', slimIndex.length, '(含编号)');
     // 2026-10-20 双层索引；2026-10-21 v3：小索引内联进 search.html（零请求），同时照常落盘留档；
-    // 大索引切 16 片（search_detail_0..15.json），搜索页补全只拉命中片；p = 条目在 slimIndex 里的片号
-    const SHARDS = 16;
-    const titlesIndex = slimIndex.map((g, i) => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d, p: i % SHARDS }));
+    // 2026-10-24：16 片 → 256 片。每片约 10 条（约 10KB / gzip 约 5KB），
+    // 命中一条只需一个几 KB 的请求；旧的单片 189KB 在国内弱网下要几十秒到几分钟。
+    // 片号用「url+标题」哈希分配（不再用数组下标 % N）——新帖只改动它自己那一片，
+    // 否则每发一篇都会让 256 个文件整体偏移、全部重写，仓库体积暴涨。
+    // 片数改了必须与 search.html 里的 SHARDS 常量保持一致。
+    const SHARDS = 256;
+    const shardOf = (g) => {
+      const k = (g.url || '') + '|' + (g.title || '');
+      let h = 0;
+      for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+      return h % SHARDS;
+    };
+    const titlesIndex = slimIndex.map(g => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d, p: shardOf(g) }));
+    const shardBuckets = Array.from({ length: SHARDS }, () => []);
+    slimIndex.forEach(g => shardBuckets[shardOf(g)].push(g));
     for (let s = 0; s < SHARDS; s++) {
-      fs.writeFileSync('search_detail_' + s + '.json', JSON.stringify(slimIndex.filter((_, i) => i % SHARDS === s)));
+      fs.writeFileSync('search_detail_' + s + '.json', JSON.stringify(shardBuckets[s]));
     }
-    console.log('search_detail_0..15.json ok: 每片', Math.ceil(slimIndex.length / SHARDS), '条');
+    console.log('search_detail_0..' + (SHARDS - 1) + '.json ok: 每片约', Math.ceil(slimIndex.length / SHARDS), '条');
     fs.writeFileSync('search_titles.json', JSON.stringify(titlesIndex));
     const titlesInline = JSON.stringify(titlesIndex).replace(/<\//g, '<\\/'); // 防 </script> 提前闭合
     fs.writeFileSync('search.html', searchPage.replace('__MRHX_TITLES__', titlesInline));
