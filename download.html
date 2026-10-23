@@ -39,34 +39,65 @@ header{/* nav-moved-to-site.css */}
 .search-row .x:hover{/* nav-moved-to-site.css */}
 
 @keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-main{max-width:900px;margin:0 auto;padding:28px 20px 44px;animation:mrhxCard .5s ease both}
-.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);flex-wrap:wrap;line-height:1.7}
+main{max-width:920px;margin:0 auto;padding:26px 20px 44px;animation:mrhxCard .5s ease both}
+
+/* 页头 */
+.hero{margin-bottom:24px}
+.hero h1{font-size:25px;line-height:1.35;color:#2b2b2b;letter-spacing:.2px}
+.hero p{font-size:14px;color:#8a8784;line-height:1.8;margin-top:8px}
+.hero .hl{color:#e5484d;font-weight:600}
+
+/* 顶部说明条 */
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:13px 18px;margin-bottom:26px;font-size:13.5px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);flex-wrap:wrap;line-height:1.75}
 .upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
 
+/* 分区标题 */
 .sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
 .sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
 .sect span{font-size:13px;color:#aaa;white-space:nowrap}
-.tut-card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 20px;margin-bottom:14px;font-size:14px;color:#444;line-height:1.85;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.tut-card p+p{margin-top:4px}
-.tut-note{font-size:13px;color:#888;line-height:1.75}
-.list{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;margin-bottom:26px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.list.tight{margin-bottom:10px}
-.tut-card.tight-note{margin-top:0;margin-bottom:26px;padding:13px 20px}
-.item{display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid #f4f3f1}
-.item:last-child{border-bottom:none}
-.pill{flex-shrink:0;min-width:74px;text-align:center;font-size:12px;font-weight:600;color:#e5484d;background:#fdf1f1;border-radius:99px;padding:5px 12px;letter-spacing:.3px;margin-top:2px}
-.pill.off{color:#999;background:#f4f3f1}
-.item-txt{font-size:14px;color:#444;line-height:1.72;flex:1;min-width:0}
-.item-txt small{display:block;font-size:12.5px;color:#999;margin-top:4px}
-.item-txt b{color:#e5484d;font-weight:600}
-footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px;max-width:900px;margin:0 auto}
+
+/* 网盘卡片：图标 + 名称 + 按钮 */
+.np-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:30px}
+.np{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:14px 16px;text-decoration:none;color:inherit;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.np:hover{border-color:#f0b4b6;box-shadow:0 5px 16px rgba(229,72,77,.09);transform:translateY(-2px)}
+.np-ico{display:block;width:38px;height:38px;flex-shrink:0;border-radius:9px;overflow:hidden;background:#f7f6f4}
+.np-ico img{display:block;width:100%;height:100%;object-fit:cover}
+.np-body{flex:1;min-width:0;min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.np-name{display:block;font-size:15.5px;font-weight:700;color:#2b2b2b;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-speed{display:block;font-size:12.5px;color:#9a9793;line-height:1.6;margin-top:3px}
+.np-desc{width:100%;font-size:13px;color:#7b7875;line-height:1.75;margin-top:2px}
+.np-go{display:inline-flex;flex-shrink:0;align-items:center;padding:6px 14px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12.5px;font-weight:600;line-height:1.6;transition:background .18s ease,color .18s ease}
+.np:hover .np-go{background:#e5484d;color:#fff}
+.np.is-todo,.np.is-todo:hover{cursor:default;border-color:#ecebe9;box-shadow:0 1px 2px rgba(0,0,0,.03);transform:none}
+.np.is-todo .np-go{background:#f4f3f1;color:#b3b0ac}
+
+/* 本站工具卡（TsinhoLink）——比普通网盘卡更突出一点 */
+.np.tool{margin-bottom:30px;border-color:#f4d7d8;background:linear-gradient(180deg,#fffdfd,#fff);box-shadow:0 2px 12px rgba(229,72,77,.07);padding:16px 18px}
+.np.tool:hover{border-color:#eea3a6;box-shadow:0 6px 20px rgba(229,72,77,.14);transform:translateY(-2px)}
+.np.tool .np-ico{width:46px;height:46px;border-radius:11px}
+.np.tool .np-name{font-size:18px}
+.np.tool .np-go{padding:8px 18px;font-size:13px}
+
+/* 底部提示 */
+.tut-card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:16px 20px;font-size:13.5px;color:#555;line-height:1.85;box-shadow:0 1px 2px rgba(0,0,0,.03);margin-bottom:26px}
+.tut-card b{color:#e5484d;font-weight:600}
+.tut-card a{color:#e5484d;font-weight:600;text-decoration:none;border-bottom:1px solid #f0b4b6;transition:.2s}
+.tut-card a:hover{color:#c93a3f;border-bottom-color:#c93a3f}
+
+footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px;max-width:920px;margin:0 auto}
 footer b{color:#e5484d}
+
 @media(max-width:680px){
   .menu a{/* nav-moved-to-site.css */}
+  main{padding:20px 14px 36px}
+  .hero h1{font-size:21px}
   .sect h2{font-size:17px}
-  .item{flex-wrap:wrap;gap:10px}
-    }
+  .np-grid{grid-template-columns:1fr;gap:10px}
+  .np{padding:13px 14px}
+  .np-name{font-size:15px}
+  .tut-card{padding:14px 16px}
+}
 @media(prefers-reduced-motion:reduce){.drop,.drop-inner,.menu a{/* nav-moved-to-site.css */}}
 
   /* 顶栏左右留白：与首页(gen.js NAV_CSS)一致。本页 body 无 narrow 类，site.css 的 body.narrow 留白不生效，故在此补 */
@@ -143,68 +174,63 @@ footer b{color:#e5484d}
 
 <main>
 
+  <div class="hero">
+    <h1>不限速下载教程</h1>
+    <p>5 个常用网盘的不限速下载教程，<span class="hl">想看哪个点哪个</span>。</p>
+  </div>
+
   <div class="upd">
-    <span class="tag">不限速教程</span>
-    本站暂不支持直链下载，资源全部通过网盘分发。限速的解决办法往下看。
+    <span class="tag">说明</span>
+    选你要看哪个网盘的不限速教程，点进去就是对应的教程。
   </div>
 
-  <div class="sect"><h2>用哪个网盘</h2></div>
+  <div class="sect"><h2>本站工具</h2></div>
 
-  <div class="list">
-    <div class="item">
-      <div class="pill">在用</div>
-      <div class="item-txt">百度网盘
-        <small>贴吧用的人多，基本都有号，不用再注册</small>
-      </div>
-    </div>
-    <div class="item">
-      <div class="pill off">停用</div>
-      <div class="item-txt">移动云盘
-        <small>不限速，存了 21 万多个游戏、总共 76454T，攒了五年，后来号被举报封了</small>
-      </div>
-    </div>
+  <a class="np tool" data-tut="tool" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,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" alt="TsinhoLink"></span>
+    <span class="np-body"><span class="np-name">TsinhoLink</span></span>
+    <span class="np-go">去拿工具</span>
+    <div class="np-desc">支持百度、UC、夸克、迅雷、123、移动云盘、115、光鸭等热门网盘的不限速下载。</div>
+  </a>
+
+  <div class="sect"><h2>按网盘看不限速教程</h2></div>
+
+  <div class="np-grid">
+
+    <a class="np" data-tut="baidu" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,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" alt="百度网盘"></span>
+    <span class="np-body"><span class="np-name">百度网盘不限速教程</span><span class="np-speed">实测 80MB/s（看自家网速）</span></span>
+    <span class="np-go">看教程</span>
+  </a>
+
+    <a class="np" data-tut="quark" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,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" alt="夸克网盘"></span>
+    <span class="np-body"><span class="np-name">夸克网盘不限速教程</span><span class="np-speed">实测 5MB/s 左右</span></span>
+    <span class="np-go">看教程</span>
+  </a>
+
+    <a class="np" data-tut="uc" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,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" alt="UC 网盘"></span>
+    <span class="np-body"><span class="np-name">UC 网盘不限速教程</span><span class="np-speed">实测 7MB/s 左右（看账号权益）</span></span>
+    <span class="np-go">看教程</span>
+  </a>
+
+    <a class="np" data-tut="xunlei" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,UklGRgAHAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSBoCAAANkHNre9pIzycZwky7Z5i35f/fYseU2WSYMWjpq7aK2j0bERMASOQduc03z58ttQuJsNg6GZ0NP318259jTaYA4jOSxtNodPc4njtl0a1Jc6Vyfn54PfGIAtaRrK51zdXJ7SjzLLrYJF9td+vZ0f7BXMQjmlHZXCrPCaUxSVKoLNWju0H/3iPWa21nSe4IbW+3Mz34/iBGya0uSwYzIyISAkVVfVrdaM2Hgyk+WVmyEyBWJYyCIAbSvc7sz+FMG2v1e3xmIwIq4Odxab1ztX9d6rYcGFECawzUdjk9Xkst6mxEcK1mca81Hb8aXyMoIRZYrqTP706dEcKsWutUno3uCLSAFJrFpfEIJEgIRLVce5aFLMknBecJuIlNqgRbQKwR/vv/n8+KBG5iIhMqFdT5kY2DBfi5O0sKCSpBUmH2OBvmq3HIbkefSs2CgARIQUcXjx8qvSpKmEWuzx7e52pLioQJf/AwG4xdq2txNjTqI6tH12k8Pjkxe1XvjQmL4qxcfdcG5rp/1V0rxygggVAwEnPfv2hFRqaHg0lvJ08mIoAsnAKqGvHw9aIUY4XJYDhvr1dTAikgIrjb35dpEcHBw8/BtLPzJBR/Pfh6VSyAesX6+/3Bra0ul4tJYmThvJ/NHm8HD75uEeMUPGQH/eNZudeqFqIIXTCXjW7OT+9zjQhUAVQiP7k5mqalci6xZuHUTcePD1MBK84DVlA4IMAEAADwGQCdASpgAGAAPikSh0KhoQrknrIMAUJZADQUgF+wfjN3p2Vuffh9+SnUZcXds8oL8J/J/9T9xXaA8wD9K/8n6Gf9A9gHmA/Vr9hvfH9AHoAf1z+99YB6AH7d+mX+13wh/tJ+0fwGfqz9/96EsiX2MP+75plKDA/03/zPAAfqAaP2I/6fbnHkL/5EH0//mxv2MsDij7YmzGEC7SMCIWdOpgX5dzeuJTxGZE3MrLtgjB90aOtWfqbn2pgzBmaVqe+nW3g3cQXGWORhA0vTgmiplJv26V6ZS3AA/i6nxePZP3iXU9+7njWhqAyiOoIgjnu8433qjtF/g5gC5DkOpoDwwFHZYwEd8kNT7bDciH9vGfbJPt4x3kGuG28MjWRqM8scj9agIK0iIsTZX9DmVKPVEOcN9s+KTvkC+l9LyHajNRoxwy/s0amq7R+GW5Z9DerS18H4GtKnCxX/coKaqwe+InS+5TlzPpErGuAASLs6moCmtj228fp6DD6w+O8QeN9gsA8EaZv/M4El0h0YJL7jM/vAjkf8THsH3XI7cou7xG1/3Mq6msXE06NuWmUuiu4NPW9bsjQLXUeOsCwh7SXXEGnHRbWy9olviqOjTs9Hdd/2R/cqZ9UxaRSS2a1kaIp/gsIRxUN/QJMEzgdRZlMN55gjQVr1JifrdzlGxDF3It8mDPmqEYnE8doEQCkua0G2h9KhRNzrcVwmCslVIIpxNsvomrv3mrB4MOxY2QrJRpqdLK9DhFP+RfJmWHGz/J0J0xxm/rh51+5nu//5GWf5nOXeOcFyX2xaxG7b0DYbFrcMVbAAPyBfuCHI2t598FtGtVp+QZ75HO26wYyCE1nkDHq9uOAez0dvkTjpK+Au6EruyVkWekTXhEFs4xkVmVFeqVyTjF/ryBPnItbjwg6on+1kP6KXp5JolpIpHn3c+ixl044WdWJ7dqCzsL2t5VM+xQ5qtbxBG0y4LrXfv0i2pCTQXWPWeH7kHqa6iwThfjDO4+jmmIm44tAPftcvcnQ0pVl4LnB4T6W8qMROyzuKJdnp2e6bXVNU+OFf8M7Po8EvlSePpBFI+NRdqb0nrWoPC9QMOZaVjBmVyNrqV2pz7dfyKgJk9gRC9nbQPD7H7cosf7FG7myvRthAm4kDmv36oYD/DJADfPOSMVH/OMDOScMkxmPmG+CJPKJPP+JcX6sx8TM2qPEq+N6NvHq1f547cydrK/1vZaS2pvV7fWCALu/8JBIY1mVj0Tev0G1DZ6DZJfm6aTIyPRTEfgBeovi+DNx+o6mA+6q21Qk0zjn6a2fz+lqV1rH+xcAebA0W+qGYspdpo2gvY0ygVcNF3Nw6+ip+ri+6ta9TXhgCL14rtGCsp1ZST1A+jhfVPD2pihiIGQ+hIIMqubJH9wLsQsIZxqLZY8rx8u1d2u3446n/vmLFWAIJ8UtAPsuB2cfaP/8Gqs8Gyt+l7NXue+qZi88nztv/EPpmNF3WazODz/coeJr4jkzaITf9I5LyH0bJLUyKeKQ0ox+9dprAW+rdO45IJviNfHr/3OEuM7s7imYQtM/L7zlAYYCCCULfalOYd7/4YGeB//5UmhTi17uXJM+jTB190AVA31aCIuLi0AAA" alt="迅雷网盘"></span>
+    <span class="np-body"><span class="np-name">迅雷网盘不限速教程</span><span class="np-speed">实测 1MB/s 左右，稳定 1 兆</span></span>
+    <span class="np-go">看教程</span>
+  </a>
+
+    <a class="np" data-tut="pan123" href="#">
+    <span class="np-ico"><img src="data:image/webp;base64,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" alt="123 网盘"></span>
+    <span class="np-body"><span class="np-name">123 网盘不限速教程</span><span class="np-speed">实测 15MB/s 左右</span></span>
+    <span class="np-go">看教程</span>
+  </a>
+
   </div>
-
-  <div class="sect"><h2>限速了怎么办</h2></div>
 
   <div class="tut-card">
-    百度网盘没会员会限速。临时解法：
-  </div>
-
-  <div class="list tight">
-    <div class="item">
-      <div class="pill">①</div>
-      <div class="item-txt">拼多多搜「<b>百度网盘1天会员</b>」</div>
-    </div>
-    <div class="item">
-      <div class="pill">②</div>
-      <div class="item-txt">挑封面写着「<b>支持 Win/Mac/安卓/苹果/平板</b>」的店下单</div>
-    </div>
-    <div class="item">
-      <div class="pill">③</div>
-      <div class="item-txt">商家发你一个链接，扫码登录会员账号</div>
-    </div>
-    <div class="item">
-      <div class="pill">④</div>
-      <div class="item-txt">这时候下就是<b>不限速</b>的，下完申请退款，一般秒过</div>
-    </div>
-  </div>
-
-  <div class="tut-card tight-note">
-    <p class="tut-note">不太厚道，但能白嫖。</p>
-  </div>
-
-  <div class="sect"><h2>两个坑</h2></div>
-
-  <div class="list">
-    <div class="item">
-      <div class="pill">别踩</div>
-      <div class="item-txt">别下到一半就退款，<b>账号会被强制踢下线</b>，我栽过一次</div>
-    </div>
-    <div class="item">
-      <div class="pill">注意</div>
-      <div class="item-txt">这号是<b>共享</b>的，别往里存东西</div>
-    </div>
+    <b>还有一个情况：</b>站内有一批老帖子走的是<b>移动云盘</b>。那个号当年被举报封过，这些链接现在可能打不开 —— 遇到就回搜索页搜同一个游戏名，换别的帖子下。解压遇到问题看<a href="tutorial.html">解压教程</a>，模拟器、运行库、汉化这些看<a href="tools.html">游戏工具</a>。
   </div>
 
 </main>
@@ -212,6 +238,39 @@ footer b{color:#e5484d}
 <footer>
   <div>资源仅用于个人学习交流 · <b>Tsinho黄油站</b></div>
 </footer>
+
+<script>
+/* ============================================================
+   ★ 只改这一处：五个网盘对应的百度网盘教程链接
+   填在引号里即可（形如 https://pan.baidu.com/s/分享ID?pwd=提取码）
+   留空 = 卡片显示「教程准备中」且不可点
+   ============================================================ */
+var TUT_LINKS = {
+  baidu:  'https://pan.baidu.com/s/1mmn69l2szs4NuXWmBsIsiA?pwd=839m',
+  quark:  'https://pan.baidu.com/s/1vYtMjytAvxWYQoQpGnY26g?pwd=839m',
+  uc:     'https://pan.baidu.com/s/1Gagh2zqDFNJcmWE_FrTTXg?pwd=839m',
+  xunlei: 'https://pan.baidu.com/s/1gEW-1_DsTvSpW6qtUL44yQ?pwd=839m',
+  pan123: 'https://pan.baidu.com/s/1SqeBmnXKfTWDFNYZl8aFIQ?pwd=839m',
+  tool:   'https://pan.baidu.com/s/1nG6_qmARAxEwDun4_uF4vw?pwd=839m'
+};
+(function () {
+  var cards = document.querySelectorAll('.np[data-tut]');
+  for (var i = 0; i < cards.length; i++) {
+    var a = cards[i];
+    var url = TUT_LINKS[a.getAttribute('data-tut')] || '';
+    var go = a.querySelector('.np-go');
+    if (url) {
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+    } else {
+      a.removeAttribute('href');
+      a.className += ' is-todo';
+      if (go) go.textContent = '教程准备中';
+    }
+  }
+})();
+</script>
 
 <script src="assets/js/nav.js?v=4fcd5d5b"></script>
 
