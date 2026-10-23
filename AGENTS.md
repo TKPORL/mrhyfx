@@ -146,6 +146,7 @@
   且与工具真实功能对不上。宁可留白，只写真实可核的信息（例：站点实际用了哪些网盘、
   移动云盘 609 条老帖可能失效）。
   这页**不参与 gen.js 生成**（在 `DEFAULT_EXCLUDE` 里），改它不需要重跑 gen。
+  已补 `meta description`（与 tutorial/tools/index 一致；手维护页新增内容时记得顺手补 SEO 两件套）。
   备份：`download.before.html`（初版）/ `download.before-v3.html`（删内容前）在同目录。
 - **搜索提速（2026-10-24，commit `0dc51a65e`，已上线）**：搜索卡片"只有标题、详情十几分钟不出来"的根因是
   **补全分片太大**（16 片，单片 189KB / gzip 65KB），国内弱网下一个请求就能卡死。改动四处：
