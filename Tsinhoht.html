@@ -2095,6 +2095,21 @@ async function updateTimestamp(repo, token, name) {
     '发布: 更新timestamps.json', null, '');
 }
 
+// 2026-10-23：时间戳写入失败绝不能静默——今早 10-23 PC 帖就是这样无声丢了时间戳、首页排序沉底
+// （updateTimestamp 读 raw.githubusercontent.com 失败会抛错，调用处 .catch(() => {}) 把错误吞了）。
+// 现在：失败自动重试 3 次（updateTimestamp 每次都重读线上最新做合并，重复调用幂等不覆盖），
+// 仍失败则醒目警告，提示用户重新点一次发布补上。
+async function updateTimestampSafe(repo, token, name, statusEl) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try { await updateTimestamp(repo, token, name); return; }
+    catch (e) {
+      if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+      else if (statusEl) show(statusEl, '⚠ 帖子已发布，但时间戳写入失败（已重试 3 次）：首页排序会沉底。'
+        + '请等几分钟后重新点一次「发布」补上（内容和图片不会重复上传）。原因：' + e.message, 'warn');
+    }
+  }
+}
+
 // 撞车最多等这么久（次）。间隔封顶 6 秒，40 次≈5 分钟，覆盖 Actions 一轮「生成+备份」的时长。
 const PUBLISH_WAIT_MAX = 40;
 
@@ -3972,7 +3987,7 @@ $('pubForm').onclick = async () => {
     if (moved) toast('已把 ' + moved + ' 个游戏的图片转为链接，再次发布不会重复上传');
     const htmlContent = await buildFormHtml(cards, imagePaths, $('fTitle').value.trim(), name);
     await publish(stF, name, title, count, htmlContent);
-    await updateTimestamp(repo, token, name).catch(() => {});
+    await updateTimestampSafe(repo, token, name, stF);
     localStorage.removeItem(DRAFT_FORM);
     $('editBar').classList.remove('show');
   } catch (e) {
@@ -3987,7 +4002,7 @@ $('pubHtml').onclick = async () => {
     const title = $('hTitle').value.trim();
     const htmlContent = $('html').value;
     await publish(stH, name, title, '', htmlContent);
-    await updateTimestamp($('repo').value.trim(), $('token').value.trim(), name).catch(() => {});
+    await updateTimestampSafe($('repo').value.trim(), $('token').value.trim(), name, stH);
   } catch (e) {
     show(stH, '发布失败：' + (e && e.message ? e.message : String(e)) + publishErrorHint(e), 'err');
   } finally { btn.disabled = false; }
