@@ -45,7 +45,7 @@
 .res-menu a:hover{color:#e5484d;background:#fdf3f3}
 @media (max-width:900px){.res-dd{display:none}}
 /* 抽屉内「其他资源」区（手机） */
-#mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #mrhxMoreDrop .drawer-body .drop-menu{flex:0 0 auto;overflow:visible}
 #mrhxMoreDrop .drawer-res{padding:2px 14px 18px;border-top:1px solid #f0eeec;margin-top:2px}
 #mrhxMoreDrop .drawer-res-t{font-size:12px;font-weight:700;color:#9a9a9a;letter-spacing:.6px;margin:12px 0 9px}

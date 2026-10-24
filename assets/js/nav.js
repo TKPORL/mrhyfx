@@ -25,9 +25,12 @@
     moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (navMask) navMask.classList.toggle('open', open);
     // 抽屉打开时锁住背景滚动（窄屏抽屉是全屏面板）
-    if (window.matchMedia('(max-width: 900px)').matches) {
-      document.body.style.overflow = open ? 'hidden' : '';
-    }
+    document.body.style.overflow = open ? 'hidden' : '';
+    // 2026-10-24（站长反馈「抽屉滑不动、滑了是页面在动」）：
+    // Lenis 直接驱动 window 滚动，body{overflow:hidden} 拦不住它，必须显式 stop/start；
+    // 抽屉内部 .drawer-body 带 data-lenis-prevent，滚轮/触摸就不会再漏给页面。
+    var L = window.__mrhxLenis || window.lenis;
+    if (L && typeof L.stop === 'function') { if (open) L.stop(); else L.start(); }
   }
 
   function closeAll() { setSearch(false); setMore(false); }

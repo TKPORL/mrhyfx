@@ -265,7 +265,7 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
   #mrhxMoreDrop .drawer-close:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
   /* 2026-10-24：抽屉内容变长（菜单 7 项 + 其他资源 11 个），改成「头固定 + 主体整块滚动」 */
-  #mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   #mrhxMoreDrop .drawer-body .drop-menu{flex:0 0 auto;overflow:visible}
   #mrhxMoreDrop .drawer-res{padding:2px 14px 18px;border-top:1px solid #f0eeec;margin-top:2px}
   #mrhxMoreDrop .drawer-res-t{font-size:12px;font-weight:700;color:#9a9a9a;letter-spacing:.6px;margin:12px 0 9px}
@@ -326,11 +326,11 @@ ${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
         <img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
-      <div class="drawer-body">
+      <div class="drawer-body" data-lenis-prevent>
         <nav class="drop-menu" aria-label="站点导航">
 ${navLinksHtml('          ', current, true, true)}
         </nav>
-        <div class="drawer-res">
+        <div class="drawer-res" data-lenis-prevent>
           <div class="drawer-res-t">其他资源</div>
           <div class="drawer-res-g">
 ${RES_LINKS.map(l => '            ' + resLinkA(l)).join('\n')}
@@ -2536,6 +2536,10 @@ ${SMOOTH_SCRIPTS}
         h = h.replace(/assets\/js\/nav\.js\?v=[a-f0-9]+/g, 'assets/js/nav.js?v=' + NAVJS_VER);
         if (!h.includes('lenis.min.js')) h = h.replace('</body>', SMOOTH_SCRIPTS + '\n</body>');
       }
+      // 2026-10-24：这五个页面的 smooth.js / lenis 引用原来**没带版本号**（mianze 还留着老哈希），
+      //   改过 smooth.js 后访客会继续用缓存里的旧文件 —— 统一补上内容哈希。
+      h = h.replace(/assets\/js\/smooth\.js(?:\?v=[a-f0-9]+)?/g, 'assets/js/smooth.js?v=' + SMOOTH_VER);
+      h = h.replace(/assets\/js\/lenis\.min\.js(?:\?v=[a-f0-9]+)?/g, 'assets/js/lenis.min.js?v=' + LENIS_VER);
       fs.writeFileSync(file, h);
       console.log('独立页顶栏统一:', file);
     });

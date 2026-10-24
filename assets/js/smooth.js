@@ -8,6 +8,11 @@
   if (RM || !FINE || !globalThis.Lenis) return;
 
   var lenis = new Lenis({ lerp: 0.1, duration: 1.2, smoothWheel: true });
+  // 2026-10-24：把实例挂到 window，供 nav.js 在抽屉打开时 stop()/start()。
+  // Lenis 是直接驱动 window 滚动的，光靠 body{overflow:hidden} 拦不住它 ——
+  // 不 stop 的话手机抽屉里滑动会让背后的页面跟着滚（站长反馈的真实 bug）。
+  window.lenis = lenis;
+  window.__mrhxLenis = lenis;
   // 先续订下一帧、再执行本帧（try/catch 兜底）：任何一帧 lenis.raf 抛异常，
   // 循环都不会永久停摆——否则 wheel 已被 Lenis 拦截但无人驱动滚动，整页会"定住"。
   function raf(t) {

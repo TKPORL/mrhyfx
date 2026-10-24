@@ -159,6 +159,14 @@
   块比视口还高时**留出约 18% 视口**（`lead = vh*0.18`，电脑 900px 视口约 162px、手机约 137px）。
   **Lenis 的 `offset` 是「加在目标位置上的量」，要往下落必须传负值**（原来传 +70 是反的，等于让标题多滚上去被顶栏压住）；
   `duration` 1.2→0.7，减少「还在继续滑」的感觉。
+- ★**Lenis 拦住 `body{overflow:hidden}`（2026-10-24 抽屉滑不动的真因，影响全站浮层）**：
+  `smooth.js` 用 Lenis 直接驱动 window 滚动，**光把 body 设 overflow:hidden 是拦不住它的** ——
+  滚轮落在浮层上会被 Lenis 接走滚页面，浮层自己不动（站长原话「滑动之后是页面在滑动 不是侧边栏」）。
+  正确做法三条一起：① `window.__mrhxLenis` 暴露实例；② 打开浮层 `lenis.stop()` / 关闭 `lenis.start()`；
+  ③ 浮层内部滚动容器加 **`data-lenis-prevent`**（Lenis 官方约定）+ `overscroll-behavior:contain`。
+  **以后任何新的全屏浮层/抽屉都要按这三条做**，别再只写 `body{overflow:hidden}`。
+- ★**独立页的 smooth.js / lenis.min.js 引用要带内容哈希**（2026-10-24 修）：五个独立页原来**没带 `?v=`**
+  （mianze 还留着老哈希），改过脚本后访客会继续用缓存旧文件；gen.js 的独立页同步步骤已统一补齐。
 - ★**查 GitHub Pages 是否已部署，curl 必须带 `--compressed`**（2026-10-24 差点误报成「没部署」）：
   Pages 返回 gzip，curl 不解压时 `grep -c` **永远返回 0**，看起来像线上还是旧版。正确命令：
   `curl -s --compressed "https://tkporl.github.io/mrhyfx/xxx.html?cb=$RANDOM" | grep -c 关键词`。
