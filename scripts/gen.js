@@ -91,7 +91,9 @@ const ICON_TAG_RE = /[ \t]*<link rel="(?:icon|apple-touch-icon)"[^>]*>\r?\n?/g;
 const NAV_BREAKPOINT = 540;
 const NAV_MENU = (() => {
   const all = NAV.find(n => n.label === '全部黄油');
-  const items = [{ label: '首页', url: 'index.html' }];
+  // 2026-10-24（站长）：抽屉里「首页」原来没有图标（其余项都有），补齐
+  const items = [{ label: '首页', url: 'index.html',
+    ic: '<path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/>' }];
   // 2026-10-09 站长定稿顺序：赞助最前（首页之后）、往期合集最后
   // ic = 手机抽屉里的菜单图标（stroke path，16px），与备用站同款
   items.push({ label: '赞助', url: 'sponsor.html',
@@ -113,6 +115,26 @@ const NAV_MENU = (() => {
   // 2026-10-10 站长要求：往期合集从手机抽屉移除（daily.html 页面保留，仅不进导航）
   return items.map(n => Object.assign({}, n, { ext: /^https?:/i.test(n.url) }));
 })();
+
+// ===== 「其他资源」外链清单（2026-10-24 站长要求搬进导航）=====
+// 原来只以「资源导航条」形式出现于帖子页底部；现在同时进：
+//   桌面顶栏「其他资源」下拉（悬停/点击展开，一条横线铺开）+ 手机抽屉底部（按钮下面）。
+// 帖子页底部的资源条也读同一份，改这里全站生效。
+const RES_LINKS = [
+  { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
+  { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
+  { name: '影音娱乐', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67' },
+  { name: '看片软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya' },
+  { name: '成人壁纸', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww' },
+  { name: '游戏破解版合集', url: 'https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv' },
+  { name: '节点搭建教程', url: 'https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5' },
+  { name: '不限速工具', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr' },
+  { name: '不限速教程', url: 'https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp' },
+  { name: 'Tsinho资源库', url: 'https://tkporl.github.io/' },
+  { name: 'Tsinho资源库（在线版）', url: 'https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html' }
+];
+const resLinkA = (l, cls) =>
+  `<a${cls ? ` class="${cls}"` : ''} href="${esc(l.url)}"${/^https?:/i.test(l.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(l.name)}</a>`;
 
 // 桌面横排与手机抽屉共用同一份菜单（首页在最上）
 // 首页不显示「首页」项——当前页不需要自我导航（2026-10-06 站长要求）
@@ -172,13 +194,26 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
 /* 2026-10-14（站长）顶栏按钮加文字备注（第二版）：
    第一版把按钮改成"图标+文字"的胶囊，站长说太怪 —— 改回原样：
-   圆形图标按钮完全不动，只在图标下方加一行 10px 小字（放大镜下「搜索」、三点下「菜单」）。 */
+   圆形图标按钮完全不动，只在图标下方加一行 10px 小字（放大镜下「搜索」、三点下「菜单」）。
+   2026-10-24（站长）：这段原来被 @media(max-width:540px) 包着，只有手机端显示，
+   电脑端光秃秃两个圆钮 —— 现在两端统一，小字在所有宽度都显示。 */
 .hd-bar .icon-btn{position:relative}
-.hd-bar .icon-btn .ico-label{display:none}
-@media (max-width:540px){
-  .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
-  .hd-bar .acts{margin-bottom:12px}
-}
+.hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
+.hd-bar .acts{margin-bottom:12px}
+/* ===== 「其他资源」下拉（2026-10-24 站长要求：帖子页底部那排外链搬进顶栏）=====
+   注意：.res-dd 不能设 position:relative —— .res-menu 要相对 <header>（sticky 即定位祖先）
+   铺满整条宽，才能"像一条线一样显示下来"。设了 relative 面板就会缩成按钮大小。 */
+.res-dd{flex-shrink:0}
+.res-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.res-btn:hover,.res-dd.open .res-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.res-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.res-dd.open .res-btn .chev{transform:rotate(180deg)}
+.res-menu{position:absolute;left:0;right:0;top:100%;z-index:26;background:#fff;border-top:1px solid #f0eeec;border-bottom:1px solid #ecebe9;box-shadow:0 14px 26px rgba(0,0,0,.08);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .2s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s linear .26s}
+.res-dd.open .res-menu{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.res-inner{max-width:1320px;margin:0 auto;padding:14px;display:flex;flex-wrap:wrap;gap:8px}
+.res-inner a{font-size:13px;color:#555;text-decoration:none;padding:9px 14px;border:1px solid #f0eeec;background:#faf9f7;border-radius:9px;white-space:nowrap;transition:.18s}
+.res-inner a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+@media (max-width:900px){.res-dd{display:none}}
 
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
 .hd-bar .icon-btn svg{width:18px;height:18px;stroke:#666;fill:none;stroke-width:1.6;stroke-linecap:round}
@@ -227,6 +262,14 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
   #mrhxMoreDrop .drawer-close{width:32px;height:32px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;color:#666;font:inherit;font-size:18px;line-height:1;cursor:pointer;flex-shrink:0}
   #mrhxMoreDrop .drawer-close:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   #mrhxMoreDrop .drop-menu{flex-direction:column;flex-wrap:nowrap;gap:8px;padding:12px 14px;overflow-y:auto;flex:0 1 auto}
+  /* 2026-10-24：抽屉内容变长（菜单 7 项 + 其他资源 11 个），改成「头固定 + 主体整块滚动」 */
+  #mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #mrhxMoreDrop .drawer-body .drop-menu{flex:0 0 auto;overflow:visible}
+  #mrhxMoreDrop .drawer-res{padding:2px 14px 18px;border-top:1px solid #f0eeec;margin-top:2px}
+  #mrhxMoreDrop .drawer-res-t{font-size:12px;font-weight:700;color:#9a9a9a;letter-spacing:.6px;margin:12px 0 9px}
+  #mrhxMoreDrop .drawer-res-g{display:flex;flex-wrap:wrap;gap:7px}
+  #mrhxMoreDrop .drawer-res-g a{display:block;font-size:12.5px;color:#555;text-decoration:none;padding:8px 11px;background:#faf9f7;border:1px solid #f0eeec;border-radius:8px;transition:.16s}
+  #mrhxMoreDrop .drawer-res-g a:hover,#mrhxMoreDrop .drawer-res-g a:active{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
   #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
 }
@@ -239,6 +282,16 @@ ${navLinksHtml('    ', current, false)}
   </nav>
   <div class="plat-slot" id="gwPlatSlot"></div>
   <div class="acts">
+    <div class="res-dd" id="mrhxResDD">
+      <button type="button" class="res-btn" aria-expanded="false" aria-controls="mrhxResMenu">
+        其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="res-menu" id="mrhxResMenu">
+        <div class="res-inner">
+${RES_LINKS.map(l => '          ' + resLinkA(l)).join('\n')}
+        </div>
+      </div>
+    </div>
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
       <span class="ico-label">搜索</span>
@@ -273,9 +326,17 @@ ${navLinksHtml('    ', current, false)}
         <img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
-      <nav class="drop-menu" aria-label="站点导航">
-${navLinksHtml('        ', current, true, true)}
-      </nav>
+      <div class="drawer-body">
+        <nav class="drop-menu" aria-label="站点导航">
+${navLinksHtml('          ', current, true, true)}
+        </nav>
+        <div class="drawer-res">
+          <div class="drawer-res-t">其他资源</div>
+          <div class="drawer-res-g">
+${RES_LINKS.map(l => '            ' + resLinkA(l)).join('\n')}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2396,25 +2457,13 @@ ${SMOOTH_SCRIPTS}
   //   链序与首页一致（days 已按置顶在前+时间倒序）。求助贴 qzt 置顶且不是期数：上一期置灰、下一期指向最新一期；
   //   普通期帖之间按期数互链（上一期=更早一期，下一期=更新一期，不含 qzt）
   // 2026-10-17（站长）：资源导航条（横版Logo通栏 + 等高链接网格）注入在导航行上方，链接清单改这里全站生效
+  // 2026-10-24：清单改为读顶部的 RES_LINKS（导航「其他资源」与帖子页资源条共用一份，避免两处不同步）
   {
     const RES_LOGO_URL = '';  // ← 横版 Logo 直链（2026-10-17 站长改版：去掉 Logo，按钮改分页行同款小尺寸横排）；要恢复就填回直链
-    const RESOURCE_LINKS = [
-      { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
-      { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
-      { name: '影音娱乐', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67' },
-      { name: '看片软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya' },
-      { name: '成人壁纸', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww' },
-      { name: '游戏破解版合集', url: 'https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv' },
-      { name: '节点搭建教程', url: 'https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5' },
-      { name: '不限速工具', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr' },
-      { name: '不限速教程', url: 'https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp' },
-      { name: 'Tsinho资源库', url: 'https://tkporl.github.io/' },
-      { name: 'Tsinho资源库（在线版）', url: 'https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html' }
-    ];
     var resBlockHtml = '<div class="mrhx-resblock">' +
       (RES_LOGO_URL ? `<img class="res-logo" src="${esc(RES_LOGO_URL)}" alt="Tsinho黄油站">` : '') +
       '<div class="res-grid">' +
-      RESOURCE_LINKS.map(l => `<a href="${esc(l.url)}"${/^https?:/i.test(l.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(l.name)}</a>`).join('') +
+      RES_LINKS.map(l => `<a href="${esc(l.url)}"${/^https?:/i.test(l.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(l.name)}</a>`).join('') +
       '</div></div>';
   }
   {

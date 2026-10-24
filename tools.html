@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>游戏工具 · Tsinho黄油站</title>
-<meta name="description" content="Tsinho黄油站游戏工具合集：joi、RPGMPlugin、吉里吉里2、Tyranor 模拟器，游戏一键汉化工具、万能改游戏数据、一键改后缀、一键汉化+改数据、自动解压工具、解压专家、WinRAR、ZArchiver Pro、lz4 解压工具、多线程下载工具 Motrix / IDM / NDM / ADM、转区工具与运行库下载。">
+<meta name="description" content="Tsinho黄油站游戏工具合集：joi、RPGMPlugin、吉里吉里2、Tyranor 模拟器，游戏一键汉化工具、万能改游戏数据、一键改后缀、一键汉化+改数据、自动解压工具、解压专家、WinRAR、ZArchiver Pro、lz4 解压工具、enc 解压工具、多线程下载工具 Motrix / IDM / NDM / ADM、转区工具与运行库下载。">
 <meta name="author" content="Tsinho">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://tkporl.github.io/mrhyfx/tools.html">
@@ -147,7 +147,7 @@ footer b{color:#e5484d}
 </style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
-<link rel="stylesheet" href="assets/css/site.css?v=c5f7fec1">
+<link rel="stylesheet" href="assets/css/site.css?v=0006c4e5">
 <style id="mrhx-hdr-fix">/* 顶栏留白与首页一致：site.css 后加载会覆盖页内样式，故在此 link 之后补 */header{padding:10px 20px 0}
 @media (max-width:720px){header{padding:10px 14px 0}}</style>
 </head>
@@ -166,6 +166,26 @@ footer b{color:#e5484d}
   </nav>
   <div class="plat-slot" id="gwPlatSlot"></div>
   <div class="acts">
+    <div class="res-dd" id="mrhxResDD">
+      <button type="button" class="res-btn" aria-expanded="false" aria-controls="mrhxResMenu">
+        其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="res-menu" id="mrhxResMenu">
+        <div class="res-inner">
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5" target="_blank" rel="noreferrer">实用软件</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">VPN节点</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67" target="_blank" rel="noreferrer">影音娱乐</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya" target="_blank" rel="noreferrer">看片软件</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww" target="_blank" rel="noreferrer">成人壁纸</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv" target="_blank" rel="noreferrer">游戏破解版合集</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5" target="_blank" rel="noreferrer">节点搭建教程</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr" target="_blank" rel="noreferrer">不限速工具</a>
+          <a href="https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp" target="_blank" rel="noreferrer">不限速教程</a>
+          <a href="https://tkporl.github.io/" target="_blank" rel="noreferrer">Tsinho资源库</a>
+          <a href="https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html" target="_blank" rel="noreferrer">Tsinho资源库（在线版）</a>
+        </div>
+      </div>
+    </div>
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
       <span class="ico-label">搜索</span>
@@ -200,15 +220,33 @@ footer b{color:#e5484d}
         <img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
-      <nav class="drop-menu" aria-label="站点导航">
-        <a href="index.html">首页</a>
-        <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
-        <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
-        <a href="tools.html" class="on" aria-current="page"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏工具</a>
-        <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>不限速教程</a>
-        <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
-        <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/></svg>备用站</a>
-      </nav>
+      <div class="drawer-body">
+        <nav class="drop-menu" aria-label="站点导航">
+          <a href="index.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></svg>首页</a>
+          <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
+          <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
+          <a href="tools.html" class="on" aria-current="page"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏工具</a>
+          <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>不限速教程</a>
+          <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
+          <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/></svg>备用站</a>
+        </nav>
+        <div class="drawer-res">
+          <div class="drawer-res-t">其他资源</div>
+          <div class="drawer-res-g">
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5" target="_blank" rel="noreferrer">实用软件</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">VPN节点</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67" target="_blank" rel="noreferrer">影音娱乐</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya" target="_blank" rel="noreferrer">看片软件</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww" target="_blank" rel="noreferrer">成人壁纸</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv" target="_blank" rel="noreferrer">游戏破解版合集</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5" target="_blank" rel="noreferrer">节点搭建教程</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr" target="_blank" rel="noreferrer">不限速工具</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp" target="_blank" rel="noreferrer">不限速教程</a>
+            <a href="https://tkporl.github.io/" target="_blank" rel="noreferrer">Tsinho资源库</a>
+            <a href="https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html" target="_blank" rel="noreferrer">Tsinho资源库（在线版）</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -338,6 +376,13 @@ footer b{color:#e5484d}
       </div>
     </div>
     <div class="tool-item">
+      <div class="tool-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 10.9-1"/><rect x="3.5" y="10.5" width="17" height="10.5" rx="2.5"/><circle cx="12" cy="15.6" r="1.4"/><path d="M12 17v1.6"/></svg></div>
+      <div class="tool-name">enc 解压工具<small>先解密出 zip</small></div>
+      <div class="tool-acts">
+        <a class="tool-dl" href="https://pan.baidu.com/s/1JxWiph5imY8Z-3kEM-9ORg?pwd=839m" target="_blank" rel="noreferrer">立刻下载</a>
+      </div>
+    </div>
+    <div class="tool-item">
       <div class="tool-ico"><img src="data:image/webp;base64,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" alt=""></div>
       <div class="tool-name">ZArchiver Pro<small>安卓端</small></div>
       <div class="tool-acts">
@@ -439,7 +484,7 @@ footer b{color:#e5484d}
 </main>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <!-- 旧导航脚本已移除，改用 assets/js/nav.js -->
-<script src="assets/js/nav.js?v=4fcd5d5b"></script>
+<script src="assets/js/nav.js?v=d81dc746"></script>
 <script src="assets/js/lenis.min.js"></script>
 <script src="assets/js/smooth.js"></script>
 </body>

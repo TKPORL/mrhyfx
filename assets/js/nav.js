@@ -108,4 +108,45 @@
   function onBreakpoint(e) { if (e.matches) { setMore(false); document.body.style.overflow = ''; } }
   if (mq.addEventListener) { mq.addEventListener('change', onBreakpoint); }
   else if (mq.addListener) { mq.addListener(onBreakpoint); }
+
+  // ===== 「其他资源」下拉（2026-10-24）=====
+  // 站长要求：鼠标滑过就展开、点一下也展开，资源像一条线铺开。
+  // 注意：按钮与面板之间有约 10px 的空档（面板贴着 header 底边），
+  //   指针穿过空档时 mouseleave 会先触发，所以不能立刻关，留 220ms 缓冲；
+  //   面板本身在 .res-dd 内部，进去后会重新触发 mouseenter 把定时器清掉。
+  var resDD = document.getElementById('mrhxResDD');
+  var resBtn = resDD && resDD.querySelector('.res-btn');
+  var resMenu = document.getElementById('mrhxResMenu');
+  if (resDD && resBtn) {
+    var resTimer = null;
+    var resByClick = false;   // 是否由点击展开（悬停展开的不算）
+    var setRes = function (open) {
+      if (resTimer) { clearTimeout(resTimer); resTimer = null; }
+      resDD.classList.toggle('open', open);
+      resBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (!open) resByClick = false;
+    };
+    resDD.addEventListener('mouseenter', function () { setRes(true); });
+    resDD.addEventListener('mouseleave', function () {
+      if (resTimer) clearTimeout(resTimer);
+      resTimer = setTimeout(function () { setRes(false); }, 220);
+    });
+    // 悬停已经展开了，这时点一下不能把它关掉（站长要的是"点一下也展开"），
+    // 所以只有「上一次也是点击展开的」才允许点关闭。
+    resBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (resDD.classList.contains('open') && resByClick) { setRes(false); return; }
+      setRes(true);
+      resByClick = true;
+    });
+    if (resMenu) {
+      resMenu.addEventListener('click', function () { setRes(false); });
+    }
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('#mrhxResDD')) setRes(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setRes(false);
+    });
+  }
 })();
