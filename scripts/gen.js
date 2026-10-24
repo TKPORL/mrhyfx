@@ -201,18 +201,20 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
 .hd-bar .acts{margin-bottom:12px}
 /* ===== 「其他资源」下拉（2026-10-24 站长要求：帖子页底部那排外链搬进顶栏）=====
-   注意：.res-dd 不能设 position:relative —— .res-menu 要相对 <header>（sticky 即定位祖先）
-   铺满整条宽，才能"像一条线一样显示下来"。设了 relative 面板就会缩成按钮大小。 */
-.res-dd{flex-shrink:0}
-.res-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+   位置：菜单最后一项（备用站后面），不是搜索按钮旁边。
+   形态：点/悬停后**竖着一条一条**铺下来（站长 2026-10-24 明确：不要横着排一行）。
+   .res-dd 设 relative，面板贴着按钮右下垂下去；.menu 桌面端必须 overflow:visible，
+   否则面板会被 .menu 的 overflow:hidden 裁掉（窄屏收起时仍靠 .menu 自身隐藏）。 */
+@media (min-width:901px){.hd-bar .menu{overflow:visible}}
+.res-dd{position:relative;flex-shrink:0}
+.res-btn{display:flex;align-items:center;gap:6px;font-size:14px;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 16px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
 .res-btn:hover,.res-dd.open .res-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 .res-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 .res-dd.open .res-btn .chev{transform:rotate(180deg)}
-.res-menu{position:absolute;left:0;right:0;top:100%;z-index:26;background:#fff;border-top:1px solid #f0eeec;border-bottom:1px solid #ecebe9;box-shadow:0 14px 26px rgba(0,0,0,.08);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .2s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s linear .26s}
+.res-menu{position:absolute;top:calc(100% + 8px);right:0;width:196px;max-height:min(70vh,520px);overflow-y:auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.10);padding:6px;display:flex;flex-direction:column;gap:2px;z-index:26;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1),visibility 0s linear .24s}
 .res-dd.open .res-menu{opacity:1;visibility:visible;transform:none;transition-delay:0s}
-.res-inner{max-width:1320px;margin:0 auto;padding:14px;display:flex;flex-wrap:wrap;gap:8px}
-.res-inner a{font-size:13px;color:#555;text-decoration:none;padding:9px 14px;border:1px solid #f0eeec;background:#faf9f7;border-radius:9px;white-space:nowrap;transition:.18s}
-.res-inner a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.res-menu a{display:block;font-size:13px;color:#555;text-decoration:none;padding:9px 11px;border-radius:8px;white-space:nowrap;transition:.16s}
+.res-menu a:hover{color:#e5484d;background:#fdf3f3}
 @media (max-width:900px){.res-dd{display:none}}
 
 .hd-bar .icon-btn:hover{background:#fdf3f3;border-color:#f0b4b6}
@@ -279,19 +281,17 @@ const navHeaderHtml = (current, inputId) => `<div class="hd-bar">
   <a class="logo" href="index.html"><img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}"></a>
   <nav class="menu" aria-label="主导航">
 ${navLinksHtml('    ', current, false)}
-  </nav>
-  <div class="plat-slot" id="gwPlatSlot"></div>
-  <div class="acts">
     <div class="res-dd" id="mrhxResDD">
       <button type="button" class="res-btn" aria-expanded="false" aria-controls="mrhxResMenu">
         其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <div class="res-menu" id="mrhxResMenu">
-        <div class="res-inner">
-${RES_LINKS.map(l => '          ' + resLinkA(l)).join('\n')}
-        </div>
+${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
       </div>
     </div>
+  </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
+  <div class="acts">
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
       <span class="ico-label">搜索</span>
@@ -2458,21 +2458,15 @@ ${SMOOTH_SCRIPTS}
   //   普通期帖之间按期数互链（上一期=更早一期，下一期=更新一期，不含 qzt）
   // 2026-10-17（站长）：资源导航条（横版Logo通栏 + 等高链接网格）注入在导航行上方，链接清单改这里全站生效
   // 2026-10-24：清单改为读顶部的 RES_LINKS（导航「其他资源」与帖子页资源条共用一份，避免两处不同步）
-  {
-    const RES_LOGO_URL = '';  // ← 横版 Logo 直链（2026-10-17 站长改版：去掉 Logo，按钮改分页行同款小尺寸横排）；要恢复就填回直链
-    var resBlockHtml = '<div class="mrhx-resblock">' +
-      (RES_LOGO_URL ? `<img class="res-logo" src="${esc(RES_LOGO_URL)}" alt="Tsinho黄油站">` : '') +
-      '<div class="res-grid">' +
-      RES_LINKS.map(l => `<a href="${esc(l.url)}"${/^https?:/i.test(l.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(l.name)}</a>`).join('') +
-      '</div></div>';
-  }
+  // 2026-10-24 晚（站长）：顶栏已有「其他资源」，帖子页底部这一排**重复了 → 删掉**，只留上一期/下一期导航行。
+  //   想恢复就把 resBlockHtml 拼回 mkNav 里（清单仍在 RES_LINKS，没删）。
   {
     const chain = days.filter(d => path.parse(d.file).name !== 'qzt');
     const navBtn = (href, label, disabled) => disabled
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
     const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}"${/^https?:/i.test(n.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(n.label)}</a>`).join('\n    ');
-    const mkNav = (older, newer) => `\n  <!--mrhx-daynav-->${resBlockHtml}<div class="mrhx-navrow">` +
+    const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
       `<div class="mrhx-navmid">${navMid}</div>` +
       navBtn(newer ? newer.file : '', '下一期 →', !newer) +

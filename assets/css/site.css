@@ -32,17 +32,17 @@
 .hd-bar .icon-btn .ico-label{display:block;position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-size:10px;line-height:1;color:#9a9a9a;white-space:nowrap;pointer-events:none}
 .hd-bar .acts{margin-bottom:12px}
 /* ===== 「其他资源」顶栏下拉（2026-10-24，与 gen.js 的 NAV_CSS 同步维护）=====
-   .res-dd 不能设 position:relative —— .res-menu 要相对 <header> 铺满整条宽 */
-.res-dd{flex-shrink:0}
-.res-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 14px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+   位置：菜单最后一项；形态：竖排一条一条；桌面端 .menu 必须 overflow:visible，否则面板被裁 */
+@media (min-width:901px){.hd-bar .menu{overflow:visible}}
+.res-dd{position:relative;flex-shrink:0}
+.res-btn{display:flex;align-items:center;gap:6px;font-size:14px;color:#555;background:#fff;border:1px solid #ecebe9;border-radius:10px;padding:9px 16px;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
 .res-btn:hover,.res-dd.open .res-btn{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
 .res-btn .chev{width:12px;height:12px;stroke:#999;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 .res-dd.open .res-btn .chev{transform:rotate(180deg)}
-.res-menu{position:absolute;left:0;right:0;top:100%;z-index:26;background:#fff;border-top:1px solid #f0eeec;border-bottom:1px solid #ecebe9;box-shadow:0 14px 26px rgba(0,0,0,.08);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .2s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s linear .26s}
+.res-menu{position:absolute;top:calc(100% + 8px);right:0;width:196px;max-height:min(70vh,520px);overflow-y:auto;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.10);padding:6px;display:flex;flex-direction:column;gap:2px;z-index:26;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1),visibility 0s linear .24s}
 .res-dd.open .res-menu{opacity:1;visibility:visible;transform:none;transition-delay:0s}
-.res-inner{max-width:1320px;margin:0 auto;padding:14px;display:flex;flex-wrap:wrap;gap:8px}
-.res-inner a{font-size:13px;color:#555;text-decoration:none;padding:9px 14px;border:1px solid #f0eeec;background:#faf9f7;border-radius:9px;white-space:nowrap;transition:.18s}
-.res-inner a:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+.res-menu a{display:block;font-size:13px;color:#555;text-decoration:none;padding:9px 11px;border-radius:8px;white-space:nowrap;transition:.16s}
+.res-menu a:hover{color:#e5484d;background:#fdf3f3}
 @media (max-width:900px){.res-dd{display:none}}
 /* 抽屉内「其他资源」区（手机） */
 #mrhxMoreDrop .drawer-body{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
