@@ -158,6 +158,11 @@ a.tut-item:active{background:#fdf1f1}
   .faq-step{padding-right:0;min-height:0}
   .faq-step .tut-dl{position:static;transform:none;display:block;width:fit-content;margin:7px 0 0}
 }
+/* 2026-10-24：enc 卡片的按钮文字较长（「下载 enc 解压工具」），右侧留白要加宽，否则压到正文 */
+.enc-card .faq-step{padding-right:150px}
+@media (max-width:720px){
+  .enc-card .faq-step{padding-right:0}
+}
 /* 2026-10-24：解压工具下载按钮（与游戏工具页 .tool-dl 同款红底胶囊）
    注意：必须写成 .tut-card a.tut-dl，否则被上面的 .tut-card a{color:#e5484d} 覆盖成红底红字 */
 .tut-card a.tut-dl{display:inline-flex;align-items:center;padding:5px 15px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;border:none;transition:background .18s ease;white-space:nowrap;margin-left:4px;vertical-align:1px}
@@ -171,7 +176,7 @@ a.tut-item:active{background:#fdf1f1}
 </style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
-<link rel="stylesheet" href="assets/css/site.css?v=0006c4e5">
+<link rel="stylesheet" href="assets/css/site.css?v=00f56a37">
 <style id="mrhx-hdr-fix">/* 顶栏留白与首页一致：site.css 后加载会覆盖页内样式，故在此 link 之后补 */header{padding:10px 20px 0}
 @media (max-width:720px){header{padding:10px 14px 0}}</style>
 </head>
@@ -352,13 +357,13 @@ a.tut-item:active{background:#fdf1f1}
     <div class="tut-item"><span class="tut-ext">mp4</span><span class="tut-txt">后缀改成 zip 或 rar 后解压（先下载到本地，别在线解压）</span></div>
     <div class="tut-item"><span class="tut-ext">7z</span><span class="tut-txt">WinRAR 直接能开；打不开就装 7-Zip</span></div>
     <div class="tut-item"><span class="tut-ext">lz4</span><span class="tut-txt">普通解压软件打不开，要用专门的 lz4 工具，在上面「先装一个解压工具」里</span></div>
-    <div class="tut-item"><span class="tut-ext">enc</span><span class="tut-txt">加密文件，先要用 enc 解压工具解密出 zip，再正常解压，见上面「enc 加密文件怎么解」</span></div>
+    <div class="tut-item"><span class="tut-ext">enc</span><span class="tut-txt">加密文件，先要用 enc 解压工具解密出 zip，再正常解压，见下面「enc 加密文件怎么解」</span></div>
   </div>
 
-  <div class="tut-card" id="enc">
+  <div class="tut-card enc-card" id="enc">
     <div class="faq-title">enc 加密文件怎么解</div>
     <div class="faq-lead">后缀是 .enc 的文件不是压缩包，双击打不开、WinRAR 和 ZArchiver 也不认，要先用专门的 enc 工具把它解回 zip。</div>
-    <div class="faq-step"><b>下载 enc 解压工具</b>　电脑端小工具，下完解压出来直接运行，不用安装。<a href="https://pan.baidu.com/s/1JxWiph5imY8Z-3kEM-9ORg?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往下载</a></div>
+    <div class="faq-step"><b>下载 enc 解压工具</b>　电脑端小工具，下完解压出来直接运行，不用安装。<a href="https://pan.baidu.com/s/1JxWiph5imY8Z-3kEM-9ORg?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">下载 enc 解压工具</a></div>
     <div class="faq-step"><b>把 .enc 文件拖进程序窗口</b>　打开程序，把需要解密的 .enc 文件拖进去就行；也可以点程序里的按钮手动选文件。</div>
     <div class="faq-step"><b>等它解密完</b>　解密完成后，会在原处（和 .enc 同一个文件夹里）生成一个 zip 压缩包。</div>
     <div class="faq-step"><b>解压那个 zip</b>　按上面 04 的方法正常解压这个 zip 就行，有密码就填帖子里写的解压码。</div>
