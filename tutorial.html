@@ -141,6 +141,33 @@ footer b{color:#e5484d}
   .tut-list.wide .tut-item{flex-wrap:wrap}
   .tut-list.wide .tut-ext{min-width:0;text-align:left}
 }
+/* 2026-10-24：顶部速查表可点跳转 —— a 标签必须显式给样式，否则会变成蓝字下划线 */
+a.tut-item{color:inherit;text-decoration:none;transition:background .15s ease}
+a.tut-item:hover{background:#fffafa}
+a.tut-item:active{background:#fdf1f1}
+/* 2026-10-24：QQ 群加群按钮 */
+.qq-btn{margin-left:auto;flex-shrink:0;padding:6px 16px;border-radius:8px;background:#fdf1f1;color:#e5484d;font-size:12.5px;font-weight:600;line-height:1.6;text-decoration:none;transition:background .18s ease,color .18s ease}
+.qq-btn:hover{background:#e5484d;color:#fff}
+/* 2026-10-24：章节编号 01-06，给长页面一个顺序感 */
+.sect h2 .no{font-style:normal;font-size:11.5px;font-weight:700;color:#e5484d;background:#fdf1f1;border-radius:99px;padding:2px 8px;margin-right:8px;vertical-align:2px;letter-spacing:.5px}
+/* 2026-10-24：卡内按钮统一右对齐成一条竖线（原来跟在文字后面，每行按钮位置参差） */
+.faq-step{padding-right:104px;min-height:32px}
+.faq-step .tut-dl{position:absolute;right:0;top:50%;transform:translateY(-50%);margin-left:0}
+@media (max-width:720px){
+  /* 手机上改成按钮单独占一行、左对齐，也保持一条竖线 */
+  .faq-step{padding-right:0;min-height:0}
+  .faq-step .tut-dl{position:static;transform:none;display:block;width:fit-content;margin:7px 0 0}
+}
+/* 2026-10-24：解压工具下载按钮（与游戏工具页 .tool-dl 同款红底胶囊）
+   注意：必须写成 .tut-card a.tut-dl，否则被上面的 .tut-card a{color:#e5484d} 覆盖成红底红字 */
+.tut-card a.tut-dl{display:inline-flex;align-items:center;padding:5px 15px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;border:none;transition:background .18s ease;white-space:nowrap;margin-left:4px;vertical-align:1px}
+.tut-card a.tut-dl:hover{background:#c93a3f;color:#fff;border:none}
+/* 锚点跳转时给 sticky 顶栏让出高度，否则标题会被顶栏压住 */
+.sect[id]{scroll-margin-top:88px}
+.tut-card[id]{scroll-margin-top:88px}
+@media (max-width:720px){
+  .sect[id],.tut-card[id]{scroll-margin-top:74px}
+}
 </style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
@@ -223,180 +250,125 @@ footer b{color:#e5484d}
     <a class="vid-btn" href="https://pan.baidu.com/s/1jPjwvA5eAX6lLygXfGo_oQ?pwd=839m" target="_blank" rel="noreferrer">前往查看</a>
   </div>
 
-  <div class="sect"><h2>第一步：拿一个解压工具</h2><span>解压工具全在「游戏工具」页</span></div>
-  <div class="tut-list">
-    <div class="tut-item">
-      <span class="tut-ext">电脑</span>
-      <span class="tut-txt">去 <a href="tools.html" class="tut-link">游戏工具 · 解压工具</a> 找对应的工具，不装就打不开压缩包</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">手机</span>
-      <span class="tut-txt">去 <a href="tools.html" class="tut-link">游戏工具 · 解压工具</a> 找对应的工具</span>
-    </div>
-  </div>
-
-  <div class="sect"><h2>按文件类型解压</h2></div>
-  <div class="tut-list">
-    <div class="tut-item">
-      <span class="tut-ext">exe</span>
-      <span class="tut-txt">一般直接双击解压；个别是伪装后缀的，改成 zip 或 rar 再解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">tar</span>
-      <span class="tut-txt">文件直接解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">分卷</span>
-      <span class="tut-txt">全部分卷放同一个文件夹里，只解压 part1（第一卷）</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">psd、jpg</span>
-      <span class="tut-txt">文件后缀改成 rar 后解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">00、txt</span>
-      <span class="tut-txt">文件后缀改成 rar 解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">mp4</span>
-      <span class="tut-txt">后缀改成 zip 或 rar 解压（先下载到本地，勿在线解压）</span>
-    </div>
-  </div>
-
-  <div class="tut-card">
-    <div class="faq-title">改后缀前：先让电脑显示文件后缀</div>
-    <div class="faq-lead">Windows 默认隐藏后缀，不改设置的话你改的其实不是真后缀（会变成 xxx.mp4.txt）：</div>
-    <div class="faq-step"><b>Win10</b>　打开文件资源管理器 → 顶部「查看」→ 勾选「文件扩展名」。</div>
-    <div class="faq-step"><b>Win11</b>　文件资源管理器 → 顶部「查看」→ 「显示」→ 勾选「文件扩展名」。</div>
-    <div class="faq-tip">手机不用设置，ZArchiver 里长按文件 → 重命名，直接把后缀改掉就行。</div>
-  </div>
-
-  <div class="sect"><h2>手机（安卓）解压</h2></div>
-  <div class="tut-card">
-    <div class="faq-lead">流程和电脑一样，只是换成在 ZArchiver 里操作：</div>
-    <div class="faq-step"><b>解压</b>　打开 ZArchiver 找到下载的压缩包，点它 → 「解压到当前目录」。</div>
-    <div class="faq-step"><b>改后缀</b>　mp4 / exe 这类伪装文件：长按 → 重命名，把后缀改成 zip 或 rar，再点开解压。</div>
-    <div class="faq-step"><b>分卷</b>　所有分卷放同一个文件夹，点第一个解压。</div>
-    <div class="faq-step"><b>安装游戏</b>　解压出 apk 就点开安装；解压出数据包文件夹的，按游戏说明放到指定目录。</div>
-    <div class="faq-tip">手机管家报毒是误报常见，在管家里加信任即可；别用网盘在线解压，先下载到手机再操作。</div>
-  </div>
-
-  <div class="sect"><h2>解压密码</h2></div>
-  <div class="tut-card">
-    <div class="tut-key">无</div>
-    <div class="tut-note">下载前看一眼游戏介绍，某些游戏可能有</div>
-  </div>
-
-  <div class="sect"><h2>提示压缩包损坏</h2></div>
-  <div class="tut-card">
-    <p>打开压缩包，还报错就重新下载。</p>
-    <p>如果没有报错，就直接拉出压缩包文件。</p>
-  </div>
-
-  <div class="sect"><h2>常见问题</h2></div>
-
-  <div class="tut-list">
-    <div class="tut-item">
-      <span class="tut-ext">密码</span>
-      <span class="tut-txt">通常写在资源来源页、帖子说明或同目录 txt 中，注意全角 / 半角、大小写</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">CRC 错误</span>
-      <span class="tut-txt">文件损坏，重新下载（优先换做种多的源）</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">报毒 / exe 被删</span>
-      <span class="tut-txt">多为误报：先关闭杀毒实时防护或把游戏文件夹加信任，再重新解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">路径太长</span>
-      <span class="tut-txt">把压缩包移动到较短路径（如 D:\game\）再解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">文件名乱码</span>
-      <span class="tut-txt">解压时把编码设为日文（Shift-JIS），或先转区再解压</span>
-    </div>
-  </div>
-
-  <div class="tut-card">
-    <div class="faq-title">日文游戏乱码 / 双击没反应 / 闪退</div>
-    <div class="faq-lead">这是「非 Unicode 程序语言」不是日语导致的。三种办法任选其一：</div>
-    <div class="faq-step"><b>Locale Emulator（推荐）</b>　解压后运行 LEInstaller.exe 注册右键菜单，之后右键游戏 exe → Locale Emulator → Run in Japanese。</div>
-    <div class="faq-step"><b>NTLEA</b>　另一款转区工具，用法类似。</div>
-    <div class="faq-step"><b>改系统区域</b>　控制面板 → 区域 → 「管理」→ 更改系统区域设置 → 「非 Unicode 程序语言」设为日语（日本） → 重启（一劳永逸）。</div>
-    <div class="faq-tip">转区工具行为特殊，杀软可能误报，从本站镜像或官方源下载即可。</div>
-  </div>
-
-  <div class="tut-card">
-    <div class="faq-title">下载下来是 mp4 / 解压提示已损坏</div>
-    <div class="faq-lead">部分资源为过网盘审核会把压缩包伪装成 mp4（学习资料类最常见）。它不是视频，改个后缀就是正常压缩包：</div>
-    <div class="faq-step"><b>认文件</b>　文件列表里只有个别文件是 mp4（其余是 pdf 等），就是这种情况。</div>
-    <div class="faq-step"><b>先下载</b>　把 mp4 文件下载到电脑 / 手机本地，不要用网盘的在线解压。</div>
-    <div class="faq-step"><b>改后缀</b>　把 .mp4 改成 .zip 或 .rar，然后正常解压即可。</div>
-    <div class="faq-tip">用百度网盘在线解压、或文件没下载完就解压，会提示「文件已损坏」——不是资源坏了，是解压方式不对。</div>
-  </div>
-
-  <div class="tut-list">
-    <div class="tut-item">
-      <span class="tut-ext">缺字</span>
-      <span class="tut-txt">系统缺日文字体，安装日文字体（MS Gothic / Meiryo）或转区运行</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">存档</span>
-      <span class="tut-txt">常见于游戏目录下 save 文件夹，或 我的文档 / %APPDATA% 下以品牌命名的目录</span>
-    </div>
-  </div>
-
-  <div class="sect"><h2>快速定位</h2></div>
+  <div class="sect"><h2><em class="no">01</em>你的问题是什么</h2><span>点一行跳到对应的办法</span></div>
   <div class="tut-list wide">
-    <div class="tut-item">
-      <span class="tut-ext">乱码 / 双击没反应 / 闪退</span>
-      <span class="tut-txt">区域问题，用转区（Locale Emulator）运行</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">缺少 xxx.dll</span>
-      <span class="tut-txt">装 VC++ 运行库 / DirectX</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">0xc000007b</span>
-      <span class="tut-txt">运行库缺失或位数不匹配，补齐 VC++</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">解压 CRC 错误</span>
-      <span class="tut-txt">文件损坏，重新下载</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">分卷解压失败</span>
-      <span class="tut-txt">分卷没下全 / 不同目录，对第一卷解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">磁链没速度</span>
-      <span class="tut-txt">做种少，换源或挂机等待</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">文字方框 / 缺字</span>
-      <span class="tut-txt">缺日文字体，装字体或转区</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">转区工具被杀毒删除</span>
-      <span class="tut-txt">误报，加信任或重新下载</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">下载是 mp4 / 已损坏</span>
-      <span class="tut-txt">伪装后缀的资源，先下载到本地，改 zip 或 rar 再解压</span>
-    </div>
-    <div class="tut-item">
-      <span class="tut-ext">报毒 / exe 消失</span>
-      <span class="tut-txt">杀毒误报，关实时防护或加信任后重新解压</span>
-    </div>
+    <a class="tut-item" href="#pwd"><span class="tut-ext">要解压密码</span><span class="tut-txt">密码写在帖子介绍里，点封面图才能看到介绍</span></a>
+    <a class="tut-item" href="#err"><span class="tut-ext">提示压缩包损坏</span><span class="tut-txt">多数是没下完，或者用了网盘在线解压</span></a>
+    <a class="tut-item" href="#unzip"><span class="tut-ext">下载下来是 mp4 / jpg / psd</span><span class="tut-txt">伪装后缀，改成 zip 或 rar 再解压</span></a>
+    <a class="tut-item" href="#unzip"><span class="tut-ext">分卷压缩包</span><span class="tut-txt">全部分卷放同一个文件夹，只解压 part1</span></a>
+    <a class="tut-item" href="#err"><span class="tut-ext">exe 被删 / 提示有毒</span><span class="tut-txt">杀毒误报，加信任后重新解压</span></a>
+    <a class="tut-item" href="#run"><span class="tut-ext">双击没反应 / 乱码 / 闪退</span><span class="tut-txt">区域问题，用转区工具运行</span></a>
+    <a class="tut-item" href="#run"><span class="tut-ext">缺 xxx.dll / 0xc000007b</span><span class="tut-txt">缺运行库，去游戏工具页补 VC++</span></a>
+    <a class="tut-item" href="#unzip"><span class="tut-ext">不知道装哪个解压软件</span><span class="tut-txt">WinRAR、ZArchiver、RAR-mod，这三个就够用</span></a>
+  </div>
+
+  <div class="sect" id="pwd"><h2><em class="no">02</em>解压密码</h2><span>站内约三分之一的资源带密码</span></div>
+
+  <div class="tut-card">
+    <div class="faq-title">先搞清楚：帖子里的「介绍」怎么打开</div>
+    <div class="faq-lead">游戏帖里的介绍不是直接铺在页面上的。进帖子后，<b>点一下游戏封面图</b>，完整介绍才会弹出来 —— 图片下面那行小字「点击图片查看完整介绍」说的就是这个，很多人没注意到。</div>
+    <div class="faq-step"><b>解压码就写在弹出来的这段介绍里</b>。所以找密码的第一步永远是：进帖子 → 点图片 → 把介绍打开。</div>
+
+    <div class="faq-title" style="margin-top:18px">密码在介绍里的哪个位置</div>
+    <div class="faq-lead">不固定，不同帖子的写法不一样，这三个位置都出现过：</div>
+    <div class="faq-step"><b>最上面</b>　标题下面那一两行就写「解压码：xxx」。</div>
+    <div class="faq-step"><b>中间</b>　夹在版本说明、更新内容里。</div>
+    <div class="faq-step"><b>最下面</b>　写完介绍和下载说明之后才写密码。</div>
+
+    <div class="faq-title" style="margin-top:18px">复制了还提示密码错误</div>
+    <div class="faq-step"><b>别多复制</b>　密码后面常跟着【备注】之类的说明，只复制密码本身。</div>
+    <div class="faq-step"><b>别带空格</b>　用鼠标拖动选中容易带上前后空格，粘进去先把空格删掉。</div>
+    <div class="faq-step"><b>全角半角</b>　中文输入法打出来的符号和英文的不是同一个，能复制就别手打。</div>
+
+    <div class="faq-tip">页面会把大部分「解压码：xxx」自动做成一个「解压码」按钮，点一下直接复制。但这个功能没覆盖全部帖子（不少老帖子没转换成功），<b>没看到按钮不代表没有密码</b>，回介绍里往下翻找文字。</div>
+  </div>
+
+  <div class="sect" id="err"><h2><em class="no">03</em>解压时提示出错</h2></div>
+
+  <div class="tut-list wide">
+    <div class="tut-item"><span class="tut-ext">压缩包损坏 / CRC 错误</span><span class="tut-txt">先对照帖子里写的大小，确认文件下全了；下全了还报错，多半是网盘在线解压导致的，下载到本地再解</span></div>
+    <div class="tut-item"><span class="tut-ext">报毒 / exe 被删</span><span class="tut-txt">这类游戏被误报很常见：关掉杀毒实时防护，或把游戏文件夹加信任，再重新解压</span></div>
+    <div class="tut-item"><span class="tut-ext">路径太长 / 解压到一半失败</span><span class="tut-txt">把压缩包挪到短路径再解，例如 D:\game\，别放在桌面深处</span></div>
+    <div class="tut-item"><span class="tut-ext">文件名全是乱码</span><span class="tut-txt">解压软件里把文件名编码选成日文（Shift-JIS）；还不行就先转区再解压</span></div>
+    <div class="tut-item"><span class="tut-ext">提示密码错误</span><span class="tut-txt">看上面第 02 节「解压密码」，重点检查有没有多复制备注或者带上空格</span></div>
+  </div>
+
+  <div class="sect" id="unzip"><h2><em class="no">04</em>解压怎么解</h2></div>
+
+  <div class="tut-card">
+    <div class="faq-title">先装一个解压工具，主流就这四个</div>
+    <div class="faq-step"><b>WinRAR</b>　电脑端首选，rar / zip / 7z 都能开，装完右键就有解压菜单。<a href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往下载</a></div>
+    <div class="faq-step"><b>ZArchiver Pro</b>　安卓端首选，改后缀、解分卷都在这里面。<a href="https://pan.baidu.com/s/1Khcpamh93AVuGLWDqfuDMQ?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往下载</a></div>
+    <div class="faq-step"><b>RAR-mod 版</b>　安卓端另一个选择，界面更简单。<a href="https://pan.baidu.com/s/1HyfLA_9uu0fREYoI6eYqFg?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往下载</a></div>
+    <div class="faq-step"><b>lz4 解压工具</b>　只用来解 .lz4 文件，普通解压软件打不开这种。<a href="https://pan.baidu.com/s/13Bs3RyYl5df2AKwCwMejzg?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往下载</a></div>
+    <div class="faq-tip">改后缀之前，先让电脑把后缀显示出来，不然你改的其实不是真后缀（会变成 xxx.mp4.txt）：Win10 文件资源管理器 → 顶部「查看」→ 勾选「文件扩展名」；Win11 →「查看」→「显示」→ 勾选「文件扩展名」。手机不用设置，ZArchiver 里长按文件 → 重命名即可。</div>
+  </div>
+
+  <div class="tut-list">
+    <div class="tut-item"><span class="tut-ext">exe</span><span class="tut-txt">多数直接双击解压；个别是伪装后缀，改成 zip 或 rar 再解</span></div>
+    <div class="tut-item"><span class="tut-ext">tar</span><span class="tut-txt">直接解压</span></div>
+    <div class="tut-item"><span class="tut-ext">分卷</span><span class="tut-txt">全部分卷放同一个文件夹，只解压 part1（第一卷）</span></div>
+    <div class="tut-item"><span class="tut-ext">psd、jpg</span><span class="tut-txt">后缀改成 rar 后解压</span></div>
+    <div class="tut-item"><span class="tut-ext">00、txt</span><span class="tut-txt">后缀改成 rar 后解压</span></div>
+    <div class="tut-item"><span class="tut-ext">mp4</span><span class="tut-txt">后缀改成 zip 或 rar 后解压（先下载到本地，别在线解压）</span></div>
+    <div class="tut-item"><span class="tut-ext">7z</span><span class="tut-txt">WinRAR 直接能开；打不开就装 7-Zip</span></div>
+    <div class="tut-item"><span class="tut-ext">lz4</span><span class="tut-txt">普通解压软件打不开，要用专门的 lz4 工具，在上面「先装一个解压工具」里</span></div>
   </div>
 
   <div class="tut-card">
-    <div class="faq-title">提示缺少 xxx.dll / 0xc000007b / 缺少运行库</div>
-    <div class="faq-lead">多为缺少运行库：安装 Visual C++ 运行库（x86 + x64 都装）、必要时 DirectX 与 .NET，均见「<a href="tools.html">游戏工具</a>」。</div>
-    <div class="faq-lead" style="margin-bottom:0">0xc000007b 通常补齐 VC++ 运行库即可解决。</div>
+    <div class="faq-title">视频教程</div>
+    <div class="faq-step"><b>视频类解压教程</b>　<a href="https://pan.baidu.com/s/16iW75rSGu6cDhed0HB-swA?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往观看</a></div>
+    <div class="faq-step"><b>7z 文件解压</b>　<a href="https://pan.baidu.com/s/1kyZze6rwJQVpD81N4EJ4GA?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往观看</a></div>
+    <div class="faq-step"><b>lz4 文件解压</b>　<a href="https://pan.baidu.com/s/1DBeXVIELRgyzJkDa4sy3oA?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往观看</a></div>
+    <div class="faq-step"><b>mp4 文件解压</b>　<a href="https://pan.baidu.com/s/1J85sfzM6wvsMqzUudQ4nBA?pwd=839m" target="_blank" rel="noreferrer" class="tut-dl">前往观看</a></div>
   </div>
 
+  <div class="tut-card">
+    <div class="faq-title">手机（安卓）怎么解压</div>
+    <div class="faq-lead">流程和电脑一样，换成在 ZArchiver 里操作：</div>
+    <div class="faq-step"><b>解压</b>　打开 ZArchiver 找到压缩包，点它 →「解压到当前目录」。</div>
+    <div class="faq-step"><b>改后缀</b>　mp4 / exe 这类伪装文件：长按 → 重命名，改成 zip 或 rar，再点开解压。</div>
+    <div class="faq-step"><b>分卷</b>　所有分卷放同一个文件夹，点第一个解压。</div>
+    <div class="faq-step"><b>安装</b>　解压出 apk 直接点开安装；解压出数据包文件夹的，按游戏说明放到指定目录。</div>
+    <div class="faq-tip">手机管家报毒多为误报，加信任即可；别用网盘在线解压，先下载到手机再操作。</div>
+  </div>
+
+  <div class="sect" id="run"><h2><em class="no">05</em>解压完了打不开</h2></div>
+
+  <div class="tut-card">
+    <div class="faq-title">乱码 / 双击没反应 / 闪退</div>
+    <div class="faq-lead">这是「非 Unicode 程序语言」不是日语导致的，三种办法任选其一：</div>
+    <div class="faq-step"><b>Locale Emulator（推荐）</b>　解压后运行 LEInstaller.exe 注册右键菜单，之后右键游戏 exe → Locale Emulator → Run in Japanese。工具在 <a href="tools.html#other" class="tut-link">游戏工具 · 其他工具</a> 里。</div>
+    <div class="faq-step"><b>NTLEA</b>　另一款转区工具，用法类似。</div>
+    <div class="faq-step"><b>改系统区域</b>　控制面板 → 区域 →「管理」→ 更改系统区域设置 →「非 Unicode 程序语言」设为日语（日本）→ 重启（一劳永逸）。</div>
+    <div class="faq-tip">转区工具行为特殊，杀软可能误报，从本站镜像或官方源下载即可。</div>
+
+    <div class="faq-title" style="margin-top:18px">缺 xxx.dll / 0xc000007b / 提示缺少运行库</div>
+    <div class="faq-lead">多数是缺运行库：装 Visual C++ 运行库（x86 和 x64 都装），必要时补 DirectX 与 .NET，都在 <a href="tools.html#runtime">游戏工具 · 运行库</a> 里。0xc000007b 基本都是补齐 VC++ 运行库就能解决。</div>
+
+    <div class="faq-title" style="margin-top:18px">文字变方框 / 存档找不到</div>
+    <div class="faq-step"><b>缺字</b>　系统缺日文字体：装 MS Gothic / Meiryo，或转区运行。</div>
+    <div class="faq-step"><b>存档</b>　通常在游戏目录下的 save 文件夹，或「我的文档」、%APPDATA% 里以品牌命名的目录。</div>
+  </div>
+
+  <div class="sect" id="qq"><h2><em class="no">06</em>还是搞不定？进 QQ 群问</h2></div>
+
+  <div class="tut-card">
+    <div class="faq-lead" style="margin-bottom:0">求助帖目前只能发文字、发不了截图，报错光靠打字很难说清。进群可以直接把报错图发出来。</div>
+  </div>
+
+  <div class="tut-list">
+    <div class="tut-item">
+      <span class="tut-ext">QQ 一群</span>
+      <span class="tut-txt">1065985313</span>
+      <a class="qq-btn" href="https://qm.qq.com/q/IF0izlaKQg" target="_blank" rel="noreferrer">加群</a>
+    </div>
+    <div class="tut-item">
+      <span class="tut-ext">QQ 聊天群</span>
+      <span class="tut-txt">1063428520</span>
+      <a class="qq-btn" href="https://qm.qq.com/q/9duTl9TlYW" target="_blank" rel="noreferrer">加群</a>
+    </div>
+  </div>
 </main>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <!-- 旧导航脚本已移除，改用 assets/js/nav.js -->

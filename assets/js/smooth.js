@@ -17,15 +17,33 @@
   requestAnimationFrame(raf);
 
   // 页内锚点平滑跳转（#xxx）；不逐帧写 history（file:// 下会抛异常打断滚动循环）
+  // 2026-10-24 修复三处：
+  //  ① 原来 href="#pwd" 的 indexOf('#') 也是 0，被判成「回顶部」→ 纯锚点全部失效；
+  //  ② 原来对 tools.html#unzip 这类跨页锚点也 preventDefault，跨页跳转直接吃掉 → 只接 # 开头；
+  //  ③ 原来 offset:70 方向反了（Lenis 的 offset 是加在目标位置上，正值=多滚=顶栏盖住标题），
+  //     且没有考虑「一块内容能不能整块放进视口」。现在按内容高度决定居中还是顶部对齐。
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href*="#"]');
     if (!a) return;
     var href = a.getAttribute('href') || '';
-    var id = href.indexOf('#');
-    if (id < 0) return;
-    var target = id === 0 ? document.documentElement : document.querySelector(href.slice(id));
+    if (href.charAt(0) !== '#') return; // 跨页链接（tools.html#x）一律放行
+    var target = (href === '#' || href.length < 2) ? document.documentElement : document.querySelector(href);
     if (!target) return;
     e.preventDefault();
-    lenis.scrollTo(target, { offset: 70 });
+
+    var header = document.querySelector('header');
+    var hh = (header ? header.offsetHeight : 0) + 16; // 顶栏高度 + 一点呼吸
+    var vh = window.innerHeight;
+    var th = target.offsetHeight || 0;
+    // 目标距视口顶部要留多少：能整块放下就居中（上下都留白）；放不下整块时也别贴死顶栏，
+    // 让出约 18% 视口高度，避免「划过头 / 标题被顶栏压住」的观感。
+    // Lenis 的 offset 是「加在目标位置上的量」，所以取负值 = 让目标往下落。
+    var lead;
+    if (th && th <= vh - hh) {
+      lead = Math.max(hh, Math.round((vh - th) / 2));
+    } else {
+      lead = Math.max(hh, Math.round(vh * 0.18));
+    }
+    lenis.scrollTo(target, { offset: -lead, duration: 0.7 });
   });
 })();
