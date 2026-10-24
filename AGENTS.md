@@ -138,7 +138,33 @@
   块比视口还高时**留出约 18% 视口**（`lead = vh*0.18`，电脑 900px 视口约 162px、手机约 137px）。
   **Lenis 的 `offset` 是「加在目标位置上的量」，要往下落必须传负值**（原来传 +70 是反的，等于让标题多滚上去被顶栏压住）；
   `duration` 1.2→0.7，减少「还在继续滑」的感觉。
+- ★**查 GitHub Pages 是否已部署，curl 必须带 `--compressed`**（2026-10-24 差点误报成「没部署」）：
+  Pages 返回 gzip，curl 不解压时 `grep -c` **永远返回 0**，看起来像线上还是旧版。正确命令：
+  `curl -s --compressed "https://tkporl.github.io/mrhyfx/xxx.html?cb=$RANDOM" | grep -c 关键词`。
+  判断「仓库有没有」用 `raw.githubusercontent.com`（不压缩，可以直接 grep）；两者都确认才算部署完成。
   配套兜底：`tutorial.html` / `tools.html` 的 `.sect[id]{scroll-margin-top:88px}`（lenis 不启用时走原生跳转）。
+- **游戏工具页：27 个工具图标（2026-10-24，`tools.html`，本地完成 · 未推送）**：
+  演进过程：第一版（速查表 + 分类编号 + 线条图标 + 27 条用途说明）被站长否掉并还原 →
+  第二版字母圆标 → 站长坚持要**应用自己的图标**，于是第三版定稿：
+  **15 个真图标以 WebP 72×72 base64 内联**（`.tool-ico img` + `object-fit:cover`，36px 圆角方块，零外链）：
+  joi / RPGMPlugin / Kirikiroid2 / Tyranor / Winlator / ONScripter / 解压专家 / ZArchiver Pro / RAR-mod /
+  WinRAR / Motrix / IDM / NDM / ADM / DirectX 运行库；
+  **其余 12 个用分类描边 SVG**（`.tool-ico svg`，19px 灰线：手柄 / 翻译 / 扳手 / 文件 / 压缩包 / 下载 / 齿轮 / 地球 / 放大）。
+  ★**凑不齐的原因**（实测记录，别再重复挖）：能自动抓到的是 zarchiver.ru、win-rar.com、motrix.app、
+  internetdownloadmanager.com、neatdownloadmanager.com（`/templates/neat/favicon.ico`）、winlator.com、
+  GitHub `Weiss-UltimateSavior/Tyranor-Next`、`YuriSizuku/OnscripterYuri`；
+  **rpgmakerplugin / joiplay 停更、Kirikiroid2 仓库无 app 图标、汉化/改数据/自动解压/转区/放大是民间打包工具没有 logo、
+  运行库是微软组件** —— 这 12 个只能由站长手动提供图片。
+  素材与转换脚本在 `_本地改动备份_20261024_0625/tool-icons/`（`icons.json` / `icons2.json` / `strip*.png`）。
+  ★**站长给的图可能是「白色图形 + 透明底」**（2026-10-24 joi 踩到）：直接内联会在 `#f6f5f3` 浅色卡片上**整块看不见**，
+  表现为「图标是白的 / 空的」。判断法：解 WebP 看 `非白像素占比`，joi 只有 4.4%（其余真图标 20%~94%）。
+  **修法：把 logo 居中合成到深色方形画布**（joi 用 `#171A2D`，logo 缩到高 470/512）再缩到 72×72 出 WebP，
+  既保住原图形又跟真机图标一致。以后收到透明底白图先做这一步，别直接往 HTML 里塞。
+  ★**给 27 个工具批量加图标时的坑**：用「工具名前缀」做替换会互相吃掉 —— `自动解压工具 · 无需设置` 和
+  `自动解压工具` 前者包含后者，`replace` 直接把图标插到了前者头上，导致一个工具有两个图标、另一个没有。
+  **教训：同类条目名有包含关系时，必须用完整结构（`<div class="tool-name">全文</div>`）匹配，不要用前缀。**
+  核验：27 工具 / 27 图标（15 img + 12 svg）/ 结构平衡；Chrome 无头截图 1000px 与 390px 两档已肉眼过。
+  **`#unzip` `#runtime` `#other` 三个锚点必须保留**（解压教程页跨页链接目标）。这页**不参与 gen.js 生成**。
 - **解压教程页重排（2026-10-24，`tutorial.html`，本地完成 · 未推送）**：结构从
   「先装工具 → 按类型 → 手机 → 密码 → 损坏 → 常见问题 → 快速定位」改成
   **「你是哪种情况（7 条可点跳转）→ 解压密码 → 按报错解决 → 按文件类型解压 → 手机 → 解压完了打不开」**。
