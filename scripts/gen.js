@@ -68,9 +68,11 @@ const NAVJS_VER = assetVer('assets/js/nav.js');
 const COPYCODE_VER = assetVer('assets/js/copycode.js');
 const copycodeScript = '<script src="assets/js/copycode.js?v=' + COPYCODE_VER + '"></scr' + 'ipt>';
 // 丝滑滚动（2026-10-05）：Lenis 本地 vendored + 薄封装，三处注入点（帖子页 / 首页合集 / 空首页）共用
-const LENIS_VER = assetVer('assets/js/lenis.min.js');
 const SMOOTH_VER = assetVer('assets/js/smooth.js');
-const SMOOTH_SCRIPTS = `<script src="assets/js/lenis.min.js?v=${LENIS_VER}"></script>\n<script src="assets/js/smooth.js?v=${SMOOTH_VER}"></script>`;
+// 2026-10-26（站长要求）：去掉 Lenis 平滑滚动，滚轮/触摸走浏览器原生滚动；
+// smooth.js 只剩「页内锚点按顶栏高度偏移 + 内容居中」这一件事。
+// ★lenis.min.js 文件仍留在仓库（要恢复平滑滚动只需把它加回下面这行），但页面不再引用它。
+const SMOOTH_SCRIPTS = `<script src="assets/js/smooth.js?v=${SMOOTH_VER}"></script>`;
 
 // ===================== 站点图标资源（2026-09-22 迁到图床 WebP）=====================
 // 两处唯一真相都在这里：以后要再换图标，只改这两行，全站页面由 gen.js 重新生成时统一切换。
@@ -2534,12 +2536,13 @@ ${SMOOTH_SCRIPTS}
         h = h.replace('</body>', '<script src="assets/js/nav.js?v=' + NAVJS_VER + '"></script>\n' + SMOOTH_SCRIPTS + '\n</body>');
       } else {
         h = h.replace(/assets\/js\/nav\.js\?v=[a-f0-9]+/g, 'assets/js/nav.js?v=' + NAVJS_VER);
-        if (!h.includes('lenis.min.js')) h = h.replace('</body>', SMOOTH_SCRIPTS + '\n</body>');
+        if (!h.includes('assets/js/smooth.js')) h = h.replace('</body>', SMOOTH_SCRIPTS + '\n</body>');
       }
-      // 2026-10-24：这五个页面的 smooth.js / lenis 引用原来**没带版本号**（mianze 还留着老哈希），
+      // 2026-10-24：这五个页面的 smooth.js 引用原来**没带版本号**（mianze 还留着老哈希），
       //   改过 smooth.js 后访客会继续用缓存里的旧文件 —— 统一补上内容哈希。
       h = h.replace(/assets\/js\/smooth\.js(?:\?v=[a-f0-9]+)?/g, 'assets/js/smooth.js?v=' + SMOOTH_VER);
-      h = h.replace(/assets\/js\/lenis\.min\.js(?:\?v=[a-f0-9]+)?/g, 'assets/js/lenis.min.js?v=' + LENIS_VER);
+      // 2026-10-26：Lenis 下线，把这五个页面里的 lenis 引用清掉（连同它的换行）。
+      h = h.replace(/[ \t]*<script src="assets\/js\/lenis\.min\.js[^"]*"><\/script>\r?\n?/g, '');
       fs.writeFileSync(file, h);
       console.log('独立页顶栏统一:', file);
     });
@@ -2691,6 +2694,25 @@ ${navHeaderHtml('', 'q')}
   <div id="res" aria-busy="false"></div>
 </main>
 <script>window.MRHX_TITLES=__MRHX_TITLES__;</script>
+<script>/* 2026-10-26 方案B：关键词索引（类型词命中表）后台静默预载。
+   小索引只有标题，搜「巨乳 / NTR / 露出」这类词命中极少；全库兜底要拉 256 个分片太慢。
+   这份表与 MRHX_TITLES 同序、gzip 约 23KB，拉完搜索就是纯本地匹配（秒出），首屏不受影响。 */
+(function(){
+  window.__mrhxKw = null;
+  window.__mrhxKwCbs = [];
+  window.mrhxKwReady = function(fn){ if (window.__mrhxKw) { try { fn(window.__mrhxKw); } catch(e){} } else { window.__mrhxKwCbs.push(fn); } };
+  try {
+    fetch('search_kw.json?v=' + Date.now(), { cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(a){
+        if (!Array.isArray(a)) return;
+        window.__mrhxKw = a;
+        var cbs = window.__mrhxKwCbs; window.__mrhxKwCbs = [];
+        for (var i = 0; i < cbs.length; i++) { try { cbs[i](a); } catch (e) {} }
+      })
+      .catch(function(){});
+  } catch (e) {}
+})();</script>
 <script src="assets/js/nav.js?v=${NAVJS_VER}"></script>
 <footer>${SITE_FOOTER}</footer>
 <script>
@@ -2997,27 +3019,62 @@ function relTime(iso){
   // 补全按需拉命中分片；0 标题命中走全库兜底（拉全部分片）
   (function () {
     var TITLES = window.MRHX_TITLES || [];
-    var hits = TITLES.filter(function (g) {
-      return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw);
-    });
-    if (!hits.length) {
+    // 2026-10-26：本地匹配扩到「关键词表」（与 TITLES 同序，含标签+类型词）。
+    // KW 为 null 时退化成原来的「只搜标题+平台」。
+    function localHits(KW) {
+      return TITLES.filter(function (g, i) {
+        return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw) || (KW && fuzzyMatch(KW[i], kw));
+      });
+    }
+    function paint(hits) {
+      hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
+      hits.forEach(function (g) { g._exact = matchScore(g) <= 1; g._partial = true; });
+      _hits = hits;
+      countEl.textContent = '（找到 ' + _hits.length + ' 个）';
+      _page = 0;
+      resBox.innerHTML = '';
+      renderMore();
+      // 结果已先出，只拉「首屏这一页」涉及的几片补全（失败则保持标题卡片，不报错）
+      prefetchPage();
+    }
+    function fullSearch() {
       // 标题没命中 → 仍需查介绍（runFullSearch 里已有 fuzzy + 乱序放宽 + 推荐三级兜底，
       // 顺序不能提前到本地，否则「标题没有、介绍里有」的精确查询会退化成乱序匹配）。
       // 分片变小后整库只有约 1.3MB（gzip），限并发拉取，避免挤爆连接池。
       countEl.textContent = '（全库检索中…）';
       resBox.innerHTML = '<div class="empty-box"><h3>正在全库检索「' + esc(kw) + '」…</h3><p>标题没有直接命中，正在搜索完整介绍</p></div>';
       loadShardsLimited(Array.from({length: SHARDS}, function (_, i) { return i; }), 10).then(runFullSearch).catch(showErr);
+    }
+    var KW = window.__mrhxKw;
+    var hits = localHits(KW);
+    if (hits.length) {
+      paint(hits);
+      // ★标题已经命中、但关键词表还没到时：先让用户看到结果，表到了再补一轮
+      //（补完只会更多，不会变少）。不加这一步就会「标题命中 16 个、介绍里 156 个却只显示 16」。
+      if (!KW && window.mrhxKwReady) {
+        window.mrhxKwReady(function (a) {
+          var h2 = localHits(a);
+          if (h2.length > _hits.length) paint(h2);
+        });
+      }
       return;
     }
-    hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
-    hits.forEach(function (g) { g._exact = matchScore(g) <= 1; g._partial = true; });
-    _hits = hits;
-    countEl.textContent = '（找到 ' + _hits.length + ' 个）';
-    _page = 0;
-    resBox.innerHTML = '';
-    renderMore();
-    // 结果已先出，只拉「首屏这一页」涉及的几片补全（失败则保持标题卡片，不报错）
-    prefetchPage();
+    // 关键词表已到但仍 0 命中 → 走全库兜底
+    if (KW) { fullSearch(); return; }
+    // 关键词表还没到（约 23KB，通常 300ms 内）→ 等它，别急着拉 256 个分片
+    countEl.textContent = '（加载搜索索引…）';
+    var settled = false;
+    if (window.mrhxKwReady) {
+      window.mrhxKwReady(function (a) {
+        if (settled) return; settled = true;
+        var h2 = localHits(a);
+        if (h2.length) paint(h2); else fullSearch();
+      });
+    }
+    setTimeout(function () {
+      if (settled) return; settled = true;
+      fullSearch();
+    }, 1200);
   })();
   function bindHistClick() {
     var delBtns = document.querySelectorAll('.hist-tag .del');
@@ -3459,6 +3516,38 @@ ${likeScript}
     }
     console.log('search_detail_0..' + (SHARDS - 1) + '.json ok: 每片约', Math.ceil(slimIndex.length / SHARDS), '条');
     fs.writeFileSync('search_titles.json', JSON.stringify(titlesIndex));
+    // ===== 搜索关键词索引（2026-10-26 方案B）=====
+    // 小索引只有 title/plat，搜「巨乳 / NTR / 露出」这类类型词命中极少（实测巨乳 17/217）。
+    // 全库兜底要拉 256 个分片（约 1.3MB gzip），弱网下要十几秒 —— 这就是「搜不出游戏」的由来。
+    // 解法：单独产一份「类型词命中表」，与 titlesIndex 同序，每条的串 = 【标签】+ 命中到的类型词。
+    // 实测 3097 条约 147KB / gzip 23KB，类型词覆盖 100%（巨乳 217/217、NTR 321/321、露出 74/74）。
+    // 页面打开即后台静默拉取，搜索时纯本地匹配 → 秒出，且不拖慢首屏。
+    // ★改词表只改这个数组，别在页面里另存一份（两处不同步 = 又一类「双实现」事故）。
+    const KW_WORDS = [
+      '巨乳', '爆乳', '巨根', 'NTR', '寝取', '出轨', '偷情', '露出', '露出狂', '萝莉', '正太',
+      '少女', '熟女', '人妻', '母', '妹', '姐', '女仆', '学园', '校园', '教师', '学生',
+      '催眠', '调教', '堕落', '监禁', '触手', '异种', '兽耳', '精灵', '魔法', '后宫',
+      '怀孕', '西瓜肚', '扶她', '伪娘', '痴汉', '电车', '偷窥', '群交', '淫乱', '乱伦',
+      '近亲', '母子', '姐弟', '兄妹', '中出', '肛', '兽交', '凌辱', '调教',
+      '动态', 'Live2D', '3D', '像素', '汉化', '官中', '步兵', '存档', '作弊', '重制',
+      '模拟', 'RPG', 'SLG', 'ACT', 'ADV', '安卓', 'joi', 'mtool', '吉里吉里', '模拟器'
+    ];
+    const KW_SET = [...new Set(KW_WORDS)];
+    const kwIndex = slimIndex.map(g => {
+      const intro = String(g.intro || '');
+      const parts = [];
+      const tag = intro.match(/^\s*【([^】]*)】/);
+      if (tag) parts.push(tag[1]);
+      const low = intro.toLowerCase();
+      for (const w of KW_SET) {
+        const lw = w.toLowerCase();
+        if (low.includes(lw) && !parts.some(p => p.toLowerCase().includes(lw))) parts.push(w);
+      }
+      return parts.join(' ');
+    });
+    const kwJson = JSON.stringify(kwIndex);
+    fs.writeFileSync('search_kw.json', kwJson);
+    console.log('search_kw.json ok:', Math.round(kwJson.length / 1024) + 'KB /', kwIndex.length, '条');
     const titlesInline = JSON.stringify(titlesIndex).replace(/<\//g, '<\\/'); // 防 </script> 提前闭合
     fs.writeFileSync('search.html', searchPage.replace('__MRHX_TITLES__', titlesInline));
     console.log('search.html ok (titles 内联 ' + Math.round(titlesInline.length / 1024) + 'KB)');

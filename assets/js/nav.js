@@ -27,8 +27,11 @@
     // 抽屉打开时锁住背景滚动（窄屏抽屉是全屏面板）
     document.body.style.overflow = open ? 'hidden' : '';
     // 2026-10-24（站长反馈「抽屉滑不动、滑了是页面在动」）：
-    // Lenis 直接驱动 window 滚动，body{overflow:hidden} 拦不住它，必须显式 stop/start；
-    // 抽屉内部 .drawer-body 带 data-lenis-prevent，滚轮/触摸就不会再漏给页面。
+    // Lenis 直接驱动 window 滚动，body{overflow:hidden} 拦不住它，必须显式 stop/start。
+    // 2026-10-26 起 Lenis 已下线（站长要求去掉平滑滚动），页面里没有 window.__mrhxLenis，
+    // 下面这段就成了空跑兜底 —— 留着是为了万一以后恢复平滑滚动不丢逻辑。
+    // 抽屉内部 .drawer-body 仍有 data-lenis-prevent + overscroll-behavior:contain，
+    // 原生滚动下后者才是真正起作用的那条。
     var L = window.__mrhxLenis || window.lenis;
     if (L && typeof L.stop === 'function') { if (open) L.stop(); else L.start(); }
   }
