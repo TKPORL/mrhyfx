@@ -127,12 +127,9 @@
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
   /* 2026-10-26（站长）：帖子底部导航行加「赞助本站」，跳 sponsor.html。
-     尺寸跟 .mrhx-btn-nav 完全一致（不做大一号，避免抢「下一期」的视觉优先级），
-     只用淡红底 + 红字把它从一排白按钮里区分出来。 */
-  .mrhx-btn-nav.mrhx-btn-sponsor{background:#fdf3f3;color:#e5484d;border-color:#f3cccd}
-  .mrhx-btn-nav.mrhx-btn-sponsor:hover{background:#fbe6e7;border-color:#e5484d;color:#d63c41;box-shadow:0 4px 12px rgba(229,72,77,.16)}
-  /* 文案两套：桌面「赞助本站」、手机「赞助」（手机上中间那组才有空间） */
-  .mrhx-btn-sponsor .sp-s{display:none}
+     ★配色与相邻按钮**完全一致**（白底 / #333 字 / #e5e6e8 边框 / hover 红边），
+       2026-10-26 晚站长否掉第一版的淡红底红字 —— 一排按钮里只它一个是红的，像报错。 */
+  /* 赞助按钮只有一份 DOM（在中间组组尾，紧挨「解压教程」），两端文案都是「赞助本站」 */
   /* 底部导航行：上一期 | 官网 全部黄油 解压教程 | 下一期，三段一行 */
   .mrhx-navrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:nowrap}
   /* 2026-10-17（站长改版）：资源导航条去 Logo 去大框，改紧凑横排——按钮大小对齐 .mrhx-btn-nav（上一期/官网/解压教程），
@@ -231,16 +228,15 @@
    ★尺寸完全一致、一行两个自动换行，顺序即 DOM 顺序（下载 → 解压码 → 作弊码）。
    4 个 = 2+2；3 个 = 2+1；2 个 = 同一行；1 个 = 半行宽（不拉满整行）。 */
 .mrhx-dl > *{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;text-align:center;flex:1 1 40%;max-width:calc(50% - 4px);min-width:0;min-height:30px}
-    /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间三链接可横滑，不再被 flex:1 撑满整屏 */
-    .mrhx-navrow{gap:6px}
-    .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 12px;font-size:12px}
+    /* 手机端底部导航：上一期/下一期固定小尺寸靠两端，中间组可横滑兜底。
+       ★2026-10-26 晚：加了第 5 个按钮「赞助本站」后，342px 可用宽度下必须把 gap 与内边距压紧，
+         否则「官网」会被挤出可视区、赞助按钮文字被裁（站长截图「赞助:」）。内边距 ≤8px 是硬上限，
+         再大会溢出；改文案或加按钮前先按 342px 重算一遍总宽。 */
+    .mrhx-navrow{gap:4px}
+    .mrhx-navrow .mrhx-btn-nav{flex:0 0 auto;padding:7px 9px;font-size:12px}
     .mrhx-navmid{justify-content:center;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .mrhx-navmid::-webkit-scrollbar{display:none}
-    .mrhx-navmid .mrhx-btn-nav{flex:0 0 auto;padding:7px 11px;font-size:12px}
-    /* 手机端「赞助本站」缩成「赞助」，把宽度让给中间那组链接 */
-    .mrhx-btn-sponsor .sp-l{display:none}
-    .mrhx-btn-sponsor .sp-s{display:inline}
-    .mrhx-navrow .mrhx-btn-sponsor{padding:7px 11px}
+    .mrhx-navmid .mrhx-btn-nav{flex:0 0 auto;padding:7px 8px;font-size:12px}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     body.mrhx-grid2 .node{border-radius:12px}
     body.mrhx-grid2 .node .content{margin:10px 12px 0}

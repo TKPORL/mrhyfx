@@ -2469,14 +2469,14 @@ ${SMOOTH_SCRIPTS}
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
     const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}"${/^https?:/i.test(n.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(n.label)}</a>`).join('\n    ');
     // 2026-10-26（站长）：底部导航行加「赞助本站」→ sponsor.html。
-    // 放在中间组右边、下一期之前：读者下完东西正好在这一带，且不挡正文。
-    // 尺寸沿用 .mrhx-btn-nav，只靠 .mrhx-btn-sponsor 的淡红底做区分（别加大加粗）。
-    // 手机上窄，两个 span 切换文案：桌面「赞助本站」、≤720px 显示「赞助」（省 24px 给中间那组）。
-    const sponsorBtn = `<a class="mrhx-btn mrhx-btn-nav mrhx-btn-sponsor" href="sponsor.html"><span class="sp-l">赞助本站</span><span class="sp-s">赞助</span></a>`;
+    // ★位置：站长要求它**靠「解压教程」而不是靠「下一期」** —— 放进中间组内部（组尾）。
+    // ★只有一份 DOM、两端文案都是「赞助本站」（2026-10-26 晚站长否掉「桌面赞助本站 / 手机赞助」两套）。
+    //   手机靠 @media(max-width:720px) 里压缩 gap 与按钮内边距让五个按钮挤进一行，见 site.css。
+    const sponsorBtn = `<a class="mrhx-btn mrhx-btn-nav mrhx-btn-sponsor" href="sponsor.html">赞助本站</a>`;
+    const navMidAll = navMid + '\n    ' + sponsorBtn;
     const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
-      `<div class="mrhx-navmid">${navMid}</div>` +
-      sponsorBtn +
+      `<div class="mrhx-navmid">${navMidAll}</div>` +
       navBtn(newer ? newer.file : '', '下一期 →', !newer) +
       `</div><!--mrhx-daynav-end-->\n  `;
     const injectNav = (file, nav) => {
@@ -2800,7 +2800,7 @@ function relTime(iso){
       (mz ? '<button type="button" class="mrhx-unzip" data-code="' + esc(mz) + '">解压码</button>' : '') +
       (zb ? '<button type="button" class="mrhx-cheat" data-code="' + esc(zb) + '">作弊码</button>' : '') +
       (zz ? '<button type="button" class="mrhx-sponsor" data-code="' + esc(zz) + '">赞助码</button>' : '');
-    return '<div class="result' + (isExact ? ' exact' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
+    return '<div class="result' + (isExact ? ' exact' : '') + (g._partial ? ' skel' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       // 2026-10-21：小索引（_partial）先渲染标题卡，介绍/按钮/图片位放骨架扫光块（与最终布局同尺寸），分片到货后整卡补全
       (g._partial ? '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span><span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span><div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div><span class="sk" style="display:block;width:120px;height:90px;border-radius:10px;margin-top:12px"></span>'
@@ -2918,6 +2918,7 @@ function relTime(iso){
     return Promise.all(runs).then(function () { return out; });
   }
   var _fullDone = false;
+  var _retriedOnce = false;  // 详情补全只重试一轮，防止缺数据时分片请求死循环
   var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
   // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里（拉全部分片拼回整库）
   function runFullSearch(data) {
@@ -2974,16 +2975,34 @@ function relTime(iso){
       map['u' + (g.url || '') + '|' + (g.title || '')] = g;
     });
     _hits = _hits.map(function (h) {
-      var f = (h.n != null && map['n' + h.n]) || map['u' + (h.url || '') + '|' + (h.title || '')] || h;
-      f._exact = h._exact;
-      f._partial = false;
-      return f;
+      var f = (h.n != null && map['n' + h.n]) || map['u' + (h.url || '') + '|' + (h.title || '')];
+      // 2026-10-26 修复：以前不管查没查到都把 _partial 置 false，分片里缺这条（或该片请求失败）
+      // 就会渲染成「只有名字、没介绍没图」的永久空卡，只能刷新才好 —— 站长反馈的第 1、2 条就是这个。
+      // 现在只有真拿到全量记录才标完成，否则保持 partial 等重试（卡片会带 .skel，超时后由 markPartialFail 兜底）。
+      if (!f) return h;
+      var m = {};
+      for (var k in f) if (Object.prototype.hasOwnProperty.call(f, k)) m[k] = f[k];
+      m._exact = h._exact;
+      m._partial = false;
+      return m;
     });
+    var still = 0;
+    for (var q2 = 0; q2 < _hits.length; q2++) if (_hits[q2]._partial) still++;
     var pages = _page, y = window.pageYOffset;
     _page = 0;
     resBox.innerHTML = '';
     for (var i = 0; i < pages; i++) renderMore();
     window.scrollTo(0, y);
+    // 还有没补上的：先整片重拉一次（多半是那一片恰好超时）；重试过还没有，
+    // 说明分片里确实缺这条（如求助帖条目），这时转成「详情加载超时」文案，别让骨架永远转。
+    if (still) {
+      if (!_retriedOnce) {
+        _retriedOnce = true;
+        setTimeout(function () { prefetchPage(); }, 700);
+      } else {
+        markPartialFail();
+      }
+    }
   }
   function showErr() { resBox.innerHTML = _errBox; setMore(false); }
   // 2026-10-24：只补当前这一页涉及的片。原来一次拉「全部命中条目」的片，
@@ -3035,6 +3054,7 @@ function relTime(iso){
     function paint(hits) {
       hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
       hits.forEach(function (g) { g._exact = matchScore(g) <= 1; g._partial = true; });
+      _retriedOnce = false;  // 新一轮搜索重新给一次重试机会
       _hits = hits;
       countEl.textContent = '（找到 ' + _hits.length + ' 个）';
       _page = 0;
