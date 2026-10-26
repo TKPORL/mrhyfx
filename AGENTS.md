@@ -147,6 +147,14 @@
   重试过还缺就 `markPartialFail()` 转成超时文案，骨架不会永远转。`paint()` 里要重置 `_retriedOnce`。
   ★验证口径：`grep -o '<div class="result[^"]*"><div class="rt">'` 只数真实卡片 ——
   直接 grep `class="result skel"` 会把页面里 `skelRow()` 的源码字符串也算进去，看着像「还有骨架没补全」（已多次误判）。
+- ★**搜索卡图片必须先占位再加载（2026-10-26 晚，站长要求「图没出来也要留位置 + 骨架扫描」）**：
+  `.result .img` 现在**固定 `width:300px; max-width:100%; aspect-ratio:5/3`**，容器自带扫光骨架
+  （`linear-gradient` + `mrhxSk` 动画），`img` 默认 `opacity:0`，加载成功后由 **capture 阶段的 `load` 监听**
+  加 `.ok` 淡入；`.result .img:has(img.ok)` 把扫光停掉。
+  ★**不能去掉容器的 width / aspect-ratio**：`<img>` 未加载时高度是 0，整块会塌成一条空白（站长截图就是这个）。
+  ★`load` 事件**不冒泡**，监听必须用 `addEventListener('load', fn, true)`，否则永远收不到。
+  ★`skelRow()` 与 `_partial` 骨架里的图位也统一成 300×180，否则补全完成时卡片会跳一下。
+  ★改完重跑 `node scripts/gen.js`（CSS 与骨架都在 `searchPage` 模板里）。
 - ★**后台「滚动到底部」按钮停半路（2026-10-26，`Tsinhoht.html`）**：`topBtn` 原来只算一次
   `scrollTo(documentElement.scrollHeight)`；卡片加了 `content-visibility:auto` 后，屏外卡片是在滚动过程中才真正渲染，
   **scrollHeight 会一边滚一边变大**，所以第一次必然停在半路，点三四次才到底。现在改成
