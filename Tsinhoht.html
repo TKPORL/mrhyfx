@@ -65,6 +65,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .g-img-item span{display:block;padding:4px 6px;font-size:11px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g-img-item button{margin:2px 4px 5px 0;padding:4px 6px;font-size:11px}
 .game{transition:all .2s;border:1px solid #e8e6e0;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fefefe;position:relative}
+/* 2026-10-26（性能）：求助帖 265 张卡片的编辑页，屏外卡片不再参与渲染/布局。
+   contain-intrinsic-size 的 auto 会记住上次渲染高度，滚回去不会跳；首次按 600px 估算。
+   ★卡片上的 transition:all 与 content-visibility 并存没问题，但别给 .game 加 animation（会盖掉这里的渲染跳过）。 */
+#gameBox > .game{content-visibility:auto;contain-intrinsic-size:auto 600px}
 .game:hover{border-color:#d0cec8;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .game.newcard{animation:mrhxPop .5s ease both}
 /* 新建卡片的高亮描边：告诉用户「这张是刚加的、还没填」，配合自动聚焦，不再像凭空多出的一张 */
@@ -1136,7 +1140,9 @@ function restoreDraft() {
       $('fTitle').value = d.title || '';
       $('fCount').value = d.count || '';
       $('gameBox').innerHTML = '';
-      (d.cards || []).forEach(c => addGameCard(c));
+      // 2026-10-26（性能）：恢复草稿同样是批量载入，走 __mrhxBulk 跳过逐张聚焦与全量重编号
+      window.__mrhxBulk = true;
+      try { (d.cards || []).forEach(c => addGameCard(c)); } finally { window.__mrhxBulk = false; }
       const bar = $('draftBar');
       bar.classList.add('show');
       $('draftTime').textContent = new Date(d.at || Date.now()).toLocaleString();
@@ -1509,8 +1515,19 @@ function addGameCard(data) {
   d.querySelector('.g-move').onclick = e => openMove(d, e);
   d.querySelector('.g-prevBtn').onclick = () => openPreview([readCard(d)]);
   box.appendChild(d);
-  renum();
-  if (!data) {
+  // 2026-10-26（性能）：批量载入（编辑旧帖 / 恢复草稿）时不再「每张都聚焦 + 平滑滚动 + 全量重编号」。
+  // 原来 addGameCard() 无参调用 → 每张都走 renum()（遍历全部已有卡片改编号 = O(n²)）+
+  // focusNewCard + scrollTo({behavior:'smooth'})，265 张 = 约 3.5 万次 DOM 写 + 265 次平滑滚动，
+  // 后台编辑求助帖直接卡死（实测 5 张 0ms、15 张就卡住）。
+  // 批量模式下只写自己这张的编号；逐张加卡片（用户手点「添加游戏」）仍走原来的体验。
+  if (window.__mrhxBulk) {
+    d._num = box.children.length;
+    const gn = d.querySelector('.gnum');
+    if (gn) gn.textContent = '游戏 ' + d._num;
+  } else {
+    renum();
+  }
+  if (!data && !window.__mrhxBulk) {
     d.classList.add('newcard');
     // 2026-10-06：原来只弹 2.2 秒 toast + 滚到中间，卡片又是全空的，
     // 用户在长页面里极易以为「按钮点了没反应」。现在：直接把光标放进游戏名称输入框、
@@ -2536,6 +2553,9 @@ function bindPostButtons(box, token, repo) {
         const cards = parseCollectionDoc(doc);
         if (!cards.length) throw new Error('没有解析到条目');
         $('gameBox').innerHTML = '';
+        // 2026-10-26（性能）：批量载入置 __mrhxBulk —— addGameCard 内跳过逐张聚焦/平滑滚动/全量重编号
+        window.__mrhxBulk = true;
+        try {
         cards.forEach(c => {
            const card = addGameCard();
            card.querySelector('.g-name').value = c.name || '';
@@ -2551,6 +2571,7 @@ if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c
            card.querySelector('.g-customName').value = c.customName || '';
            card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
+         } finally { window.__mrhxBulk = false; }
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
          $('fCount').value = counts[tag] || cards.length;
@@ -2575,6 +2596,9 @@ if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c
         const cards = parseCollectionDoc(doc);
         if (!cards.length) throw new Error('没有解析到条目');
         $('gameBox').innerHTML = '';
+        // 2026-10-26（性能）：批量载入置 __mrhxBulk —— addGameCard 内跳过逐张聚焦/平滑滚动/全量重编号
+        window.__mrhxBulk = true;
+        try {
         cards.forEach(c => {
            const card = addGameCard();
            card.querySelector('.g-name').value = c.name || '';
@@ -2590,6 +2614,7 @@ if (card.querySelector('.g-sponsor')) card.querySelector('.g-sponsor').value = c
            card.querySelector('.g-customName').value = c.customName || '';
            card.querySelector('.g-customUrl').value = c.customUrl || ''; if(window.mrhxClBuild) window.mrhxClBuild(card);
          });
+         } finally { window.__mrhxBulk = false; }
          $('fName').value = tag;
          $('fTitle').value = titles[tag] || tag;
          $('fCount').value = counts[tag] || cards.length;
