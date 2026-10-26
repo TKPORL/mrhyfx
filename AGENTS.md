@@ -160,6 +160,17 @@
   **scrollHeight 会一边滚一边变大**，所以第一次必然停在半路，点三四次才到底。现在改成
   `mrhxScrollToBottom()`：滚到当前底 → 结束后重量一次 → 还差就续滚（最多 6 段）。
   ★以后后台再加「滚动到某个位置」的逻辑，都要考虑 `content-visibility` 带来的高度变化。
+- ★**后台点「＋ 添加一个游戏」没滚到新卡片（2026-10-27，`Tsinhoht.html` 的 `scrollCardIntoView`）**：
+  根因同上一条 —— 屏外卡片按 `contain-intrinsic-size` **估高**（原来写 600px，真实卡片约 800px），
+  265 张卡累积误差能到**几千像素**，滚过去自然不在新卡片上。两处一起改：
+  ① `contain-intrinsic-size` 600px → **800px**（接近真实高度，误差小一个量级）；
+  ② `scrollCardIntoView` 改成**反复校正**：先 `smooth` 滚一次，320ms 后量 `d.getBoundingClientRect().top`
+  与目标差 > 6px 就 `auto` 补跳，再 130ms 一校，**最多 5 次**（每次滚过去都会让更多卡片完成真实布局，
+  位置还会变，所以必须校到收敛；上限是防死循环）。
+  ★实测（独立复现页，40 张卡）：最终 top=85、目标 84，2 步收敛。
+  ★**别用「给容器加 class 关掉 content-visibility，量完再恢复」的解法** —— 实测恢复后
+  `contain-intrinsic-size:auto` **并不会记住**刚才的真实高度（25 张卡时位置从 15704 弹回 15128），
+  滚动位置会突然跳走。
 - ★**窗口缩放后整页变白（2026-10-26，`assets/js/nav.js`，防御性修复）**：根因未复现（无头环境无法真实改窗口宽度），
   怀疑是断点来回切时 `.open` 浮层没收、或 `body{overflow:hidden}` 锁没解开。现在加了 160ms 防抖的 resize 兜底：
   统一 `closeAll()` + `moveDrops()` + 清 `body.style.overflow`，资源下拉也单独在 resize 时收起。

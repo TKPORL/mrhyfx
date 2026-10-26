@@ -68,7 +68,9 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 /* 2026-10-26（性能）：求助帖 265 张卡片的编辑页，屏外卡片不再参与渲染/布局。
    contain-intrinsic-size 的 auto 会记住上次渲染高度，滚回去不会跳；首次按 600px 估算。
    ★卡片上的 transition:all 与 content-visibility 并存没问题，但别给 .game 加 animation（会盖掉这里的渲染跳过）。 */
-#gameBox > .game{content-visibility:auto;contain-intrinsic-size:auto 600px}
+#gameBox > .game{content-visibility:auto;contain-intrinsic-size:auto 800px}
+/* ★contain-intrinsic-size 必须尽量接近真实卡片高度（实测 ~800px，600 太矮）：
+   屏外卡片按它估高，265 张的累积误差能到几千像素，滚动定位会差出好几屏。 */
 .game:hover{border-color:#d0cec8;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .game.newcard{animation:mrhxPop .5s ease both}
 /* 新建卡片的高亮描边：告诉用户「这张是刚加的、还没填」，配合自动聚焦，不再像凭空多出的一张 */
@@ -1061,6 +1063,22 @@ function mrhxSmoothScrollTo(targetY, duration) {
   }
   requestAnimationFrame(step);
 }
+// 2026-10-26（站长反馈「点 ↓ 会停在半路，要点三四次才到底」）：
+// 原因是卡片加了 content-visibility，滚动过程中屏外卡片才真正渲染，documentElement.scrollHeight
+// 会在滚动时不断变大 —— 只算一次目标高度必然滚不到真正底部。
+// 所以改成「滚到当前算出来的底 → 结束后再量一次 → 还差就续滚」，最多 6 段（正常 1~2 段到底）。
+function mrhxScrollToBottom(dur, tries) {
+  tries = tries || 0;
+  var max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  var y = window.pageYOffset || document.documentElement.scrollTop;
+  if (max - y < 2 || tries > 6) return;
+  mrhxSmoothScrollTo(max, dur);
+  setTimeout(function () {
+    var nowMax = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    var nowY = window.pageYOffset || document.documentElement.scrollTop;
+    if (nowMax - nowY > 2) mrhxScrollToBottom(tries === 0 ? 260 : 200, tries + 1);
+  }, dur + 70);
+}
 var topBtn = $('topBtn');
 var _lastY = 0;
 function _updateTopBtn() {
@@ -1074,7 +1092,7 @@ function _updateTopBtn() {
   if (nearTop || (!nearBottom && dirDown)) {
     topBtn.textContent = '\u2193';
     topBtn.title = '滚动到底部';
-    topBtn.onclick = function () { mrhxSmoothScrollTo(document.documentElement.scrollHeight, 500); };
+    topBtn.onclick = function () { mrhxScrollToBottom(500, 0); };
   } else {
     topBtn.textContent = '\u2191';
     topBtn.title = '滚动到顶部';
@@ -1544,8 +1562,22 @@ function addGameCard(data) {
 function scrollCardIntoView(d) {
   var bar = document.querySelector('header');
   var top = (bar ? bar.getBoundingClientRect().height : 0) + 12;
-  var y = window.pageYOffset + d.getBoundingClientRect().top - top;
-  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  var tries = 0;
+  function go(smooth) {
+    var y = window.pageYOffset + d.getBoundingClientRect().top - top;
+    window.scrollTo({ top: Math.max(0, y), behavior: smooth ? 'smooth' : 'auto' });
+  }
+  // 2026-10-27（站长）：点「添加一个游戏」后没滚到新卡片。根因是卡片带 content-visibility:auto，
+  // 屏外卡片按 contain-intrinsic-size 估高（原来 600px，实际约 800px），265 张累积误差几千像素。
+  // 每次滚过去都会让更多卡片完成真实布局、位置再变，所以这里反复校正，直到偏差 < 6px（最多 5 次）。
+  go(true);
+  (function fix() {
+    if (tries++ >= 5) return;
+    // 第一次等 320ms（原生 smooth 大约这么久才停），之后再 130ms 一校
+    setTimeout(function () {
+      if (Math.abs(d.getBoundingClientRect().top - top) > 6) { go(false); fix(); }
+    }, tries === 1 ? 320 : 130);
+  })();
 }
 // 新建卡片后：聚焦名称输入框 + 高亮描边，让「卡片已加好、请填名字」无法被忽略
 function focusNewCard(d) {
