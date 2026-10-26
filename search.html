@@ -167,8 +167,16 @@ main{max-width:900px;margin:0 auto;padding:28px 20px 60px}
 .result .rt .detail-link:hover{text-decoration:underline}
 .result .intro{font-size:13px;color:#888;line-height:1.75;margin-bottom:12px;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .result .dl{display:flex;gap:8px;flex-wrap:wrap}
-.result .img{margin-top:10px}
-.result .img img{max-width:100%;max-height:240px;width:auto;object-fit:contain;border-radius:10px;border:1px solid #ecebe9}
+/* 2026-10-26（站长）：图片没加载出来时不能塌成空白 —— 容器先按 5:3 占好位（宽 300），
+   原位跑扫光骨架，让人看得出"这里有图、只是在加载"。零 JS：img 未就绪时是透明的，
+   容器骨架自然透出来；加载完成后 img 以 cover 铺满并盖住骨架。
+   ★别把 .img 的 width / aspect-ratio 去掉，否则 <img> 未加载时高度为 0，整块会塌。 */
+.result .img{margin-top:10px;width:300px;max-width:100%;aspect-ratio:5/3;border-radius:10px;overflow:hidden;
+  background:linear-gradient(100deg,#d8d3c8 20%,#f7f5f0 48%,#f7f5f0 56%,#d8d3c8 85%);background-size:200% 100%;animation:mrhxSk 1.25s linear infinite}
+/* 图到了就停掉扫光（不可见还在跑的动画是白烧电）；:has 不支持时只是多跑一会儿，不影响显示 */
+.result .img:has(img.ok){animation:none;background:#f1efe9}
+.result .img img{display:block;width:100%;height:100%;object-fit:cover;border-radius:10px;opacity:0;transition:opacity .22s}
+.result .img img.ok{opacity:1}
 /* 2026-10-11 站长要求：搜索页卡片与合集帖一致——图片可点开介绍 + 提示字样 */
 .result .img img{cursor:pointer}
 .result .img-tip{display:block;margin-top:6px;font-size:11px;color:#aaa;text-align:center}
@@ -443,7 +451,7 @@ function relTime(iso){
     return '<div class="result' + (isExact ? ' exact' : '') + (g._partial ? ' skel' : '') + '"><div class="rt"><span class="name">' + esc(g.title) + '</span><span class="src">' + (g.plat ? '<em class="src-plat">' + esc(g.plat) + '</em>' : '') + relTime(g.d) + '</span>' +
       ('<a class="detail-link" href="' + esc(g.url || 'index.html') + '">查看详情</a>') + '</div>' +
       // 2026-10-21：小索引（_partial）先渲染标题卡，介绍/按钮/图片位放骨架扫光块（与最终布局同尺寸），分片到货后整卡补全
-      (g._partial ? '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span><span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span><div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div><span class="sk" style="display:block;width:120px;height:90px;border-radius:10px;margin-top:12px"></span>'
+      (g._partial ? '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span><span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span><div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div><span class="sk" style="display:block;width:300px;max-width:100%;height:180px;border-radius:10px;margin-top:12px"></span>'
         : (introTxt ? '<div class="intro">' + esc(introTxt) + '</div>' : '')) +
       (g._partial ? '' : (dl ? '<div class="dl">' + dl + '</div>' : '')) +
       (g.img ? '<div class="img"><img class="s-img" src="' + esc(thumbOf(g.img)) + '" data-full="' + esc(g.img) + '" onerror="this.onerror=null;this.src=this.dataset.full" alt="" loading="lazy" data-t="' + esc(g.title) + '" data-p="' + esc(g.plat || '') + '" data-i="' + esc(introTxt) + '" data-u="' + esc(mz || '') + '" data-c="' + esc(zb || '') + '" data-z="' + esc(zz || '') + '"></div>' +
@@ -674,7 +682,7 @@ function relTime(iso){
       '<span class="sk" style="display:block;width:92%;height:12px;margin-top:12px"></span>' +
       '<span class="sk" style="display:block;width:64%;height:12px;margin-top:8px"></span>' +
       '<div class="dl" style="margin-top:12px"><span class="sk" style="width:96px;height:34px;border-radius:9px"></span><span class="sk" style="width:96px;height:34px;border-radius:9px"></span></div>' +
-      '<span class="sk" style="display:block;width:120px;height:90px;border-radius:10px;margin-top:12px"></span></div>';
+      '<span class="sk" style="display:block;width:300px;max-width:100%;height:180px;border-radius:10px;margin-top:12px"></span></div>';
   }
   if (q) {
     resBox.innerHTML = skelRow() + skelRow() + skelRow() + skelRow();
@@ -778,6 +786,13 @@ function relTime(iso){
       box.classList.add('mrhx-bump');
     }
   });
+  // 2026-10-26（站长）：图片没到位前容器先占位跑扫光骨架，img 保持透明；
+  //   加载成功后加 .ok 淡入。load 事件不冒泡，所以必须用 capture 阶段捕获。
+  //   失败也不留白框：透明 + 骨架继续显示，比浏览器默认的破图图标好看。
+  document.addEventListener('load', function (e) {
+    var t = e.target;
+    if (t && t.classList && t.classList.contains('s-img')) t.classList.add('ok');
+  }, true);
   document.addEventListener('click', function(e){
     var im = e.target && e.target.closest ? e.target.closest('.s-img') : null;
     if (im) {
