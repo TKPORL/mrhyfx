@@ -2468,9 +2468,15 @@ ${SMOOTH_SCRIPTS}
       ? `<span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">${label}</span>`
       : `<a class="mrhx-btn mrhx-btn-nav" href="${esc(href)}">${label}</a>`;
     const navMid = NAV.map(n => `<a class="mrhx-btn mrhx-btn-nav" href="${esc(n.url)}"${/^https?:/i.test(n.url) ? ' target="_blank" rel="noreferrer"' : ''}>${esc(n.label)}</a>`).join('\n    ');
+    // 2026-10-26（站长）：底部导航行加「赞助本站」→ sponsor.html。
+    // 放在中间组右边、下一期之前：读者下完东西正好在这一带，且不挡正文。
+    // 尺寸沿用 .mrhx-btn-nav，只靠 .mrhx-btn-sponsor 的淡红底做区分（别加大加粗）。
+    // 手机上窄，两个 span 切换文案：桌面「赞助本站」、≤720px 显示「赞助」（省 24px 给中间那组）。
+    const sponsorBtn = `<a class="mrhx-btn mrhx-btn-nav mrhx-btn-sponsor" href="sponsor.html"><span class="sp-l">赞助本站</span><span class="sp-s">赞助</span></a>`;
     const mkNav = (older, newer) => `\n  <!--mrhx-daynav--><div class="mrhx-navrow">` +
       navBtn(older ? older.file : '', '← 上一期', !older) +
       `<div class="mrhx-navmid">${navMid}</div>` +
+      sponsorBtn +
       navBtn(newer ? newer.file : '', '下一期 →', !newer) +
       `</div><!--mrhx-daynav-end-->\n  `;
     const injectNav = (file, nav) => {

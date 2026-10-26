@@ -126,6 +126,13 @@
   .mrhx-btn-qk:hover{background:#4f46e5}
   .mrhx-btn-nav{background:#fff;color:#333;border:1px solid #e5e6e8}
   .mrhx-btn-nav:hover{border-color:#e5484d;color:#e5484d;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  /* 2026-10-26（站长）：帖子底部导航行加「赞助本站」，跳 sponsor.html。
+     尺寸跟 .mrhx-btn-nav 完全一致（不做大一号，避免抢「下一期」的视觉优先级），
+     只用淡红底 + 红字把它从一排白按钮里区分出来。 */
+  .mrhx-btn-nav.mrhx-btn-sponsor{background:#fdf3f3;color:#e5484d;border-color:#f3cccd}
+  .mrhx-btn-nav.mrhx-btn-sponsor:hover{background:#fbe6e7;border-color:#e5484d;color:#d63c41;box-shadow:0 4px 12px rgba(229,72,77,.16)}
+  /* 文案两套：桌面「赞助本站」、手机「赞助」（手机上中间那组才有空间） */
+  .mrhx-btn-sponsor .sp-s{display:none}
   /* 底部导航行：上一期 | 官网 全部黄油 解压教程 | 下一期，三段一行 */
   .mrhx-navrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:nowrap}
   /* 2026-10-17（站长改版）：资源导航条去 Logo 去大框，改紧凑横排——按钮大小对齐 .mrhx-btn-nav（上一期/官网/解压教程），
@@ -230,6 +237,10 @@
     .mrhx-navmid{justify-content:center;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .mrhx-navmid::-webkit-scrollbar{display:none}
     .mrhx-navmid .mrhx-btn-nav{flex:0 0 auto;padding:7px 11px;font-size:12px}
+    /* 手机端「赞助本站」缩成「赞助」，把宽度让给中间那组链接 */
+    .mrhx-btn-sponsor .sp-l{display:none}
+    .mrhx-btn-sponsor .sp-s{display:inline}
+    .mrhx-navrow .mrhx-btn-sponsor{padding:7px 11px}
     body.mrhx-grid2 .node-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     body.mrhx-grid2 .node{border-radius:12px}
     body.mrhx-grid2 .node .content{margin:10px 12px 0}
