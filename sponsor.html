@@ -25,7 +25,7 @@
    纸感暖底、发丝边、微阴影；数字 tabular-nums。 */
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#faf7f4;color:#2f2a26;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
-main{max-width:1120px;margin:0 auto;padding:30px 24px 64px}
+main{max-width:960px;margin:0 auto;padding:30px 24px 64px}
 
 .page-head{text-align:center;margin:6px 0 24px}
 .page-head h1{font-size:30px;font-weight:800;letter-spacing:-.02em;color:#241f1b}
@@ -37,28 +37,42 @@ main{max-width:1120px;margin:0 auto;padding:30px 24px 64px}
 .intro p{font-size:14px;line-height:1.95;color:#5c534c}
 .intro p+p{margin-top:8px}
 
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+/* 2026-10-28 v4：收款码归主位（站长：码是主位不是副位）。
+   左=收款码大卡 + 统计，右=感谢名单，说明四格沉到底部通栏。 */
+/* 2026-10-28 v6：改成上下堆叠（站长要求与手机端一致：码在上、名单在下） */
+.layout{display:flex;flex-direction:column;gap:20px}
 .col-a,.col-b{display:flex;flex-direction:column;gap:18px;min-width:0}
-.col-b{position:sticky;top:84px}
 
-/* 统计：竖排两行，数字大 */
-.stat{overflow:hidden}
-.stat-row{display:flex;align-items:baseline;justify-content:space-between;padding:18px 24px}
-.stat-row+.stat-row{border-top:1px solid rgba(120,80,60,.08)}
-.stat-row .lbl{font-size:12.5px;color:#a2968c;letter-spacing:.04em}
-.stat-row .val{font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:#e5484d;line-height:1}
-.stat-row.green .val{color:#1a7f37}
+/* 统计：两格并排、各自居中（单栏通栏时不会被拉到左右两端） */
+.stats{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(120,80,60,.08)}
+.stat-cell{padding:22px 14px;display:flex;flex-direction:column;align-items:center;gap:7px}
+.stat-cell+.stat-cell{border-left:1px solid rgba(120,80,60,.08)}
+.stat-cell .lbl{font-size:12.5px;color:#a2968c;letter-spacing:.04em}
+.stat-cell .val{font-size:36px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:#e5484d;line-height:1}
+.stat-cell.green .val{color:#1a7f37}
 
-/* 收款码 */
-.qr{padding:16px}
-.qr-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;margin:0 auto}
+/* 收款码：主位，越大越好扫 */
+.pay{padding:0;overflow:hidden}
+/* 码撑满卡宽：与上面 .stats 的两格同宽同中心（去掉 max-width，gap 归零，靠 .box 内边距留白） */
+.pay .qr-row{margin:22px auto 0;padding:0;gap:0}
+.pay-note{padding:16px 24px 20px;text-align:center;font-size:12px;color:#a2968c;letter-spacing:.02em}
+.qr-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .qr-item{text-align:center;min-width:0}
-.qr-item .box{background:#fbf9f6;border:1px solid rgba(120,80,60,.08);border-radius:14px;padding:9px}
+.qr-item .box{padding:14px}
+/* 两码之间加一条竖分隔线，与上面 .stats 的分隔线同款 —— 四宫格结构，界限清楚又不破坏对齐 */
+.qr-item+.qr-item{border-left:1px solid rgba(120,80,60,.08)}
+/* 两张原图的留白比例不同：微信图案占宽 85.4%、支付宝 90.6%，所以视觉上一小一大。
+   给支付宝补一圈内边距（左右各 2.87%），把图案压到与微信等大；两张元素宽度本身是相同的。 */
+.qr-item:nth-child(2) img{padding:2.87%}
 .qr-item img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;border-radius:9px;background:#fff}
 .qr-item .cap{font-size:12.5px;color:#6b625b;margin-top:10px;font-weight:600}
 
 /* 感谢名单 */
-.board{overflow:hidden}
+.board{overflow:hidden;margin-top:20px}
+/* 名单两列（columns 按列填充：1-8 左列、9-16 右列），高度砍半，与上方两栏齐平 */
+.board-list{columns:2;column-gap:36px;padding:6px 0}
+.board-list li{break-inside:avoid}
+@media (max-width:780px){.board-list{columns:1}}
 .board-head{display:flex;align-items:baseline;justify-content:space-between;padding:18px 24px 15px;border-bottom:1px solid rgba(120,80,60,.08)}
 .board-head h2{font-size:15px;font-weight:700;color:#241f1b}
 .board-head span{font-size:11.5px;color:#a2968c}
@@ -74,8 +88,8 @@ main{max-width:1120px;margin:0 auto;padding:30px 24px 64px}
 .board-foot{padding:14px 24px;font-size:11.5px;color:#b0a59a;text-align:center;border-top:1px solid rgba(120,80,60,.06)}
 .board-list .empty{padding:26px 24px;text-align:center;color:#b0a59a;font-size:13px}
 
-/* 说明 */
-.tips{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 说明：底部通栏 4 列 */
+.tips{padding:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .tip{background:#fbf9f6;border-radius:12px;padding:12px 13px;min-width:0}
 .tip strong{display:block;font-size:12.5px;color:#3a332d;margin-bottom:4px}
 .tip span{font-size:11.5px;color:#8d837a;line-height:1.6;display:block}
@@ -85,14 +99,15 @@ footer{border-top:1px solid rgba(120,80,60,.10);padding:26px 20px;text-align:cen
 @media (max-width:1080px){.layout{grid-template-columns:minmax(0,1fr) 366px}}
 @media (max-width:920px){
   main{padding:20px 16px 48px}
-  .layout{grid-template-columns:1fr;gap:16px}
-  .col-b{position:static;order:-1}
+  .layout{gap:16px}
+  .tips{grid-template-columns:1fr 1fr}
   .page-head h1{font-size:24px}
-  .stat-row .val{font-size:30px}
+  .stat-cell .val{font-size:30px}
   .intro{padding:18px 20px}
 }
 @media (max-width:420px){
   .qr-row{gap:10px}
+  .pay .qr-row{padding:0 16px}
   .qr-item .box{padding:7px}
   .board-list li{padding:0 16px;height:46px;gap:10px}
   .stat-row{padding:16px 18px}
@@ -212,50 +227,46 @@ footer{border-top:1px solid rgba(120,80,60,.10);padding:26px 20px;text-align:cen
   </section>
 
   <div class="layout">
-    <div class="col-a">
-      <section class="card board" id="sponsorBoard" hidden>
-        <div class="board-head">
-          <h2>感谢名单</h2>
-          <span>按赞助金额排序</span>
-        </div>
-        <ol class="board-list" id="spList"></ol>
-        <div class="board-foot" id="spFoot"></div>
-      </section>
-    </div>
-
-    <div class="col-b">
-      <section class="card stat" id="sponsorStat" hidden aria-label="赞助统计">
-        <div class="stat-row">
+    <section class="card pay">
+      <div class="stats" id="sponsorStat" hidden aria-label="赞助统计">
+        <div class="stat-cell">
           <span class="lbl">赞助人数</span>
           <span class="val" id="spPeople">—</span>
         </div>
-        <div class="stat-row green">
+        <div class="stat-cell green">
           <span class="lbl">累计金额</span>
           <span class="val" id="spTotal">—</span>
         </div>
-      </section>
-
-      <section class="card qr">
-        <div class="qr-row">
-          <div class="qr-item">
-            <div class="box"><img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386"></div>
-            <div class="cap">请站长喝杯奶茶 🧋</div>
-          </div>
-          <div class="qr-item">
-            <div class="box"><img src="assets/sponsor/alipay.webp" alt="支付宝赞赏码" width="1146" height="1136"></div>
-            <div class="cap">给服务器充点电 ⚡</div>
-          </div>
+      </div>
+      <div class="qr-row">
+        <div class="qr-item">
+          <div class="box"><img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386"></div>
+          <div class="cap">请站长喝杯奶茶 🧋</div>
         </div>
-      </section>
-
-      <section class="card tips">
-        <div class="tip"><strong>📦 永久免费</strong><span>无广告，无付费功能</span></div>
-        <div class="tip"><strong>🚀 持续运营</strong><span>用于支付服务器与带宽</span></div>
-        <div class="tip"><strong>🎁 粉丝提议</strong><span>来自大家的自发支持</span></div>
-        <div class="tip"><strong>🔧 全用在硬开销</strong><span>服务器 · 域名 · 图床，一分不挪</span></div>
-      </section>
-    </div>
+        <div class="qr-item">
+          <div class="box"><img src="assets/sponsor/alipay.webp" alt="支付宝赞赏码" width="1146" height="1136"></div>
+          <div class="cap">给服务器充点电 ⚡</div>
+        </div>
+      </div>
+      <p class="pay-note">微信 / 支付宝扫码即可 · 金额随意，一分也是心意</p>
+    </section>
   </div>
+
+  <section class="card board" id="sponsorBoard" hidden>
+    <div class="board-head">
+      <h2>感谢名单</h2>
+      <span>按赞助金额排序</span>
+    </div>
+    <ol class="board-list" id="spList"></ol>
+    <div class="board-foot" id="spFoot"></div>
+  </section>
+
+  <section class="card tips">
+    <div class="tip"><strong>📦 永久免费</strong><span>无广告，无付费功能</span></div>
+    <div class="tip"><strong>🚀 持续运营</strong><span>用于支付服务器与带宽</span></div>
+    <div class="tip"><strong>🎁 粉丝提议</strong><span>来自大家的自发支持</span></div>
+    <div class="tip"><strong>🔧 全用在硬开销</strong><span>服务器 · 域名 · 图床，一分不挪</span></div>
+  </section>
 </main>
 
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
