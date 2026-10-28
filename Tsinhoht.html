@@ -75,7 +75,10 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .game.newcard{animation:mrhxPop .5s ease both}
 /* 新建卡片的高亮描边：告诉用户「这张是刚加的、还没填」，配合自动聚焦，不再像凭空多出的一张 */
 .game.newcard-focus{border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.12)}
-.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.game .ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap;position:relative}
+/* 2026-10-28：move-box 必须锚在 .ghead 上。原来它挂在 .game 末尾、top:100% 落到卡片底边之外，
+   而卡片带 content-visibility:auto（隐含 paint 裁剪），框直接被裁掉 —— 且 input.focus() 把页面滚过去，
+   症状就是「页面下移但看不到框」。 */
 .game .gnum{font-size:13px;font-weight:700;color:#e5484d;white-space:nowrap}
 /* 2026-10-06：原来 flex-wrap:wrap 让「移动/预览/删除」在窄屏换行、撑高卡片头，
    而 ghead 是 align-items:center，「游戏 N」就被挤到按钮旁边看起来像重叠。
@@ -1438,7 +1441,8 @@ function addGameCard(data) {
       <button class="btn btn-s g-move" type="button">移动</button>
       <button class="btn btn-s g-prevBtn" type="button">预览</button>
       <button class="del" type="button">删除</button>
-    </div></div>
+    </div>
+    <div class="move-box"></div></div>
   <div class="field"><label>游戏名称</label><input type="text" class="g-name"></div>
   <div class="field"><label>游戏介绍</label><textarea class="g-intro"></textarea></div>
   <div class="codes3">
@@ -1464,7 +1468,7 @@ function addGameCard(data) {
 <div class="clrows"></div>
 <button type="button" class="btn btn-s cladd" style="margin-top:8px">＋ 自定义链接</button>
   </div>
-  <div class="move-box"></div>`;
+`;
   if (data) fillCard(d, data);
   d.querySelector('.del').onclick = () => { removeCard(d); };
   const fileInput = d.querySelector('.g-files');
@@ -1654,7 +1658,7 @@ function openMove(d, e) {
   box.classList.add('show');
   const inp = box.querySelector('input');
   inp.value = d._num;
-  inp.focus();
+  inp.focus({ preventScroll: true });
   inp.onkeydown = ev => { if (ev.key === 'Enter') doMove(d, inp.value); if (ev.key === 'Escape') box.classList.remove('show'); };
   box.querySelector('button').onclick = () => doMove(d, inp.value);
 }
