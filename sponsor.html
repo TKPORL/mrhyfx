@@ -14,98 +14,89 @@
 <meta property="og:description" content="微信扫码 / 支付宝扫码支持站点，感谢每一份赞助。">
 <meta property="og:url" content="https://tkporl.github.io/mrhyfx/sponsor.html">
 <meta property="og:image" content="https://tkporl.github.io/mrhyfx/assets/sponsor/weixin.webp">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
-/* 顶部导航样式全部移到 site.css，见 assets/css/site.css */
-main{max-width:640px;margin:0 auto;padding:28px 20px 44px}
-.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);flex-wrap:wrap;line-height:1.7}
-.upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
-.qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 22px}
-/* 二维码始终并排（手机也不换行），并限宽：窄屏时两张各占一半，
-   不会像单列那样被拉成整屏宽的巨型二维码 */
-.qr-card{background:#fff;border:1px solid #ecebe9;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.04);max-width:300px;width:100%;margin:0 auto}
-.qr-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;margin:0 auto;border-radius:10px}
-.qr-card .cap{text-align:center;font-size:13px;color:#666;margin-top:10px;font-weight:600}
-.qr-card .cap b{color:#e5484d}
-.thanks{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;font-size:14px;color:#444;line-height:1.9;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.thanks .h{font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:10px}
-.thanks .tstep{font-size:14px;color:#444;line-height:1.85;padding-left:15px;position:relative;margin-bottom:9px}
-.thanks .tstep:last-child{margin-bottom:0}
-.thanks .tstep::before{content:'';position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:#e5484d}
-footer{border-top:1px solid #ecebe9;padding:24px 20px;text-align:center;color:#999;font-size:12px}
-footer b{color:#e5484d}
-@media (max-width:720px){
-  main{padding:18px 14px 32px}
-  /* 手机也保持两码并排（2026-10-06 用户要求）；只缩间距与内边距，不改列数 */
-  .qr-grid{gap:8px}
-  .qr-card{padding:9px;border-radius:12px}
-}
 
-/* ===== 2026-10-16 站长定稿新版 v2（恢复站长原稿的居中白卡结构，桌面加宽） ===== */
-body{background:#f7f8fa}
-.container{max-width:480px;width:100%;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.05);padding:24px 20px}
-.header{text-align:center;margin-bottom:24px}
-.header h1{font-size:20px;font-weight:bold;margin:0 0 8px 0;color:#222}
-.header .slogan{font-size:13px;color:#888}
-.content-box{background:#fef9f0;border-radius:12px;padding:24px 20px;margin-bottom:24px;text-align:center;font-size:14px;line-height:1.8;color:#555}
-.content-box p{margin:0}
-.content-box .title{font-size:15px;font-weight:bold;color:#e74c3c;margin-bottom:8px}
-.qr-cards{display:flex;gap:12px;margin-bottom:24px}
-.qr-card{flex:1;background:#f8f9fa;border-radius:12px;padding:16px;text-align:center;border:1px solid #eee;transition:transform .2s;max-width:none;width:auto;margin:0}
-.qr-card:hover{transform:translateY(-2px)}
-.qr-card.wechat{background:#f0f9f4;border-color:#e0f2e9}
-.qr-card.alipay{background:#f0f7ff;border-color:#e0edff}
-.qr-card img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;margin:0 auto 12px;background:#fff;border-radius:8px}
-.qr-card span{font-size:13px;font-weight:500;color:#444;display:block}
-.features{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.feature-item{background:#fafafa;border-radius:8px;padding:12px;font-size:12px;color:#666;text-align:center;line-height:1.4}
-.feature-item strong{display:block;font-size:14px;color:#333;margin-bottom:4px}
-@media (min-width:720px){
-  /* 站长原稿按手机设计，桌面端整体加宽一档，避免"页面挺小" */
-  .container{max-width:640px;padding:32px 32px}
-  .features{gap:14px}
-}
-@media (max-width:720px){
-  main{padding:14px 12px 32px}
-  .qr-cards{gap:8px}
-  .qr-card{padding:10px}
-  .content-box{padding:18px 14px}
-}
-</style>
 <link rel="icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp" type="image/webp">
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
 <link rel="stylesheet" href="assets/css/site.css?v=1a17faed">
 <style>header{padding:10px 20px 0}@media (max-width:720px){header{padding:10px 14px 0}}</style>
 <style>
-/* 2026-10-28：赞助统计 + 感谢名单。纸感暖底、发丝边、微阴影 —— 不用纯白纯黑，与全站浅色暖调一致。 */
-body{background:#faf7f4}
-.container{background:#fffefc;border:1px solid rgba(120,80,60,.09);box-shadow:0 1px 3px rgba(90,60,40,.05)}
+/* 2026-10-28 v3：整页重排（站长：原来容器太窄显小）。
+   宽容器 1120px + 两栏（左=感谢名单，右=统计/收款码/说明 sticky）。
+   纸感暖底、发丝边、微阴影；数字 tabular-nums。 */
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf7f4;color:#2f2a26;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+main{max-width:1120px;margin:0 auto;padding:30px 24px 64px}
 
-/* 统计条 —— 两个数字，数字用等宽数位避免跳动 */
-.sponsor-stat{display:flex;align-items:stretch;background:#fffaf6;border:1px solid rgba(180,120,80,.14);border-radius:14px;padding:18px 10px;margin-bottom:20px}
-.sponsor-stat .stat-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-.sponsor-stat .stat-label{font-size:11.5px;color:#a2968c;letter-spacing:.04em}
-.sponsor-stat .stat-value{font-size:26px;font-weight:800;color:#e5484d;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
-.sponsor-stat .stat-divider{width:1px;background:rgba(180,120,80,.16);margin:2px 4px}
-@media (max-width:400px){.sponsor-stat .stat-value{font-size:22px}}
+.page-head{text-align:center;margin:6px 0 24px}
+.page-head h1{font-size:30px;font-weight:800;letter-spacing:-.02em;color:#241f1b}
+.page-head .sub{font-size:13.5px;color:#a2968c;margin-top:8px}
+
+.card{background:#fffefc;border:1px solid rgba(120,80,60,.10);border-radius:18px;box-shadow:0 1px 3px rgba(90,60,40,.05)}
+.intro{padding:22px 26px;margin-bottom:20px}
+.intro .lead{font-size:15px;font-weight:700;color:#e5484d;margin-bottom:12px}
+.intro p{font-size:14px;line-height:1.95;color:#5c534c}
+.intro p+p{margin-top:8px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start}
+.col-a,.col-b{display:flex;flex-direction:column;gap:18px;min-width:0}
+.col-b{position:sticky;top:84px}
+
+/* 统计：竖排两行，数字大 */
+.stat{overflow:hidden}
+.stat-row{display:flex;align-items:baseline;justify-content:space-between;padding:18px 24px}
+.stat-row+.stat-row{border-top:1px solid rgba(120,80,60,.08)}
+.stat-row .lbl{font-size:12.5px;color:#a2968c;letter-spacing:.04em}
+.stat-row .val{font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:#e5484d;line-height:1}
+.stat-row.green .val{color:#1a7f37}
+
+/* 收款码 */
+.qr{padding:16px}
+.qr-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px;margin:0 auto}
+.qr-item{text-align:center;min-width:0}
+.qr-item .box{background:#fbf9f6;border:1px solid rgba(120,80,60,.08);border-radius:14px;padding:9px}
+.qr-item img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;border-radius:9px;background:#fff}
+.qr-item .cap{font-size:12.5px;color:#6b625b;margin-top:10px;font-weight:600}
 
 /* 感谢名单 */
-.sponsor-board{margin-bottom:24px}
-.board-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;padding:0 2px}
-.board-head h2{font-size:15px;font-weight:700;color:#3a322c;margin:0}
-.board-head .board-sub{font-size:11.5px;color:#a2968c}
-.board-list{list-style:none;margin:0;padding:0;max-height:420px;overflow-y:auto;border:1px solid rgba(120,80,60,.09);border-radius:14px;background:#fffdfa}
-.board-list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(120,80,60,.06);font-size:13.5px}
+.board{overflow:hidden}
+.board-head{display:flex;align-items:baseline;justify-content:space-between;padding:18px 24px 15px;border-bottom:1px solid rgba(120,80,60,.08)}
+.board-head h2{font-size:15px;font-weight:700;color:#241f1b}
+.board-head span{font-size:11.5px;color:#a2968c}
+.board-list{list-style:none}
+.board-list li{display:flex;align-items:center;gap:14px;padding:0 24px;height:48px;border-bottom:1px solid rgba(120,80,60,.06);font-size:14px}
 .board-list li:last-child{border-bottom:none}
-.board-list .rk{flex:0 0 24px;text-align:center;font-size:11.5px;font-weight:700;color:#b8a89c;font-variant-numeric:tabular-nums}
+.board-list .rk{flex:0 0 28px;font-size:12px;font-weight:700;color:#c0b3a7;font-variant-numeric:tabular-nums}
 .board-list li:nth-child(1) .rk{color:#e5a50a}
-.board-list li:nth-child(2) .rk{color:#9aa0a6}
+.board-list li:nth-child(2) .rk{color:#98a0a8}
 .board-list li:nth-child(3) .rk{color:#c08356}
-.board-list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3a322c;font-weight:500}
-.board-list .am{flex:0 0 auto;font-weight:700;color:#1a7f37;font-variant-numeric:tabular-nums}
-.board-list .empty{padding:22px 14px;text-align:center;color:#b8a89c;font-size:13px}
-.board-foot{font-size:11.5px;color:#b8a89c;text-align:center;margin-top:10px}
+.board-list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#332d28}
+.board-list .am{font-weight:700;color:#1a7f37;font-variant-numeric:tabular-nums}
+.board-foot{padding:14px 24px;font-size:11.5px;color:#b0a59a;text-align:center;border-top:1px solid rgba(120,80,60,.06)}
+.board-list .empty{padding:26px 24px;text-align:center;color:#b0a59a;font-size:13px}
+
+/* 说明 */
+.tips{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tip{background:#fbf9f6;border-radius:12px;padding:12px 13px;min-width:0}
+.tip strong{display:block;font-size:12.5px;color:#3a332d;margin-bottom:4px}
+.tip span{font-size:11.5px;color:#8d837a;line-height:1.6;display:block}
+
+footer{border-top:1px solid rgba(120,80,60,.10);padding:26px 20px;text-align:center;color:#a2968c;font-size:12px}
+
+@media (max-width:1080px){.layout{grid-template-columns:minmax(0,1fr) 366px}}
+@media (max-width:920px){
+  main{padding:20px 16px 48px}
+  .layout{grid-template-columns:1fr;gap:16px}
+  .col-b{position:static;order:-1}
+  .page-head h1{font-size:24px}
+  .stat-row .val{font-size:30px}
+  .intro{padding:18px 20px}
+}
+@media (max-width:420px){
+  .qr-row{gap:10px}
+  .qr-item .box{padding:7px}
+  .board-list li{padding:0 16px;height:46px;gap:10px}
+  .stat-row{padding:16px 18px}
+}
 </style>
 </head>
 <body>
@@ -209,55 +200,60 @@ body{background:#faf7f4}
 </header><!--mrhx-header-end-->
 
 <main>
-  <div class="container">
-    <div class="header">
-      <h1>赞助支持 · Tsinho黄油站</h1>
-      <div class="slogan">为热爱发电的纯净小站 ✨</div>
+  <header class="page-head">
+    <h1>赞助支持 · Tsinho黄油站</h1>
+    <p class="sub">为热爱发电的纯净小站 ✨</p>
+  </header>
+
+  <section class="card intro">
+    <p class="lead">为爱发电，感谢有你 ❤️</p>
+    <p>本站坚持永久免费、无广告，只为给大家提供一个纯粹、干净的小站。</p>
+    <p>随着访问量增加，服务器和带宽是一笔持续的开销。如果你觉得这里的内容对你有帮助，可以请站长喝杯奶茶。</p>
+  </section>
+
+  <div class="layout">
+    <div class="col-a">
+      <section class="card board" id="sponsorBoard" hidden>
+        <div class="board-head">
+          <h2>感谢名单</h2>
+          <span>按赞助金额排序</span>
+        </div>
+        <ol class="board-list" id="spList"></ol>
+        <div class="board-foot" id="spFoot"></div>
+      </section>
     </div>
 
-    <div class="content-box">
-      <p class="title">为爱发电，感谢有你 ❤️</p>
-      <p>本站坚持永久免费、无广告，只为给大家提供一个纯粹、干净的小站。</p>
-      <p>随着访问量增加，服务器和带宽是一笔持续的开销。如果你觉得这里的内容对你有帮助，可以请站长喝杯奶茶。</p>
-    </div>
+    <div class="col-b">
+      <section class="card stat" id="sponsorStat" hidden aria-label="赞助统计">
+        <div class="stat-row">
+          <span class="lbl">赞助人数</span>
+          <span class="val" id="spPeople">—</span>
+        </div>
+        <div class="stat-row green">
+          <span class="lbl">累计金额</span>
+          <span class="val" id="spTotal">—</span>
+        </div>
+      </section>
 
-    <section class="sponsor-stat" id="sponsorStat" aria-label="赞助统计" hidden>
-      <div class="stat-item">
-        <span class="stat-label">赞助人数</span>
-        <span class="stat-value" id="spPeople">—</span>
-      </div>
-      <div class="stat-divider" aria-hidden="true"></div>
-      <div class="stat-item">
-        <span class="stat-label">累计金额</span>
-        <span class="stat-value" id="spTotal">—</span>
-      </div>
-    </section>
+      <section class="card qr">
+        <div class="qr-row">
+          <div class="qr-item">
+            <div class="box"><img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386"></div>
+            <div class="cap">请站长喝杯奶茶 🧋</div>
+          </div>
+          <div class="qr-item">
+            <div class="box"><img src="assets/sponsor/alipay.webp" alt="支付宝赞赏码" width="1146" height="1136"></div>
+            <div class="cap">给服务器充点电 ⚡</div>
+          </div>
+        </div>
+      </section>
 
-    <div class="qr-cards">
-      <div class="qr-card wechat">
-        <img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386">
-        <span>请站长喝杯奶茶 🧋</span>
-      </div>
-      <div class="qr-card alipay">
-        <img src="assets/sponsor/alipay.webp" alt="支付宝赞赏码" width="1146" height="1136">
-        <span>给服务器充点电 ⚡</span>
-      </div>
-    </div>
-
-    <section class="sponsor-board" id="sponsorBoard" hidden>
-      <div class="board-head">
-        <h2>感谢名单</h2>
-        <span class="board-sub">按赞助金额排序</span>
-      </div>
-      <ol class="board-list" id="spList"></ol>
-      <div class="board-foot" id="spFoot"></div>
-    </section>
-
-    <div class="features">
-      <div class="feature-item"><strong>📦 永久免费</strong>无广告，无付费功能</div>
-      <div class="feature-item"><strong>🚀 持续运营</strong>用于支付服务器与带宽</div>
-      <div class="feature-item"><strong>🎁 粉丝提议</strong>来自大家的自发支持</div>
-      <div class="feature-item"><strong>🛡️ 无拘无束</strong>不设特权，白嫖也OK</div>
+      <section class="card tips">
+        <div class="tip"><strong>📦 永久免费</strong><span>无广告，无付费功能</span></div>
+        <div class="tip"><strong>🚀 持续运营</strong><span>用于支付服务器与带宽</span></div>
+        <div class="tip"><strong>🎁 粉丝提议</strong><span>来自大家的自发支持</span></div>
+        <div class="tip"><strong>🔧 全用在硬开销</strong><span>服务器 · 域名 · 图床，一分不挪</span></div>
+      </section>
     </div>
   </div>
 </main>
