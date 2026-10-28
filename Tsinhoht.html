@@ -248,6 +248,7 @@ body.gate-pending main{display:none!important}
     <button type="button" class="tab" id="tabStats" role="tab" aria-selected="false" aria-controls="panelStats">访问统计</button>
     <button type="button" class="tab" id="tabLinks" role="tab" aria-selected="false" aria-controls="panelLinks">链接配置</button>
     <button type="button" class="tab" id="tabHtml" role="tab" aria-selected="false" aria-controls="panelHtml">HTML 模式</button>
+    <button type="button" class="tab" id="tabSponsor" role="tab" aria-selected="false" aria-controls="panelSponsor">赞助记录</button>
   </div>
 
   <div class="panel on" id="panelForm">
@@ -490,6 +491,38 @@ body.gate-pending main{display:none!important}
         <button type="button" class="btn btn-s" id="topDlToday">今日</button>
       </div>
       <div id="topDlBox"><p class="hint">加载中…</p></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelSponsor">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>赞助记录</h2>
+        <button type="button" class="btn btn-s" id="refreshSponsors">刷新</button>
+      </div>
+      <p class="hint" style="margin-bottom:14px">微信 / 支付宝的个人赞赏码没有回调接口，到账不会自动进来 —— 每收到一笔就在这里录一条，前台 sponsor.html 会按金额从高到低展示。</p>
+      <div class="stat-overview" style="margin-bottom:16px">
+        <div class="stat-box" style="background:#f0f9f4"><div class="stat-num" style="color:#1a7f37" id="spTotalPeople">-</div><div class="stat-label">赞助人数</div></div>
+        <div class="stat-box" style="background:#f0f9f4"><div class="stat-num" style="color:#1a7f37" id="spTotalAmount">-</div><div class="stat-label">累计金额</div></div>
+        <div class="stat-box" style="background:#fff7e6"><div class="stat-num" style="color:#e58d0a" id="spMonthAmount">-</div><div class="stat-label">本月金额</div></div>
+      </div>
+      <div class="codes3">
+        <div class="field"><label>昵称 / 称呼</label><input type="text" id="spNick" maxlength="30" placeholder="如：小明、热心网友"></div>
+        <div class="field"><label>金额（元）</label><input type="number" id="spAmount" min="0.01" step="0.01" placeholder="如：20"></div>
+        <div class="field"><label>赞助日期</label><input type="date" id="spDate"></div>
+      </div>
+      <div class="row" style="align-items:center">
+        <button type="button" class="btn btn-p" id="spAdd">添加一条</button>
+        <label style="font-size:13px;color:#666;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="spVisible" checked style="width:auto;margin:0">前台显示
+        </label>
+      </div>
+      <div id="statusSP"></div>
+    </div>
+
+    <div class="card">
+      <h2>全部记录</h2>
+      <div id="sponsorList"><p class="hint">切到本页签会自动加载…</p></div>
     </div>
   </div>
 
@@ -798,11 +831,12 @@ $('imgBedSaveSite').onclick = async () => {
 syncImgModeUI();
 
 const TAB_KEY = 'mrhx_active_tab';
-const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml' };
+const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml', tabSponsor: 'panelSponsor' };
 function switchTab(id, skipStore) {
   Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
   if (!skipStore) localStorage.setItem(TAB_KEY, id);
   if (id === 'tabManage') loadPosts();
+  if (id === 'tabSponsor') loadSponsors();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
   if (id === 'tabStats') { statsRefreshAll(); }
@@ -2985,6 +3019,141 @@ async function sendReplyMail(url, to, toNick, content, adminNick) {
     show(stC, '回复已发布，但邮件通知发送失败：' + e.message + '（检查：Edge Function 是否已部署、通知密钥是否正确、SMTP 是否配置好）', 'warn');
   }
 }
+
+// ===== 赞助记录（2026-10-28 站长需求：赞助页显示「多少人、赞助了多少」）=====
+// 赞赏码无回调接口 → 数据只能手动录。前台 sponsor.html 只读 visible=true 的行。
+const SP_TABLE = 'sponsors';
+function spHeaders() {
+  const h = sbHeaders();
+  const admin = $('sbSecret').value.trim();
+  if (admin) h['x-admin-key'] = admin;
+  return h;
+}
+function spMoney(n) {
+  const v = Number(n) || 0;
+  return '¥' + (Math.round(v * 100) / 100).toFixed(v % 1 === 0 ? 0 : 2);
+}
+function spToday() {
+  const d = new Date();
+  const p = x => String(x).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function spGuard() {
+  if (!sbBase() || !$('sbAnon').value.trim()) return '请先在「评论管理」页填写 Supabase Project URL 与 anon 公钥。';
+  if (!$('sbSecret').value.trim()) return '请先在「评论管理」页填写管理密钥（赞助记录的增删改要用它过 RLS）。';
+  return '';
+}
+async function loadSponsors() {
+  const box = $('sponsorList'), st = $('statusSP');
+  const bad = spGuard();
+  if (bad) { box.innerHTML = '<p style="color:#c93a3f;font-size:13px">' + esc(bad) + '</p>'; return; }
+  if (!$('spDate').value) $('spDate').value = spToday();
+  box.innerHTML = '<p class="hint">加载中…</p>';
+  try {
+    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?select=*&order=amount.desc,paid_on.asc,id.asc', { headers: spHeaders() });
+    if (!res.ok) {
+      const d = await res.json().catch(() => null);
+      const msg = (d && (d.message || d.hint || d.details)) || ('HTTP ' + res.status);
+      if (/does not exist|42P01/i.test(msg)) {
+        box.innerHTML = '<p style="color:#c93a3f;font-size:13px;line-height:1.9">还没建表：请到 Supabase 控制台 → SQL Editor，把 <b>supabase/add_sponsors.sql</b> 整段粘贴运行一次，再回来点「刷新」。</p>';
+        return;
+      }
+      throw new Error(msg);
+    }
+    const rows = await res.json();
+    renderSponsors(rows);
+    show(st, '已加载 ' + rows.length + ' 条记录', 'ok');
+  } catch (e) {
+    box.innerHTML = '<p style="color:#c93a3f;font-size:13px">加载失败：' + esc(e.message) + '</p>';
+    show(st, '加载失败：' + e.message, 'err');
+  }
+}
+function renderSponsors(rows) {
+  const box = $('sponsorList');
+  const people = new Set(rows.map(r => (r.nick || '').trim().toLowerCase())).size;
+  const total = rows.reduce((a, r) => a + (Number(r.amount) || 0), 0);
+  const ym = spToday().slice(0, 7);
+  const month = rows.filter(r => String(r.paid_on || '').slice(0, 7) === ym).reduce((a, r) => a + (Number(r.amount) || 0), 0);
+  $('spTotalPeople').textContent = people;
+  $('spTotalAmount').textContent = spMoney(total);
+  $('spMonthAmount').textContent = spMoney(month);
+  if (!rows.length) { box.innerHTML = '<p class="hint">还没有记录。收到第一笔赞助后，在上面填一条吧。</p>'; return; }
+  const head = '<div style="display:grid;grid-template-columns:1fr 92px 108px 92px 76px;gap:8px;padding:6px 8px;font-size:12px;color:#999;font-weight:600;border-bottom:1px solid #f0eeea">'
+    + '<span>昵称</span><span style="text-align:right">金额</span><span>日期</span><span>前台</span><span style="text-align:right">操作</span></div>';
+  const body = rows.map(r => {
+    const vis = r.visible !== false;
+    return '<div style="display:grid;grid-template-columns:1fr 92px 108px 92px 76px;gap:8px;align-items:center;padding:9px 8px;border-bottom:1px solid #f7f5f2;font-size:13px;' + (vis ? '' : 'opacity:.5') + '">'
+      + '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.nick || '') + '</span>'
+      + '<span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#1a7f37">' + spMoney(r.amount) + '</span>'
+      + '<span style="color:#888;font-size:12px">' + esc(r.paid_on || '') + '</span>'
+      + '<span><button type="button" class="btn btn-s sp-vis" data-id="' + r.id + '" data-vis="' + (vis ? '1' : '0') + '" style="padding:3px 8px;font-size:11px">' + (vis ? '显示中' : '已隐藏') + '</button></span>'
+      + '<span style="text-align:right"><button type="button" class="btn btn-s sp-del" data-id="' + r.id + '" data-nick="' + esc(r.nick || '') + '" data-amount="' + (Number(r.amount) || 0) + '" style="padding:3px 8px;font-size:11px;color:#c93a3f">删除</button></span>'
+      + '</div>';
+  }).join('');
+  box.innerHTML = head + body;
+  box.querySelectorAll('.sp-vis').forEach(btn => {
+    btn.onclick = () => setSponsorVisible(btn.dataset.id, btn.dataset.vis !== '1');
+  });
+  box.querySelectorAll('.sp-del').forEach(btn => {
+    btn.onclick = () => delSponsor(btn.dataset.id, btn.dataset.nick, btn.dataset.amount);
+  });
+}
+async function addSponsor() {
+  const st = $('statusSP');
+  const bad = spGuard();
+  if (bad) { show(st, bad, 'err'); return; }
+  const nick = $('spNick').value.trim();
+  const amount = Number($('spAmount').value);
+  const date = $('spDate').value || spToday();
+  if (!nick) { show(st, '请填写昵称', 'err'); $('spNick').focus(); return; }
+  if (!(amount > 0)) { show(st, '金额要大于 0', 'err'); $('spAmount').focus(); return; }
+  const btn = $('spAdd'); btn.disabled = true;
+  try {
+    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE, {
+      method: 'POST',
+      headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ nick: nick, amount: Math.round(amount * 100) / 100, paid_on: date, visible: $('spVisible').checked })
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => null);
+      throw new Error((d && (d.message || d.hint || d.details)) || ('HTTP ' + res.status));
+    }
+    $('spNick').value = ''; $('spAmount').value = ''; $('spVisible').checked = true;
+    show(st, '已添加：' + nick + ' ' + spMoney(amount), 'ok');
+    await loadSponsors();
+  } catch (e) {
+    show(st, '添加失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+}
+async function setSponsorVisible(id, visible) {
+  const st = $('statusSP');
+  try {
+    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?id=eq.' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({ visible: visible })
+    });
+    if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.hint)) || ('HTTP ' + res.status)); }
+    show(st, visible ? '已设为前台显示' : '已隐藏（前台不再出现）', 'ok');
+    await loadSponsors();
+  } catch (e) { show(st, '操作失败：' + e.message, 'err'); }
+}
+async function delSponsor(id, nick, amount) {
+  const st = $('statusSP');
+  if (!confirm('确定删除这条赞助记录？\n\n' + nick + ' · ' + spMoney(amount) + '\n\n删除后无法恢复，前台排行榜会同步减少。')) return;
+  try {
+    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' })
+    });
+    if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.hint)) || ('HTTP ' + res.status)); }
+    show(st, '已删除', 'ok');
+    await loadSponsors();
+  } catch (e) { show(st, '删除失败：' + e.message, 'err'); }
+}
+if ($('refreshSponsors')) $('refreshSponsors').onclick = withRefresh('refreshSponsors', loadSponsors, 'sponsorList');
+if ($('spAdd')) $('spAdd').onclick = addSponsor;
+if ($('spAmount')) $('spAmount').onkeydown = ev => { if (ev.key === 'Enter') addSponsor(); };
 
 async function loadComments() {
   const box = $('commentBox');

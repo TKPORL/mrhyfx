@@ -77,6 +77,36 @@ body{background:#f7f8fa}
 <link rel="apple-touch-icon" href="https://tsinho.us.ci/file/1790008576207_80AE7775A1BFBF55701C9E76FBD31274.webp">
 <link rel="stylesheet" href="assets/css/site.css?v=1a17faed">
 <style>header{padding:10px 20px 0}@media (max-width:720px){header{padding:10px 14px 0}}</style>
+<style>
+/* 2026-10-28：赞助统计 + 感谢名单。纸感暖底、发丝边、微阴影 —— 不用纯白纯黑，与全站浅色暖调一致。 */
+body{background:#faf7f4}
+.container{background:#fffefc;border:1px solid rgba(120,80,60,.09);box-shadow:0 1px 3px rgba(90,60,40,.05)}
+
+/* 统计条 —— 两个数字，数字用等宽数位避免跳动 */
+.sponsor-stat{display:flex;align-items:stretch;background:#fffaf6;border:1px solid rgba(180,120,80,.14);border-radius:14px;padding:18px 10px;margin-bottom:20px}
+.sponsor-stat .stat-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.sponsor-stat .stat-label{font-size:11.5px;color:#a2968c;letter-spacing:.04em}
+.sponsor-stat .stat-value{font-size:26px;font-weight:800;color:#e5484d;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.sponsor-stat .stat-divider{width:1px;background:rgba(180,120,80,.16);margin:2px 4px}
+@media (max-width:400px){.sponsor-stat .stat-value{font-size:22px}}
+
+/* 感谢名单 */
+.sponsor-board{margin-bottom:24px}
+.board-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;padding:0 2px}
+.board-head h2{font-size:15px;font-weight:700;color:#3a322c;margin:0}
+.board-head .board-sub{font-size:11.5px;color:#a2968c}
+.board-list{list-style:none;margin:0;padding:0;max-height:420px;overflow-y:auto;border:1px solid rgba(120,80,60,.09);border-radius:14px;background:#fffdfa}
+.board-list li{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(120,80,60,.06);font-size:13.5px}
+.board-list li:last-child{border-bottom:none}
+.board-list .rk{flex:0 0 24px;text-align:center;font-size:11.5px;font-weight:700;color:#b8a89c;font-variant-numeric:tabular-nums}
+.board-list li:nth-child(1) .rk{color:#e5a50a}
+.board-list li:nth-child(2) .rk{color:#9aa0a6}
+.board-list li:nth-child(3) .rk{color:#c08356}
+.board-list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3a322c;font-weight:500}
+.board-list .am{flex:0 0 auto;font-weight:700;color:#1a7f37;font-variant-numeric:tabular-nums}
+.board-list .empty{padding:22px 14px;text-align:center;color:#b8a89c;font-size:13px}
+.board-foot{font-size:11.5px;color:#b8a89c;text-align:center;margin-top:10px}
+</style>
 </head>
 <body>
 <!--mrhx-header-start--><header>
@@ -191,6 +221,18 @@ body{background:#f7f8fa}
       <p>随着访问量增加，服务器和带宽是一笔持续的开销。如果你觉得这里的内容对你有帮助，可以请站长喝杯奶茶。</p>
     </div>
 
+    <section class="sponsor-stat" id="sponsorStat" aria-label="赞助统计" hidden>
+      <div class="stat-item">
+        <span class="stat-label">赞助人数</span>
+        <span class="stat-value" id="spPeople">—</span>
+      </div>
+      <div class="stat-divider" aria-hidden="true"></div>
+      <div class="stat-item">
+        <span class="stat-label">累计金额</span>
+        <span class="stat-value" id="spTotal">—</span>
+      </div>
+    </section>
+
     <div class="qr-cards">
       <div class="qr-card wechat">
         <img src="assets/sponsor/weixin.webp" alt="微信赞赏码" width="396" height="386">
@@ -202,6 +244,15 @@ body{background:#f7f8fa}
       </div>
     </div>
 
+    <section class="sponsor-board" id="sponsorBoard" hidden>
+      <div class="board-head">
+        <h2>感谢名单</h2>
+        <span class="board-sub">按赞助金额排序</span>
+      </div>
+      <ol class="board-list" id="spList"></ol>
+      <div class="board-foot" id="spFoot"></div>
+    </section>
+
     <div class="features">
       <div class="feature-item"><strong>📦 永久免费</strong>无广告，无付费功能</div>
       <div class="feature-item"><strong>🚀 持续运营</strong>用于支付服务器与带宽</div>
@@ -212,7 +263,89 @@ body{background:#f7f8fa}
 </main>
 
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
-<script src="assets/js/nav.js?v=e7d6cfc6"></script>
+<script src="assets/js/nav.js?v=9d648ccc"></script>
 <script src="assets/js/smooth.js?v=211067fa"></script>
+<script>
+/* 2026-10-28：赞助统计 + 感谢名单（数据由后台「赞助记录」页签手动录入）。
+   表还没建 / 没有记录 / 网络失败 时，整块保持 hidden —— 不显示空洞和报错。
+   RLS 已保证只返回 visible=true 的行，前端不再额外过滤。 */
+(function () {
+  var statBox = document.getElementById('sponsorStat');
+  var boardBox = document.getElementById('sponsorBoard');
+  var listEl = document.getElementById('spList');
+  var footEl = document.getElementById('spFoot');
+  if (!statBox || !boardBox) return;
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function money(n) {
+    var v = Number(n) || 0;
+    var rounded = Math.round(v * 100) / 100;
+    return '¥' + (rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2));
+  }
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  // 数字滚动：0 → 目标。reduced-motion 或无 rAF 时直接落终值。
+  function countUp(el, to, fmt) {
+    if (reduce || !window.requestAnimationFrame) { el.textContent = fmt(to); return; }
+    var start = null, dur = 620;
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min(1, (ts - start) / dur);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(to * eased);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  fetch('site.json?t=' + Date.now())
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (cfg) {
+      var c = (cfg && cfg.comments) || {};
+      var url = String(c.url || '').replace(/\/+$/, '');
+      var key = c.anonKey;
+      if (!url || !key) return;
+      return fetch(url + '/rest/v1/sponsors?select=nick,amount,paid_on&order=amount.desc,paid_on.asc,id.asc', {
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + key }
+      }).then(function (r) {
+        if (!r.ok) return null;          // 表不存在 / 无权限 → 静默降级
+        return r.json();
+      }).then(function (rows) {
+        if (!rows || !rows.length) return;   // 没有记录 → 不显示这一块
+        render(rows);
+      });
+    })
+    .catch(function () { /* 静默：赞助统计属于锦上添花，不影响页面主体 */ });
+
+  function render(rows) {
+    var people = {};
+    var total = 0;
+    rows.forEach(function (r) {
+      var k = String(r.nick || '').trim().toLowerCase();
+      if (k) people[k] = 1;
+      total += Number(r.amount) || 0;
+    });
+    var nPeople = Object.keys(people).length;
+
+    statBox.hidden = false;
+    countUp(document.getElementById('spPeople'), nPeople, function (v) { return String(Math.round(v)); });
+    countUp(document.getElementById('spTotal'), total, function (v) { return money(v); });
+
+    var html = rows.map(function (r, i) {
+      return '<li><span class="rk">' + (i + 1) + '</span>'
+        + '<span class="nm">' + esc(r.nick || '匿名') + '</span>'
+        + '<span class="am">' + money(r.amount) + '</span></li>';
+    }).join('');
+    listEl.innerHTML = html;
+    boardBox.hidden = false;
+    footEl.textContent = '共 ' + rows.length + ' 笔赞助 · 名单由站长手动登记，如有遗漏欢迎在评论区告诉我';
+  }
+})();
+</script>
+
 </body>
 </html>
