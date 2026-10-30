@@ -2890,9 +2890,12 @@ function relTime(iso){
       });
     });
   }
-  function loadShard(s) {
-    if (_shardCache[s]) return _shardCache[s];
-    var name = 'search_detail_' + s + '.json';
+  function loadShard(s, bust) {
+    // bust=true：URL 加时间戳绕开 CDN/浏览器缓存 —— 刚发布的帖子分片可能还没同步，
+    // 第一次拉到的旧分片若被缓存，普通重试会永远吃到旧数据（2026-10-30 拘束俱乐部案例）。
+    var key = s + (bust ? '#b' : '');
+    if (_shardCache[key]) return _shardCache[key];
+    var name = 'search_detail_' + s + '.json' + (bust ? '?t=' + Date.now() : '');
     var p;
     if (_fastSrc === 'local') {
       p = fetchJson(name, 8000);
@@ -2908,25 +2911,25 @@ function relTime(iso){
         fetchJson(CDN_MIRROR + name, 8000).then(function (v) { ok('cdn', v); }, bad);
       });
     }
-    _shardCache[s] = p.catch(function (e) { delete _shardCache[s]; throw e; }); // 失败不缓存，允许下次重试
-    return _shardCache[s];
+    _shardCache[key] = p.catch(function (e) { delete _shardCache[key]; throw e; }); // 失败不缓存，允许下次重试
+    return _shardCache[key];
   }
   // 并发上限 6（与浏览器同域连接数一致），避免几十个请求排队把后面的卡片饿死
-  function loadShards(list) { return loadShardsLimited(list, 6); }
+  function loadShards(list, bust) { return loadShardsLimited(list, 6, bust); }
   // 全库兜底时限制并发（256 片一起发会挤爆连接池）
-  function loadShardsLimited(list, limit) {
+  function loadShardsLimited(list, limit, bust) {
     var out = [], i = 0;
     function next() {
       if (i >= list.length) return Promise.resolve();
       var s = list[i++];
-      return loadShard(s).then(function (d) { out = out.concat(d); }).catch(function () {}).then(next);
+      return loadShard(s, bust).then(function (d) { out = out.concat(d); }).catch(function () {}).then(next);
     }
     var runs = [];
     for (var k = 0; k < Math.min(limit || 8, list.length); k++) runs.push(next());
     return Promise.all(runs).then(function () { return out; });
   }
   var _fullDone = false;
-  var _retriedOnce = false;  // 详情补全只重试一轮，防止缺数据时分片请求死循环
+  var _partialTries = 0;  // 详情补全重试计数：0=正常重试一轮，1=绕缓存再拉，2=放弃（防死循环）
   var _errBox = '<div class="empty-box"><h3>搜索索引加载失败</h3><p>请检查网络后刷新页面</p><a class="btn-dl btn-dl-m" href="javascript:location.reload()" style="border:none;cursor:pointer">重新加载</a> <a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer;margin-left:6px">回到首页</a></div>';
   // 整库匹配（含介绍/放宽/推荐兜底）——小索引 0 结果或加载失败时走这里（拉全部分片拼回整库）
   function runFullSearch(data) {
@@ -2954,6 +2957,19 @@ function relTime(iso){
         return true;
       }
       _hits = data.filter(function (g) { return looseMatch(g.title, kw); });
+      if (_hits.length) { relaxed = true; _hits.forEach(function (g) { g._exact = false; }); }
+    }
+    // 2026-10-30（站长）：近似名兜底——查询词删掉任意 1 个字再匹配标题。
+    // 覆盖两类真实反馈：妈妈冰淇淋→奶妈冰淇淋（首字打错）、束缚俱乐部→拘束俱乐部（删「缚」=「束俱乐部」是其子串）。
+    // 只在精确+乱序都 0 命中时才走；只匹配标题不匹配介绍，避免拉进一堆边缘结果。
+    if (!_hits.length && kw.length >= 3) {
+      var seenV = {};
+      for (var vi = 0; vi < kw.length && !_hits.length; vi++) {
+        var v = kw.slice(0, vi) + kw.slice(vi + 1);
+        if (v.length < 2 || seenV[v]) continue;
+        seenV[v] = 1;
+        _hits = data.filter(function (g) { return (g.title || '').toLowerCase().indexOf(v) > -1; });
+      }
       if (_hits.length) { relaxed = true; _hits.forEach(function (g) { g._exact = false; }); }
     }
     countEl.textContent = '（找到 ' + _hits.length + ' 个' + (relaxed ? ' · 已放宽匹配' : '') + '）';
@@ -3004,9 +3020,14 @@ function relTime(iso){
     // 还有没补上的：先整片重拉一次（多半是那一片恰好超时）；重试过还没有，
     // 说明分片里确实缺这条（如求助帖条目），这时转成「详情加载超时」文案，别让骨架永远转。
     if (still) {
-      if (!_retriedOnce) {
-        _retriedOnce = true;
-        setTimeout(function () { prefetchPage(); }, 700);
+      if (_partialTries === 0) {
+        _partialTries = 1;
+        setTimeout(function () { prefetchPage(); }, 700);       // 第一轮：多半是分片请求恰好超时
+      } else if (_partialTries === 1) {
+        _partialTries = 2;
+        // 第二轮：带时间戳绕缓存重拉（2026-10-30：刚发布的帖子分片未同步时，
+        // 第一轮拿到的旧分片已被缓存，普通重试永远吃到旧数据，必须绕开）
+        setTimeout(function () { prefetchPage(true); }, 4000);
       } else {
         markPartialFail();
       }
@@ -3024,7 +3045,7 @@ function relTime(iso){
       if (h._partial && ps.indexOf(h.p || 0) < 0) ps.push(h.p || 0);
     }
     if (!ps.length) return;
-    loadShards(ps).then(enrichWithFull).catch(markPartialFail);
+    loadShards(ps, arguments[0] === true).then(enrichWithFull).catch(markPartialFail);
   }
   // 两条腿都超时：不要把骨架永远转下去，直接告诉用户点标题进帖子页
   function markPartialFail() {
@@ -3033,7 +3054,7 @@ function relTime(iso){
       var rt = cards[i].querySelector('.rt');
       if (!rt || cards[i].getAttribute('data-fail')) continue;
       cards[i].setAttribute('data-fail', '1');
-      cards[i].innerHTML = rt.outerHTML + '<div class="intro" style="color:#999">详情加载超时，点右上「查看详情」进帖子页</div>';
+      cards[i].innerHTML = rt.outerHTML + '<div class="intro" style="color:#999">详情暂时加载不出来（多为刚发布的帖子、镜像还在同步），点右上「查看详情」进帖子页</div>';
     }
   }
   // 骨架屏：先把标题/平台/介绍/按钮的轮廓摆好，扫光动效表示正在加载（不转圈）
@@ -3062,7 +3083,7 @@ function relTime(iso){
     function paint(hits) {
       hits.sort(function (a, b) { return matchScore(a) - matchScore(b); });
       hits.forEach(function (g) { g._exact = matchScore(g) <= 1; g._partial = true; });
-      _retriedOnce = false;  // 新一轮搜索重新给一次重试机会
+      _partialTries = 0;  // 新一轮搜索重新给重试机会
       _hits = hits;
       countEl.textContent = '（找到 ' + _hits.length + ' 个）';
       _page = 0;
