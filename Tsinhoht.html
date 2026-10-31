@@ -437,6 +437,10 @@ body.gate-pending main{display:none!important}
           <div class="stat-num" style="color:#7c3aed" id="statTodayDlCount">-</div>
           <div class="stat-label">今日下载</div>
         </div>
+        <div class="stat-box" style="background:#eef7f0" title="今日下载 ÷ 今日访问">
+          <div class="stat-num" style="color:#1a7f37" id="statTodayRate">-</div>
+          <div class="stat-label">下载率</div>
+        </div>
       </div>
       <p style="font-size:12px;color:#999;margin:12px 0 8px;font-weight:600;letter-spacing:1px">📈 累计</p>
       <div class="stat-overview" id="statOverviewTotal">
@@ -475,7 +479,7 @@ body.gate-pending main{display:none!important}
         <h2>📊 每日数据快照（最近 7 天）</h2>
         <button type="button" class="btn btn-s" id="refreshSnapshots">刷新</button>
       </div>
-      <p class="hint" style="margin-top:2px">每天打开后台统计页时自动保存当日快照，记录累计访问、帖子数、今日访问、今日评论、今日下载。历史数据不会被覆盖，可回看过去7天。</p>
+      <p class="hint" style="margin-top:2px">每天打开后台统计页时自动保存当日快照，记录累计访问、今日访问、今日评论、今日下载与下载率。历史数据不会被覆盖，可回看过去7天。</p>
       <div id="snapshotBox"><p class="hint">加载中…</p></div>
       <div id="statusSnap"></div>
     </div>
@@ -3460,7 +3464,17 @@ async function loadStats() {
     const rows = valid ? arr.filter(v => valid.has(v.url)) : arr;
     const deadRows = valid ? arr.filter(v => !valid.has(v.url)) : [];
     const total = rows.reduce((s, v) => s + v.count, 0);
-    const postCount = rows.length;
+    // 2026-10-31（站长）：原来 postCount = 有访问记录的页面数（实测恒为 61），被当成「帖子总数」显示，看着像坏了。
+    // 真实帖子数 = 仓库根目录的 2026*.html（每期一页）+ 求助帖 qzt.html；取不到 tree 时回退旧口径。
+    var _realPostTotal = 0;
+    if (valid) {
+      var _plist = [];
+      valid.forEach(function (u) { _plist.push(u); });
+      var _daily = _plist.filter(function (u) { return /^\/2026[^\/]*\.html$/i.test(u); }).length;
+      _realPostTotal = _daily + (_plist.indexOf('/qzt.html') > -1 ? 1 : 0);
+    }
+    window.__mrhxPostTotal = _realPostTotal;
+    const postCount = _realPostTotal || rows.length;
     const avg = postCount ? Math.round(total / postCount) : 0;
     $('statTotalViews').textContent = total;
     $('statTotalPosts').textContent = postCount;
@@ -3514,6 +3528,8 @@ async function loadStats() {
     todayDlClicks = await _cntOf(`created_at=gte.${bjDayUtcRange().start}&created_at=lt.${bjDayUtcRange().end}&limit=1`, 'download_clicks_today');
     $('statDlClickCount').textContent = totalDlClicks;
     $('statTodayDlCount').textContent = todayDlClicks;
+    var _rateEl = $('statTodayRate');
+    if (_rateEl) _rateEl.textContent = todayTotal ? (todayDlClicks / todayTotal * 100).toFixed(1) + '%' : '-';
     _cachedDl = { total: totalDlClicks, today: todayDlClicks };
     // 写统计缓存（下次进页面/点刷新先秒渲染，见 readStatsCache）
     writeStatsCache({
@@ -3820,8 +3836,8 @@ async function loadSnapshots() {
     }
     // ⑤ 帖子总数（当快照锚点用，历史天数变化极小）
     const metaR = await fetch(`${sbUrl}/rest/v1/${SNAP_TABLE}?select=total_posts&order=day.desc&limit=1`, { headers: H });
-    let totalPosts = 0;
-    if (metaR.ok) { const mb = await metaR.json(); if (mb[0]) totalPosts = mb[0].total_posts || 0; }
+    let totalPosts = window.__mrhxPostTotal || 0;   // 2026-10-31：优先用刚算出的真实帖子数
+    if (!totalPosts && metaR.ok) { const mb = await metaR.json(); if (mb[0]) totalPosts = mb[0].total_posts || 0; }
     // ⑥ 组装：total_views(D) = totalViewsNow − 严格晚于 D 的每日访问之和
     const sumAfter = {};
     let acc = 0;
@@ -3884,7 +3900,7 @@ async function loadSnapshots() {
     html += '<thead><tr style="border-bottom:2px solid #e8e6e0;text-align:left">';
     html += '<th style="padding:7px 8px;color:#666;font-weight:600">日期</th>';
     html += '<th style="padding:7px 8px;color:#e5484d;font-weight:600;text-align:right">累计访问</th>';
-    html += '<th style="padding:7px 8px;color:#1a5fb4;font-weight:600;text-align:right">帖子数</th>';
+    html += '<th style="padding:7px 8px;color:#1a7f37;font-weight:600;text-align:right">下载率</th>';
     html += '<th style="padding:7px 8px;color:#1a7f37;font-weight:600;text-align:right">今日访问</th>';
     html += '<th style="padding:7px 8px;color:#e58d0a;font-weight:600;text-align:right">今日评论</th>';
     html += '<th style="padding:7px 8px;color:#7c3aed;font-weight:600;text-align:right">今日下载</th>';
@@ -3897,7 +3913,8 @@ async function loadSnapshots() {
       html += '<tr style="border-bottom:1px solid #f0eee8;' + (isToday ? 'background:#fef6f2;' : '') + '">';
       html += '<td style="padding:8px 8px;color:#333">' + label + (isToday ? ' <span style="color:#e5484d;font-size:11px">今天</span>' : '') + '</td>';
       html += '<td style="padding:8px 8px;text-align:right;font-weight:600;color:#e5484d;font-variant-numeric:tabular-nums">' + fmt(r.total_views || 0) + (p ? ' ' + badge(r.total_views, p.total_views) : '') + '</td>';
-      html += '<td style="padding:8px 8px;text-align:right;color:#1a5fb4">' + fmt(r.total_posts || 0) + '</td>';
+      const _rv = r.today_views || 0, _rd = r.today_downloads || 0;
+      html += '<td style="padding:8px 8px;text-align:right;color:#1a7f37;font-variant-numeric:tabular-nums">' + (_rv ? (_rd / _rv * 100).toFixed(1) + '%' : '-') + '</td>';
       html += '<td style="padding:8px 8px;text-align:right;color:#1a7f37;font-variant-numeric:tabular-nums">' + fmt(r.today_views || 0) + (p ? ' ' + badge(r.today_views, p.today_views) : '') + '</td>';
       html += '<td style="padding:8px 8px;text-align:right;color:#e58d0a;font-variant-numeric:tabular-nums">' + fmt(r.today_comments || 0) + (p ? ' ' + badge(r.today_comments, p.today_comments) : '') + '</td>';
       html += '<td style="padding:8px 8px;text-align:right;color:#7c3aed;font-variant-numeric:tabular-nums">' + fmt(r.today_downloads || 0) + (p ? ' ' + badge(r.today_downloads, p.today_downloads) : '') + '</td>';
