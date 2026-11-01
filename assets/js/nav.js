@@ -115,6 +115,19 @@
   if (mq.addEventListener) { mq.addEventListener('change', onBreakpoint); }
   else if (mq.addListener) { mq.addListener(onBreakpoint); }
 
+  // 2026-10-26（站长反馈「窗口左右缩短再放大，整页变白，刷新才恢复」）：
+  // 断点来回切时如果有 .open 状态的浮层没收回、或 body 的 overflow 锁没解开，
+  // 页面会被残留在最上层的面板盖住。这里做兜底：缩放停下后统一收浮层 + 解滚动锁 + 重新归位抽屉。
+  var _rszT = null;
+  window.addEventListener('resize', function () {
+    if (_rszT) clearTimeout(_rszT);
+    _rszT = setTimeout(function () {
+      closeAll();
+      if (typeof moveDrops === 'function') moveDrops();
+      document.body.style.overflow = '';
+    }, 160);
+  }, { passive: true });
+
   // ===== 「其他资源」下拉（2026-10-24）=====
   // 站长要求：鼠标滑过就展开、点一下也展开，资源像一条线铺开。
   // 注意：按钮与面板之间有约 10px 的空档（面板贴着 header 底边），
@@ -153,6 +166,19 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') setRes(false);
+    });
+    // 缩放窗口时把资源面板收起：它的定位是相对 header 算的，跨断点后容易停在半空
+    window.addEventListener('resize', function () { setRes(false); }, { passive: true });
+  }
+
+  // ===== 抽屉内「其他资源」折叠（2026-11-01 站长）=====
+  // 手机端抽屉里原来是一排平铺的小卡，改成与上方菜单项同款的可折叠按钮，默认收起。
+  var drawerRes = document.getElementById('mrhxDrawerRes');
+  var drawerResBtn = drawerRes && drawerRes.querySelector('.drawer-res-btn');
+  if (drawerRes && drawerResBtn) {
+    drawerResBtn.addEventListener('click', function () {
+      var open = drawerRes.classList.toggle('open');
+      drawerResBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
   }
 })();

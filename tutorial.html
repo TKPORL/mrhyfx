@@ -164,6 +164,15 @@ a.tut-item:active{background:#fdf1f1}
    注意：必须写成 .tut-card a.tut-dl，否则被上面的 .tut-card a{color:#e5484d} 覆盖成红底红字 */
 .tut-card a.tut-dl{display:inline-flex;align-items:center;padding:5px 15px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;background:#e5484d;text-decoration:none;border:none;transition:background .18s ease;white-space:nowrap;margin-left:4px;vertical-align:1px}
 .tut-card a.tut-dl:hover{background:#c93a3f;color:#fff;border:none}
+/* 2026-11-01：解压码速查（看文件名认密码） */
+.pw-map{border:1px solid #f0eeec;border-radius:12px;overflow:hidden;margin-top:12px}
+.pw-row{display:flex;align-items:baseline;gap:14px;padding:11px 14px;font-size:13.5px;color:#444;border-top:1px solid #f6f4f1}
+.pw-row:first-child{border-top:none}
+.pw-row:nth-child(odd){background:#faf9f7}
+.pw-k{flex:1 1 auto;min-width:0;color:#555}
+.pw-v{flex:0 0 auto;font-weight:700;color:#e5484d;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2px}
+.pw-note{display:block;font-size:12px;color:#9a9a9a;font-weight:400;margin-top:2px;font-family:inherit;letter-spacing:0}
+@media (max-width:640px){.pw-row{flex-direction:column;gap:4px}.pw-v{font-size:14px}}
 /* 锚点跳转时给 sticky 顶栏让出高度，否则标题会被顶栏压住 */
 .sect[id]{scroll-margin-top:88px}
 .tut-card[id]{scroll-margin-top:88px}
@@ -180,7 +189,7 @@ a.tut-item:active{background:#fdf1f1}
 <body>
 <!--mrhx-header-start--><header>
 <div class="hd-bar">
-  <a class="logo" href="index.html"><img src="logo.webp" alt="Tsinho黄油站"></a>
+  <a class="logo" href="index.html"><img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站"></a>
   <nav class="menu" aria-label="主导航">
     <a href="index.html">首页</a>
     <a href="sponsor.html">赞助</a>
@@ -241,7 +250,7 @@ a.tut-item:active{background:#fdf1f1}
   <div>
     <div class="drop-inner">
       <div class="drawer-head">
-        <img src="logo.webp" alt="Tsinho黄油站">
+        <img src="https://tsinho.us.ci/file/1790008578974_EAFFBCD6D2AB070B24071CFF8B189CCF.webp" alt="Tsinho黄油站">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <div class="drawer-body" data-lenis-prevent>
@@ -319,7 +328,25 @@ a.tut-item:active{background:#fdf1f1}
     <div class="faq-step"><b>别带空格</b>　用鼠标拖动选中容易带上前后空格，粘进去先把空格删掉。</div>
     <div class="faq-step"><b>全角半角</b>　中文输入法打出来的符号和英文的不是同一个，能复制就别手打。</div>
 
-    <div class="faq-tip">页面会把大部分「解压码：xxx」自动做成一个「解压码」按钮，点一下直接复制。但这个功能没覆盖全部帖子（不少老帖子没转换成功），<b>没看到按钮不代表没有密码</b>，回介绍里往下翻找文字。</div>
+    <div class="faq-tip">介绍里的解压码会自动变成一个「解压码」按钮，点一下直接复制，不用手动选中。<b>万一没看到按钮</b>，说明这条帖子的写法和常规不同，仍以介绍里的文字为准。</div>
+  </div>
+
+  <div class="tut-card" id="codemap">
+    <div class="faq-title">看文件名认密码</div>
+    <div class="faq-lead">网盘里的文件名常常就是线索。看到下面这些特征，先直接试对应的密码，不用到处问人。</div>
+    <div class="pw-map">
+      <div class="pw-row"><span class="pw-k">文件名带「二小姐」</span><span class="pw-v">xiebao</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「多平台真实案例」<span class="pw-note">下载后把 .mp4 后缀改成 .zip 或 .rar 再解</span></span><span class="pw-v">game</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「hh」</span><span class="pw-v">1435.kt</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「第DEEE节」</span><span class="pw-v">摸摸鱼ACG</span></div>
+      <div class="pw-row"><span class="pw-k">文件夹「动画免责声明」，或分卷以 LXNDGP691 开头<span class="pw-note">同一批的几个分卷用的是同一个密码</span></span><span class="pw-v">LXNDLXND</span></div>
+      <div class="pw-row"><span class="pw-k">后缀是 .enc<span class="pw-note">要先解密出 zip 再解压，见下方「enc 加密文件怎么解」</span></span><span class="pw-v">ykacg</span></div>
+    </div>
+
+    <div class="faq-title" style="margin-top:20px">密码是「悦悦」的，请在手机上解</div>
+    <div class="faq-lead">这类包在电脑上解，经常报密码错误或者缺文件。换成手机端解基本都能过 —— 已经有不少人反馈过这个问题了。</div>
+    <div class="faq-step"><b>推荐流程</b>　用手机下载 → 手机端 RAR 或 MT 管理器解压 → 需要电脑玩的，再用 QQ 或微信传过去。</div>
+    <div class="faq-step"><b>不建议</b>　直接用电脑下载再解。最近反馈的「解压不了」「提示密码错误」「少文件」，基本都是这么来的。</div>
   </div>
 
   <div class="sect" id="err"><h2><em class="no">03</em>解压时提示出错</h2></div>
@@ -422,7 +449,7 @@ a.tut-item:active{background:#fdf1f1}
 </main>
 <footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
 <!-- 旧导航脚本已移除，改用 assets/js/nav.js -->
-<script src="assets/js/nav.js?v=e7d6cfc6"></script>
+<script src="assets/js/nav.js?v=9d648ccc"></script>
 <script src="assets/js/smooth.js?v=211067fa"></script>
 </body>
 </html>
