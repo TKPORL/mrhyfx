@@ -27,8 +27,14 @@
     var th = target.offsetHeight || 0;
     // 目标距视口顶部要留多少：能整块放下就居中（人的视觉主要看中间）；
     // 放不下整块时也让出约 18% 视口高度，避免「划过头 / 标题被顶栏压住」。
+    // 2026-11-01（站长）：居中定位只适用于「整块内容」的页面（如帖子页跳详情）；
+    // 教程页这种「点一行跳到某小节」的目录页，居中会让只有标题的小块浮在屏幕中间、正文全在下面，
+    // 所以这类页面改为贴顶。页面在 <body> 上标 data-anchor="top" 即启用。
+    var topMode = document.body && document.body.getAttribute('data-anchor') === 'top';
     var lead;
-    if (th && th <= vh - hh) {
+    if (topMode) {
+      lead = hh;
+    } else if (th && th <= vh - hh) {
       lead = Math.max(hh, Math.round((vh - th) / 2));
     } else {
       lead = Math.max(hh, Math.round(vh * 0.18));

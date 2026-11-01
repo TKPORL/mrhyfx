@@ -172,6 +172,8 @@ a.tut-item:active{background:#fdf1f1}
 .pw-k{flex:1 1 auto;min-width:0;color:#555}
 .pw-v{flex:0 0 auto;font-weight:700;color:#e5484d;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2px}
 .pw-note{display:block;font-size:12px;color:#9a9a9a;font-weight:400;margin-top:2px;font-family:inherit;letter-spacing:0}
+.pw-imgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.pw-img{display:block;width:auto;height:auto;max-width:100%;max-height:190px;object-fit:contain;background:#fff;border:1px solid #ecebe9;border-radius:8px;padding:3px}
 @media (max-width:640px){.pw-row{flex-direction:column;gap:4px}.pw-v{font-size:14px}}
 /* 锚点跳转时给 sticky 顶栏让出高度，否则标题会被顶栏压住 */
 .sect[id]{scroll-margin-top:88px}
@@ -186,7 +188,7 @@ a.tut-item:active{background:#fdf1f1}
 <style id="mrhx-hdr-fix">/* 顶栏留白与首页一致：site.css 后加载会覆盖页内样式，故在此 link 之后补 */header{padding:10px 20px 0}
 @media (max-width:720px){header{padding:10px 14px 0}}</style>
 </head>
-<body>
+<body data-anchor="top">
 <!--mrhx-header-start--><header>
 <div class="hd-bar">
   <a class="logo" href="index.html"><img src="logo.webp" alt="Tsinho黄油站"></a>
@@ -338,12 +340,12 @@ a.tut-item:active{background:#fdf1f1}
     <div class="faq-title">看文件名认密码</div>
     <div class="faq-lead">网盘里的文件名常常就是线索。看到下面这些特征，先直接试对应的密码，不用到处问人。</div>
     <div class="pw-map">
-      <div class="pw-row"><span class="pw-k">文件名带「二小姐」</span><span class="pw-v">xiebao</span></div>
-      <div class="pw-row"><span class="pw-k">文件名带「多平台真实案例」<span class="pw-note">下载后把 .mp4 后缀改成 .zip 或 .rar 再解</span></span><span class="pw-v">game</span></div>
-      <div class="pw-row"><span class="pw-k">文件名带「hh」</span><span class="pw-v">1435.kt</span></div>
-      <div class="pw-row"><span class="pw-k">文件名带「第DEEE节」</span><span class="pw-v">摸摸鱼ACG</span></div>
-      <div class="pw-row"><span class="pw-k">文件夹「动画免责声明」，或分卷以 LXNDGP691 开头<span class="pw-note">同一批的几个分卷用的是同一个密码</span></span><span class="pw-v">LXNDLXND</span></div>
-      <div class="pw-row"><span class="pw-k">后缀是 .enc<span class="pw-note">要先解密出 zip 再解压，见下方「enc 加密文件怎么解」</span></span><span class="pw-v">ykacg</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「二小姐」<span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-xiebao.png" alt="文件名带二小姐的网盘截图" loading="lazy"></span></span><span class="pw-v">xiebao</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「多平台真实案例」<span class="pw-note">下载后把 .mp4 后缀改成 .zip 或 .rar 再解</span><span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-game-1.png" alt="文件名带多平台真实案例的截图" loading="lazy"><img class="pw-img" src="assets/tutorial/c-game-2.png" alt="伪装成 mp4 的视频文件截图" loading="lazy"></span></span><span class="pw-v">game</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「hh」<span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-1435kt.png" alt="文件名以 hh 开头的游戏包截图" loading="lazy"><img class="pw-img" src="assets/tutorial/c-1435kt-2.png" alt="文件名同样以 hh 开头的音乐文件截图" loading="lazy"></span></span><span class="pw-v">1435.kt</span></div>
+      <div class="pw-row"><span class="pw-k">文件名带「第DEEE节」<span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-momo.png" alt="文件名带第DEEE节的截图" loading="lazy"></span></span><span class="pw-v">摸摸鱼ACG</span></div>
+      <div class="pw-row"><span class="pw-k">文件夹「动画免责声明」，或分卷以 LXNDGP691 开头<span class="pw-note">同一批的几个分卷用的是同一个密码</span><span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-lxnd.png" alt="动画免责声明文件夹与 LXNDGP691 分卷截图" loading="lazy"></span></span><span class="pw-v">LXNDLXND</span></div>
+      <div class="pw-row"><span class="pw-k">后缀是 .enc<span class="pw-note">要先解密出 zip 再解压，见下方「enc 加密文件怎么解」</span><span class="pw-imgs"><img class="pw-img" src="assets/tutorial/c-ykacg.png" alt="文件名后缀为 enc 的截图" loading="lazy"></span></span><span class="pw-v">ykacg</span></div>
     </div>
 
     <div class="faq-title" style="margin-top:20px">密码是「悦悦」的，请在手机上解</div>
