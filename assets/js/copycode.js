@@ -16,12 +16,28 @@
       function cleanCode(s) {
         return String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
       }
-      var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|作弊码|赞助码)[:：][ \t]*([^\n<]*)/g, function (m0, label, rest) {
-        var key = label === '解压码' ? 'mz' : (label === '作弊码' ? 'zb' : 'zz');
+      // 2026-11-01（站长反馈「加了码却没有复制按钮」）：放宽识别范围——
+      //   ① 认「解压密码」（原来只认「解压码」，求助帖与部分帖子写的全是「解压密码」）；
+      //   ② 冒号可省略（线上约 500 处写成「解压码悦悦」「解压码007721」，原来一律匹配不到
+      //      → 既没有按钮，码还留在介绍里，正是站长看到的那个现象）。
+      html = html.replace(/(解压码|解压密码)\1/g, '$1');   // 修历史上的重复前缀「解压码解压码悦悦」
+      var keyOf = function (label) { return /^解压/.test(label) ? 'mz' : (label === '作弊码' ? 'zb' : 'zz'); };
+      var NOCODE = '是|请|见|在|如|为|参考|查看|获取|咨询|私信|留言|后台|群';
+      // 第一趟：带冒号 → 取到行尾，整行移除
+      var html2 = html.replace(/(?:\s*<br\s*\/?>)?\s*(解压码|解压密码|作弊码|赞助码)\s*[:：][ \t]*([^\n<]*)/g, function (m0, label, rest) {
+        var key = keyOf(label);
         var code = cleanCode(rest);
         if (!code) return m0;
         if (!found[key]) found[key] = code;
         return ''; // 整行移除：码不该再留在介绍里（截断的残段也不行）
+      });
+      // 第二趟：不带冒号 → 只吃到空白/标点为止（码里不会有这些），并用黑名单挡掉「解压码是什么」这类句子
+      html2 = html2.replace(new RegExp('(?:\\s*<br\\s*\\/?>)?\\s*(解压码|解压密码|作弊码|赞助码)[ \\t]*(?!' + NOCODE + ')([^\\s<：:，。；、（）()【】「」]{2,40})', 'g'), function (m0, label, code0) {
+        var key = keyOf(label);
+        var code = cleanCode(code0);
+        if (!code) return m0;
+        if (!found[key]) found[key] = code;
+        return '';
       });
       var mz = found.mz, zb = found.zb, zz = found.zz;
       if (!mz && !zb && !zz) return;

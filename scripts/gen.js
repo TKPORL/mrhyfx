@@ -2812,10 +2812,29 @@ function relTime(iso){
     function _cleanCode(s) {
       return String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\\([^)]*\\)|（[^）]*）/g, ' ').trim();
     }
-    var mz = _cleanCode(((raw.match(/解压码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
-    var zb = _cleanCode(((raw.match(/作弊码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
-    var zz = _cleanCode(((raw.match(/赞助码[:：][ \\t]*([^\\n<]*)/) || [])[1])) || null;
-    var introTxt = raw.replace(/(?:解压码|作弊码|赞助码)[:：][ \\t]*([^\\n<]*)/g, function (m0, rest) { return _cleanCode(rest) ? '' : m0; }).replace(/\\n\\s*\\n/g, '\\n').trim();
+    // 2026-11-01（站长反馈「加了码却没有复制按钮」）：与 copycode.js 同步放宽——认「解压密码」、冒号可省略。
+    // 线上约 500 处写成「解压码悦悦」「解压码007721」无冒号，旧正则一律匹配不到（无按钮、码还留在介绍里）。
+    raw = String(raw).replace(/(解压码|解压密码)\\1/g, '$1');
+    var _NC = '(?!是|请|见|在|如|为|参考|查看|获取|咨询|私信|留言|后台|群)';
+    var _RE_C1 = /(?:解压码|解压密码)\\s*[:：][ \\t]*([^\\n<]*)/;
+    var _RE_C2 = new RegExp('(?:解压码|解压密码)[ \\t]*' + _NC + '([^\\s<：:，。；、（）()【】「」]{2,40})');
+    var _RE_B1 = /(?:作弊码)\\s*[:：][ \\t]*([^\\n<]*)/;
+    var _RE_B2 = new RegExp('(?:作弊码)[ \\t]*' + _NC + '([^\\s<：:，。；、（）()【】「」]{2,40})');
+    var _RE_Z1 = /(?:赞助码)\\s*[:：][ \\t]*([^\\n<]*)/;
+    var _RE_Z2 = new RegExp('(?:赞助码)[ \\t]*' + _NC + '([^\\s<：:，。；、（）()【】「」]{2,40})');
+    var _pickCode = function (r1, r2) {
+      var m = raw.match(r1), c = m ? _cleanCode(m[1]) : '';
+      if (c) return c;
+      m = raw.match(r2); c = m ? _cleanCode(m[1]) : '';
+      return c || null;
+    };
+    var mz = _pickCode(_RE_C1, _RE_C2);
+    var zb = _pickCode(_RE_B1, _RE_B2);
+    var zz = _pickCode(_RE_Z1, _RE_Z2);
+    var introTxt = raw
+      .replace(/(?:解压码|解压密码|作弊码|赞助码)\\s*[:：][ \\t]*([^\\n<]*)/g, function (m0, rest) { return _cleanCode(rest) ? '' : m0; })
+      .replace(new RegExp('(?:解压码|解压密码|作弊码|赞助码)[ \\t]*' + _NC + '([^\\s<：:，。；、（）()【】「」]{2,40})', 'g'), function (m0, rest) { return _cleanCode(rest) ? '' : m0; })
+      .replace(/\\n\\s*\\n/g, '\\n').trim();
     var dl = (g.links || []).map(function (l, i) {
       var cls = i === 0 ? 'btn-dl btn-dl-m' : 'btn-dl btn-dl-b';
       return '<a class="' + cls + '" href="' + esc(l.url) + '" target="_blank" rel="noreferrer">' + ic + esc(l.label) + '</a>';

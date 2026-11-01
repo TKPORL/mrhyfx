@@ -1446,7 +1446,9 @@ function gameHtml(c, imgPaths) {
     ${(() => {
       // 2026-10-13 解压码：存进 note 文本（前台脚本会渲染成可一键复制的按钮），拼接前先清旧标记保证幂等
       // 2026-10-21 修复：旧清洗正则只认英文数字码，中文/含空格码（如「天生牛牛 或者 脸红红」）清不掉会重复拼行 → 改为清整行
-      const _ic = String(c.intro || '').replace(/\s*(?:解压码|作弊码|赞助码)[:：][^\n]*/g, '').trim();
+      // 2026-11-01：清旧标记时同步放宽（认「解压密码」、冒号可省略），否则「解压码悦悦」会残留、前台拆不出来
+      const _ic = String(c.intro || '').replace(/\s*(?:解压码|解压密码|作弊码|赞助码)\s*[:：][^\n]*/g, '')
+        .replace(/\s*(?:解压码|解压密码|作弊码|赞助码)[ \t]*(?!是|请|见|在|如|为|参考|查看|获取|咨询|私信|留言|后台|群)[^\s<：:，。；、（）()【】「」]{2,40}/g, '').trim();
       const _nt = _ic
         + (c.unzip ? (_ic ? '\n' : '') + '解压码：' + c.unzip : '')
         + (c.cheat ? '\n作弊码：' + c.cheat : '')
@@ -2558,10 +2560,20 @@ function parseCollectionDoc(doc) {
     // 2026-10-13 解压码：从介绍文本里提取（格式「解压码：xxx」），并从 intro 里剔除以免重复拼接
     // 2026-10-21 修复：旧正则只认英文数字且按空白截断，中文/含空格码（「天生牛牛 或者 脸红红」）会被截成「天生牛牛」→ 取整行、清洗备注块
     const _cleanCodeSb = s => String(s || '').replace(/【[^】]*】|［[^］]*］|「[^」]*」|\([^)]*\)|（[^）]*）/g, ' ').trim();
-    const unzip = _cleanCodeSb((intro.match(/解压码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
-    const cheat = _cleanCodeSb((intro.match(/作弊码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
-  const sponsor = _cleanCodeSb((intro.match(/赞助码[:：][ \t]*([^\n]*)/) || [])[1]) || '';
-    const introClean = intro.replace(/\s*(?:解压码|作弊码|赞助码)[:：][^\n]*/g, '').trim();
+    // 2026-11-01：与 copycode.js / gen.js 同一套规则——认「解压密码」、冒号可省略
+    const _pickSb = (pat) => {
+      const m1 = intro.match(new RegExp('(?:' + pat + ')\\s*[:：][ \t]*([^\n]*)'));
+      if (m1) { const c = _cleanCodeSb(m1[1]); if (c) return c; }
+      const m2 = intro.match(new RegExp('(?:' + pat + ')[ \t]*(?!是|请|见|在|如|为|参考|查看|获取|咨询|私信|留言|后台|群)([^\s<：:，。；、（）()【】「」]{2,40})'));
+      return m2 ? (_cleanCodeSb(m2[1]) || '') : '';
+    };
+    const unzip = _pickSb('解压码|解压密码');
+    const cheat = _pickSb('作弊码');
+    const sponsor = _pickSb('赞助码');
+    const introClean = intro
+      .replace(/\s*(?:解压码|解压密码|作弊码|赞助码)\s*[:：][^\n]*/g, '')
+      .replace(/\s*(?:解压码|解压密码|作弊码|赞助码)[ \t]*(?!是|请|见|在|如|为|参考|查看|获取|咨询|私信|留言|后台|群)[^\s<：:，。；、（）()【】「」]{2,40}/g, '')
+      .trim();
     return {
       name: nameEl ? nameEl.textContent.trim() : '',
       intro: introClean, unzip, cheat, sponsor, imgs, linkM, linkB, customName, customUrl
