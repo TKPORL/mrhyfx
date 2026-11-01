@@ -124,11 +124,12 @@ const NAV_MENU = (() => {
 //   桌面顶栏「其他资源」下拉（悬停/点击展开，一条横线铺开）+ 手机抽屉底部（按钮下面）。
 // 帖子页底部的资源条也读同一份，改这里全站生效。
 const RES_LINKS = [
-  { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
-  { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
-  { name: '影音娱乐', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67' },
+  // 2026-11-02 站长指定排序：看片软件 → VPN节点 → 成人壁纸 → 实用软件 → 影音娱乐 → 其余保持原序
   { name: '看片软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya' },
+  { name: 'VPN节点', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe' },
   { name: '成人壁纸', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww' },
+  { name: '实用软件', url: 'https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5' },
+  { name: '影音娱乐', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67' },
   { name: '游戏破解版合集', url: 'https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv' },
   { name: '节点搭建教程', url: 'https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5' },
   { name: '不限速工具', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr' },
@@ -286,7 +287,59 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
   #mrhxMoreDrop .drop-menu a{flex:0 0 auto;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;padding:13px 14px;border-radius:12px;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   #mrhxMoreDrop .drop-menu a:hover,#mrhxMoreDrop .drop-menu a.on{background:#fdf3f3;border-color:#f0b4b6;color:#e5484d}
 }
-@media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}}`;
+/* ===== 2026-11-01（站长）：公告收纳按钮 + 下拉面板 + 一键加群 ===== */
+.hd-bar .ann-btn{position:relative}
+.hd-bar .ann-btn.has-dot::after{content:"";position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px #faf9f7;animation:mrhxDot 2.4s ease-in-out infinite}
+@keyframes mrhxDot{0%,100%{opacity:1}50%{opacity:.4}}
+/* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
+.mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
+.mrhx-ann-groups--qq{max-width:250px}
+.mrhx-ann-groups--ct{max-width:340px}
+.mrhx-ann-sep{width:200px;height:1px;background:#f2ece7;margin:11px auto}
+.mrhx-ann-g{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#fdf0f0;border:1px solid #f6d5d6;color:#c93a3f;font-size:12px;font-weight:600;text-decoration:none;transition:.18s;line-height:1.5}
+.mrhx-ann-g b{font-weight:700;font-variant-numeric:tabular-nums}
+.mrhx-ann-g:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+@media (prefers-reduced-motion: reduce){.hd-bar .dot,.nav-drop,.nav-drop .drop-inner,.hd-bar .more-btn,.hd-bar .menu,.hd-bar .menu a{transition:none}.hd-bar .ann-btn.has-dot::after{animation:none}}`;
+
+/* ===== 2026-11-01（站长）：公告入口 + 多群防迷路 =====
+ * 群列表在 site.json 的 groups（name / qq / url），后台要加群只需加一条，不用改代码。
+ * 公告按钮只负责打开那个「居中弹窗」，不再另做下拉面板（站长 2026-11-01 明确否掉）。 */
+const annCfg = () => {
+  const a = SITE.announcement;
+  return (a && a.enabled !== false && Array.isArray(a.lines) && a.lines.length) ? a : null;
+};
+// 这几类行改由下方「按钮区」统一呈现（2026-11-01 站长要求），正文里全部过滤掉：
+//   QQ群：/站长QQ/站长邮箱/Telegram/三、联系方式/落款 -Tsinho黄油站-
+const ANN_SKIP = /^(QQ群[:：]|站长QQ|站长邮箱|Telegram|三、联系方式|-Tsinho)/;
+const annLinesHtml = lines => lines
+  .filter(l => !ANN_SKIP.test(String(l).trim()))
+  .map(l => `<p>${esc(l)}</p>`).join('\n');
+const annGroupsHtml = () => {
+  const gs = (Array.isArray(SITE.groups) ? SITE.groups : []).filter(g => g && g.url);
+  const cs = (Array.isArray(SITE.contacts) ? SITE.contacts : []).filter(c => c && c.url);
+  if (!gs.length && !cs.length) return '';
+  const pill = (href, label, copy) => `<a class="mrhx-ann-g" href="${esc(href)}" target="_blank" rel="noopener"${copy ? ` data-copy="${esc(copy)}"` : ''}>${esc(label)}</a>`;
+  return `<div class="mrhx-ann-block">
+        <div class="mrhx-ann-h">QQ群 - 防迷路</div>
+        <div class="mrhx-ann-sub">有更新都会通知，以及防止后续站点没了找不到新站点</div>
+        <div class="mrhx-ann-groups mrhx-ann-groups--qq">${gs.map(g => pill(g.url, g.name || '群')).join('')}</div>
+        ${cs.length ? '<div class="mrhx-ann-sep"></div>' : ''}
+        <div class="mrhx-ann-groups mrhx-ann-groups--ct">${cs.map(c => pill(c.url, c.name || '联系', c.copy)).join('')}</div>
+      </div>`;
+};
+// 落款单独渲染：站长要求放在按钮区下面，所以从正文里摘出来
+const annSignHtml = lines => {
+  const s = lines.map(l => String(l).trim()).filter(l => /^-Tsinho/.test(l))[0];
+  return s ? `<p class="mrhx-ann-sign">${esc(s)}</p>` : '';
+};
+// 按钮全站渲染；页面里没有 #mrhxPopup 时由 nav.js 自动隐藏（哪些页有弹窗由 popupHtml 注入决定）
+const annBtnHtml = () => annCfg() ? `
+    <button type="button" class="icon-btn ann-btn" id="mrhxAnnBtn" aria-label="查看公告" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M4 9.6h3.1L13 5.3v13.4l-5.9-4.3H4a1 1 0 0 1-1-1v-3.8a1 1 0 0 1 1-1Z"/><path d="M16.6 8.9a4.3 4.3 0 0 1 0 6.2"/><path d="M19.2 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>
+      <span class="ico-label">公告</span>
+    </button>` : '';
+// 公告面板已按站长要求取消：按钮直接唤起居中弹窗（见 popupHtml）
+const annPanelHtml = () => '';
 
 const navHeaderHtml = (current, inputId) => `<div class="hd-bar">
   <a class="logo" href="index.html"><img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}"></a>
@@ -302,7 +355,7 @@ ${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
     </div>
   </nav>
   <div class="plat-slot" id="gwPlatSlot"></div>
-  <div class="acts">
+  <div class="acts">${annBtnHtml()}
     <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
       <span class="ico-label">搜索</span>
@@ -354,6 +407,7 @@ ${RES_LINKS.map(l => '            ' + resLinkA(l)).join('\n')}
     </div>
   </div>
 </div>
+${annPanelHtml()}
 <div class="nav-mask" id="mrhxNavMask"></div>`;
 
 let TIMESTAMPS = {};
@@ -764,6 +818,9 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
 (function () {
   var b = document.getElementById('mrhxTopBtn');
   if (!b) return;
+  // 先无条件显示一次：旧版只有滚动时才加 .show，一旦下面的滚动监听因任何原因没跑起来，
+  // 按钮就永远 opacity:0（表现为"点了没反应"）。这里兜底，滚动后仍由 t() 负责后续状态。
+  b.classList.add('show');
   function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
   // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
   function targetY() {
@@ -777,48 +834,64 @@ const topButton = `<button type="button" class="mrhx-top" id="mrhxTopBtn" title=
     var off = Math.min(Math.round((window.innerHeight || 800) * 0.08), 72);
     return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
   }
-  // 修复：旧版用浏览器 smooth 滚动 + 350ms 轮询补滚，每次动画到“旧高度”末端都会停一下再重新启动，
-  //   懒加载撑高页面时表现为“中间卡一下、快到底又卡一下”。
-  //   改为自绘逐帧滚动：每帧实时取最新页高、速度从慢到快，页面被撑高也无缝跟进，不经过浏览器 smooth 动画不会停顿；
-  //   用户滚轮/触摸/键盘打断时自动停止
-  function toBottom() {
-    if (b._auto) return;
-    b._auto = true;
-    var stop = function () {
-      b._auto = false;
-      window.removeEventListener('wheel', stop);
-      window.removeEventListener('touchstart', stop);
-      window.removeEventListener('keydown', stop);
-    };
-    window.addEventListener('wheel', stop, { passive: true });
-    window.addEventListener('touchstart', stop, { passive: true });
-    window.addEventListener('keydown', stop);
+  // 2026-11-01（站长反馈「连点两次会先往下再猛往上」）：
+  //   根因是两套滚动同时在跑 —— 向下用自绘逐帧、向上用浏览器 smooth，第二次点击叠到第一条动画上；
+  //   而且滚动过程中 t() 会翻转按钮方向，第二下点到的其实是另一个函数。
+  //   现在统一成一套自绘动画：同一方向进行中就忽略重复点击、动画期间锁死方向、最后 320px 减速收尾。
+  //   手动滚轮 / 触摸 / 键盘仍可打断（不然会失控）。
+  var raf = 0, dir = 0;
+  function stopAnim() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    dir = 0;
+  }
+  function glide(d) {
+    stopAnim();
+    dir = d;
     var v = 0;
     var frame = function () {
-      if (!b._auto) return;
-      var y = window.scrollY || document.documentElement.scrollTop;
-      var h = maxScroll();
-      var ty = targetY();
-      if (y >= ty - 2) { stop(); return; }
-      v = Math.min(v + 2.5, 120);
-      window.scrollTo(0, Math.min(y + v, ty));
-      requestAnimationFrame(frame);
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      var ty = d > 0 ? targetY() : 0;
+      var dist = ty - y;
+      var ad = Math.abs(dist);
+      if (ad <= 2) { stopAnim(); t(); return; }
+      v = Math.min(v + 2.2, 96);
+      var step = ad < 320 ? Math.max(1.2, ad * 0.24) : Math.min(v, ad);
+      window.scrollTo(0, y + (dist > 0 ? step : -step));
+      raf = requestAnimationFrame(frame);
     };
-    requestAnimationFrame(frame);
+    raf = requestAnimationFrame(frame);
+  }
+  // 2026-11-01 站长二次澄清：不是「同方向忽略」，而是**每次点击立刻打断上一次并反向**。
+  //   正在滚 → 反向；静止 → 过了一半回顶、否则到底。箭头跟着"下一次去向"变。
+  function toggleScroll() {
+    var nd;
+    if (dir !== 0) nd = -dir;
+    else {
+      var yy = window.scrollY || document.documentElement.scrollTop || 0;
+      nd = yy > targetY() / 2 ? -1 : 1;
+    }
+    glide(nd);
   }
   function t() {
     var y = window.scrollY || document.documentElement.scrollTop;
-    var h = maxScroll();
-    // 方向感知：最近一次是往下滑就提供“去底部↓”，往上滑就“回顶部↑”；贴顶强制↓、贴底强制↑。
-    //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
+    // 方向感知：最近一次是往下滑就提供"去底部↓"，往上滑就"回顶部↑"；贴顶强制↓、贴底强制↑。
     var dirDown = y >= lastY; lastY = y;
     var nearTop = y < 100;
     var nearBottom = targetY() - y < 100;
-    if (nearTop || (!nearBottom && dirDown)) { b.textContent = '\u2193'; b.title = '滚动到底部'; b.onclick = toBottom; }
-    else { b.textContent = '\u2191'; b.title = '滚动到顶部'; b.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }; }
+    // 箭头表示「下一次点击会去哪」：动画中就是反向，静止时按位置判断
+    var next = dir !== 0 ? -dir : (y > targetY() / 2 ? -1 : 1);
+    if (dir === 0 && nearTop) next = 1;
+    if (dir === 0 && nearBottom) next = -1;
+    b.textContent = next > 0 ? '\u2193' : '\u2191';
+    b.title = next > 0 ? '滚动到底部' : '滚动到顶部';
+    b.onclick = toggleScroll;
     b.classList.add('show');
   }
   var lastY = 0;
+  function onUserScroll() { if (dir !== 0) stopAnim(); }
+  window.addEventListener('wheel', onUserScroll, { passive: true });
+  window.addEventListener('touchstart', onUserScroll, { passive: true });
+  window.addEventListener('keydown', onUserScroll);
   window.addEventListener('scroll', t, { passive: true });
   t();
 })();
@@ -835,21 +908,127 @@ const popupHtml = (() => {
     <button type="button" class="mrhx-popup-close" id="mrhxPopupClose" aria-label="关闭公告">×</button>
     <div class="mrhx-popup-content">
       <h3 id="mrhxPopupTitle">${title}</h3>
-      ${lines.map(l => `<p>${l}</p>`).join('\n      ')}
+      ${annLinesHtml(lines)}
+      ${annGroupsHtml()}
+      ${annSignHtml(lines)}
     </div>
     <button type="button" class="mrhx-popup-btn" id="mrhxPopupOk">我知道了</button>
   </div>
 </div>
 <script>
-  // 2026-10-09 站长要求：公告每小时弹一次；公告内容被改过则立即重弹。
-  // 2026-10-10 站长要求：公告每次访问都弹，不再记时间/指纹
+  // 2026-11-01（站长）：公告不再每次强制弹。规则：
+  //   ① 本次访问弹一次；② 关闭后记时间戳，跨页累计满 10 分钟补弹一次（全场只补一次）；
+  //   ③ 只在页面可见、且用户没在输入/滚动时弹，避免打断；
+  //   ④ 关闭时整张卡缩向顶部「公告」按钮（吸回去），按钮上留个红点提示还能点开。
   (function(){
   var el=document.getElementById('mrhxPopup');
   if(!el) return;
-  el.style.display='flex';
-  var close=function(){ el.style.display='none'; };
+  var inner=el.querySelector('.mrhx-popup-inner');
+  var K_CLOSED='mrhx_ann_closed_at',K_OPENED='mrhx_ann_opened',K_REPOP='mrhx_ann_repopped';
+  var GAP=10*60*1000,hiding=false,timer=0,lastScroll=Date.now();
+  function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function ss(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+  function ssSet(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+  function visible(){return document.visibilityState!=='hidden'}
+  function editing(){var a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)}
+  function idle(){return Date.now()-lastScroll>1500}
+
+  function absorb(done){
+    var btn=document.getElementById('mrhxAnnBtn');
+    if(!btn||!inner){el.style.display='none';if(done)done();return}
+    var r=inner.getBoundingClientRect(),b=btn.getBoundingClientRect();
+    var dx=(b.left+b.width/2)-(r.left+r.width/2);
+    var dy=(b.top+b.height/2)-(r.top+r.height/2);
+    // 入场用了 CSS animation，动画会接管 transform —— 必须先关掉，否则这里的位移不生效
+    inner.style.animation='none';
+    inner.style.transformOrigin='50% 50%';
+    inner.style.transition='transform .44s cubic-bezier(.34,1.16,.64,1),opacity .4s ease';
+    inner.style.transform='translate(0,0) scale(1)';
+    el.style.transition='background-color .44s ease';
+    requestAnimationFrame(function(){
+      inner.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) scale(.05)';
+      inner.style.opacity='0';
+      el.style.backgroundColor='rgba(0,0,0,0)';
+    });
+    setTimeout(function(){
+      el.style.display='none';
+      inner.style.animation='';inner.style.transition='';inner.style.transform='';inner.style.opacity='';
+      el.style.transition='';el.style.backgroundColor='';
+      if(done)done();
+    },470);
+  }
+
+  function close(){
+    if(hiding) return;hiding=true;
+    absorb(function(){
+      hiding=false;
+      lsSet(K_CLOSED,String(Date.now()));
+      var btn=document.getElementById('mrhxAnnBtn');
+      if(btn) btn.classList.add('has-dot');
+    });
+  }
+
+  function show(repop){
+    if(hiding||el.style.display==='flex') return;
+    el.style.display='flex';
+    if(repop) ssSet(K_REPOP,'1');
+  }
+
+  function tick(){
+    timer=0;
+    if(hiding||el.style.display==='flex') return;
+    var opened=ss(K_OPENED)==='1';
+    var closedAt=parseInt(ls(K_CLOSED)||'0',10);
+    var want=false;
+    if(!opened) want=true;
+    else if(ss(K_REPOP)!=='1'&&closedAt&&Date.now()-closedAt>=GAP) want=true;
+    if(!want){
+      // 还没到 10 分钟：算好还差多久，到点再检查一次。
+      // 少了这一段，就只有"页面刚好在 10 分钟后才打开"才会补弹，停在原地等是等不到的。
+      if(opened&&ss(K_REPOP)!=='1'&&closedAt){
+        var left=GAP-(Date.now()-closedAt);
+        if(left>0&&left<=GAP) timer=setTimeout(tick,Math.min(left+400,GAP));
+      }
+      return;
+    }
+    if(!visible()||!idle()||editing()){timer=setTimeout(tick,1500);return}
+    if(!opened) ssSet(K_OPENED,'1');
+    show(opened);
+  }
+
   var c=document.getElementById('mrhxPopupClose');if(c)c.onclick=close;
   var b=document.getElementById('mrhxPopupOk');if(b)b.onclick=close;
+  el.addEventListener('click',function(e){if(e.target===el)close()});
+
+  // 邮箱这类链接在没有默认邮件客户端的电脑上点了没反应 —— 带 data-copy 的胶囊改成"点一下复制"
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest && e.target.closest('.mrhx-ann-g[data-copy]');
+    if(!a) return;
+    e.preventDefault();
+    var txt = a.getAttribute('data-copy') || '';
+    var old = a.textContent;
+    var done = function(){
+      a.textContent = '已复制 ' + txt;
+      setTimeout(function(){ a.textContent = old; }, 1600);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, done);
+    } else { done(); }
+  });
+  window.addEventListener('scroll',function(){lastScroll=Date.now()},{passive:true});
+  document.addEventListener('visibilitychange',function(){if(visible())setTimeout(tick,600)});
+  // 右上角「公告」按钮走这里：复用同一个居中弹窗，关闭时仍然缩回按钮
+  window.MRHX_ANN = {
+    open: function () {
+      var btn = document.getElementById('mrhxAnnBtn');
+      if (btn) btn.classList.remove('has-dot');
+      ssSet(K_OPENED, '1');
+      show(false);
+    },
+    close: close
+  };
+  setTimeout(tick,1200);
   })();
 </script>
 <style>
@@ -859,6 +1038,12 @@ const popupHtml = (() => {
 .mrhx-popup-close:hover{background:#fdf1f1;color:#e5484d}
 .mrhx-popup-content h3{font-size:16px;color:#2b2b2b;margin-bottom:10px}
 .mrhx-popup-content p{font-size:13px;color:#666;line-height:1.4;margin-bottom:0;white-space:pre-wrap}
+.mrhx-popup-content p a{color:inherit;text-decoration:none}
+.mrhx-popup-content .mrhx-ann-block{margin-top:14px}
+.mrhx-ann-h{font-size:12px;font-weight:700;color:#2b2b2b;margin:0 0 3px}
+.mrhx-ann-sub{font-size:11px;color:#a8a29b;line-height:1.5;margin:0 0 9px}
+.mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
+.mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
 .mrhx-popup-btn{margin-top:12px;padding:8px 24px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
 @keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}

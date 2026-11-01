@@ -77,6 +77,26 @@
   .nav-drop>div{overflow:hidden;min-height:0}
   .nav-drop .drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
   .nav-drop.open .drop-inner{opacity:1;transform:translateY(0)}
+  /* ===== 2026-11-01（站长）：公告收纳按钮 + 下拉面板 + 一键加群 =====
+     注意：这段与 scripts/gen.js 的 NAV_CSS 是同一份样式（首页内联、帖子页读本文件），
+     改一处必须同步另一处，否则帖子页会掉样式。 */
+  .hd-bar .ann-btn{position:relative}
+  .hd-bar .ann-btn.has-dot::after{content:"";position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px #faf9f7;animation:mrhxDot 2.4s ease-in-out infinite}
+  @keyframes mrhxDot{0%,100%{opacity:1}50%{opacity:.4}}
+  /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
+  .mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
+  .mrhx-ann-groups--qq{max-width:250px}
+  .mrhx-ann-groups--ct{max-width:340px}
+  .mrhx-ann-sep{width:200px;height:1px;background:#f2ece7;margin:11px auto}
+  .mrhx-ann-g{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#fdf0f0;border:1px solid #f6d5d6;color:#c93a3f;font-size:12px;font-weight:600;text-decoration:none;transition:.18s;line-height:1.5}
+  .mrhx-ann-g b{font-weight:700;font-variant-numeric:tabular-nums}
+  .mrhx-ann-g:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+  .mrhx-popup-content p a{color:inherit;text-decoration:none}
+  .mrhx-popup-content .mrhx-ann-block{margin-top:14px}
+  .mrhx-ann-h{font-size:12px;font-weight:700;color:#2b2b2b;margin:0 0 3px}
+  .mrhx-ann-sub{font-size:11px;color:#a8a29b;line-height:1.5;margin:0 0 9px}
+  .mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
+  .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
   .nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
   .nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
   .nav-drop .search-row input::placeholder{color:#b4b2a9}

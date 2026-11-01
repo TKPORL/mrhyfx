@@ -5,6 +5,10 @@
   var moreBtn = document.querySelector('.hd-bar .more-btn');
   var searchDrop = document.getElementById('mrhxSearchDrop');
   var moreDrop = document.getElementById('mrhxMoreDrop');
+  // 2026-11-01（站长）：公告收纳按钮。公告被关掉（site.json 里 enabled:false）时这些元素不存在，
+  // 所以不放进下面的 return 条件，后面全部按「有才处理」。
+  var annBtn = document.querySelector('.hd-bar .ann-btn');
+  var annDrop = document.getElementById('mrhxAnnDrop');
   if (!searchBtn || !moreBtn || !searchDrop || !moreDrop) return;
 
   var searchInput = searchDrop.querySelector('input');
@@ -36,7 +40,15 @@
     if (L && typeof L.stop === 'function') { if (open) L.stop(); else L.start(); }
   }
 
-  function closeAll() { setSearch(false); setMore(false); }
+  function setAnn(open) {
+    if (!annBtn || !annDrop) return;
+    annDrop.classList.toggle('open', open);
+    annBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // 打开过就把弹窗关掉时留的红点撤掉
+    if (open) annBtn.classList.remove('has-dot');
+  }
+
+  function closeAll() { setSearch(false); setMore(false); setAnn(false); }
 
   searchBtn.addEventListener('click', function () {
     var open = !searchDrop.classList.contains('open');
@@ -49,6 +61,18 @@
     closeAll();
     setMore(open);
   });
+
+  // 2026-11-01（站长二次要求）：公告按钮不再展开下拉面板，而是直接唤起居中弹窗，
+  // 关闭时弹窗会缩回这个按钮（见 gen.js 的 popupHtml / absorb）。
+  if (annBtn) {
+    // 没注入公告弹窗的页面（帖子页等）不显示这个按钮，避免点了没反应
+    if (!document.getElementById('mrhxPopup')) annBtn.style.display = 'none';
+    annBtn.addEventListener('click', function () {
+      closeAll();
+      annBtn.classList.remove('has-dot');
+      if (window.MRHX_ANN) window.MRHX_ANN.open();
+    });
+  }
 
   if (searchClose) {
     searchClose.addEventListener('click', function () {
@@ -69,8 +93,11 @@
   }
 
   // 抽屉内非链接的空白区域也收起（遮罩被抽屉压在下面，点不到，只能在面板内空白处收起）
+  // ★2026-11-02 修：原来只放过 <a>，点「其他资源」按钮（<button>）会被当成点空白 →
+  //   抽屉直接关掉，而按钮自己又把列表展开，表现就是「再打开菜单发现已经展开、想收起又整只抽屉关了」。
+  //   现在把整个 .drawer-res 区域（按钮 + 展开的列表）排除在外。
   moreDrop.addEventListener('click', function (e) {
-    if (e.target.closest && e.target.closest('a')) return;
+    if (e.target.closest && (e.target.closest('a') || e.target.closest('.drawer-res'))) return;
     setMore(false);
   });
 
