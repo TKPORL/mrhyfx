@@ -2174,7 +2174,7 @@ async function updateJson(repo, token, file, key, value, statusEl, allowCreate) 
     '发布: 更新' + file, statusEl, file);
 }
 
-async function updateTimestamp(repo, token, name) {
+async function updateTimestamp(repo, token, name, statusEl) {
   let obj = {};
   const raw = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : null).catch(() => null);
   if (raw === null) throw new Error('读取线上 timestamps.json 失败，已取消保存，请重试');
@@ -2182,8 +2182,11 @@ async function updateTimestamp(repo, token, name) {
   // 编辑旧帖：已有时间戳就保留原值，帖子在首页的位置不动（2026-09-23 站长明确要求）
   if (obj[name]) return;
   obj[name] = new Date().toISOString();
-  await putFile(repo, token, 'timestamps.json', btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))),
-    '发布: 更新timestamps.json', null, '');
+  // 2026-11-01：原来走 putFile 只重试 5 次（累计 12 秒），发布会立刻触发 Actions 连推，
+  // 经常打不过机器人任务 → 时间戳写不进去、帖子沉底。改走与主发布同一套 atomicCommit（40 次退避、最长约 5 分钟）。
+  await atomicCommit(repo, token,
+    [{ path: 'timestamps.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2) + '\n'))) }],
+    '发布: 更新timestamps.json', statusEl, '时间戳');
 }
 
 // 2026-10-23：时间戳写入失败绝不能静默——今早 10-23 PC 帖就是这样无声丢了时间戳、首页排序沉底
@@ -2192,11 +2195,11 @@ async function updateTimestamp(repo, token, name) {
 // 仍失败则醒目警告，提示用户重新点一次发布补上。
 async function updateTimestampSafe(repo, token, name, statusEl) {
   for (let attempt = 1; attempt <= 3; attempt++) {
-    try { await updateTimestamp(repo, token, name); return; }
+    try { await updateTimestamp(repo, token, name, statusEl); return; }
     catch (e) {
       if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
-      else if (statusEl) show(statusEl, '⚠ 帖子已发布，但时间戳写入失败（已重试 3 次）：首页排序会沉底。'
-        + '请等几分钟后重新点一次「发布」补上（内容和图片不会重复上传）。原因：' + e.message, 'warn');
+      else if (statusEl) show(statusEl, '⚠ 帖子已发布，但时间戳写入失败（已重试 3 次）：首页与后台列表会把它排到最后。'
+        + '请等两三分钟、等自动生成跑完后，原样再点一次「发布」补上——内容与图片不会重复上传。原因：' + e.message, 'err');
     }
   }
 }
@@ -2303,11 +2306,29 @@ async function publish(statusEl, name, title, count, htmlContent) {
   const content = btoa(unescape(encodeURIComponent(htmlContent)));
   show(statusEl, '正在原子发布 ' + fileName + '（正文+标题+数量一次提交）…', 'info');
   const files = [{ path: fileName, content: content }];
+  // 2026-11-01：时间戳并进同一次原子提交。
+  // 原来"先发布成功、再单独写时间戳"，用户在成功提示后关页面，那一步直接中断 →
+  // 帖子在、timestamps 里没记录 → 首页与后台列表都按"无时间"沉到最后，看着像没发布。
+  let tsPending = false;
   const tRaw = await fetch(`${RAW_BASE}/${repo}/main/titles.json`).then(r => r.ok ? r.json() : null).catch(() => null);
   if (tRaw === null) throw new Error('读取线上 titles.json 失败，已取消发布（避免覆盖），请重试');
   let titles = (tRaw && typeof tRaw === 'object') ? tRaw : {};
   titles[htmlName] = title;
   files.push({ path: 'titles.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(titles, null, 2) + '\n'))) });
+  // 读线上 timestamps 合并（已有就不动，编辑旧帖不会跳顶）；最多试 3 次，仍读不到就先发帖、事后再补
+  let tsRaw = null;
+  for (let i = 0; i < 3 && tsRaw === null; i++) {
+    tsRaw = await fetch(`${RAW_BASE}/${repo}/main/timestamps.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (tsRaw === null && i < 2) await new Promise(r => setTimeout(r, 1500));
+  }
+  if (tsRaw && typeof tsRaw === 'object') {
+    if (!tsRaw[htmlName]) {
+      tsRaw[htmlName] = new Date().toISOString();
+      files.push({ path: 'timestamps.json', content: btoa(unescape(encodeURIComponent(JSON.stringify(tsRaw, null, 2) + '\n'))) });
+    }
+  } else {
+    tsPending = true;   // 读不到 → 不阻断发帖，提交成功后再补一次（同样抗撞车）
+  }
   const dateMatch = title.match(/(\d{1,2})\s*[月.\/-]\s*(\d{1,2})\s*[号日]?/);
   if (dateMatch) {
     const month = parseInt(dateMatch[1]), day = parseInt(dateMatch[2]);
@@ -2329,6 +2350,10 @@ async function publish(statusEl, name, title, count, htmlContent) {
   await atomicCommit(repo, token, files, '发布: ' + title, statusEl, '帖子+标题+数量');
   show(statusEl, '已提交，正在核验线上内容…', 'info');
   const verified = await verifyPublished(repo, fileName, title, htmlContent, statusEl);
+  if (tsPending) {
+    show(statusEl, '帖子已提交，正在补写首页排序用的时间戳（不会重复上传图片）…', 'info');
+    await updateTimestampSafe(repo, token, htmlName, statusEl);
+  }
   show(statusEl, '发布成功！\n文件：' + fileName + '\nActions 正在自动生成首页与每日页，约 2-3 分钟后刷新即可看到更新（记得 Ctrl+F5）。\n生成日志：https://github.com/' + repo + '/actions', 'ok');
   if (verified) {
     try {
@@ -2573,8 +2598,16 @@ function renderPosts(filteredPosts) {
     const bTag = b.path.replace(/\.html$/, '');
     const aP = pins.indexOf(aTag) !== -1, bP = pins.indexOf(bTag) !== -1;
     if (aP !== bP) return bP - aP;
-    const aT = timestamps[aTag] || '', bT = timestamps[bTag] || '';
-    return bT.localeCompare(aT);
+    const tsKey = (tag) => {
+      const t = timestamps[tag];
+      if (t) return String(t);
+      let m = tag.match(/^(\d{4})(\d{2})(\d{2})/);        // 20261101pc
+      if (m) return `${m[1]}-${m[2]}-${m[3]}T00:00:00.000Z`;
+      m = tag.match(/^(\d{1,2})[.\-月](\d{1,2})/);         // 8.10 / 8-10 / 8月10
+      if (m) return `2026-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}T00:00:00.000Z`;
+      return '';                                            // 认不出日期才真正沉底
+    };
+    return tsKey(bTag).localeCompare(tsKey(aTag));
   }).map(p => {
     const tag = p.path.replace(/\.html$/, '');
     const imgCount = tree.tree.filter(t => t.path.startsWith('assets/' + tag + '/')).length;
@@ -4233,8 +4266,7 @@ $('pubForm').onclick = async () => {
     const moved = applyUploadedUrls(cards, imagePaths);
     if (moved) toast('已把 ' + moved + ' 个游戏的图片转为链接，再次发布不会重复上传');
     const htmlContent = await buildFormHtml(cards, imagePaths, $('fTitle').value.trim(), name);
-    await publish(stF, name, title, count, htmlContent);
-    await updateTimestampSafe(repo, token, name, stF);
+    await publish(stF, name, title, count, htmlContent);   // 时间戳已在 publish 内并入主提交
     localStorage.removeItem(DRAFT_FORM);
     $('editBar').classList.remove('show');
   } catch (e) {
@@ -4248,8 +4280,7 @@ $('pubHtml').onclick = async () => {
     const name = $('hName').value.trim();
     const title = $('hTitle').value.trim();
     const htmlContent = $('html').value;
-    await publish(stH, name, title, '', htmlContent);
-    await updateTimestampSafe($('repo').value.trim(), $('token').value.trim(), name, stH);
+    await publish(stH, name, title, '', htmlContent);      // 时间戳已在 publish 内并入主提交
   } catch (e) {
     show(stH, '发布失败：' + (e && e.message ? e.message : String(e)) + publishErrorHint(e), 'err');
   } finally { btn.disabled = false; }

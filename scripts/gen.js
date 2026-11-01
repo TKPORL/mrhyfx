@@ -1867,10 +1867,25 @@ ${navHeaderHtml('')}
     if (pa !== -1 && pb !== -1) return pa - pb;
     if (pa !== -1) return -1;
     if (pb !== -1) return 1;
-    const ta = TIMESTAMPS[ka], tb = TIMESTAMPS[kb];
-    if (ta && tb) return (new Date(tb) - new Date(ta));
-    if (ta) return -1;
-    if (tb) return 1;
+    // 2026-11-01：缺时间戳不再一律沉底。
+    // 原逻辑只要 timestamps.json 里没有这一条，就排到所有有时间戳的帖子之后，
+    // 表现为「帖子发出来了，首页却要翻到最底下才看得到」。现在回退用文件名里的日期
+    // （20261101pc / 8.10 / 8月10）参与排序，只有连日期都认不出来才沉底。
+    const keyOf = (tag) => {
+      const t = TIMESTAMPS[tag];
+      if (t) { const d = new Date(t); if (!isNaN(d)) return d.getTime(); }
+      let m = tag.match(/^(\d{4})(\d{2})(\d{2})/);
+      let d2 = m ? new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00+08:00`) : null;
+      if (!d2) {
+        m = tag.match(/^(\d{1,2})[.\-月](\d{1,2})/);
+        if (m) d2 = new Date(`2026-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}T00:00:00+08:00`);
+      }
+      return (d2 && !isNaN(d2)) ? d2.getTime() : null;
+    };
+    const ta = keyOf(ka), tb = keyOf(kb);
+    if (ta !== null && tb !== null && ta !== tb) return tb - ta;
+    if (ta !== null && tb === null) return -1;
+    if (ta === null && tb !== null) return 1;
     const ma = a.file.match(/(\d+)月(\d+)/), mb = b.file.match(/(\d+)月(\d+)/);
     if (ma && mb) return (mb[1] - ma[1]) * 100 + (mb[2] - ma[2]);
     return b.file.localeCompare(a.file);
