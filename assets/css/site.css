@@ -86,8 +86,10 @@
   /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
   /* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不放公告按钮，入口挪到菜单抽屉顶部 */
   @media (max-width:900px){.hd-bar .ann-btn{display:none}}
-  #mrhxMoreDrop .drawer-ann{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#c93a3f;background:#fdf0f0;border:1px solid #f6d5d6;border-radius:12px;padding:12px 14px;margin:0 0 10px;cursor:pointer;transition:.18s}
-  #mrhxMoreDrop .drawer-ann:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+  #mrhxMoreDrop .drawer-ann{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;margin:0 0 8px;cursor:pointer;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02);transition:.18s}
+  #mrhxMoreDrop .drawer-ann .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  #mrhxMoreDrop .drawer-ann:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+  #mrhxMoreDrop .drawer-ann:hover .nic{stroke:#e5484d}
   @media (min-width:901px){#mrhxMoreDrop .drawer-ann{display:none}}
   .mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
   .mrhx-ann-groups--qq{max-width:250px}

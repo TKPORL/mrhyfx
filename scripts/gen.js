@@ -295,8 +295,10 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 /* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不再放公告按钮，
    改为菜单抽屉顶部一个「公告 · 防迷路群」入口；桌面（>900）鼠标点击精度高，保留顶栏按钮。 */
 @media (max-width:900px){.hd-bar .ann-btn{display:none}}
-#mrhxMoreDrop .drawer-ann{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#c93a3f;background:#fdf0f0;border:1px solid #f6d5d6;border-radius:12px;padding:12px 14px;margin:0 0 10px;cursor:pointer;transition:.18s}
-#mrhxMoreDrop .drawer-ann:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+#mrhxMoreDrop .drawer-ann{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;margin:0 0 8px;cursor:pointer;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02);transition:.18s}
+#mrhxMoreDrop .drawer-ann .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#mrhxMoreDrop .drawer-ann:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
+#mrhxMoreDrop .drawer-ann:hover .nic{stroke:#e5484d}
 @media (min-width:901px){#mrhxMoreDrop .drawer-ann{display:none}}
 .mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
 .mrhx-ann-groups--qq{max-width:250px}
@@ -406,7 +408,7 @@ ${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <div class="drawer-body" data-lenis-prevent>
-${annCfg() ? `        <button type="button" class="drawer-ann" id="mrhxAnnDrawer">公告 · 防迷路群</button>
+${annCfg() ? `        <button type="button" class="drawer-ann" id="mrhxAnnDrawer"><svg class="nic" viewBox="0 0 24 24"><path d="M4 9.6h3.1L13 5.3v13.4l-5.9-4.3H4a1 1 0 0 1-1-1v-3.8a1 1 0 0 1 1-1Z"/><path d="M16.6 8.9a4.3 4.3 0 0 1 0 6.2"/><path d="M19.2 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>公告 · 防迷路群</button>
 ` : ''}
         <nav class="drop-menu" aria-label="站点导航">
 ${navLinksHtml('          ', current, true, true)}
@@ -1125,7 +1127,7 @@ async function localize(html, tag) {
   html = html.replace(/@font-face\s*\{[^}]*font-family\s*:\s*['"]?mm-iconfont['"]?;[^}]*\}/g, '');
   html = html.replace(/\.mm-iconfont::before\s*\{[^}]*\}/g, '');
   // 修复 viewport maximum-scale=1 阻止缩放
-  html = html.replace(/<meta[^>]*name=['"]viewport['"][^>]*>/gi, '<meta name="viewport" content="width=device-width, initial-scale=1">');
+  html = html.replace(/<meta[^>]*name=['"]viewport['"][^>]*>/gi, '<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">');
   // 剥离卡片封面的内联固定宽度，交给 CSS 自适应（否则窄卡会横向溢出）
   html = html.replace(/<img\b([^>]*class="image"[^>]*)>/gi, (m, attrs) => {
     const cleaned = attrs.replace(/\sstyle="([^"]*)"/i, (s, inner) => {
@@ -1258,7 +1260,7 @@ function emptyIndex(navLinks) {
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>${SITE_NAME} · 每日更新</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -2422,7 +2424,7 @@ ${navHeaderHtml('')}
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>${SITE_NAME} · 全部合集</title>
 ${seoHead('', null, { ogImg: (days[0] && days[0].cover) || (CDN_URL + '/logo.webp') })}
 <style>
@@ -2616,7 +2618,7 @@ ${SMOOTH_SCRIPTS}
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>往期合集 - ${esc(SITE_NAME)}</title>
 ${seoHead('daily.html', '往期合集', { desc: '按日期查看本站历次每日分享合集，点进去是那一期的游戏列表。' })}
 <style>
@@ -2840,7 +2842,7 @@ ${SMOOTH_SCRIPTS}
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>搜索 · ${esc(SITE_NAME)}</title>
 ${seoHead('search.html', '搜索')}
 <meta name="robots" content="noindex,follow">
@@ -3606,7 +3608,7 @@ function relTime(iso){
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>${esc(g.title)} - ${esc(SITE_NAME)}</title>
 <base href="${SITE_URL}">
 ${seoHead('game/' + fname, g.title, { desc: (g.intro || '').slice(0, 120), ogImg: g.img || '' })}
