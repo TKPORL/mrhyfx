@@ -32,22 +32,55 @@
     ]
   },
   "groups": [
-    { "name": "主群", "qq": "1081159850", "url": "https://qm.qq.com/q/feKklWYXLO" },
-    { "name": "二群", "qq": "1065985313", "url": "https://qm.qq.com/q/uZjf8hRMaG" },
-    { "name": "三群", "qq": "1063428520", "url": "https://qm.qq.com/q/E3WKZvqwAa" },
-    { "name": "四群", "qq": "1063427149", "url": "https://qm.qq.com/q/WBvMMALeYS" },
-    { "name": "五群", "qq": "636931604", "url": "https://qm.qq.com/q/FGM3WKIoyA" },
-    { "name": "六群", "qq": "398770111", "url": "https://qm.qq.com/q/xhcZTKxrsk" }
+    {
+      "name": "主群",
+      "qq": "1081159850",
+      "url": "https://qm.qq.com/q/feKklWYXLO"
+    },
+    {
+      "name": "二群",
+      "qq": "1065985313",
+      "url": "https://qm.qq.com/q/uZjf8hRMaG"
+    },
+    {
+      "name": "三群",
+      "qq": "1063428520",
+      "url": "https://qm.qq.com/q/E3WKZvqwAa"
+    },
+    {
+      "name": "四群",
+      "qq": "1063427149",
+      "url": "https://qm.qq.com/q/WBvMMALeYS"
+    },
+    {
+      "name": "五群",
+      "qq": "636931604",
+      "url": "https://qm.qq.com/q/FGM3WKIoyA"
+    },
+    {
+      "name": "六群",
+      "qq": "398770111",
+      "url": "https://qm.qq.com/q/xhcZTKxrsk"
+    }
   ],
   "contacts": [
-    { "name": "站长QQ", "url": "https://qm.qq.com/q/Ya8wQpPaeW" },
-    { "name": "站长邮箱", "url": "mailto:Tsinhos@qq.com", "copy": "Tsinhos@qq.com" },
-    { "name": "Telegram群聊", "url": "https://t.me/Tsinhox" }
+    {
+      "name": "站长QQ",
+      "url": "https://qm.qq.com/q/Ya8wQpPaeW"
+    },
+    {
+      "name": "站长邮箱",
+      "url": "mailto:Tsinhos@qq.com",
+      "copy": "Tsinhos@qq.com"
+    },
+    {
+      "name": "Telegram群聊",
+      "url": "https://t.me/Tsinhox"
+    }
   ],
   "comments": {
     "enabled": true,
     "url": "https://kydmccknlbpczeqppbtc.supabase.co",
-    "statsUrl": "https://kydmccknlbpczeqppbtc.supabase.co",
     "anonKey": "sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9"
   },
   "build": {
