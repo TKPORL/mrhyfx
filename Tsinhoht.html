@@ -665,7 +665,7 @@ body.gate-pending main{display:none!important}
     <button type="button" class="btn btn-p" id="impGo" disabled>导入选中的 0 款</button>
   </div>
 </div>
-<div class="imp-light" id="impLight"><img alt="大图预览"><span class="imp-light-hint">点任意处关闭 · 右键图片看大图</span></div>
+<div class="imp-light" id="impLight"><img alt="大图预览"><span class="imp-light-hint">点任意处关闭 · 双击图片看大图</span></div>
 <div class="modal" id="previewModal">
   <div class="mhead"><h2>实时预览</h2><button type="button" class="modal-close" id="previewClose">×</button></div>
   <div class="mbody" id="previewBody"></div>
@@ -2298,8 +2298,8 @@ function impLightHide() {
   const box = $('impLight');
   if (box) box.classList.remove('show');
 }
-// 右键缩略图看大图（2026-11-03 站长：双击容易误触选封面，改右键）；单击仍是「选这张作封面」
-$('impList').addEventListener('contextmenu', e => {
+// 双击缩略图看大图（2026-11-03 站长定稿：单击=选封面，双击=大图）
+$('impList').addEventListener('dblclick', e => {
   const th = e.target.closest('img[data-i]');
   if (!th) return;
   e.preventDefault();
