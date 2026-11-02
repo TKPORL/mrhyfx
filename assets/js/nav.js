@@ -25,7 +25,7 @@
     if (!box) {
       box = document.createElement('div');
       box.id = '__diagBox';
-      box.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;max-height:46vh;overflow:auto;background:rgba(0,0,0,.9);color:#3f3;font:10px/1.45 monospace;padding:6px;white-space:pre-wrap;word-break:break-all';
+      box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;max-height:40vh;overflow:auto;background:rgba(0,0,0,.9);color:#3f3;font:10px/1.45 monospace;padding:6px;white-space:pre-wrap;word-break:break-all';
       document.body.appendChild(box);
     }
     box.textContent = window.__DIAG.slice(-10).join('\n');
