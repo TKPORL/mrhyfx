@@ -16,11 +16,20 @@
   var navMask = document.getElementById('mrhxNavMask');
   var drawerClose = moreDrop.querySelector('.drawer-close');
 
+  // 记录最近一次展开时间：安卓上触摸后常有额外的 pointerdown，
+  //   刚展开的 500ms 内一律不响应"点外部收起"，避免刚开就被自己关掉。
+  var lastOpenAt = 0;
+  // 触摸设备不自动聚焦：安卓弹出输入法会让视口重排，面板会被顶回去（苹果无此问题）
+  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
   function setSearch(open) {
     searchDrop.classList.toggle('open', open);
     searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open) {
-      setTimeout(function () { if (searchInput) searchInput.focus(); }, 60);
+      lastOpenAt = Date.now();
+      if (!isTouch) {
+        setTimeout(function () { if (searchInput) searchInput.focus(); }, 60);
+      }
     }
   }
 
@@ -28,6 +37,7 @@
     moreDrop.classList.toggle('open', open);
     moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (navMask) navMask.classList.toggle('open', open);
+    if (open) lastOpenAt = Date.now();
     // 抽屉打开时锁住背景滚动（窄屏抽屉是全屏面板）
     document.body.style.overflow = open ? 'hidden' : '';
     // 2026-10-24（站长反馈「抽屉滑不动、滑了是页面在动」）：
@@ -132,6 +142,7 @@
   document.addEventListener('pointerdown', function (e) {
     var t = e.target;
     if (t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup'))) return;
+    if (Date.now() - lastOpenAt < 500) return;   // 刚展开，这次触摸不算"点外面"
     closeAll();
   }, true);
 
