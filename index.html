@@ -1298,7 +1298,7 @@ footer .disc-link:hover{text-decoration:underline}
 /* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
 /* 2026-11-02（第 6 次修，前几次都治不到根）：搜索改成 fixed 居中浮层，彻底脱离 sticky header。
    安卓弹键盘会把页面/顶栏顶走，只要搜索框长在 header 里就迟早被带走；浮层相对视口定位，不受影响。 */
-#mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.35);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
+#mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.45);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
 #mrhxSearchDrop.open{display:block}
 #mrhxSearchDrop>div{max-width:600px;margin:0 auto;overflow:visible;min-height:0}
 #mrhxSearchDrop .drop-inner{margin:0;max-width:none;box-shadow:0 12px 40px rgba(0,0,0,.18)}
@@ -1452,7 +1452,7 @@ footer .disc-link:hover{text-decoration:underline}
 })();
 </script>
 
-<script src="assets/js/nav.js?v=349bb7a5"></script>
+<script src="assets/js/nav.js?v=0372d43b"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 <script>(function(){function mark(im){if(im.complete)return;im.classList.add('mrhx-img-loading');im.addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});im.addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}function init(){var imgs=document.querySelectorAll('.covers img,.gcard .cover img,img.image');if(!('IntersectionObserver' in window)){for(var i=0;i<imgs.length;i++)mark(imgs[i]);return}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mark(e.target);io.unobserve(e.target)}})},{rootMargin:'300px'});for(var i=0;i<imgs.length;i++)io.observe(imgs[i])}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();</script>
 </body>
