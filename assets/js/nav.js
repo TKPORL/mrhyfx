@@ -261,7 +261,14 @@
   // 断点来回切时如果有 .open 状态的浮层没收回、或 body 的 overflow 锁没解开，
   // 页面会被残留在最上层的面板盖住。这里做兜底：缩放停下后统一收浮层 + 解滚动锁 + 重新归位抽屉。
   var _rszT = null;
+  var _lastW = window.innerWidth;
   window.addEventListener('resize', function () {
+    // ★2026-11-02 真因修复：安卓弹出输入法只改「视口高度」、不改宽度，
+    //   原来任何 resize 都 closeAll()，于是「点输入框 → 键盘弹出 → 160ms 后搜索面板被兜底逻辑关掉」。
+    //   兜底只为处理「窗口左右缩放」（宽度变化），所以宽度没变就直接跳过。
+    var w = window.innerWidth;
+    if (w === _lastW) return;
+    _lastW = w;
     if (_rszT) clearTimeout(_rszT);
     _rszT = setTimeout(function () {
       closeAll();
