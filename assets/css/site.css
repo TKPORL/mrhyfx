@@ -85,7 +85,7 @@
   @keyframes mrhxDot{0%,100%{opacity:1}50%{opacity:.4}}
   /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
   /* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不放公告按钮，入口挪到菜单抽屉顶部 */
-  @media (max-width:900px){.hd-bar .ann-btn{display:none}}
+  /* 2026-11-02 晚：窄屏不再隐藏公告按钮，已与搜索并排放在顶栏 */
   #mrhxMoreDrop .drawer-ann{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;margin:0 0 8px;cursor:pointer;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02);transition:.18s}
   #mrhxMoreDrop .drawer-ann .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
   #mrhxMoreDrop .drawer-ann:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}

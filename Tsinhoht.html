@@ -107,6 +107,40 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .pw-eye:hover{color:#e5484d}
 .overlay{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.35);display:none}
 .overlay.show{display:block}
+/* 从爬取结果导入（2026-11-02） */
+.imp-body{padding:12px 16px}
+.imp-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.imp-hint{font-size:12px;color:#9a9a9a}
+.imp-tools{display:flex;gap:14px;align-items:center;margin:8px 0;padding-top:9px;border-top:1px solid #f0eeea;flex-wrap:wrap}
+.imp-search{flex:1;min-width:200px;padding:7px 11px;border:1px solid #e6e3dc;border-radius:8px;font:inherit;font-size:13px;background:#fdfcfa;color:#2b2b2b;-webkit-appearance:none;appearance:none}
+.imp-search::placeholder{color:#b5b1a8}
+.imp-search:focus{outline:none;border-color:#e5484d;background:#fff;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
+.imp-done{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:5px;background:#e8f5ec;color:#1a7f45;font-size:10px;font-weight:600;vertical-align:2px;letter-spacing:.2px}
+.imp-item.done{background:#f8fbf9;border-color:#dcece2}
+.imp-all{display:flex;align-items:center;gap:6px;font-size:13px;color:#2b2b2b;cursor:pointer;flex-shrink:0}
+.imp-list{max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:7px;padding-right:2px}
+.imp-item{display:grid;grid-template-columns:auto 276px 1fr;gap:12px;align-items:start;padding:9px 11px;border:1px solid #eeece7;border-radius:10px;background:#fdfcfa;cursor:pointer}
+.imp-item:hover{background:#faf9f7}
+.imp-item.on{border-color:#e5484d;background:#fdf6f6}
+.imp-item>input{margin-top:3px;width:16px;height:16px;accent-color:#e5484d}
+.imp-thumbs{display:flex;gap:6px;flex-wrap:wrap}
+.imp-thumbs img{width:88px;height:66px;object-fit:cover;border-radius:6px;border:2px solid transparent;opacity:.62;cursor:pointer;background:#f2f0ec}
+.imp-thumbs img:hover{opacity:1}
+.imp-thumbs img.on{border-color:#e5484d;opacity:1;box-shadow:0 0 0 3px rgba(229,72,77,.13)}
+.imp-thumbs .imp-noimg{width:88px;height:66px;border:1px dashed #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb}
+.imp-name{font-size:14px;font-weight:700;color:#2b2b2b;line-height:1.35}
+.imp-title{font-size:11px;color:#9a9a9a;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imp-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:11px;color:#777}
+.imp-chips b{color:#c93a3f;font-weight:600}
+.imp-like{color:#e5484d;font-weight:700}
+.imp-like::before{content:''}
+.imp-foot{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid #f0eeea;background:#fff;border-radius:0 0 14px 14px}
+.imp-foot #impSel{margin-right:auto;font-size:13px;color:#666}
+.imp-empty{padding:28px 0;text-align:center;font-size:13px;color:#aaa}
+.imp-light{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;background:rgba(20,18,16,.86);backdrop-filter:blur(2px);cursor:zoom-out;padding:24px}
+.imp-light.show{display:flex}
+.imp-light img{max-width:94vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 24px 70px rgba(0,0,0,.5);background:#fff}
+.imp-light .imp-light-hint{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.7)}
 .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:92vw;max-width:820px;max-height:88vh;overflow-y:auto;display:none}
 .modal.show{display:block;animation:mrhxModalFade .3s ease both}
 .modal .mhead{position:sticky;top:0;background:#fff;border-bottom:1px solid #e8e6e0;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;z-index:2;border-radius:14px 14px 0 0}
@@ -286,12 +320,15 @@ body.gate-pending main{display:none!important}
       <div class="row" style="justify-content:space-between">
         <h2>游戏内容</h2>
         <div class="row" style="gap:6px">
+          <button type="button" class="btn btn-p" id="impBtn" title="用爬取工具导出的 HTML 批量建卡">↓ 从爬取结果导入</button>
           <button type="button" class="btn btn-s" id="previewAll">预览全部</button>
           <button type="button" class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
           <button type="button" class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
         </div>
       </div>
       <div id="gameBox"></div>
+      <input type="file" id="impHtml" accept=".html,.htm,text/html" hidden>
+      <input type="file" id="impImgs" webkitdirectory directory multiple hidden>
     </div>
 
     <div class="card">
@@ -603,6 +640,30 @@ body.gate-pending main{display:none!important}
 </main>
 <div class="gate-body">
 <div class="overlay" id="overlay"></div>
+<div class="modal" id="impModal">
+  <div class="mhead"><h2>从爬取结果导入</h2><button type="button" class="modal-close" id="impClose">×</button></div>
+  <div class="imp-body">
+    <div class="imp-pick">
+      <button type="button" class="btn btn-s" id="impPickHtml">1. 选导出的 HTML</button>
+      <span class="imp-hint" id="impHtmlName">还没选</span>
+      <button type="button" class="btn btn-s" id="impPickImgs">2. 选 images 文件夹（可选）</button>
+      <span class="imp-hint" id="impImgName">不选就只导文字，图片以后手动加</span>
+    </div>
+    <div class="imp-tools" id="impTools" hidden>
+      <input type="search" class="imp-search" id="impSearch" placeholder="搜索游戏名，比如「索菲亚」" autocomplete="off">
+      <label class="imp-all"><input type="checkbox" id="impSort"> 按热度排序</label>
+      <label class="imp-all"><input type="checkbox" id="impAll"> 全选</label>
+      <span id="impTotal" class="imp-hint"></span>
+    </div>
+    <div class="imp-list" id="impList"></div>
+  </div>
+  <div class="imp-foot">
+    <span id="impSel">已选 0 款</span>
+    <button type="button" class="btn btn-s" id="impCancel">取消</button>
+    <button type="button" class="btn btn-p" id="impGo" disabled>导入选中的 0 款</button>
+  </div>
+</div>
+<div class="imp-light" id="impLight"><img alt="大图预览"><span class="imp-light-hint">点任意处关闭 · 双击缩略图可看大图</span></div>
 <div class="modal" id="previewModal">
   <div class="mhead"><h2>实时预览</h2><button type="button" class="modal-close" id="previewClose">×</button></div>
   <div class="mbody" id="previewBody"></div>
@@ -1083,11 +1144,20 @@ function toast(msg) {
 }
 
 // 平滑滚动辅助（400ms 缓动），避免浏览器 behavior:'smooth' 时长不可控
+// 2026-11-01（站长反馈「连点会先往下再猛往上」）：旧版每点一次就新开一条 rAF 链、旧的不取消，
+//   两条链同时写 scrollTo 互相覆盖。现在用「令牌」：每次点击 _beginScroll() 把 _scrollToken +1，
+//   所有在跑的链发现令牌变了就立刻退出，只有最新那条能改滚动位置。
+var _scrollToken = 0, _scrollUntil = 0, _scrollDir = 0;
+function _beginScroll() {
+  _scrollToken++;
+  _scrollUntil = Date.now() + 900;   // 这 900ms 内按钮不翻转方向、不换 onclick
+}
 function mrhxSmoothScrollTo(targetY, duration) {
   duration = duration || 400;
+  var my = _scrollToken;
   var startY = window.pageYOffset || document.documentElement.scrollTop;
   var diff = targetY - startY;
-  if (!diff) return;
+  if (!diff) { _scrollUntil = 0; return; }
   var startTime = null;
   function ease(t, b, c, d) {
     t /= d / 2;
@@ -1096,11 +1166,12 @@ function mrhxSmoothScrollTo(targetY, duration) {
     return -c / 2 * (t * (t - 2) - 1) + b;
   }
   function step(now) {
+    if (my !== _scrollToken) return;   // 已被新一次点击取代，让位
     if (!startTime) startTime = now;
     var time = now - startTime;
     window.scrollTo(0, ease(time, startY, diff, duration));
     if (time < duration) requestAnimationFrame(step);
-    else window.scrollTo(0, targetY);
+    else { window.scrollTo(0, targetY); _scrollUntil = 0; }
   }
   requestAnimationFrame(step);
 }
@@ -1110,35 +1181,43 @@ function mrhxSmoothScrollTo(targetY, duration) {
 // 所以改成「滚到当前算出来的底 → 结束后再量一次 → 还差就续滚」，最多 6 段（正常 1~2 段到底）。
 function mrhxScrollToBottom(dur, tries) {
   tries = tries || 0;
+  var my = _scrollToken;
   var max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
   var y = window.pageYOffset || document.documentElement.scrollTop;
-  if (max - y < 2 || tries > 6) return;
+  if (max - y < 2 || tries > 6) { _scrollUntil = 0; return; }
   mrhxSmoothScrollTo(max, dur);
   setTimeout(function () {
+    if (my !== _scrollToken) return;   // 期间又点过，这条重试链作废
     var nowMax = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     var nowY = window.pageYOffset || document.documentElement.scrollTop;
     if (nowMax - nowY > 2) mrhxScrollToBottom(tries === 0 ? 260 : 200, tries + 1);
+    else _scrollUntil = 0;
   }, dur + 70);
 }
 var topBtn = $('topBtn');
-var _lastY = 0;
+// 2026-11-01 站长二次澄清：不是「同方向忽略」，而是每次点击立刻打断上一次并反向。
+function _toggleScroll() {
+  var next;
+  if (Date.now() < _scrollUntil && _scrollDir !== 0) next = -_scrollDir;   // 动画中：立刻反向
+  else {
+    var yy = window.pageYOffset || document.documentElement.scrollTop;
+    var mm = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    next = yy > mm / 2 ? -1 : 1;                        // 静止：过了一半回顶，否则到底
+  }
+  _beginScroll();
+  _scrollDir = next;
+  if (next > 0) mrhxScrollToBottom(500, 0);
+  else mrhxSmoothScrollTo(0, 400);
+}
 function _updateTopBtn() {
   var y = window.scrollY || document.documentElement.scrollTop;
   var h = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  var nearTop = y < 100, nearBottom = h - y < 100;
-  // 方向感知：往下滑提供“去底部↓”，往上滑“回顶部↑”；贴顶强制↓、贴底强制↑。
-  //   旧逻辑“除贴顶外一律↑”导致往下滑一点就永远只能回顶部
-  var dirDown = y >= _lastY; _lastY = y;
   topBtn.classList.toggle('show', y > 10);
-  if (nearTop || (!nearBottom && dirDown)) {
-    topBtn.textContent = '\u2193';
-    topBtn.title = '滚动到底部';
-    topBtn.onclick = function () { mrhxScrollToBottom(500, 0); };
-  } else {
-    topBtn.textContent = '\u2191';
-    topBtn.title = '滚动到顶部';
-    topBtn.onclick = function () { mrhxSmoothScrollTo(0, 400); };
-  }
+  // 箭头表示「下一次点击会去哪」：动画中是反向，静止时按是否过半判断
+  var next = (Date.now() < _scrollUntil && _scrollDir !== 0) ? -_scrollDir : (y > h / 2 ? -1 : 1);
+  topBtn.textContent = next > 0 ? '\u2193' : '\u2191';
+  topBtn.title = next > 0 ? '滚动到底部' : '滚动到顶部';
+  topBtn.onclick = _toggleScroll;
 }
 window.addEventListener('scroll', _updateTopBtn, { passive: true });
 _updateTopBtn();
@@ -1530,20 +1609,21 @@ function addGameCard(data) {
   // 2026-10-23：游戏介绍粘贴长标题自动换行 + 自动填游戏名称
   // 用户习惯：先粘「【SLG/中文/…】欲望精选 【新作】【PC 1.2G】」这类单行标题，再换行写介绍。
   // 现在粘贴单行含「】」的内容时自动在末尾补换行，省一次回车；
-  // 同时提取游戏名称填进名称框——跳过开头连续【…】标签组，取第一段文字空格前的内容（仅名称框为空，绝不覆盖手填）。
+  // 同时提取游戏名称填进名称框（仅名称框为空，绝不覆盖手填）。
+  // 提取规则见全局函数 pickName()（2026-11-02 重写，导入功能也复用同一份）。
   // ★插入必须走 execCommand（浏览器原生编辑命令，进撤销栈）：直接改 .value 会把原生 Ctrl+Z
   // 撤销栈弄乱——真实 bug：删空两栏再粘新标题，Ctrl+Z 后名称框串出「新名+旧名」拼接。
   const intro = d.querySelector('.g-intro');
   intro.addEventListener('paste', e => {
     const text = (e.clipboardData || window.clipboardData).getData('text') || '';
     if (!text) return;
-    // 名称规则（2026-10-23 定）：跳过开头连续的【…】标签组，取后面第一段文字里的第一个空格前内容。
-    // 「【新作】【互动3D/…】抚摸狐仙大人 増量游戏 …【PC 610M】」→「抚摸狐仙大人」；
-    // 「【SLG/…】欲望精选 【新作】【PC 1.2G】」→「欲望精选」。日文副标题/版本号/容量都不要。
-    const m = text.match(/^(?:\s*【[^】]{1,80}】)+\s*([^【\r\n]{1,60})/);
-    const name = (m && m[1]) ? (m[1].trim().split(/\s+/)[0] || '') : '';
+    // 名称规则（2026-11-02 重写）：剥开头/结尾【…】标签组 → 在中英交界处切 → 纯英文才去版本号。
+    // 「【日系SLG/…】怪物娘酒馆 Monster Girl Tavern v1.0b【PC+安卓 1.07G】」→「怪物娘酒馆」；
+    // 「兄嫁 ―未亡人― 【PC+安卓】【PC+KRKR+安卓直装】」→「兄嫁 ―未亡人―」；
+    // 「【RPG/…/NTR】NTR Tales – The Elf Next Stream v0.3 Beta」→「NTR Tales – The Elf Next Stream」。
+    const name = pickName(text);
     const wantNewline = !/[\r\n]/.test(text) && text.includes('】');
-    if (!m && !wantNewline) return;
+    if (!name && !wantNewline) return;
     e.preventDefault();
     const ins = wantNewline ? text + '\n' : text;
     let ok = false;
@@ -1757,6 +1837,22 @@ function previewFiles(input) {
   toast('已选 ' + input.files.length + ' 张图片');
 }
 
+// 2026-11-02：从爬取工具的标题里提取游戏名称（全局，粘贴自动填名与「从爬取结果导入」共用）。
+// 旧规则只认「开头带【】标签组」，站长 275 条标题里 19 条是「名称直接开头、【PC+安卓】在结尾」→ 名称空；
+// 3 条英文游戏被抓成「NTR」「JK」。新规则：剥开头/结尾【…】组 → 中英交界处切 → 纯英文才去版本号。
+// 275 条实测 0 条为空。改这段前请拿那 275 条标题回归一遍。
+function pickName(raw) {
+  let s = String(raw).split(/[\r\n]/)[0].trim();
+  s = s.replace(/^(?:\s*【[^】]{1,80}】)+/, '');
+  s = s.replace(/(?:\s*【[^】]{1,80}】)+\s*$/, '').trim();
+  const cut = s.match(/^(.*[\u4e00-\u9fa5）】」』！？～~])\s+([A-Za-z].*)$/);
+  if (cut) s = cut[1].trim();
+  else if (!/[\u4e00-\u9fa5]/.test(s)) {
+    s = s.replace(/\s+(?:v?\d[\w.]*|Ep\.?\s*\d+|Beta|Demo|Final).*$/i, '').trim();
+  }
+  return s.slice(0, 60);
+}
+
 function fillCard(card, data) {
   // 沿用草稿里的 cid：图片在 IndexedDB 是按 cid 存的，cid 变了就再也对不回原图（2026-10-06 修串位）
   if (data.cid) card.dataset.cid = data.cid;
@@ -1804,6 +1900,381 @@ function renum() {
   });
 }
 $('addGame').onclick = () => addGameCard();
+
+/* ===== 2026-11-02 从爬取结果导入 =====
+ * 流程：选爬取工具导出的 HTML → 解析出全部游戏 → 勾选（1 款或 10 款）→ 建卡。
+ * 字段来源：.card-title（标题，名称用 pickName 提取）、.intro-body[data-copy]（介绍全文，页面上是折叠的）、
+ *   button.btn-code[data-copy]（解压码/作弊码/赞助码，按按钮文字区分）、a.link-btn[href]（百度链接）。
+ * 图片：可选再选一次 images 文件夹 → 按 images/<id>/xxx.jpg 的相对路径匹配本地文件 → 挂到卡片 .g-files，
+ *   走现有发布流程上传（不新增上传代码）；不选文件夹也能建卡，只是没图。
+ * 一次最多导 20 款（防止误选全量把后台卡死）。 */
+const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Map(), open: false, q: '', done: new Set(), sort: '' };
+const IMP_MAX = 20;
+const IMP_DONE_KEY = 'mrhx_imp_done_v1';
+// 「已导入」记忆：跨刷新记住哪些款导过，避免同一个包重复导入同一款
+(function impLoadDone() {
+  try {
+    const raw = localStorage.getItem(IMP_DONE_KEY);
+    if (raw) JSON.parse(raw).forEach(k => IMP.done.add(k));
+  } catch (e) { /* ignore */ }
+})();
+// 同一款的判据：图片目录 id（images/498020/… 里的 498020）+ 标题；没有图就用标题
+function impKey(g) {
+  const m = (g.imgs && g.imgs[0] || '').match(/^images\/([^/]+)\//i);
+  return (m ? m[1] : '') + '|' + (g.title || '');
+}
+function impSaveDone() {
+  try {
+    const arr = [...IMP.done].slice(-3000);
+    localStorage.setItem(IMP_DONE_KEY, JSON.stringify(arr));
+  } catch (e) { /* ignore */ }
+}
+
+function impParseCrawler(text) {
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  const games = [];
+  doc.querySelectorAll('.card').forEach(card => {
+    const tEl = card.querySelector('.card-title');
+    const title = tEl ? tEl.textContent.replace(/\s+/g, ' ').trim() : '';
+    if (!title) return;
+    const body = card.querySelector('.intro-body');
+    let intro = body ? (body.getAttribute('data-copy') || body.textContent || '') : '';
+    intro = intro.replace(/\r/g, '').trim();
+    let unzip = '', cheat = '', sponsor = '';
+    card.querySelectorAll('button.btn-code').forEach(b => {
+      const label = (b.textContent || '').trim();
+      const val = (b.getAttribute('data-copy') || '').trim();
+      if (!val) return;
+      if (label.indexOf('解压') >= 0) unzip = val;
+      else if (label.indexOf('作弊') >= 0) cheat = val;
+      else if (label.indexOf('赞助') >= 0) sponsor = val;
+    });
+    let linkB = '';
+    card.querySelectorAll('a.link-btn').forEach(a => {
+      const h = a.getAttribute('href') || '';
+      if (/pan\.baidu\.com/i.test(h)) linkB = h;
+    });
+    // 热度：产物 meta 区是「<span>LIKE</span> 130」，取 LIKE 后面那个数（2026-11-02 站长要）
+    let like = 0;
+    const metaEl = card.querySelector('.card-meta');
+    if (metaEl) {
+      const lm = (metaEl.textContent || '').match(/LIKE\s*([\d,]+)/i);
+      if (lm) like = parseInt(lm[1].replace(/,/g, ''), 10) || 0;
+    }
+    const imgs = [...card.querySelectorAll('img')]
+      .map(i => i.getAttribute('src') || '')
+      .filter(s => /^images\//i.test(s.replace(/^\.\//, '')));
+    games.push({ title, intro, unzip, cheat, sponsor, linkB, like, imgs, picked: 0 });
+  });
+  return games;
+}
+
+function impBuildImgMap(files) {
+  const map = new Map();
+  const base = new Map();
+  [...files].forEach(f => {
+    const rel = (f.webkitRelativePath || f.name).replace(/\\/g, '/');
+    const parts = rel.split('/').filter(Boolean);
+    // 用户可能选的是导出目录，也可能直接选 images 目录 → 每一层后缀都登记一份
+    for (let i = 0; i < parts.length - 1; i++) {
+      const key = parts.slice(i).join('/').toLowerCase();
+      if (!map.has(key)) map.set(key, f);
+    }
+    const b = parts[parts.length - 1].toLowerCase();
+    if (!base.has(b)) base.set(b, f);
+  });
+  return { map, base };
+}
+
+function impFindFile(src) {
+  if (!IMP.map) return null;
+  const norm = String(src).replace(/^\.\//, '').replace(/\\/g, '/').toLowerCase();
+  return IMP.map.get(norm)
+    || IMP.map.get(norm.replace(/^images\//, ''))
+    || IMP.base.get(norm.split('/').pop())
+    || null;
+}
+
+function impUrl(f) {
+  if (!IMP.urls.has(f)) IMP.urls.set(f, URL.createObjectURL(f));
+  return IMP.urls.get(f);
+}
+
+function impRender() {
+  const list = $('impList');
+  $('impTools').hidden = !IMP.games.length;
+  if (!IMP.games.length) {
+    $('impTotal').textContent = '';
+    list.innerHTML = '<div class="imp-empty">还没有内容，先点上面「1. 选导出的 HTML」</div>';
+    impSync();
+    return;
+  }
+  // 搜索过滤：只影响显示，data-i 仍是原始下标，勾选不受过滤影响
+  const q = (IMP.q || '').trim().toLowerCase();
+  const rows = [];
+  IMP.games.forEach((g, i) => {
+    if (q) {
+      const hay = (g.title + ' ' + (pickName(g.title) || '')).toLowerCase();
+      if (hay.indexOf(q) < 0) return;
+    }
+    rows.push({ g, i });
+  });
+  // 按热度排序（站长 2026-11-02：不知道热度容易点到冷门款）；同热度保持原顺序
+  if (IMP.sort === 'like') rows.sort((a, b) => (b.g.like || 0) - (a.g.like || 0));
+  $('impTotal').textContent = '共 ' + IMP.games.length + ' 款' + (q ? ' · 匹配 ' + rows.length + ' 条' : '') +
+    '（一次最多导 ' + IMP_MAX + ' 款）';
+  IMP.shown = rows.map(r => r.i);
+  if (!rows.length) {
+    list.innerHTML = '<div class="imp-empty">没有匹配「' + esc(IMP.q) + '」的游戏</div>';
+    impSync();
+    return;
+  }
+  list.innerHTML = rows.map(({ g, i }) => {
+    const name = pickName(g.title) || g.title.slice(0, 40);
+    const done = IMP.done.has(impKey(g));
+    const thumbs = (g.imgs || []).slice(0, 3).map((src, k) => {
+      const f = impFindFile(src);
+      if (!f) return '';
+      return `<img src="${impUrl(f)}" data-i="${i}" data-k="${k}" class="${k === (g.picked || 0) ? 'on' : ''}" alt="图 ${k + 1}">`;
+    }).join('');
+    const chips = [
+      g.like ? `<span class="imp-like">♥ ${g.like}</span>` : '',
+      g.unzip ? `解压码 <b>${esc(g.unzip)}</b>` : '',
+      g.cheat ? `作弊码 <b>${esc(g.cheat)}</b>` : '',
+      g.linkB ? '百度 ✓' : '无下载链接'
+    ].filter(Boolean).join('');
+    return `<div class="imp-item ${IMP.checked.has(i) ? 'on' : ''} ${done ? 'done' : ''}" data-i="${i}">
+      <input type="checkbox" data-i="${i}" ${IMP.checked.has(i) ? 'checked' : ''}>
+      <div class="imp-thumbs">${thumbs || '<div class="imp-noimg">无图</div>'}</div>
+      <div><div class="imp-name">${esc(name)}${done ? '<span class="imp-done">已导入</span>' : ''}</div>
+        <div class="imp-title" title="${esc(g.title)}">${esc(g.title)}</div>
+        <div class="imp-chips">${chips}</div></div>
+    </div>`;
+  }).join('');
+  impSync();
+}
+
+function impSync() {
+  const n = IMP.checked.size;
+  const go = $('impGo');
+  go.textContent = '导入选中的 ' + n + ' 款';
+  go.disabled = n === 0 || n > IMP_MAX;
+  $('impSel').textContent = n > IMP_MAX ? '一次最多 ' + IMP_MAX + ' 款，请分批' : ('已选 ' + n + ' 款');
+  [...$('impList').querySelectorAll('.imp-item')].forEach(el => {
+    el.classList.toggle('on', IMP.checked.has(Number(el.dataset.i)));
+  });
+}
+
+function impAttach(card, file) {
+  const input = card.querySelector('.g-files');
+  if (!input || !file) return;
+  try {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+  } catch (e) { return; }
+  const prev = input.parentElement.querySelector('.g-prev');
+  if (prev) {
+    prev.innerHTML = '';
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.alt = file.name;
+    const rd = new FileReader();
+    rd.onload = () => { img.src = rd.result; };
+    rd.readAsDataURL(file);
+    const cap = document.createElement('figcaption');
+    cap.textContent = file.name;
+    fig.appendChild(img); fig.appendChild(cap);
+    prev.appendChild(fig);
+  }
+  const fbName = input.parentElement.querySelector('.fb-name');
+  if (fbName) fbName.textContent = '  已选 1 张';
+}
+
+// 导入前删掉页面上自动生成的那张空卡（后台一打开就有一张），
+// 否则导入 3 款会变成「1 张空卡 + 3 张」，发布时校验报「第 N 张卡片：游戏名称是空的」
+function impPruneEmpty() {
+  const box = $('gameBox');
+  [...box.children].forEach(el => {
+    const q = s => el.querySelector(s);
+    const empty = !q('.g-name').value.trim()
+      && !q('.g-intro').value.trim()
+      && !q('.g-linkB').value.trim()
+      && !q('.g-linkM').value.trim()
+      && !q('.g-imgs').value.trim()
+      && !q('.g-files').files.length;
+    if (empty) box.removeChild(el);
+  });
+}
+
+function impOpen() {
+  IMP.open = true;
+  $('impModal').style.display = 'block';
+  impRender();
+}
+function impClose() {
+  IMP.open = false;
+  $('impModal').style.display = 'none';
+}
+function impReset() {
+  IMP.urls.forEach(u => URL.revokeObjectURL(u));
+  IMP.urls.clear();
+  IMP.games = []; IMP.checked.clear();
+  $('impHtml').value = '';
+  $('impHtmlName').textContent = '还没选';
+  $('impAll').checked = false;
+  impRender();
+}
+// 导入完只清勾选，**保留已解析的列表和图片匹配** ——
+// 之前是整个清空，站长想再导几款就得重新选 HTML + 文件夹两次（2026-11-02 修）
+function impAfterImport() {
+  IMP.checked.clear();
+  $('impAll').checked = false;
+  impRender();
+}
+$('impBtn').onclick = impOpen;
+$('impClose').onclick = impClose;
+$('impCancel').onclick = impClose;
+$('impPickHtml').onclick = () => $('impHtml').click();
+$('impPickImgs').onclick = () => $('impImgs').click();
+
+$('impHtml').onchange = async e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  $('impHtmlName').textContent = f.name;
+  try {
+    const text = await f.text();
+    IMP.urls.forEach(u => URL.revokeObjectURL(u));
+    IMP.urls.clear();
+    IMP.games = impParseCrawler(text);
+    IMP.checked.clear();
+    IMP.q = '';
+    $('impSearch').value = '';
+    $('impAll').checked = false;
+    if (!IMP.games.length) toast('这个 HTML 里没找到游戏卡片');
+  } catch (err) {
+    toast('读取失败：' + err.message);
+    IMP.games = [];
+  }
+  impRender();
+};
+
+$('impImgs').onchange = e => {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  const m = impBuildImgMap(files);
+  IMP.map = m.map; IMP.base = m.base;
+  $('impImgName').textContent = '已选 ' + files.length + ' 个文件';
+  impRender();
+};
+
+$('impAll').onchange = e => {
+  if (e.target.checked) {
+    // 只全选「当前搜索出来的」，否则搜完再点全选会把你没看见的也选上
+    const vis = IMP.shown || [];
+    let n = 0;
+    vis.forEach(i => { if (n < IMP_MAX) { IMP.checked.add(i); n++; } });
+    if (vis.length > IMP_MAX) toast('一次最多导 ' + IMP_MAX + ' 款，已选前 ' + IMP_MAX + ' 款');
+  } else {
+    IMP.checked.clear();
+  }
+  impRender();
+};
+
+$('impSort').onchange = e => {
+  IMP.sort = e.target.checked ? 'like' : '';
+  impRender();
+};
+
+$('impSearch').addEventListener('input', e => {
+  clearTimeout(IMP._qt);
+  const v = e.target.value;
+  IMP._qt = setTimeout(() => { IMP.q = v; impRender(); }, 120);
+});
+
+$('impList').addEventListener('change', e => {
+  const cb = e.target;
+  if (cb.type !== 'checkbox') return;
+  const i = Number(cb.dataset.i);
+  if (cb.checked) IMP.checked.add(i); else IMP.checked.delete(i);
+  impSync();
+});
+
+$('impList').addEventListener('click', e => {
+  if (e.target.type === 'checkbox') return;
+  const th = e.target.closest('img[data-i]');
+  if (th) {
+    const g = IMP.games[Number(th.dataset.i)];
+    if (g) {
+      g.picked = Number(th.dataset.k);
+      // ★这里绝对不能整列表重渲染：img 节点被换掉后，双击的第二下会落在新节点上，
+      // dblclick 事件永远不会触发（站长 2026-11-02 反馈「双击没反应」的真因）。
+      const box = th.parentElement;
+      if (box) [...box.querySelectorAll('img')].forEach(x => x.classList.toggle('on', x === th));
+    }
+    return;
+  }
+  const item = e.target.closest('.imp-item');
+  if (!item) return;
+  const i = Number(item.dataset.i);
+  const cb = item.querySelector('input');
+  cb.checked = !cb.checked;
+  if (cb.checked) IMP.checked.add(i); else IMP.checked.delete(i);
+  impSync();
+});
+
+// 双击缩略图看大图（2026-11-02 站长要求）；单击仍是「选这张作封面」
+function impLightShow(src) {
+  const box = $('impLight');
+  if (!box || !src) return;
+  box.querySelector('img').src = src;
+  box.classList.add('show');
+}
+function impLightHide() {
+  const box = $('impLight');
+  if (box) box.classList.remove('show');
+}
+$('impList').addEventListener('dblclick', e => {
+  const th = e.target.closest('img[data-i]');
+  if (!th) return;
+  e.preventDefault();
+  impLightShow(th.src);
+});
+$('impLight').onclick = impLightHide;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') impLightHide(); });
+
+$('impGo').onclick = () => {
+  const idx = [...IMP.checked].sort((a, b) => a - b);
+  if (!idx.length) return;
+  impPruneEmpty();
+  let n = 0, first = null;
+  idx.forEach(i => {
+    const g = IMP.games[i];
+    if (!g) return;
+    const name = pickName(g.title) || g.title.slice(0, 40);
+    const intro = g.title + (g.intro ? '\n' + g.intro : '');
+    const card = addGameCard({
+      name, intro,
+      unzip: g.unzip, cheat: g.cheat, sponsor: g.sponsor,
+      imgs: '', linkB: g.linkB, linkM: ''
+    });
+    const src = (g.imgs || [])[g.picked || 0];
+    const file = src ? impFindFile(src) : null;
+    if (file) impAttach(card, file);
+    if (!first) first = card;
+    IMP.done.add(impKey(g));
+    n++;
+  });
+  impSaveDone();
+  renum();
+  saveDraft();
+  impAfterImport();
+  impClose();
+  toast('已导入 ' + n + ' 款，图片会在发布时自动上传');
+  // 滚动放到关窗之后再做：弹窗关掉的瞬间布局会重排（body 溢出/滚动条恢复），
+  // 之前同步滚动会被这次重排吃掉，表现成「只滑了一下，没到新卡片」（2026-11-02 修）
+  if (first) setTimeout(() => { scrollCardIntoView(first); first.classList.add('newcard-focus'); }, 90);
+};
 $('exportImgs').onclick = async () => {
   const cards = [...$('gameBox').children];
   const total = cards.length;
