@@ -105,7 +105,7 @@ const NAV_MENU = (() => {
     ic: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>' });
   items.push({ label: '解压教程', url: 'tutorial.html',
     ic: '<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/>' });
-  items.push({ label: '游戏工具', url: 'tools.html',
+  items.push({ label: '游戏/解压工具', url: 'tools.html',
     ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/>' });
   items.push({ label: '不限速教程', url: 'download.html',
     ic: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>' });
@@ -320,6 +320,15 @@ const ANN_SKIP = /^(QQ群[:：]|站长QQ|站长邮箱|Telegram|三、联系方�
 const annLinesHtml = lines => lines
   .filter(l => !ANN_SKIP.test(String(l).trim()))
   .map(l => `<p>${esc(l)}</p>`).join('\n');
+// 2026-11-02（站长）：公告顶部固定放三个帮助入口 —— 小白不会去看菜单，
+//   进群就问怎么解压，所以「解压教程」必须第一眼能看到。
+const ANN_TOOLS = [
+  { name: '解压教程', url: 'tutorial.html' },
+  { name: '游戏工具', url: 'tools.html' },
+  { name: '不限速教程', url: 'download.html' }
+];
+const annToolsHtml = () => ANN_TOOLS.map(t =>
+  `<a class="mrhx-ann-tool" href="${esc(t.url)}">${esc(t.name)}</a>`).join('');
 const annGroupsHtml = () => {
   const gs = (Array.isArray(SITE.groups) ? SITE.groups : []).filter(g => g && g.url);
   const cs = (Array.isArray(SITE.contacts) ? SITE.contacts : []).filter(c => c && c.url);
@@ -916,6 +925,7 @@ const popupHtml = (() => {
     <button type="button" class="mrhx-popup-close" id="mrhxPopupClose" aria-label="关闭公告">×</button>
     <div class="mrhx-popup-content">
       <h3 id="mrhxPopupTitle">${title}</h3>
+      <div class="mrhx-ann-tools">${annToolsHtml()}</div>
       ${annLinesHtml(lines)}
       ${annGroupsHtml()}
       ${annSignHtml(lines)}
@@ -1054,6 +1064,10 @@ const popupHtml = (() => {
 .mrhx-ann-sub{font-size:11px;color:#a8a29b;line-height:1.5;margin:0 0 9px}
 .mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
 .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
+/* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
+.mrhx-ann-tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 12px}
+.mrhx-ann-tool{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;background:#eef4ff;border:1px solid #cfe0ff;color:#2f6fed;font-size:12px;font-weight:600;text-decoration:none;transition:.18s}
+.mrhx-ann-tool:hover{background:#2f6fed;border-color:#2f6fed;color:#fff}
 .mrhx-popup-btn{margin-top:12px;padding:8px 24px;border:none;border-radius:10px;background:#e5484d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
 .mrhx-popup-btn:hover{background:#c93a3f;transform:translateY(-2px)}
 @keyframes mrhxPopFade{from{opacity:0}to{opacity:1}}

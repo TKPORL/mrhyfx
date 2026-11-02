@@ -102,6 +102,10 @@
   .mrhx-ann-sub{font-size:11px;color:#a8a29b;line-height:1.5;margin:0 0 9px}
   .mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
   .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
+  /* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
+  .mrhx-ann-tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 12px}
+  .mrhx-ann-tool{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;background:#eef4ff;border:1px solid #cfe0ff;color:#2f6fed;font-size:12px;font-weight:600;text-decoration:none;transition:.18s}
+  .mrhx-ann-tool:hover{background:#2f6fed;border-color:#2f6fed;color:#fff}
   .nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
   .nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
   .nav-drop .search-row input::placeholder{color:#b4b2a9}
