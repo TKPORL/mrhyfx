@@ -109,9 +109,19 @@
     }
   });
 
+  // 2026-11-02（站长手机端反馈「点搜索/菜单第一次会自己关、公告还会莫名被点到」）：
+  //   面板展开会把 header 瞬间推高（grid 0fr→1fr），等 click 冒泡到 document 时，
+  //   按钮已经位移、target 甚至落到内容区 → inside 判定失败 → closeAll() 把刚打开的面板关掉，
+  //   表现为「第一次点无效、第二次才开」。
+  //   改在 pointerdown（布局变化之前）就记下点击是否落在导航区/弹窗里，click 时用这个结果判断。
+  var navPointerDown = false;
+  document.addEventListener('pointerdown', function (e) {
+    var t = e.target;
+    navPointerDown = !!(t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup')));
+  }, true);
+
   document.addEventListener('click', function (e) {
-    var inside = (e.target.closest && (e.target.closest('.hd-bar') || e.target.closest('.nav-drop')));
-    if (!inside) { closeAll(); }
+    if (!navPointerDown) { closeAll(); }
   });
 
   // 问题修复（2026-10-09）：header 带 backdrop-filter 时会成为 position:fixed 的包含块，
