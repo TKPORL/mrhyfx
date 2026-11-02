@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>小白指南 · Tsinho黄油站</title>
+<meta name="description" content="Tsinho黄油站小白指南：这个站是什么、怎么找游戏、怎么下载、怎么解压（不能在网盘在线解压）、安卓没有直装包怎么办、百度网盘没会员怎么提速、常见报错怎么处理。第一次来先看这页。">
+<meta name="author" content="Tsinho">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://tkporl.github.io/mrhyfx/guide.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tsinho黄油站">
+<meta property="og:title" content="小白指南 · Tsinho黄油站">
+<meta property="og:description" content="第一次来先看这页：找游戏、下载、解压、模拟器、不限速、常见报错。">
+<meta property="og:url" content="https://tkporl.github.io/mrhyfx/guide.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/TKPORL/mrhyfx@main/assets/qzt/img_02.webp">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf9f7;color:#2b2b2b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+@keyframes mrhxCard{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:900px;margin:0 auto;padding:28px 20px 44px}
+.upd{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f2e2e2;border-left:4px solid #e5484d;border-radius:12px;padding:14px 18px;margin-bottom:26px;font-size:14px;color:#666;box-shadow:0 1px 3px rgba(0,0,0,.04);animation:mrhxCard .5s ease both;flex-wrap:wrap;line-height:1.7}
+.upd .tag{background:#fdf1f1;color:#e5484d;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+.sect{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sect h2{font-size:19px;color:#2b2b2b;position:relative;padding-left:12px;white-space:nowrap}
+.sect h2::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:4px;border-radius:2px;background:#e5484d}
+.sect span{font-size:13px;color:#aaa;white-space:nowrap}
+.tut-card{background:#fff;border:1px solid #ecebe9;border-radius:14px;padding:18px 20px;margin-bottom:28px;font-size:14px;color:#444;line-height:1.9;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tut-card p+p{margin-top:6px}
+.tut-card a{color:#e5484d;font-weight:600;text-decoration:none;border-bottom:1px solid #f0b4b6;transition:.2s}
+.tut-card a:hover{color:#c93a3f;border-bottom-color:#c93a3f}
+.tut-list{background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;margin-bottom:28px;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tut-item{display:flex;align-items:flex-start;gap:14px;padding:15px 20px;border-bottom:1px solid #f4f3f1}
+.tut-item:last-child{border-bottom:none}
+.tut-ext{flex-shrink:0;min-width:64px;text-align:center;font-size:12px;font-weight:600;color:#e5484d;background:#fdf1f1;border-radius:99px;padding:5px 12px;letter-spacing:.3px}
+.tut-txt{font-size:14px;color:#444;line-height:1.7;min-width:0}
+.tut-txt b{color:#2b2b2b}
+.tut-txt a{color:#e5484d;font-weight:600;text-decoration:none;border-bottom:1px solid #f0b4b6}
+.tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid #ecebe9;border-radius:14px;overflow:hidden;margin-bottom:28px;font-size:13.5px;box-shadow:0 1px 2px rgba(0,0,0,.03);animation:mrhxCard .5s ease both}
+.tbl th,.tbl td{text-align:left;padding:12px 16px;border-bottom:1px solid #f4f3f1;vertical-align:top;line-height:1.65}
+.tbl thead th{background:#faf9f7;color:#6b6660;font-weight:600;font-size:12.5px;white-space:nowrap}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl td:first-child{color:#2b2b2b;font-weight:600;white-space:nowrap}
+.tbl a{color:#e5484d;font-weight:600;text-decoration:none;border-bottom:1px solid #f0b4b6}
+.tbl a:hover{color:#c93a3f}
+/* 正文里的行内链接：左右留一点空，避免和前后汉字贴在一起（2026-11-02 站长） */
+.tut-card a,.tut-txt a,.tbl a,.warn a{margin:0 5px}
+.warn{background:#fffdf5;border:1px solid #f3e6c8;border-left:4px solid #e0a800;border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:13.5px;color:#6b5c33;line-height:1.85;animation:mrhxCard .5s ease both}
+.warn b{color:#8a6d1f}
+.warn a{color:#c93a3f;font-weight:600;text-decoration:none;border-bottom:1px solid #e0b48a}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+.cta a{flex:1;min-width:180px;text-align:center;padding:14px 20px;border-radius:12px;font-size:14.5px;font-weight:700;text-decoration:none;transition:.2s;border:1px solid #ecebe9;background:#fff;color:#2b2b2b}
+.cta a:hover{border-color:#e5484d;color:#e5484d;transform:translateY(-1px)}
+.cta a.p{background:#e5484d;border-color:#e5484d;color:#fff}
+.cta a.p:hover{background:#c93a3f;color:#fff}
+footer{border-top:1px solid #ecebe9;margin-top:40px;padding:22px 20px 34px;text-align:center;color:#999;font-size:12px}
+@media (max-width:640px){
+  main{padding:18px 14px 34px}
+  .tbl th,.tbl td{padding:10px 12px}
+  .tbl td:first-child{white-space:normal}
+  .tut-item{padding:13px 15px;gap:10px}
+}
+</style>
+<link rel="stylesheet" href="assets/css/site.css?v=d056dca1">
+</head>
+<body>
+<!--mrhx-header-start--><header>
+<div class="hd-bar">
+  <a class="logo" href="index.html"><img src="logo.webp" alt="Tsinho黄油站"></a>
+  <nav class="menu" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="guide.html" class="on" aria-current="page">小白指南</a>
+    <a href="sponsor.html">赞助</a>
+    <a href="tutorial.html">解压教程</a>
+    <a href="tools.html">游戏/解压工具</a>
+    <a href="download.html">网盘不限速教程</a>
+    <a href="mianze.html">免责声明</a>
+    <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer">备用站</a>
+    <div class="res-dd" id="mrhxResDD">
+      <button type="button" class="res-btn" aria-expanded="false" aria-controls="mrhxResMenu">
+        其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="res-menu" id="mrhxResMenu">
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya" target="_blank" rel="noreferrer">看片软件</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">VPN节点</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww" target="_blank" rel="noreferrer">成人壁纸</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5" target="_blank" rel="noreferrer">实用软件</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67" target="_blank" rel="noreferrer">影音娱乐</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv" target="_blank" rel="noreferrer">游戏破解版合集</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5" target="_blank" rel="noreferrer">节点搭建教程</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr" target="_blank" rel="noreferrer">不限速工具</a>
+        <a href="https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp" target="_blank" rel="noreferrer">网盘不限速教程</a>
+        <a href="https://tkporl.github.io/" target="_blank" rel="noreferrer">Tsinho资源库</a>
+        <a href="https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html" target="_blank" rel="noreferrer">Tsinho资源库（在线版）</a>
+      </div>
+    </div>
+  </nav>
+  <div class="plat-slot" id="gwPlatSlot"></div>
+  <div class="acts">
+    <button type="button" class="icon-btn ann-btn" id="mrhxAnnBtn" aria-label="查看公告" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M4 9.6h3.1L13 5.3v13.4l-5.9-4.3H4a1 1 0 0 1-1-1v-3.8a1 1 0 0 1 1-1Z"/><path d="M16.6 8.9a4.3 4.3 0 0 1 0 6.2"/><path d="M19.2 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>
+      <span class="ico-label">公告</span>
+    </button>
+    <button type="button" class="icon-btn search-btn" aria-label="搜索游戏" aria-expanded="false" aria-controls="mrhxSearchDrop">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg>
+      <span class="ico-label">搜索</span>
+    </button>
+    <button type="button" class="icon-btn more-btn" aria-label="更多导航" aria-expanded="false" aria-controls="mrhxMoreDrop">
+      <svg viewBox="0 0 24 24" style="stroke:none">
+        <circle class="dot dot-1" cx="6.5" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-2" cx="12" cy="12" r="1.9" fill="#666"></circle>
+        <circle class="dot dot-3" cx="17.5" cy="12" r="1.9" fill="#666"></circle>
+      </svg>
+      <span class="ico-label">菜单</span>
+    </button>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxSearchDrop">
+  <div>
+    <div class="drop-inner">
+      <form class="search-row" action="search.html" method="get" role="search">
+        <input type="text" name="q" placeholder="开启精彩搜索" autocomplete="off" aria-label="搜索游戏名称">
+        <button class="go" type="submit" aria-label="开始搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="M16.2 16.2L21 21"/></svg></button>
+        <button class="x" type="button" data-nav-close aria-label="关闭搜索">×</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="nav-drop" id="mrhxMoreDrop">
+  <div>
+    <div class="drop-inner">
+      <div class="drawer-head">
+        <img src="logo.webp" alt="Tsinho黄油站">
+        <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
+      </div>
+      <div class="drawer-body" data-lenis-prevent>
+        <nav class="drop-menu" aria-label="站点导航">
+          <a href="index.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></svg>首页</a>
+          <a href="guide.html" class="on" aria-current="page"><svg class="nic" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M8 8h8"/><path d="M8 12h5"/></svg>小白指南</a>
+          <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
+          <a href="tutorial.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/></svg>解压教程</a>
+          <a href="tools.html"><svg class="nic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/></svg>游戏/解压工具</a>
+          <a href="download.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>网盘不限速教程</a>
+          <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
+          <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/></svg>备用站</a>
+        </nav>
+        <div class="drawer-res" id="mrhxDrawerRes" data-lenis-prevent>
+          <button type="button" class="drawer-res-btn" aria-expanded="false" aria-controls="mrhxDrawerResG">
+            <svg class="nic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+            其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="drawer-res-g" id="mrhxDrawerResG">
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvuYya" target="_blank" rel="noreferrer">看片软件</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">VPN节点</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXpjCvtWww" target="_blank" rel="noreferrer">成人壁纸</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tErl5" target="_blank" rel="noreferrer">实用软件</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXSmDnDp67" target="_blank" rel="noreferrer">影音娱乐</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv" target="_blank" rel="noreferrer">游戏破解版合集</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5" target="_blank" rel="noreferrer">节点搭建教程</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr" target="_blank" rel="noreferrer">不限速工具</a>
+            <a href="https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp" target="_blank" rel="noreferrer">网盘不限速教程</a>
+            <a href="https://tkporl.github.io/" target="_blank" rel="noreferrer">Tsinho资源库</a>
+            <a href="https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html" target="_blank" rel="noreferrer">Tsinho资源库（在线版）</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-mask" id="mrhxNavMask"></div>
+</header><!--mrhx-header-end-->
+
+<main>
+  <div class="upd">
+    <span class="tag">新手必看</span>
+    花 3 分钟看完这页，能省你半小时。看不懂哪一步，直接加群问，别自己硬试。
+  </div>
+
+  <div class="sect"><h2>这个站是什么</h2></div>
+  <div class="tut-card">
+    <p>每天更新 PC + 安卓的黄油，全部免费，不卖资源、不搞会员。</p>
+    <p>资源统一用<b>百度网盘</b>分享，转存后自行下载。</p>
+    <p>所有资源都要下载到本地解压、本地运行，本站不做在线解压和在线播放。</p>
+  </div>
+
+  <div class="sect"><h2>四步上手</h2><span>找 → 下 → 解 → 跑</span></div>
+  <div class="tut-list">
+    <div class="tut-item"><span class="tut-ext">第一步</span><div class="tut-txt"><b>找游戏</b>：首页每天更新，往下翻就是往期；想找某一款，用右上角搜索。</div></div>
+    <div class="tut-item"><span class="tut-ext">第二步</span><div class="tut-txt"><b>下载</b>：点进帖子，卡片下面有「百度网盘」按钮。点进去先<b>转存到自己网盘</b>，再从自己网盘下载到本地。</div></div>
+    <div class="tut-item"><span class="tut-ext">第三步</span><div class="tut-txt"><b>解压</b>：<b>必须先下载到本地再解压</b>，不要在百度网盘里点「在线解压」——在线解压会失败，还可能把整个文件弄坏。电脑用 <a href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a>，手机用 RAR 或 ZArchiver，别用系统自带的解压。</div></div>
+    <div class="tut-item"><span class="tut-ext">第四步</span><div class="tut-txt"><b>运行</b>：电脑直接双击 exe；安卓装 apk，如果包里没有 apk，就用模拟器跑（见下面的工具表）。</div></div>
+  </div>
+
+  <div class="sect"><h2>工具去哪找</h2><span>全部在「游戏/解压工具」页</span></div>
+  <table class="tbl">
+    <thead><tr><th>你要什么</th><th>去哪找</th></tr></thead>
+    <tbody>
+      <tr><td>安卓模拟器</td><td><a href="tools.html">游戏/解压工具</a> → 模拟器（joi 模拟器、mtool、Kirikiroid2、Tyranor、Winlator、ONScripter）</td></tr>
+      <tr><td>解压软件</td><td><a href="tools.html#unzip">游戏/解压工具 → 解压工具</a>（ZArchiver Pro、WinRAR、RAR-mod、解压专家）</td></tr>
+      <tr><td>改后缀 / 自动解压</td><td><a href="tools.html#unzip">游戏/解压工具 → 解压工具</a>（一键改后缀工具、自动解压工具、lz4 / enc 解压工具）</td></tr>
+      <tr><td>汉化 / 改数据</td><td><a href="tools.html">游戏/解压工具</a> → 汉化 · 改数据（一键汉化、万能改数据、rpg 三件套）</td></tr>
+      <tr><td>下载太慢</td><td><a href="tools.html">游戏/解压工具</a> → 多线程下载工具（Motrix、IDM、NDM、ADM）</td></tr>
+      <tr><td>游戏报错、缺 dll</td><td><a href="tools.html#runtime">游戏/解压工具 → 运行库</a>（Visual C++ 运行库 x64）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sect"><h2>怎么解压</h2><span>90% 的问题都出在这一步</span></div>
+  <div class="tut-list">
+    <div class="tut-item"><span class="tut-ext">先做一步</span><div class="tut-txt"><b>先把文件后缀显示出来</b>：Windows 默认把后缀藏起来，你看不到 <b>.jpg / .zip</b> 就没法改。打开任意文件夹 → 顶部「查看」→ 勾上「文件扩展名」（Win11）／在「查看」里勾「文件扩展名」（Win10）。</div></div>
+    <div class="tut-item"><span class="tut-ext">解压码</span><div class="tut-txt">帖子每张卡片上都有「<b>解压码</b>」按钮，点一下自动复制。<b>不要手打</b>，多一个空格就会提示密码错误。</div></div>
+    <div class="tut-item"><span class="tut-ext">密码报错</span><div class="tut-txt">解压码明明是对的，却还是提示密码错误？多半是电脑的解压软件不认。换成<b>手机上用 RAR 解压</b>，成功率最高；电脑上换 <a href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a> 再试一次。</div></div>
+    <div class="tut-item"><span class="tut-ext">别在线解压</span><div class="tut-txt">百度网盘的「在线解压」不能用来解游戏包，<b>会失败，还会把文件弄坏</b>。一定先下载到本地，再用解压软件解。</div></div>
+    <div class="tut-item"><span class="tut-ext">分卷</span><div class="tut-txt">文件名带 <b>part1 / 001</b> 的是分卷，同批文件必须<b>全部下完</b>放在同一个文件夹，然后只解压 part1（或 001），其余会自动接上。</div></div>
+    <div class="tut-item"><span class="tut-ext">改后缀</span><div class="tut-txt">解压出来是 <b>jpg / mp4 / txt</b> 的，说明后缀被改过（防和谐）。把后缀改成 <b>zip</b> 或 <b>rar</b> 再解压。</div></div>
+    <div class="tut-item"><span class="tut-ext">是一张图</span><div class="tut-txt">解压完发现只有一个 <b>jpg 图片</b>？这就是改过后缀的压缩包，把这张图的 <b>jpg 改成 zip</b>，再解压一次就出来了。</div></div>
+    <div class="tut-item"><span class="tut-ext">工具</span><div class="tut-txt">电脑用 <a href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a>，手机用 <a href="tools.html#unzip">RAR / ZArchiver</a>。系统自带的解压容易乱码或误报密码错误。</div></div>
+  </div>
+  <div class="cta"><a class="p" href="tutorial.html">看完整解压教程</a><a class="p" href="tools.html#unzip">下载解压工具</a></div>
+
+  <div class="sect"><h2>分卷怎么认</h2><span>三种格式，别解错</span></div>
+  <table class="tbl">
+    <thead><tr><th>你看到的一堆文件</th><th>怎么解</th></tr></thead>
+    <tbody>
+      <tr><td>xxx.7z.001 / .002 / .003</td><td>全部下完放同一个文件夹，<b>只解压 001</b>，其余会自动接上；不用改后缀</td></tr>
+      <tr><td>xxx.part1.rar / part2.rar</td><td>全部下完，<b>只解压 part1</b></td></tr>
+      <tr><td>xxx.zip + xxx.z01 / z02</td><td>全部下完，<b>只解压那个 .zip</b>（z01、z02 别动）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sect"><h2>没会员怎么不限速</h2></div>
+  <div class="tut-card">
+    <p>1. <b>用多线程下载工具</b>：Motrix、IDM、NDM、ADM，配合网盘直链比浏览器直接下快不少（工具在<a href="tools.html">游戏/解压工具</a>页）。</p>
+    <p>2. <b>错峰下载</b>：晚上高峰限速更明显，凌晨或白天会好一些。</p>
+    <p>3. 按教程里这套做法走，基本能跑到不限速的效果，具体步骤见 <a href="download.html">网盘不限速教程</a>。</p>
+  </div>
+
+  <div class="sect"><h2>常见错误对照</h2><span>对号入座</span></div>
+  <table class="tbl">
+    <thead><tr><th>你看到的</th><th>原因</th><th>怎么办</th></tr></thead>
+    <tbody>
+      <tr><td>解压提示密码错误</td><td>没填解压码、复制时带了空格，或解压软件不认</td><td>回卡片点「解压码」按钮复制，别手打；仍报错就<a href="tools.html#unzip">换 RAR 解压</a>（手机 RAR 最稳）</td></tr>
+      <tr><td>压缩包损坏 / 文件末端错误</td><td>分卷没下全，或下载中断</td><td>确认 part 数量齐全，全部重下</td></tr>
+      <tr><td>CRC 错误 / 数据错误</td><td>密码输错、下载不完整、分卷缺文件</td><td>先核对解压码；再删掉重下。手机用流量容易下不全，换稳定网络，电脑能插网线就插网线</td></tr>
+      <tr><td>游戏打不开 / 闪退</td><td>路径里有中文或空格；日文游戏没转区</td><td>放到 <b>D:\Games\</b> 这类纯英文路径；日文游戏用 Locale Emulator 以日文环境运行</td></tr>
+      <tr><td>杀毒报毒 / exe 被删</td><td>Windows Defender 误删</td><td>先把游戏目录加进白名单，再重新解压一次</td></tr>
+      <tr><td>解压出来一堆乱码</td><td>文件名编码不对</td><td>用 ZArchiver 或 <a href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a>，解压时选 UTF-8 或中文</td></tr>
+      <tr><td>解压出来是 jpg / mp4 / txt</td><td>后缀被改过（防和谐）</td><td>改成 zip 或 rar 再解压</td></tr>
+      <tr><td>安卓装了 apk 打不开</td><td>系统不兼容，或需要数据包</td><td>用 <a href="tools.html">joi 模拟器或 mtool</a> 跑</td></tr>
+      <tr><td>游戏黑屏 / 提示缺 dll</td><td>缺运行库</td><td>装 <a href="tools.html#runtime">Visual C++ 运行库（x64）</a></td></tr>
+      <tr><td>下载只有几十 KB/s</td><td>百度网盘非会员限速</td><td>用多线程工具、错峰下，见<a href="download.html">网盘不限速教程</a></td></tr>
+      <tr><td>点下载链接打不开</td><td>链接失效被和谐</td><td>到<a href="qzt.html">求助帖</a>留言，或加群反馈</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sect"><h2>几个常见的坑</h2></div>
+  <div class="tut-card">
+    <p>· 文件名写成「全？游戏？集」这种带问号的，就是「<b>全部游戏合集</b>」，是防和谐改的，不是坏文件。</p>
+    <p>· 解压完文件夹里还有压缩包，说明是套娃，继续解一层。</p>
+    <p>· 标了「PC+安卓」但包里没有 apk 的，不是漏传，用模拟器跑。</p>
+    <p>· <b>需要改后缀的包不少，先看解压教程或游戏工具页再动手</b>；拿不准就进群问，自己乱改反而容易把文件改坏。</p>
+    <p>· 解压软件要用新版：旧版 WinRAR、系统自带解压经常误报密码错误。</p>
+    <p>· 本站资源仅供学习交流，下载后 24 小时内删除，别拿去卖。</p>
+  </div>
+
+  <div class="sect"><h2>问之前，先准备好这些</h2><span>问得快，答得也快</span></div>
+  <div class="tut-card">
+    <p>只说「打不开」「用不了」，别人没法判断你卡在哪。按下面写，一次就能问到点子上：</p>
+    <p>· 游戏名：<br>· 卡在哪一步：下载 / 解压 / 安装 / 启动<br>· 报错原文或截图：<br>· 电脑还是手机（手机写机型）：<br>· 已经试过什么：</p>
+  </div>
+
+  <div class="warn">
+    <b>教程其实都挺全的了，遇到问题先翻一遍。</b> 解压教程、游戏工具这几个页面把各种情况都写清楚了；还不行就去 B 站搜同类教程，或者进群问。别自己乱改文件，也别改坏之后来骂我上传没用的东西——已经有好几个小白不会弄，然后来骂我了。本站永久免费、靠赞助维持，站长一直在群里给大家解答，有啥不会的直接进群问就好。
+  </div>
+
+  <div class="warn">
+    <b>还是搞不定？</b> 别自己反复试，直接加群，在群里问，或到<a href="qzt.html">求助帖</a>留言写清是哪篇帖子的哪款游戏。
+  </div>
+
+  <div class="cta">
+    <a class="p" href="https://qm.qq.com/q/feKklWYXLO" target="_blank" rel="noreferrer">QQ 主群</a>
+    <a href="https://t.me/Tsinhox" target="_blank" rel="noreferrer">Telegram 频道</a>
+  </div>
+</main>
+
+<footer>by Tsinho 发布 · 本站仅供学习交流，请于下载后 24 小时内删除，支持正版</footer>
+<script src="assets/js/nav.js?v=88756cf6"></script>
+<script src="assets/js/smooth.js?v=a53dfb02"></script>
+</body>
+</html>

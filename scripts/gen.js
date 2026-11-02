@@ -99,6 +99,8 @@ const NAV_MENU = (() => {
     ic: '<path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/>' }];
   // 2026-10-09 站长定稿顺序：赞助最前（首页之后）、往期合集最后
   // ic = 手机抽屉里的菜单图标（stroke path，16px），与备用站同款
+  items.push({ label: '小白指南', url: 'guide.html',
+    ic: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M8 8h8"/><path d="M8 12h5"/>' });
   items.push({ label: '赞助', url: 'sponsor.html',
     ic: '<path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/>' });
   if (all) items.push({ label: '全部黄油', url: all.url,
@@ -333,6 +335,7 @@ const annLinesHtml = lines => lines
 // 2026-11-02（站长）：公告顶部固定放三个帮助入口 —— 小白不会去看菜单，
 //   进群就问怎么解压，所以「解压教程」必须第一眼能看到。
 const ANN_TOOLS = [
+  { name: '小白指南', url: 'guide.html' },
   { name: '解压教程', url: 'tutorial.html' },
   { name: '游戏/解压工具', url: 'tools.html' },
   { name: '网盘不限速教程', url: 'download.html' }
@@ -473,7 +476,7 @@ if (fs.existsSync('site.json')) {
 }
 
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
-const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', 'daily.html', '卡片布局原型.html', '图床对接演示.html'];
+const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', 'daily.html', 'guide.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
 const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
@@ -2754,6 +2757,7 @@ ${SMOOTH_SCRIPTS}
   {
     const standalone = [
       { file: 'sponsor.html',  current: 'sponsor.html' },
+      { file: 'guide.html',    current: 'guide.html' },
       { file: 'tutorial.html', current: 'tutorial.html' },
       { file: 'tools.html',    current: 'tools.html' },
       { file: 'download.html', current: 'download.html' },
