@@ -1296,11 +1296,12 @@ footer .disc-link:hover{text-decoration:underline}
 .mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
 .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
 /* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
-/* 2026-11-02：搜索下拉改用 display 切换，不再依赖 grid-template-rows 高度动画。
-   安卓点输入框弹键盘会触发重排，grid 0fr/1fr 的高度会被算成 0（面板"凭空消失"）。
-   display 切换不受布局变化影响，最稳；淡入效果仍由 .drop-inner 的 opacity/transform 提供。 */
-#mrhxSearchDrop{display:none}
+/* 2026-11-02（第 6 次修，前几次都治不到根）：搜索改成 fixed 居中浮层，彻底脱离 sticky header。
+   安卓弹键盘会把页面/顶栏顶走，只要搜索框长在 header 里就迟早被带走；浮层相对视口定位，不受影响。 */
+#mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.35);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
 #mrhxSearchDrop.open{display:block}
+#mrhxSearchDrop>div{max-width:600px;margin:0 auto}
+#mrhxSearchDrop .drop-inner{margin:0;max-width:none;box-shadow:0 12px 40px rgba(0,0,0,.18)}
 .mrhx-ann-tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 12px}
 .mrhx-ann-tool{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;background:#eef4ff;border:1px solid #cfe0ff;color:#2f6fed;font-size:12px;font-weight:600;text-decoration:none;transition:.18s}
 .mrhx-ann-tool:hover{background:#2f6fed;border-color:#2f6fed;color:#fff}
@@ -1451,7 +1452,7 @@ footer .disc-link:hover{text-decoration:underline}
 })();
 </script>
 
-<script src="assets/js/nav.js?v=5d08aab8"></script>
+<script src="assets/js/nav.js?v=349bb7a5"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 <script>(function(){function mark(im){if(im.complete)return;im.classList.add('mrhx-img-loading');im.addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});im.addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}function init(){var imgs=document.querySelectorAll('.covers img,.gcard .cover img,img.image');if(!('IntersectionObserver' in window)){for(var i=0;i<imgs.length;i++)mark(imgs[i]);return}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mark(e.target);io.unobserve(e.target)}})},{rootMargin:'300px'});for(var i=0;i<imgs.length;i++)io.observe(imgs[i])}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();</script>
 </body>
