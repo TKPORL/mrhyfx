@@ -334,7 +334,7 @@ const annLinesHtml = lines => lines
 //   进群就问怎么解压，所以「解压教程」必须第一眼能看到。
 const ANN_TOOLS = [
   { name: '解压教程', url: 'tutorial.html' },
-  { name: '游戏工具', url: 'tools.html' },
+  { name: '游戏/解压工具', url: 'tools.html' },
   { name: '不限速教程', url: 'download.html' }
 ];
 const annToolsHtml = () => ANN_TOOLS.map(t =>
