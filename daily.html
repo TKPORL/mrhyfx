@@ -108,6 +108,13 @@ header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,2
 .nav-drop>div{overflow:hidden;min-height:0}
 .nav-drop .drop-inner{max-width:900px;margin:8px auto 0;background:#fff;border:1px solid #ecebe9;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.07);padding:6px;opacity:0;transform:translateY(-6px);transition:opacity .24s ease,transform .3s cubic-bezier(.2,.8,.2,1)}
 .nav-drop.open .drop-inner{opacity:1;transform:translateY(0)}
+/* 2026-11-02（第 7 次修）：搜索浮层规则从「帖子页样式块」挪进 NAV_CSS。
+   之前只写在帖子页那一段里，search.html 根本拿不到，于是它退回旧的 grid 折叠块，
+   站长实测「搜完结果再点搜索按钮，输入框跑到页面最下面」。挪到这里全站一致。 */
+#mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.45);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
+#mrhxSearchDrop.open{display:block}
+#mrhxSearchDrop>div{max-width:600px;margin:0 auto;overflow:visible;min-height:0}
+#mrhxSearchDrop .drop-inner{margin:0;max-width:none;box-shadow:0 12px 40px rgba(0,0,0,.18)}
 .nav-drop .search-row{display:flex;align-items:center;gap:8px;padding:4px 4px 4px 14px}
 .nav-drop .search-row input{flex:1;min-width:0;font:inherit;font-size:13.5px;border:none;outline:none;background:transparent;color:#2b2b2b;padding:9px 0}
 .nav-drop .search-row input::placeholder{color:#b4b2a9}
@@ -164,7 +171,8 @@ header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,2
 /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
 /* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不再放公告按钮，
    改为菜单抽屉顶部一个「公告 · 防迷路群」入口；桌面（>900）鼠标点击精度高，保留顶栏按钮。 */
-@media (max-width:900px){.hd-bar .ann-btn{display:none}}
+/* 2026-11-02 晚（站长）：搜索浮层修好后，窄屏也把公告按钮放回顶栏、与搜索并排。
+   原来这里有一条 max-width:900px 时 display:none 的规则，已删除。 */
 #mrhxMoreDrop .drawer-ann{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#3a3a3a;background:#faf9f7;border:1px solid #ecebe9;border-radius:12px;padding:13px 14px;margin:0 0 8px;cursor:pointer;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.02);transition:.18s}
 #mrhxMoreDrop .drawer-ann .nic{width:16px;height:16px;stroke:#999;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 #mrhxMoreDrop .drawer-ann:hover{color:#e5484d;border-color:#f0b4b6;background:#fdf3f3}
@@ -301,8 +309,6 @@ footer a{color:#e5484d;text-decoration:none}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <div class="drawer-body" data-lenis-prevent>
-        <button type="button" class="drawer-ann" id="mrhxAnnDrawer"><svg class="nic" viewBox="0 0 24 24"><path d="M4 9.6h3.1L13 5.3v13.4l-5.9-4.3H4a1 1 0 0 1-1-1v-3.8a1 1 0 0 1 1-1Z"/><path d="M16.6 8.9a4.3 4.3 0 0 1 0 6.2"/><path d="M19.2 6.6a7.7 7.7 0 0 1 0 10.8"/></svg>公告 · 防迷路群</button>
-
         <nav class="drop-menu" aria-label="站点导航">
           <a href="index.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></svg>首页</a>
           <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
