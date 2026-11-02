@@ -143,7 +143,9 @@
     var t = e.target;
     if (t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup'))) return;
     if (Date.now() - lastOpenAt < 500) return;   // 刚展开，这次触摸不算"点外面"
-    closeAll();
+    // 2026-11-02：只关抽屉，不关搜索。
+    //   安卓点输入框会触发键盘/重排，历史上多次把搜索面板连带关掉；搜索只由按钮和「×」控制最稳。
+    setMore(false);
   }, true);
 
   // 问题修复（2026-10-09）：header 带 backdrop-filter 时会成为 position:fixed 的包含块，
