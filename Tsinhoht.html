@@ -122,6 +122,7 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .imp-item{display:grid;grid-template-columns:auto 276px 1fr;gap:12px;align-items:start;padding:9px 11px;border:1px solid #eeece7;border-radius:10px;background:#fdfcfa;cursor:pointer}
 .imp-item:hover{background:#faf9f7}
 .imp-item.on{border-color:#e5484d;background:#fdf6f6}
+.imp-item.imp-flash{box-shadow:0 0 0 3px rgba(229,72,77,.28);transition:box-shadow .35s}
 .imp-item>input{margin-top:3px;width:16px;height:16px;accent-color:#e5484d}
 .imp-thumbs{display:flex;gap:6px;flex-wrap:wrap}
 .imp-thumbs img{width:88px;height:66px;object-fit:cover;border-radius:6px;border:2px solid transparent;opacity:.62;cursor:pointer;background:#f2f0ec}
@@ -1908,8 +1909,44 @@ $('addGame').onclick = () => addGameCard();
  * 图片：可选再选一次 images 文件夹 → 按 images/<id>/xxx.jpg 的相对路径匹配本地文件 → 挂到卡片 .g-files，
  *   走现有发布流程上传（不新增上传代码）；不选文件夹也能建卡，只是没图。
  * 一次最多导 20 款（防止误选全量把后台卡死）。 */
-const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Map(), open: false, q: '', done: new Set(), sort: '' };
-const IMP_MAX = 20;
+const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Map(), open: false, q: '', done: new Set(), sort: '', fileName: '', anchor: -1 };
+// 2026-11-03：上限 20 → 200。站长一次要导 100+ 款，20 太窄；200 仍能挡住"全选 280 张"的误操作。
+const IMP_MAX = 200;
+// 刷新保留：解析结果 + 勾选 + 搜索词存 IndexedDB（localStorage 装不下 280 条的正文）。
+// 图片 File 对象无法持久化，所以刷新后缩略图会空，重选一次 images 文件夹即可按路径重新匹配。
+const IMP_CACHE_KEY = '__impCache';
+let _impSaveT = null;
+function impSaveCache() {
+  clearTimeout(_impSaveT);
+  _impSaveT = setTimeout(() => {
+    try {
+      idbSet(IMP_CACHE_KEY, {
+        file: IMP.fileName || '',
+        games: IMP.games,
+        checked: [...IMP.checked],
+        sort: IMP.sort,
+        q: IMP.q,
+        anchor: IMP.anchor
+      }).catch(() => {});
+    } catch (e) { /* ignore */ }
+  }, 400);
+}
+async function impRestoreCache() {
+  try {
+    const c = await idbGet(IMP_CACHE_KEY);
+    if (!c || Array.isArray(c) || !Array.isArray(c.games) || !c.games.length) return false;
+    IMP.games = c.games;
+    IMP.fileName = c.file || '';
+    IMP.checked = new Set(Array.isArray(c.checked) ? c.checked : []);
+    IMP.sort = c.sort || '';
+    IMP.q = c.q || '';
+    IMP.anchor = Number.isFinite(c.anchor) ? c.anchor : -1;
+    $('impSearch').value = IMP.q;
+    $('impSort').checked = IMP.sort === 'like';
+    $('impHtmlName').textContent = (c.file || '上次的列表') + '（已恢复）';
+    return true;
+  } catch (e) { return false; }
+}
 const IMP_DONE_KEY = 'mrhx_imp_done_v1';
 // 「已导入」记忆：跨刷新记住哪些款导过，避免同一个包重复导入同一款
 (function impLoadDone() {
@@ -2063,6 +2100,7 @@ function impSync() {
   [...$('impList').querySelectorAll('.imp-item')].forEach(el => {
     el.classList.toggle('on', IMP.checked.has(Number(el.dataset.i)));
   });
+  impSaveCache();
 }
 
 function impAttach(card, file) {
@@ -2107,10 +2145,30 @@ function impPruneEmpty() {
   });
 }
 
-function impOpen() {
+// 打开时定位到「上次最后勾选的那一款」，不用自己再滑半天（2026-11-03 站长）
+function impScrollToAnchor() {
+  const a = Number(IMP.anchor);
+  if (!(a >= 0)) return;
+  const list = $('impList');
+  const el = list.querySelector('.imp-item[data-i="' + a + '"]');
+  if (!el) return;   // 被搜索过滤掉了就不动
+  const lr = list.getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  list.scrollTop += (er.top - lr.top) - (lr.height - er.height) / 2;
+  el.classList.add('imp-flash');
+  setTimeout(() => el.classList.remove('imp-flash'), 1500);
+}
+
+async function impOpen() {
   IMP.open = true;
   $('impModal').style.display = 'block';
+  // 刷新后第一次打开：从 IndexedDB 恢复上次的列表与勾选（图片需重选文件夹）
+  if (!IMP.games.length) {
+    const ok = await impRestoreCache();
+    if (ok) toast('已恢复上次的导入列表和勾选，图片请重选 images 文件夹');
+  }
   impRender();
+  requestAnimationFrame(impScrollToAnchor);
 }
 function impClose() {
   IMP.open = false;
@@ -2119,10 +2177,11 @@ function impClose() {
 function impReset() {
   IMP.urls.forEach(u => URL.revokeObjectURL(u));
   IMP.urls.clear();
-  IMP.games = []; IMP.checked.clear();
+  IMP.games = []; IMP.checked.clear(); IMP.fileName = '';
   $('impHtml').value = '';
   $('impHtmlName').textContent = '还没选';
   $('impAll').checked = false;
+  try { idbSet(IMP_CACHE_KEY, {}).catch(() => {}); } catch (e) { /* ignore */ }
   impRender();
 }
 // 导入完只清勾选，**保留已解析的列表和图片匹配** ——
@@ -2142,6 +2201,7 @@ $('impHtml').onchange = async e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
   $('impHtmlName').textContent = f.name;
+  IMP.fileName = f.name;
   try {
     const text = await f.text();
     IMP.urls.forEach(u => URL.revokeObjectURL(u));
@@ -2197,6 +2257,7 @@ $('impList').addEventListener('change', e => {
   if (cb.type !== 'checkbox') return;
   const i = Number(cb.dataset.i);
   if (cb.checked) IMP.checked.add(i); else IMP.checked.delete(i);
+  IMP.anchor = i;   // 记住最后操作的位置，下次打开自动定位
   impSync();
 });
 
@@ -2207,6 +2268,7 @@ $('impList').addEventListener('click', e => {
     const g = IMP.games[Number(th.dataset.i)];
     if (g) {
       g.picked = Number(th.dataset.k);
+      IMP.anchor = Number(th.dataset.i);
       // ★这里绝对不能整列表重渲染：img 节点被换掉后，双击的第二下会落在新节点上，
       // dblclick 事件永远不会触发（站长 2026-11-02 反馈「双击没反应」的真因）。
       const box = th.parentElement;
@@ -2220,6 +2282,7 @@ $('impList').addEventListener('click', e => {
   const cb = item.querySelector('input');
   cb.checked = !cb.checked;
   if (cb.checked) IMP.checked.add(i); else IMP.checked.delete(i);
+  IMP.anchor = i;
   impSync();
 });
 
@@ -2248,6 +2311,8 @@ $('impGo').onclick = () => {
   if (!idx.length) return;
   impPruneEmpty();
   let n = 0, first = null;
+  // 批量模式：addGameCard 内部跳过 renum / 聚焦 / 滚动，否则 100+ 张会 O(n²) 卡死
+  window.__mrhxBulk = true;
   idx.forEach(i => {
     const g = IMP.games[i];
     if (!g) return;
@@ -2265,6 +2330,7 @@ $('impGo').onclick = () => {
     IMP.done.add(impKey(g));
     n++;
   });
+  window.__mrhxBulk = false;
   impSaveDone();
   renum();
   saveDraft();
