@@ -330,4 +330,17 @@
       drawerResBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
   }
+  // ===== 首页时抽屉里不显示「首页」项（2026-11-02 站长）=====
+  // 已经在首页，侧边栏还列一个「首页」不合常理；其它页面（帖子/赞助/教程）照常显示。
+  // 用 location 判断而不是生成器传参：帖子页等是 current='' 注入的，生成侧分不出首页。
+  (function () {
+    var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (page !== 'index.html' && page !== '') return;
+    var menu = document.querySelector('#mrhxMoreDrop .drop-menu');
+    if (!menu) return;
+    Array.prototype.forEach.call(menu.querySelectorAll('a'), function (a) {
+      var href = (a.getAttribute('href') || '').split('/').pop().toLowerCase();
+      if (href === 'index.html') a.style.display = 'none';
+    });
+  })();
 })();

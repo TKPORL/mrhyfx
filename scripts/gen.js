@@ -107,7 +107,7 @@ const NAV_MENU = (() => {
     ic: '<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Z"/><path d="M4 19a2 2 0 0 0 2 2h13"/><path d="M9 7h6"/>' });
   items.push({ label: '游戏/解压工具', url: 'tools.html',
     ic: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z"/>' });
-  items.push({ label: '不限速教程', url: 'download.html',
+  items.push({ label: '网盘不限速教程', url: 'download.html',
     ic: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/>' });
   // 2026-10-09 站长定稿：桌面导航与备用站一致，含免责声明；往期合集只在手机抽屉
   items.push({ label: '免责声明', url: 'mianze.html',
@@ -133,7 +133,7 @@ const RES_LINKS = [
   { name: '游戏破解版合集', url: 'https://yun.139.com/shareweb/#/w/i/2sNZZesFZFmhv' },
   { name: '节点搭建教程', url: 'https://yun.139.com/shareweb/#/w/i/2uh93dUP2tWw5' },
   { name: '不限速工具', url: 'https://yun.139.com/shareweb/#/w/i/2sNZXyki94Dgr' },
-  { name: '不限速教程', url: 'https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp' },
+  { name: '网盘不限速教程', url: 'https://yun.139.com/shareweb/#/w/i/2sNZWXhByB6bp' },
   { name: 'Tsinho资源库', url: 'https://tkporl.github.io/' },
   { name: 'Tsinho资源库（在线版）', url: 'https://tkporl.github.io/tainhodaohuangzhan/Tsinho%E6%89%8B%E6%9C%BA%E7%AB%AF.html' }
 ];
@@ -335,7 +335,7 @@ const annLinesHtml = lines => lines
 const ANN_TOOLS = [
   { name: '解压教程', url: 'tutorial.html' },
   { name: '游戏/解压工具', url: 'tools.html' },
-  { name: '不限速教程', url: 'download.html' }
+  { name: '网盘不限速教程', url: 'download.html' }
 ];
 const annToolsHtml = () => ANN_TOOLS.map(t =>
   `<a class="mrhx-ann-tool" href="${esc(t.url)}">${esc(t.name)}</a>`).join('');
