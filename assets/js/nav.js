@@ -50,28 +50,40 @@
 
   function closeAll() { setSearch(false); setMore(false); setAnn(false); }
 
-  searchBtn.addEventListener('click', function () {
+  // 2026-11-02：移动端一次触摸常常会连发两次 click（点击穿透 / 双击检测），
+  //   toggle 逻辑会被抵消成「刚展开又自己缩回」。400ms 内的重复点击一律忽略。
+  function guardToggle(fn) {
+    var last = 0;
+    return function (e) {
+      var now = Date.now();
+      if (now - last < 400) return;
+      last = now;
+      fn(e);
+    };
+  }
+
+  searchBtn.addEventListener('click', guardToggle(function () {
     var open = !searchDrop.classList.contains('open');
     closeAll();
     setSearch(open);
-  });
+  }));
 
-  moreBtn.addEventListener('click', function () {
+  moreBtn.addEventListener('click', guardToggle(function () {
     var open = !moreDrop.classList.contains('open');
     closeAll();
     setMore(open);
-  });
+  }));
 
   // 2026-11-01（站长二次要求）：公告按钮不再展开下拉面板，而是直接唤起居中弹窗，
   // 关闭时弹窗会缩回这个按钮（见 gen.js 的 popupHtml / absorb）。
   if (annBtn) {
     // 没注入公告弹窗的页面（帖子页等）不显示这个按钮，避免点了没反应
     if (!document.getElementById('mrhxPopup')) annBtn.style.display = 'none';
-    annBtn.addEventListener('click', function () {
+    annBtn.addEventListener('click', guardToggle(function () {
       closeAll();
       annBtn.classList.remove('has-dot');
       if (window.MRHX_ANN) window.MRHX_ANN.open();
-    });
+    }));
   }
 
   if (searchClose) {
@@ -114,15 +126,14 @@
   //   按钮已经位移、target 甚至落到内容区 → inside 判定失败 → closeAll() 把刚打开的面板关掉，
   //   表现为「第一次点无效、第二次才开」。
   //   改在 pointerdown（布局变化之前）就记下点击是否落在导航区/弹窗里，click 时用这个结果判断。
-  var navPointerDown = false;
+  // 2026-11-02：点导航/弹窗以外的位置 → 在 pointerdown 就收起。
+  //   移动端 click 有延迟，面板展开又会把 header 推高，等 click 再判断容易错位；
+  //   pointerdown 发生在布局变化之前，判定最准。
   document.addEventListener('pointerdown', function (e) {
     var t = e.target;
-    navPointerDown = !!(t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup')));
+    if (t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup'))) return;
+    closeAll();
   }, true);
-
-  document.addEventListener('click', function (e) {
-    if (!navPointerDown) { closeAll(); }
-  });
 
   // 问题修复（2026-10-09）：header 带 backdrop-filter 时会成为 position:fixed 的包含块，
   // 导致手机端抽屉只在导航栏那一层渲染、遮罩盖不住整页。窄屏时把抽屉与遮罩移到 body 下。
