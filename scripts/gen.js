@@ -292,6 +292,12 @@ const NAV_CSS = `header{position:sticky;top:0;z-index:20;padding:0 20px;backgrou
 .hd-bar .ann-btn.has-dot::after{content:"";position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px #faf9f7;animation:mrhxDot 2.4s ease-in-out infinite}
 @keyframes mrhxDot{0%,100%{opacity:1}50%{opacity:.4}}
 /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
+/* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不再放公告按钮，
+   改为菜单抽屉顶部一个「公告 · 防迷路群」入口；桌面（>900）鼠标点击精度高，保留顶栏按钮。 */
+@media (max-width:900px){.hd-bar .ann-btn{display:none}}
+#mrhxMoreDrop .drawer-ann{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#c93a3f;background:#fdf0f0;border:1px solid #f6d5d6;border-radius:12px;padding:12px 14px;margin:0 0 10px;cursor:pointer;transition:.18s}
+#mrhxMoreDrop .drawer-ann:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+@media (min-width:901px){#mrhxMoreDrop .drawer-ann{display:none}}
 .mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
 .mrhx-ann-groups--qq{max-width:250px}
 .mrhx-ann-groups--ct{max-width:340px}
@@ -391,6 +397,8 @@ ${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <div class="drawer-body" data-lenis-prevent>
+${annCfg() ? `        <button type="button" class="drawer-ann" id="mrhxAnnDrawer">公告 · 防迷路群</button>
+` : ''}
         <nav class="drop-menu" aria-label="站点导航">
 ${navLinksHtml('          ', current, true, true)}
         </nav>

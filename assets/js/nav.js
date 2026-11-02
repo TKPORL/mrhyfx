@@ -96,6 +96,15 @@
     }));
   }
 
+  // 2026-11-02：窄屏顶栏已隐藏公告按钮，入口在菜单抽屉顶部（.drawer-ann）
+  var annDrawer = document.getElementById('mrhxAnnDrawer');
+  if (annDrawer) {
+    annDrawer.addEventListener('click', guardToggle(function () {
+      setMore(false);
+      if (window.MRHX_ANN) window.MRHX_ANN.open();
+    }));
+  }
+
   if (searchClose) {
     searchClose.addEventListener('click', function () {
       setSearch(false);
