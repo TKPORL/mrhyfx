@@ -23,7 +23,7 @@
   .hd-bar .menu a:nth-child(3){transition-delay:0s,0s,0s,.04s,.04s}
   .hd-bar .menu a:nth-child(4){transition-delay:0s,0s,0s,0s,0s}
   .hd-bar .menu a:hover,.hd-bar .menu a.on{color:#e5484d;background:#fdf3f3;border-color:#f0b4b6}
-  .hd-bar .acts{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px}
+  .hd-bar .acts{display:flex;align-items:center;gap:14px;flex-shrink:0;margin-left:14px}
   .hd-bar .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid #ecebe9;background:#faf9f7;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;font:inherit;padding:0}
 /* 2026-10-14（站长）顶栏按钮加文字备注（第二版）：
    第一版把按钮改成"图标+文字"的胶囊，站长说太怪 —— 改回原样：
@@ -244,7 +244,7 @@
     header{padding:0 0 10px}
     .hd-bar{padding:7px 12px;gap:10px}
     .hd-bar .logo img{width:100px}
-    .hd-bar .icon-btn{width:34px;height:34px}
+    .hd-bar .icon-btn{width:38px;height:38px}
     .nav-drop .drop-menu a{font-size:13px;padding:8px 10px}
     .title{font-size:18px;line-height:28px;padding:11px 14px;margin:14px auto 8px}
     .node-list{margin-left:0}
