@@ -11,8 +11,46 @@
   var annDrop = document.getElementById('mrhxAnnDrop');
   if (!searchBtn || !moreBtn || !searchDrop || !moreDrop) return;
 
-  var searchInput = searchDrop.querySelector('input');
-  var searchClose = searchDrop.querySelector('[data-nav-close]');
+  /* ===== 2026-11-02 诊断模式（网址加 ?diag=1）=====
+     安卓端「点搜索后自己关」连续几版都没定位到，停止猜测：把每次开关的调用栈直接打到屏幕上，
+     用户操作几下截图即可看出是谁关的。不带 diag=1 时零开销。 */
+  var DIAG = /[?&]diag=1/.test(location.search);
+  function diag(tag, extra) {
+    if (!DIAG) return;
+    window.__DIAG = window.__DIAG || [];
+    var st = '';
+    try { st = (new Error().stack || '').split('\n').slice(1, 7).join(' <- ').replace(/\s+/g, ' '); } catch (e) {}
+    window.__DIAG.push('[' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + '] ' + tag + ' ' + (extra == null ? '' : extra) + '\n  ' + st);
+    var box = document.getElementById('__diagBox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = '__diagBox';
+      box.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;max-height:46vh;overflow:auto;background:rgba(0,0,0,.9);color:#3f3;font:10px/1.45 monospace;padding:6px;white-space:pre-wrap;word-break:break-all';
+      document.body.appendChild(box);
+    }
+    box.textContent = window.__DIAG.slice(-10).join('\n');
+  }
+  if (DIAG) {
+    diag('init', 'w=' + innerWidth + ' h=' + innerHeight + ' vv=' + (window.visualViewport ? Math.round(visualViewport.height) : '?') + ' ua=' + navigator.userAgent.slice(0, 45));
+    // 任何对搜索面板 class 的改动都记下来（能暴露不是本脚本干的关闭）
+    new MutationObserver(function (ms) {
+      ms.forEach(function () {
+        diag('class', 'open=' + searchDrop.classList.contains('open') + ' h=' + searchDrop.offsetHeight);
+      });
+    }).observe(searchDrop, { attributes: true, attributeFilter: ['class'] });
+    var _lv = '';
+    window.addEventListener('resize', function () {
+      var k = innerWidth + 'x' + innerHeight + '@' + (window.visualViewport ? Math.round(visualViewport.height) : '?');
+      if (k === _lv) return;
+      _lv = k;
+      diag('resize', k);
+    });
+    searchDrop.addEventListener('focusin', function (e) { diag('focusin', e.target.tagName); });
+    searchDrop.addEventListener('focusout', function (e) { diag('focusout', e.target.tagName); });
+    window.addEventListener('scroll', function () { diag('scroll', Math.round(scrollY)); }, { passive: true });
+  }
+
+  var searchInput = searchDrop.querySelector('input');  var searchClose = searchDrop.querySelector('[data-nav-close]');
   var navMask = document.getElementById('mrhxNavMask');
   var drawerClose = moreDrop.querySelector('.drawer-close');
 
@@ -31,7 +69,8 @@
 
   function setSearch(open) {
     // 刚打开的 500ms 内不接受关闭：安卓上偶发的重复点击/重排会把面板瞬间关掉
-    if (!open && Date.now() - lastOpenAt < 500) return;
+    if (!open && Date.now() - lastOpenAt < 500) { diag('setSearch-BLOCKED', 'age=' + (Date.now() - lastOpenAt)); return; }
+    diag('setSearch', open);
     searchDrop.classList.toggle('open', open);
     searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open) {
@@ -43,6 +82,7 @@
   }
 
   function setMore(open) {
+    diag('setMore', open);
     moreDrop.classList.toggle('open', open);
     moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (navMask) navMask.classList.toggle('open', open);
@@ -67,7 +107,7 @@
     if (open) annBtn.classList.remove('has-dot');
   }
 
-  function closeAll() { setSearch(false); setMore(false); setAnn(false); }
+  function closeAll() { diag('closeAll'); setSearch(false); setMore(false); setAnn(false); }
 
   // 2026-11-02：移动端一次触摸常常会连发两次 click（点击穿透 / 双击检测），
   //   toggle 逻辑会被抵消成「刚展开又自己缩回」。400ms 内的重复点击一律忽略。
@@ -82,12 +122,14 @@
   }
 
   searchBtn.addEventListener('click', guardToggle(function () {
+    diag('click-search');
     var open = !searchDrop.classList.contains('open');
     closeAll();
     setSearch(open);   // 若在刚打开的 500ms 内，setSearch(false) 会被锁挡掉
   }));
 
   moreBtn.addEventListener('click', guardToggle(function () {
+    diag('click-more');
     var open = !moreDrop.classList.contains('open');
     closeAll();
     setMore(open);
@@ -99,6 +141,7 @@
     // 没注入公告弹窗的页面（帖子页等）不显示这个按钮，避免点了没反应
     if (!document.getElementById('mrhxPopup')) annBtn.style.display = 'none';
     annBtn.addEventListener('click', guardToggle(function () {
+      diag('click-ann-bar');
       closeAll();
       annBtn.classList.remove('has-dot');
       if (window.MRHX_ANN) window.MRHX_ANN.open();
@@ -123,6 +166,7 @@
 
   if (searchClose) {
     searchClose.addEventListener('click', function () {
+      diag('click-x');
       setSearch(false);
       searchBtn.focus();
     });
@@ -167,7 +211,8 @@
   document.addEventListener('pointerdown', function (e) {
     var t = e.target;
     if (t && t.closest && (t.closest('.hd-bar') || t.closest('.nav-drop') || t.closest('.mrhx-popup'))) return;
-    if (Date.now() - lastOpenAt < 500) return;   // 刚展开，这次触摸不算"点外面"
+    if (Date.now() - lastOpenAt < 500) { diag('outside-pd-ignored', 'age=' + (Date.now() - lastOpenAt)); return; }   // 刚展开，这次触摸不算"点外面"
+    diag('outside-pd', t && (t.tagName + '.' + String(t.className || '').slice(0, 24)));
     // 2026-11-02：只关抽屉，不关搜索。
     //   安卓点输入框会触发键盘/重排，历史上多次把搜索面板连带关掉；搜索只由按钮和「×」控制最稳。
     setMore(false);
