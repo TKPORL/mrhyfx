@@ -21,14 +21,25 @@
     var st = '';
     try { st = (new Error().stack || '').split('\n').slice(1, 7).join(' <- ').replace(/\s+/g, ' '); } catch (e) {}
     window.__DIAG.push('[' + new Date().toLocaleTimeString('zh-CN', { hour12: false }) + '] ' + tag + ' ' + (extra == null ? '' : extra) + '\n  ' + st);
-    var box = document.getElementById('__diagBox');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = '__diagBox';
-      box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;max-height:40vh;overflow:auto;background:rgba(0,0,0,.9);color:#3f3;font:10px/1.45 monospace;padding:6px;white-space:pre-wrap;word-break:break-all';
-      document.body.appendChild(box);
+    var btn = document.getElementById('__diagBtn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = '__diagBtn';
+      btn.type = 'button';
+      btn.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:99999;padding:9px 14px;border-radius:22px;border:none;background:#111;color:#3f3;font:12px/1 monospace;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer';
+      btn.onclick = function () {
+        var head = 'URL: ' + location.href + '\nUA: ' + navigator.userAgent + '\nVIEW: ' + innerWidth + 'x' + innerHeight + '\n\n';
+        var blob = new Blob([head + (window.__DIAG || []).join('\n\n')], { type: 'text/plain;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'nav-diag.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); if (a.parentNode) a.parentNode.removeChild(a); }, 3000);
+      };
+      document.body.appendChild(btn);
     }
-    box.textContent = window.__DIAG.slice(-10).join('\n');
+    btn.textContent = '日志 ' + window.__DIAG.length + ' 条 · 点此下载';
   }
   if (DIAG) {
     diag('init', 'w=' + innerWidth + ' h=' + innerHeight + ' vv=' + (window.visualViewport ? Math.round(visualViewport.height) : '?') + ' ua=' + navigator.userAgent.slice(0, 45));
