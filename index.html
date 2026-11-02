@@ -162,6 +162,12 @@ header{position:sticky;top:0;z-index:20;padding:0 20px;background:rgba(250,249,2
 .hd-bar .ann-btn.has-dot::after{content:"";position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px #faf9f7;animation:mrhxDot 2.4s ease-in-out infinite}
 @keyframes mrhxDot{0%,100%{opacity:1}50%{opacity:.4}}
 /* 群聊胶囊：浅红底 + 深红字，小尺寸，一排排下来不抢眼（站长 2026-11-01 选型） */
+/* 2026-11-02（站长判定公告按钮是误触源头）：窄屏顶栏不再放公告按钮，
+   改为菜单抽屉顶部一个「公告 · 防迷路群」入口；桌面（>900）鼠标点击精度高，保留顶栏按钮。 */
+@media (max-width:900px){.hd-bar .ann-btn{display:none}}
+#mrhxMoreDrop .drawer-ann{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;font:inherit;font-size:15px;font-weight:600;color:#c93a3f;background:#fdf0f0;border:1px solid #f6d5d6;border-radius:12px;padding:12px 14px;margin:0 0 10px;cursor:pointer;transition:.18s}
+#mrhxMoreDrop .drawer-ann:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+@media (min-width:901px){#mrhxMoreDrop .drawer-ann{display:none}}
 .mrhx-ann-groups{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:9px auto 2px}
 .mrhx-ann-groups--qq{max-width:250px}
 .mrhx-ann-groups--ct{max-width:340px}
@@ -392,6 +398,8 @@ footer .disc-link:hover{text-decoration:underline}
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
       <div class="drawer-body" data-lenis-prevent>
+        <button type="button" class="drawer-ann" id="mrhxAnnDrawer">公告 · 防迷路群</button>
+
         <nav class="drop-menu" aria-label="站点导航">
           <a href="index.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></svg>首页</a>
           <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
@@ -1431,7 +1439,7 @@ footer .disc-link:hover{text-decoration:underline}
 })();
 </script>
 
-<script src="assets/js/nav.js?v=40fa54da"></script>
+<script src="assets/js/nav.js?v=4b8ff3f9"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 <script>(function(){function mark(im){if(im.complete)return;im.classList.add('mrhx-img-loading');im.addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});im.addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}function init(){var imgs=document.querySelectorAll('.covers img,.gcard .cover img,img.image');if(!('IntersectionObserver' in window)){for(var i=0;i<imgs.length;i++)mark(imgs[i]);return}var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){mark(e.target);io.unobserve(e.target)}})},{rootMargin:'300px'});for(var i=0;i<imgs.length;i++)io.observe(imgs[i])}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()})();</script>
 </body>
