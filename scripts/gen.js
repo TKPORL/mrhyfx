@@ -1065,6 +1065,11 @@ const popupHtml = (() => {
 .mrhx-popup-content .mrhx-ann-sign{margin-top:10px;font-size:12px;color:#9a9a9a}
 .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
 /* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
+/* 2026-11-02：搜索下拉改用 display 切换，不再依赖 grid-template-rows 高度动画。
+   安卓点输入框弹键盘会触发重排，grid 0fr/1fr 的高度会被算成 0（面板"凭空消失"）。
+   display 切换不受布局变化影响，最稳；淡入效果仍由 .drop-inner 的 opacity/transform 提供。 */
+#mrhxSearchDrop{display:none}
+#mrhxSearchDrop.open{display:block}
 .mrhx-ann-tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 12px}
 .mrhx-ann-tool{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;background:#eef4ff;border:1px solid #cfe0ff;color:#2f6fed;font-size:12px;font-weight:600;text-decoration:none;transition:.18s}
 .mrhx-ann-tool:hover{background:#2f6fed;border-color:#2f6fed;color:#fff}

@@ -23,6 +23,8 @@
   var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   function setSearch(open) {
+    // 刚打开的 500ms 内不接受关闭：安卓上偶发的重复点击/重排会把面板瞬间关掉
+    if (!open && Date.now() - lastOpenAt < 500) return;
     searchDrop.classList.toggle('open', open);
     searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (open) {
@@ -75,7 +77,7 @@
   searchBtn.addEventListener('click', guardToggle(function () {
     var open = !searchDrop.classList.contains('open');
     closeAll();
-    setSearch(open);
+    setSearch(open);   // 若在刚打开的 500ms 内，setSearch(false) 会被锁挡掉
   }));
 
   moreBtn.addEventListener('click', guardToggle(function () {
