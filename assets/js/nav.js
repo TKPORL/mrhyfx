@@ -107,6 +107,13 @@
     }));
   }
 
+  // 搜索浮层：点空白遮罩关闭；点输入框/按钮不关（2026-11-02 改浮层后加）
+  if (searchDrop) {
+    searchDrop.addEventListener('click', function (e) {
+      if (e.target === searchDrop) setSearch(false);
+    });
+  }
+
   if (searchClose) {
     searchClose.addEventListener('click', function () {
       setSearch(false);
