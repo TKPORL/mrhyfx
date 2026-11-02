@@ -16,6 +16,13 @@
   var navMask = document.getElementById('mrhxNavMask');
   var drawerClose = moreDrop.querySelector('.drawer-close');
 
+  // 2026-11-02（关键修复）：搜索浮层原来在 <header> 内，而 header 有 backdrop-filter，
+  //   会形成包含块 → position:fixed 只相对顶栏那一小条定位，浮层内容被挤出视口（手机上只剩一片灰）。
+  //   这里把它挪到 body 下，fixed 才真正相对视口。
+  if (searchDrop && searchDrop.parentNode !== document.body) {
+    document.body.appendChild(searchDrop);
+  }
+
   // 记录最近一次展开时间：安卓上触摸后常有额外的 pointerdown，
   //   刚展开的 500ms 内一律不响应"点外部收起"，避免刚开就被自己关掉。
   var lastOpenAt = 0;

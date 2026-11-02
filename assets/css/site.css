@@ -106,7 +106,7 @@
   .mrhx-popup-content .mrhx-ann-groups{margin:0 auto}
   /* 公告顶部的帮助入口（解压教程等）：浅蓝系，与粉红的群胶囊区分开 */
   /* 搜索改成 fixed 居中浮层，彻底脱离 sticky header（安卓弹键盘不会再把它顶走） */
-  #mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.35);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
+  #mrhxSearchDrop{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:9998;background:rgba(0,0,0,.45);padding:14vh 16px 0;box-sizing:border-box;overflow:auto}
   #mrhxSearchDrop.open{display:block}
   #mrhxSearchDrop>div{max-width:600px;margin:0 auto;overflow:visible;min-height:0}
   #mrhxSearchDrop .drop-inner{margin:0;max-width:none;box-shadow:0 12px 40px rgba(0,0,0,.18)}
