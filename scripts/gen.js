@@ -2239,16 +2239,29 @@ ${navHeaderHtml('')}
   }
   var CURL = '${_cUrl}', CANON = '${_cAnon}';
   if (CURL && CANON) {
-    fetch(CURL + '/rest/v1/comments?select=url', { headers: { 'apikey': CANON, 'Authorization': 'Bearer ' + CANON } })
-      .then(function (r) { return r.json(); })
-      .then(function (rows) {
-        var m = {};
-        rows.forEach(function (c) { m[c.url] = (m[c.url] || 0) + 1; });
-        document.querySelectorAll('[data-cpath]').forEach(function (el) {
-          var n = m[el.getAttribute('data-cpath')];
-          if (n) el.textContent = ' · 评论 ' + n + ' 条';
-        });
-      }).catch(function () {});
+    // 2026-11-03：原来一次 select=url 拉全表，被 PostgREST 默认 1000 行上限截断。
+    // 全站评论破千后首页数字就偏小（求助帖显示 659、实际 1016）。改成按页拉完再统计。
+    var PAGE = 1000, all = [], from = 0;
+    function paintCounts() {
+      var m = {};
+      all.forEach(function (c) { if (c && c.url) m[c.url] = (m[c.url] || 0) + 1; });
+      [].slice.call(document.querySelectorAll('[data-cpath]')).forEach(function (el) {
+        var n = m[el.getAttribute('data-cpath')];
+        if (n) el.textContent = ' · 评论 ' + n + ' 条';
+      });
+    }
+    function pull() {
+      fetch(CURL + '/rest/v1/comments?select=url&limit=' + PAGE + '&offset=' + from,
+        { headers: { 'apikey': CANON, 'Authorization': 'Bearer ' + CANON } })
+        .then(function (r) { return r.json(); })
+        .then(function (rows) {
+          if (!Array.isArray(rows)) return paintCounts();
+          all = all.concat(rows);
+          if (rows.length === PAGE && from < 100000) { from += PAGE; pull(); }
+          else paintCounts();
+        }).catch(function () { paintCounts(); });
+    }
+    pull();
   }
 })();
 </script>
