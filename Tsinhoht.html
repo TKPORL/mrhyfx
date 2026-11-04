@@ -44,6 +44,9 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;color:#2b2b2b}
 .field.act::after{content:'编辑中';position:absolute;top:4px;right:6px;font-size:9px;font-weight:700;color:#fff;background:#e5484d;border-radius:99px;padding:2px 8px;z-index:2;letter-spacing:.5px}
 .field.act input,.field.act textarea{border-color:#e0a8a9}
 label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;letter-spacing:.3px}
+/* 「访问」小按钮：贴在「下载链接」标签右边，一键打开网盘（2026-11-04 站长） */
+.lnk-open{margin-left:8px;padding:1px 9px;border-radius:99px;border:1px solid #f0b4b6;background:#fdf1f1;color:#e5484d;font:inherit;font-size:11px;font-weight:600;cursor:pointer;vertical-align:1px;transition:.18s}
+.lnk-open:hover{background:#e5484d;border-color:#e5484d;color:#fff}
 input[type=text],input[type=password],input[type=number],textarea{width:100%;border:1px solid #dedcd6;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;background:#fff;color:#333;transition:all .2s}
 input:focus,textarea:focus{outline:none;border-color:#e5484d;box-shadow:0 0 0 3px rgba(229,72,77,.1)}
 /* #53：自定义选择图片按钮（替代丑的原生 file input） */
@@ -1579,7 +1582,7 @@ function addGameCard(data) {
     <div class="g-img-list"></div>
     <div class="g-prev"></div>
   </div>
-  <div class="field"><label>下载链接</label>
+  <div class="field"><label>下载链接<button type="button" class="lnk-open" data-target=".g-linkB" title="在浏览器打开这条百度网盘链接">访问</button></label>
     <div class="links">
 <input type="text" class="g-linkB" placeholder="百度网盘链接">
 <input type="text" class="g-linkM" placeholder="UC网盘链接">
@@ -4957,6 +4960,22 @@ function openPreview(cards, title) {
   function boot(){ var b = document.getElementById("gameBox"); if(b) [].slice.call(b.children).forEach(build); }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
+</script>
+<script>
+// 「访问」按钮：直接在新标签打开卡片里填的网盘链接，省得复制链接再粘到浏览器
+// （2026-11-04 站长：复制链接会占掉剪贴板，导致之后没法直接粘游戏名）
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.lnk-open');
+  if (!b) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var card = b.closest('.game') || document;
+  var inp = card.querySelector(b.getAttribute('data-target'));
+  var url = inp ? String(inp.value || '').trim() : '';
+  if (!url) { if (typeof toast === 'function') toast('这条链接还是空的'); return; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  window.open(url, '_blank', 'noopener');
+});
 </script>
 </body>
 </html>
