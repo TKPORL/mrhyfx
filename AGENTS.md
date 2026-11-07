@@ -507,10 +507,25 @@
   得「怪物娘酒馆」；④ 纯英文标题才去版本号（`v0.3` / `Ep.1` / `Beta`）。
   275 条实测：提取为空 0 条。**改这段前先拿那 275 条标题回归一遍**，别再靠单条例子判断。
   备份 `_本地改动备份_20261102_pickname/`。
-- ★**卡片「下载链接」旁的「访问」按钮（2026-11-04）**：`Tsinhoht.html` 每张卡的
-  `<label>下载链接` 右边有一个 `.lnk-open` 小胶囊，点了在新标签打开 `.g-linkB`（百度网盘）里填的地址。
-  存在理由：站长复制游戏名后想直接点开网盘粘贴，若先去浏览器粘链接会占掉剪贴板、只能再按 Win+V。
+- ★**卡片「下载链接」的「打开」按钮（2026-11-04 加，2026-11-07 改为每框一个）**：`Tsinhoht.html` 的
+  `.links` 里两个输入框各自包一层 `.lnk-wrap`，右端内嵌一个 `.lnk-open`「打开」小胶囊，
+  `data-target` 指向自己那个输入框（`.g-linkB` / `.g-linkM`）。点了在新标签打开该框里的地址。
+  存在理由：站长复制游戏名后想直接点开网盘粘贴，若先去浏览器粘链接会占掉剪贴板、只能再按 Win+V；
+  而双端游戏两条链接时，只做一个按钮会分不清开哪条。
   空值不跳转只 toast；没写协议自动补 `https://`。用事件委托，动态建的卡也生效。
+  实测：`btns=2 | first=…/AAA | second=…/BBB | insideInput=true`。
+  ★**位置定稿：按钮组绝对定位在输入框内右侧**（2026-11-07 站长两次返工后的结论）：
+  `.lnk-wrap` 定位上下文，`.lnk-acts{position:absolute;right:8px;top:50%;transform:translateY(-50%)}`，
+  输入框 `padding-right:112px` 留位，按钮 `white-space:nowrap;flex-wrap:nowrap`（不加就会挤成两行）。
+  中途试过「放到输入框下方一行」，站长明确要「放框内」，别再改。
+- ★**链接框的「删除 / 回退」（2026-11-07 站长加）**：每个 `.lnk-wrap` 里除「打开」还有
+  `.lnk-del`（清空）与 `.lnk-undo`（恢复）。
+  - 「删除」显隐靠 CSS `:has(input:not(:placeholder-shown))`——**有值才出现，不需要 JS 初始化**；
+  - 点了把原值存 `input.dataset.prev` 再清空，wrap 加 `.can-undo`，按钮就地换成「回退」；
+  - 「回退」把 `dataset.prev` 写回并移除 `.can-undo`；
+  - **手动输入非空内容会移除 `.can-undo`**，避免回退把刚输的覆盖掉。
+  实测：`delVisible=true | undoVisible0=false | afterDel_value="" | afterDel_undo=true | afterUndo_value=XYZ`。
+  依赖 `:has()`（Chrome 105+），后台自用无妨。
 - ★**从爬取结果导入（2026-11-02 新建，Tsinhoht.html，未推送）**：发布页「＋ 添加一个游戏」左边多了
   「↓ 从爬取结果导入」。流程：选爬取工具导出的 HTML → 解析出全部游戏 → 勾选（1~200 款）→ 建卡。
   - 字段来源：`.card-title`（名称用 `pickName()`）、`.intro-body[data-copy]`（介绍**全文**，页面上是折叠的，
@@ -519,6 +534,12 @@
   - 图片：**产物里的图是 `images/<id>/xxx.jpg` 相对路径，不是内嵌 base64**。再选一次 `images` 文件夹
     （`input[webkitdirectory]`），按相对路径后缀逐层登记匹配，命中后塞进卡片 `.g-files`，
     **走现有发布流程上传**（没有新增任何上传代码）。不选文件夹也能建卡，只是没图。
+  - ★**双端游戏的两条百度链接都要导**（2026-11-07 修）：爬取 HTML 里双端游戏会拆成
+    `百度网盘(PC)` + `百度网盘(安卓)` 两条 `a.link-btn`（样本 378 卡里有 163 张这样）。
+    旧写法 `forEach` 覆盖 `linkB`，只剩最后一条（通常是安卓）。
+    现在按 label 识别：PC 那条进 `.g-linkB`（百度网盘框），安卓那条进 `.g-linkM`（UC 网盘框，复用第二个输入框）。
+    列表 chips 显示「百度 ✓ 双链」。实测：`parsed=378 | withM=163 | cardB=pwd=6vpk | cardM=pwd=d8ke`。
+    **遗留**：前台按钮文案仍按 URL 判断，两条都显示「百度网盘」，未区分 PC/安卓（待站长定）。
   - 一次最多 200 款（`IMP_MAX`，2026-11-03 由 20 上调——站长一次要导 100+ 款），
     导入时置 `window.__mrhxBulk`，跳过每张卡的 renum/聚焦/滚动，否则 100+ 张会 O(n²) 卡死。
   - ★**刷新后保留**：列表 + 勾选 + 搜索词 + 排序存 IndexedDB（`idbSet('__impCache', …)`，

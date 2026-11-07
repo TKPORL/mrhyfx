@@ -187,6 +187,22 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .rbox .btn{padding:7px 16px;font-size:13px;border-radius:6px}
 
 .links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* 按钮放回输入框内右侧（2026-11-07 站长要求）；输入框留出 112px 给按钮，且强制不换行 */
+.lnk-wrap{position:relative;min-width:0}
+.lnk-wrap input[type=text]{width:100%;padding-right:112px}
+.lnk-acts{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:6px;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+.lnk-acts button{margin:0;padding:2px 11px;font-size:11px;line-height:1.6;white-space:nowrap;border-radius:99px;border:1px solid #ecebe9;background:#fff;color:#8a857e;font-weight:600;font-family:inherit;cursor:pointer;transition:.18s}
+.lnk-acts button:hover{border-color:#e5484d;color:#e5484d}
+.lnk-acts .lnk-open{border-color:#f0b4b6;background:#fdf1f1;color:#e5484d}
+.lnk-acts .lnk-open:hover{background:#e5484d;border-color:#e5484d;color:#fff}
+.lnk-acts .lnk-del:hover{background:#fdf1f1}
+.lnk-acts .lnk-undo{border-color:#cfe0ff;background:#eef4ff;color:#2f6fed}
+.lnk-acts .lnk-undo:hover{background:#2f6fed;border-color:#2f6fed;color:#fff}
+/* 有值才显示「删除」；清空后换成「回退」 */
+.lnk-del,.lnk-undo{display:none}
+.lnk-wrap:has(input:not(:placeholder-shown)) .lnk-del{display:inline-block}
+.lnk-wrap.can-undo .lnk-undo{display:inline-block}
+.lnk-wrap.can-undo .lnk-del{display:none}
 .links input[type=text]{padding-top:13px;padding-bottom:13px}
 /* 2026-10-14（站长）自定义链接＝点按钮加一行（2026-10-16 从 432d8e48e 找回） */
 .clrows{margin-top:8px;display:flex;flex-direction:column;gap:8px}
@@ -1582,10 +1598,10 @@ function addGameCard(data) {
     <div class="g-img-list"></div>
     <div class="g-prev"></div>
   </div>
-  <div class="field"><label>下载链接<button type="button" class="lnk-open" data-target=".g-linkB" title="在浏览器打开这条百度网盘链接">访问</button></label>
+  <div class="field"><label>下载链接</label>
     <div class="links">
-<input type="text" class="g-linkB" placeholder="百度网盘链接">
-<input type="text" class="g-linkM" placeholder="UC网盘链接">
+<div class="lnk-wrap"><input type="text" class="g-linkB" placeholder="百度网盘链接"><span class="lnk-acts"><button type="button" class="lnk-open" data-target=".g-linkB" title="在浏览器打开这条链接">打开</button><button type="button" class="lnk-del" data-target=".g-linkB" title="清空这条链接">删除</button><button type="button" class="lnk-undo" data-target=".g-linkB" title="恢复刚才删掉的链接">回退</button></span></div>
+<div class="lnk-wrap"><input type="text" class="g-linkM" placeholder="UC网盘链接"><span class="lnk-acts"><button type="button" class="lnk-open" data-target=".g-linkM" title="在浏览器打开这条链接">打开</button><button type="button" class="lnk-del" data-target=".g-linkM" title="清空这条链接">删除</button><button type="button" class="lnk-undo" data-target=".g-linkM" title="恢复刚才删掉的链接">回退</button></span></div>
 </div>
 <input type="hidden" class="g-customName">
 <input type="hidden" class="g-customUrl">
@@ -1990,11 +2006,20 @@ function impParseCrawler(text) {
       else if (label.indexOf('作弊') >= 0) cheat = val;
       else if (label.indexOf('赞助') >= 0) sponsor = val;
     });
-    let linkB = '';
-    card.querySelectorAll('a.link-btn').forEach(a => {
-      const h = a.getAttribute('href') || '';
-      if (/pan\.baidu\.com/i.test(h)) linkB = h;
-    });
+    // 百度网盘可能有多条：双端游戏会拆成「百度网盘(PC)」和「百度网盘(安卓)」两条链接。
+    // 旧写法 forEach 覆盖只留最后一条，导致导入后少一个端的链接（2026-11-07 站长反馈）。
+    // 现在：PC 那条进「百度网盘」框，安卓那条进「UC网盘」框（复用现有第二个输入框）。
+    const bd = [...card.querySelectorAll('a.link-btn')]
+      .filter(a => /pan\.baidu\.com/i.test(a.getAttribute('href') || ''))
+      .map(a => ({ url: a.getAttribute('href') || '', label: (a.textContent || '').trim() }));
+    const pcOne = bd.find(x => /PC/i.test(x.label));
+    const adOne = bd.find(x => /安卓|android|APK/i.test(x.label));
+    const linkB = (pcOne || bd[0] || {}).url || '';
+    const linkM = (function () {
+      if (adOne && adOne.url !== linkB) return adOne.url;
+      const other = bd.find(x => x.url !== linkB);
+      return other ? other.url : '';
+    })();
     // 热度：产物 meta 区是「<span>LIKE</span> 130」，取 LIKE 后面那个数（2026-11-02 站长要）
     let like = 0;
     const metaEl = card.querySelector('.card-meta');
@@ -2005,7 +2030,7 @@ function impParseCrawler(text) {
     const imgs = [...card.querySelectorAll('img')]
       .map(i => i.getAttribute('src') || '')
       .filter(s => /^images\//i.test(s.replace(/^\.\//, '')));
-    games.push({ title, intro, unzip, cheat, sponsor, linkB, like, imgs, picked: 0 });
+    games.push({ title, intro, unzip, cheat, sponsor, linkB, linkM, like, imgs, picked: 0 });
   });
   return games;
 }
@@ -2082,7 +2107,7 @@ function impRender() {
       g.like ? `<span class="imp-like">♥ ${g.like}</span>` : '',
       g.unzip ? `解压码 <b>${esc(g.unzip)}</b>` : '',
       g.cheat ? `作弊码 <b>${esc(g.cheat)}</b>` : '',
-      g.linkB ? '百度 ✓' : '无下载链接'
+      g.linkB ? (g.linkM ? '百度 ✓ 双链' : '百度 ✓') : '无下载链接'
     ].filter(Boolean).join('');
     return `<div class="imp-item ${IMP.checked.has(i) ? 'on' : ''} ${done ? 'done' : ''}" data-i="${i}">
       <input type="checkbox" data-i="${i}" ${IMP.checked.has(i) ? 'checked' : ''}>
@@ -2326,7 +2351,7 @@ $('impGo').onclick = () => {
     const card = addGameCard({
       name, intro,
       unzip: g.unzip, cheat: g.cheat, sponsor: g.sponsor,
-      imgs: '', linkB: g.linkB, linkM: ''
+      imgs: '', linkB: g.linkB, linkM: g.linkM || ''
     });
     const src = (g.imgs || [])[g.picked || 0];
     const file = src ? impFindFile(src) : null;
@@ -4965,16 +4990,51 @@ function openPreview(cards, title) {
 // 「访问」按钮：直接在新标签打开卡片里填的网盘链接，省得复制链接再粘到浏览器
 // （2026-11-04 站长：复制链接会占掉剪贴板，导致之后没法直接粘游戏名）
 document.addEventListener('click', function (e) {
-  var b = e.target.closest('.lnk-open');
-  if (!b) return;
-  e.preventDefault();
-  e.stopPropagation();
-  var card = b.closest('.game') || document;
-  var inp = card.querySelector(b.getAttribute('data-target'));
-  var url = inp ? String(inp.value || '').trim() : '';
-  if (!url) { if (typeof toast === 'function') toast('这条链接还是空的'); return; }
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  window.open(url, '_blank', 'noopener');
+  var card = e.target.closest('.game') || document;
+  var openBtn = e.target.closest('.lnk-open');
+  if (openBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    var inp = card.querySelector(openBtn.getAttribute('data-target'));
+    var url = inp ? String(inp.value || '').trim() : '';
+    if (!url) { if (typeof toast === 'function') toast('这条链接还是空的'); return; }
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
+  // 「删除」：记住原值再清空，按钮就地换成「回退」（2026-11-07 站长）
+  var delBtn = e.target.closest('.lnk-del');
+  if (delBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    var w = delBtn.closest('.lnk-wrap');
+    var di = card.querySelector(delBtn.getAttribute('data-target'));
+    if (!di) return;
+    if (!String(di.value || '').trim()) return;
+    di.dataset.prev = di.value;
+    di.value = '';
+    if (w) w.classList.add('can-undo');
+    di.dispatchEvent(new Event('input', { bubbles: true }));
+    return;
+  }
+  var undoBtn = e.target.closest('.lnk-undo');
+  if (undoBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    var w2 = undoBtn.closest('.lnk-wrap');
+    var ui = card.querySelector(undoBtn.getAttribute('data-target'));
+    if (!ui) return;
+    ui.value = ui.dataset.prev || '';
+    delete ui.dataset.prev;
+    if (w2) w2.classList.remove('can-undo');
+    ui.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+});
+// 手动改了内容就不再提供「回退」，避免把刚输入的东西覆盖掉
+document.addEventListener('input', function (e) {
+  var w = e.target && e.target.closest ? e.target.closest('.lnk-wrap') : null;
+  if (!w) return;
+  if (String(e.target.value || '').trim()) w.classList.remove('can-undo');
 });
 </script>
 </body>
