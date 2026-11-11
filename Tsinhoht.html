@@ -2340,6 +2340,8 @@ $('impList').addEventListener('click', e => {
       // 只切 .on class，保持节点身份不变（2026-11-02 双击不触发的真因也是它，现已改右键）。
       const box = th.parentElement;
       if (box) [...box.querySelectorAll('img')].forEach(x => x.classList.toggle('on', x === th));
+      // 记住「这个游戏选的是第几张图」，下次补图/重开都按它来（2026-11-11）
+      impSaveCache();
     }
     return;
   }
@@ -2450,21 +2452,30 @@ async function reimpApply(pickedFiles, cache) {
       ? cache.checked.slice().sort((a, b) => a - b).map(i => cache.games[i]).filter(Boolean)
       : cache.games.slice();
     const hasOrder = Array.isArray(cache.checked) && cache.checked.length > 0;
+    // 名字归一化：去掉空格/标点/全角括号，只比主体文字，避免「（汉化）」「第1话」这类差异匹配不上
+    const norm = s => String(s || '').replace(/[\s\-_·、,，。.:：!！?？'"“”‘’()（）\[\]【】~～|/\\+]/g, '').toLowerCase();
     const cards = [...$('gameBox').children];
     const used = new Set();
     let ok = 0, noFile = 0, noGame = 0, skip = 0;
+    const miss = [];
     cards.forEach((card, ci) => {
       if (card.querySelector('.g-files').files.length) { skip++; return; }
       const nm = (card.querySelector('.g-name').value || '').trim();
-      let gi = pool.findIndex((g, k) => !used.has(k) && ((pickName(g.title) || g.title.slice(0, 40)) === nm));
+      const key = norm(nm);
+      if (!key) { noGame++; return; }
+      let gi = pool.findIndex((g, k) => !used.has(k) && norm(pickName(g.title) || g.title.slice(0, 40)) === key);
+      // 精确匹配不到再试「互相包含」，能救「标题带后缀、卡片名被截断」的情况
+      if (gi < 0) gi = pool.findIndex((g, k) => !used.has(k) && (norm(g.title).indexOf(key) >= 0 || key.indexOf(norm(g.title)) >= 0));
       // 名字对不上时只有「确实记录了导入勾选」才按顺序兜底，否则会乱配图
       if (gi < 0 && hasOrder && ci < pool.length && !used.has(ci)) gi = ci;
-      if (gi < 0) { noGame++; return; }
+      if (gi < 0) { noGame++; if (miss.length < 3) miss.push(nm.slice(0, 12)); return; }
       used.add(gi);
       const g = pool[gi];
-      const fs = (g.imgs || []).map(s => byName.get(String(s).split('/').pop().toLowerCase())).filter(Boolean);
-      if (!fs.length) { noFile++; return; }
-      impAttachMany(card, fs);
+      // 只取导入时选中的那张封面（g.picked），不是把整组图都塞进去
+      const src = (g.imgs || [])[g.picked || 0] || (g.imgs || [])[0];
+      const f = src ? byName.get(String(src).split('/').pop().toLowerCase()) : null;
+      if (!f) { noFile++; return; }
+      impAttachMany(card, [f]);
       ok++;
     });
     try { await saveCardImages(); } catch (e) {}
@@ -2473,6 +2484,7 @@ async function reimpApply(pickedFiles, cache) {
       (skip ? '，' + skip + ' 张本来就有图' : '') +
       (noFile ? '，' + noFile + ' 张没找到图片' : '') +
       (noGame ? '，' + noGame + ' 张对不上游戏' : '') +
+      (miss.length ? '（例：' + miss.join('、') + '）' : '') +
       '（记录 ' + pool.length + ' 款 / 卡片 ' + cards.length + ' 张）');
 }
 
