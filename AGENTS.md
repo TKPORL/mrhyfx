@@ -545,6 +545,14 @@
     现在 `IMP_PAGE = 50`，只渲染当前页；`impRenderPager()` 出「上一页 / 第 x / y 页 · 共 N 款 / 下一页」；
     「全选」改成「全选本页」（`IMP.pageShown`）；换 HTML / 搜索 / 排序都 `IMP.page = 0`；
     勾选仍存 `IMP.checked` 原始下标，**跨页保持**。改这块别再退回一次性全量渲染。
+  - ★★★ **导入必须落盘**（2026-11-11 事故）：`impGo` 原来只用 `impAttach` 把 File 塞进内存的
+    `.g-files`，**从没调 `saveCardImages()`**，IndexedDB `cardsByCid` 一条都没有 → 一刷新图片全丢
+    （站长因此白干一小时）。现在 `impGo` 是 `async`，`saveDraft()` 后 `await saveCardImages()` 才关窗。
+    **以后任何往卡片塞图片的新路径，都必须跟一次 `saveCardImages()`。**
+  - ★**补图工具**（同上事故的补救）：工具栏 `#reimpBtn`「补回导入的图片」→ `reimpApply(files, cache)`，
+    读 `__impCache` 的上次导入记录，让用户选爬取产物的 `images` 文件夹，按「卡片名 = pickName(title)」
+    匹配、对不上再按导入顺序兜底，把 `g.imgs` 里的文件名取出来塞回卡片并落盘。
+    已有图的卡跳过；结束 toast 报 成功/本来就有/没找到图/对不上 四个数。
   - 一次最多 200 款（`IMP_MAX`，2026-11-03 由 20 上调——站长一次要导 100+ 款），
     导入时置 `window.__mrhxBulk`，跳过每张卡的 renum/聚焦/滚动，否则 100+ 张会 O(n²) 卡死。
   - ★**刷新后保留**：列表 + 勾选 + 搜索词 + 排序存 IndexedDB（`idbSet('__impCache', …)`，
