@@ -349,6 +349,7 @@ body.gate-pending main{display:none!important}
         <div class="row" style="gap:6px">
           <button type="button" class="btn btn-p" id="impBtn" title="用爬取工具导出的 HTML 批量建卡">↓ 从爬取结果导入</button>
           <button type="button" class="btn btn-s" id="reimpBtn" title="上次导入的图片丢了？选回 images 文件夹，按导入顺序把图重新挂回卡片">补回导入的图片</button>
+          <button type="button" class="btn btn-s" id="clearLinkM" title="把所有卡片第二个链接框（UC 位置）清空">清空第二链接</button>
           <button type="button" class="btn btn-s" id="previewAll">预览全部</button>
           <button type="button" class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
           <button type="button" class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
@@ -2025,11 +2026,10 @@ function impParseCrawler(text) {
     const pcOne = bd.find(x => /PC/i.test(x.label));
     const adOne = bd.find(x => /安卓|android|APK/i.test(x.label));
     const linkB = (pcOne || bd[0] || {}).url || '';
-    const linkM = (function () {
-      if (adOne && adOne.url !== linkB) return adOne.url;
-      const other = bd.find(x => x.url !== linkB);
-      return other ? other.url : '';
-    })();
+    // 只有「明确标了 PC 和安卓两条」才把第二条放进 UC 框；
+    // 之前用「任意另一条百度链接」兜底，会把同款的补丁/汉化/备用链接也塞进去，
+    // 表现为 UC 框里莫名其妙多一条原下载链接（2026-11-11 站长反馈）
+    const linkM = (pcOne && adOne && pcOne.url !== adOne.url) ? adOne.url : '';
     // 热度：产物 meta 区是「<span>LIKE</span> 130」，取 LIKE 后面那个数（2026-11-02 站长要）
     let like = 0;
     const metaEl = card.querySelector('.card-meta');
@@ -2497,6 +2497,18 @@ async function reimpApply(pickedFiles, cache) {
       (miss.length ? '（例：' + miss.join('、') + '）' : '') +
       '（记录 ' + pool.length + ' 款 / 卡片 ' + cards.length + ' 张）');
 }
+
+// 2026-11-11：旧版导入会把同款的备用百度链接塞进第二个框，站长不想一个个删 —— 一键清空
+$('clearLinkM').onclick = () => {
+  const cards = [...$('gameBox').children];
+  let n = 0;
+  cards.forEach(c => {
+    const el = c.querySelector('.g-linkM');
+    if (el && String(el.value || '').trim()) { el.value = ''; n++; }
+  });
+  saveDraft();
+  toast(n ? ('已清空 ' + n + ' 张卡的第二链接') : '第二链接本来就是空的');
+};
 
 $('exportImgs').onclick = async () => {
   const cards = [...$('gameBox').children];
