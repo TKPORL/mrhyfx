@@ -2444,18 +2444,24 @@ async function reimpApply(pickedFiles, cache) {
     if (!files.length) { toast('这个文件夹里没找到图片'); return; }
     const byName = new Map();
     files.forEach(f => { const k = f.name.toLowerCase(); if (!byName.has(k)) byName.set(k, f); });
-    const order = cache.checked.slice().sort((a, b) => a - b).map(i => cache.games[i]).filter(Boolean);
+    // 导入成功后 impAfterImport() 会清空 IMP.checked，缓存里的 checked 就是空的。
+    // 所以这里不能只依赖 checked：为空时回退到「全部解析结果」，靠卡片名去匹配（2026-11-11 修）
+    const pool = (Array.isArray(cache.checked) && cache.checked.length)
+      ? cache.checked.slice().sort((a, b) => a - b).map(i => cache.games[i]).filter(Boolean)
+      : cache.games.slice();
+    const hasOrder = Array.isArray(cache.checked) && cache.checked.length > 0;
     const cards = [...$('gameBox').children];
     const used = new Set();
     let ok = 0, noFile = 0, noGame = 0, skip = 0;
     cards.forEach((card, ci) => {
       if (card.querySelector('.g-files').files.length) { skip++; return; }
       const nm = (card.querySelector('.g-name').value || '').trim();
-      let gi = order.findIndex((g, k) => !used.has(k) && ((pickName(g.title) || g.title.slice(0, 40)) === nm));
-      if (gi < 0 && ci < order.length && !used.has(ci)) gi = ci;   // 名字对不上就按导入顺序兜底
+      let gi = pool.findIndex((g, k) => !used.has(k) && ((pickName(g.title) || g.title.slice(0, 40)) === nm));
+      // 名字对不上时只有「确实记录了导入勾选」才按顺序兜底，否则会乱配图
+      if (gi < 0 && hasOrder && ci < pool.length && !used.has(ci)) gi = ci;
       if (gi < 0) { noGame++; return; }
       used.add(gi);
-      const g = order[gi];
+      const g = pool[gi];
       const fs = (g.imgs || []).map(s => byName.get(String(s).split('/').pop().toLowerCase())).filter(Boolean);
       if (!fs.length) { noFile++; return; }
       impAttachMany(card, fs);
@@ -2466,7 +2472,8 @@ async function reimpApply(pickedFiles, cache) {
     toast('补图完成：' + ok + ' 张已挂图' +
       (skip ? '，' + skip + ' 张本来就有图' : '') +
       (noFile ? '，' + noFile + ' 张没找到图片' : '') +
-      (noGame ? '，' + noGame + ' 张对不上游戏' : ''));
+      (noGame ? '，' + noGame + ' 张对不上游戏' : '') +
+      '（记录 ' + pool.length + ' 款 / 卡片 ' + cards.length + ' 张）');
 }
 
 $('exportImgs').onclick = async () => {
