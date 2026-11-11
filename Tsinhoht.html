@@ -2442,7 +2442,8 @@ $('reimpBtn').onclick = async () => {
 };
 
 async function reimpApply(pickedFiles, cache) {
-    const files = (pickedFiles || []).filter(f => /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
+    // ★必须包含 avif：P安-馆 那批产物的图全是 .avif，漏了它就会「一张都匹配不到」（2026-11-11 踩过）
+    const files = (pickedFiles || []).filter(f => /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name));
     if (!files.length) { toast('这个文件夹里没找到图片'); return; }
     // 用和导入时同一套映射（相对路径 + 文件名双索引），选根目录或 images 目录都能命中
     const built = impBuildImgMap(files);
