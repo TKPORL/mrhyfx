@@ -2444,8 +2444,13 @@ $('reimpBtn').onclick = async () => {
 async function reimpApply(pickedFiles, cache) {
     const files = (pickedFiles || []).filter(f => /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
     if (!files.length) { toast('这个文件夹里没找到图片'); return; }
-    const byName = new Map();
-    files.forEach(f => { const k = f.name.toLowerCase(); if (!byName.has(k)) byName.set(k, f); });
+    // 用和导入时同一套映射（相对路径 + 文件名双索引），选根目录或 images 目录都能命中
+    const built = impBuildImgMap(files);
+    const pickFile = src => {
+      const n = String(src || '').replace(/^\.\//, '').replace(/\\/g, '/').toLowerCase();
+      if (!n) return null;
+      return built.map.get(n) || built.map.get(n.replace(/^images\//, '')) || built.base.get(n.split('/').pop()) || null;
+    };
     // 导入成功后 impAfterImport() 会清空 IMP.checked，缓存里的 checked 就是空的。
     // 所以这里不能只依赖 checked：为空时回退到「全部解析结果」，靠卡片名去匹配（2026-11-11 修）
     const pool = (Array.isArray(cache.checked) && cache.checked.length)
@@ -2473,8 +2478,12 @@ async function reimpApply(pickedFiles, cache) {
       const g = pool[gi];
       // 只取导入时选中的那张封面（g.picked），不是把整组图都塞进去
       const src = (g.imgs || [])[g.picked || 0] || (g.imgs || [])[0];
-      const f = src ? byName.get(String(src).split('/').pop().toLowerCase()) : null;
-      if (!f) { noFile++; return; }
+      const f = src ? pickFile(src) : null;
+      if (!f) {
+        noFile++;
+        if (miss.length < 3) miss.push(String(src || '该游戏无图').split('/').pop().slice(0, 18));
+        return;
+      }
       impAttachMany(card, [f]);
       ok++;
     });
