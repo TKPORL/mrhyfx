@@ -540,6 +540,11 @@
     现在按 label 识别：PC 那条进 `.g-linkB`（百度网盘框），安卓那条进 `.g-linkM`（UC 网盘框，复用第二个输入框）。
     列表 chips 显示「百度 ✓ 双链」。实测：`parsed=378 | withM=163 | cardB=pwd=6vpk | cardM=pwd=d8ke`。
     **遗留**：前台按钮文案仍按 URL 判断，两条都显示「百度网盘」，未区分 PC/安卓（待站长定）。
+  - ★**列表必须分页渲染**（2026-11-11 修，Chrome 崩溃 0xe0000008）：爬取产物单份 1000+ 款，
+    原来 `impRender()` 一次性把全部卡片铺进 DOM（每条含 3 张缩略图 + blob URL）直接把浏览器干崩。
+    现在 `IMP_PAGE = 50`，只渲染当前页；`impRenderPager()` 出「上一页 / 第 x / y 页 · 共 N 款 / 下一页」；
+    「全选」改成「全选本页」（`IMP.pageShown`）；换 HTML / 搜索 / 排序都 `IMP.page = 0`；
+    勾选仍存 `IMP.checked` 原始下标，**跨页保持**。改这块别再退回一次性全量渲染。
   - 一次最多 200 款（`IMP_MAX`，2026-11-03 由 20 上调——站长一次要导 100+ 款），
     导入时置 `window.__mrhxBulk`，跳过每张卡的 renum/聚焦/滚动，否则 100+ 张会 O(n²) 卡死。
   - ★**刷新后保留**：列表 + 勾选 + 搜索词 + 排序存 IndexedDB（`idbSet('__impCache', …)`，

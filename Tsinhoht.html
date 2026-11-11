@@ -122,6 +122,12 @@ textarea{resize:vertical;font-size:13px;line-height:1.6}
 .imp-item.done{background:#f8fbf9;border-color:#dcece2}
 .imp-all{display:flex;align-items:center;gap:6px;font-size:13px;color:#2b2b2b;cursor:pointer;flex-shrink:0}
 .imp-list{max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:7px;padding-right:2px}
+/* 分页条：1000+ 条一次性渲染会让 Chrome 崩（0xe0000008），每页只渲染 50 条（2026-11-11） */
+.imp-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 4px 2px}
+.imp-pg{padding:5px 14px;border-radius:8px;border:1px solid #ecebe9;background:#fff;color:#555;font-size:12.5px;font-weight:600;cursor:pointer;transition:.18s;font-family:inherit}
+.imp-pg:hover:not(:disabled){border-color:#e5484d;color:#e5484d}
+.imp-pg:disabled{opacity:.4;cursor:default}
+.imp-pg-info{font-size:12px;color:#999}
 .imp-item{display:grid;grid-template-columns:auto 324px 1fr;gap:12px;align-items:start;padding:9px 11px;border:1px solid #eeece7;border-radius:10px;background:#fdfcfa;cursor:pointer}
 .imp-item:hover{background:#faf9f7}
 .imp-item.on{border-color:#e5484d;background:#fdf6f6}
@@ -673,10 +679,11 @@ body.gate-pending main{display:none!important}
     <div class="imp-tools" id="impTools" hidden>
       <input type="search" class="imp-search" id="impSearch" placeholder="搜索游戏名，比如「索菲亚」" autocomplete="off">
       <label class="imp-all"><input type="checkbox" id="impSort"> 按热度排序</label>
-      <label class="imp-all"><input type="checkbox" id="impAll"> 全选</label>
+      <label class="imp-all"><input type="checkbox" id="impAll"> 全选本页</label>
       <span id="impTotal" class="imp-hint"></span>
     </div>
     <div class="imp-list" id="impList"></div>
+    <div class="imp-pager" id="impPager"></div>
   </div>
   <div class="imp-foot">
     <span id="impSel">已选 0 款</span>
@@ -1929,7 +1936,9 @@ $('addGame').onclick = () => addGameCard();
  * 图片：可选再选一次 images 文件夹 → 按 images/<id>/xxx.jpg 的相对路径匹配本地文件 → 挂到卡片 .g-files，
  *   走现有发布流程上传（不新增上传代码）；不选文件夹也能建卡，只是没图。
  * 一次最多导 20 款（防止误选全量把后台卡死）。 */
-const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Map(), open: false, q: '', done: new Set(), sort: '', fileName: '', anchor: -1 };
+const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Map(), open: false, q: '', done: new Set(), sort: '', fileName: '', anchor: -1, page: 0, pageShown: [] };
+// 每页渲染 50 条：导入 1000+ 款时一次性铺 DOM 会让 Chrome 直接崩（0xe0000008 内存错误）
+const IMP_PAGE = 50;
 // 2026-11-03：上限 20 → 200。站长一次要导 100+ 款，20 太窄；200 仍能挡住"全选 280 张"的误操作。
 const IMP_MAX = 200;
 // 刷新保留：解析结果 + 勾选 + 搜索词存 IndexedDB（localStorage 装不下 280 条的正文）。
@@ -2090,12 +2099,18 @@ function impRender() {
   $('impTotal').textContent = '共 ' + IMP.games.length + ' 款' + (q ? ' · 匹配 ' + rows.length + ' 条' : '') +
     '（一次最多导 ' + IMP_MAX + ' 款）';
   IMP.shown = rows.map(r => r.i);
+  const totalPages = Math.max(1, Math.ceil(rows.length / IMP_PAGE));
+  if (IMP.page > totalPages - 1) IMP.page = totalPages - 1;
+  if (IMP.page < 0) IMP.page = 0;
+  const pageStart = IMP.page * IMP_PAGE;
+  const pageRows = rows.slice(pageStart, pageStart + IMP_PAGE);
+  IMP.pageShown = pageRows.map(r => r.i);
   if (!rows.length) {
     list.innerHTML = '<div class="imp-empty">没有匹配「' + esc(IMP.q) + '」的游戏</div>';
     impSync();
     return;
   }
-  list.innerHTML = rows.map(({ g, i }) => {
+  list.innerHTML = pageRows.map(({ g, i }) => {
     const name = pickName(g.title) || g.title.slice(0, 40);
     const done = IMP.done.has(impKey(g));
     const thumbs = (g.imgs || []).slice(0, 3).map((src, k) => {
@@ -2117,7 +2132,18 @@ function impRender() {
         <div class="imp-chips">${chips}</div></div>
     </div>`;
   }).join('');
+  impRenderPager(totalPages, rows.length);
   impSync();
+}
+
+function impRenderPager(totalPages, total) {
+  const box = $('impPager');
+  if (!box) return;
+  if (total <= IMP_PAGE) { box.innerHTML = ''; return; }
+  box.innerHTML =
+    '<button type="button" class="imp-pg" data-pg="-1"' + (IMP.page === 0 ? ' disabled' : '') + '>上一页</button>' +
+    '<span class="imp-pg-info">第 ' + (IMP.page + 1) + ' / ' + totalPages + ' 页 · 共 ' + total + ' 款</span>' +
+    '<button type="button" class="imp-pg" data-pg="1"' + (IMP.page >= totalPages - 1 ? ' disabled' : '') + '>下一页</button>';
 }
 
 function impSync() {
@@ -2236,6 +2262,7 @@ $('impHtml').onchange = async e => {
     IMP.urls.forEach(u => URL.revokeObjectURL(u));
     IMP.urls.clear();
     IMP.games = impParseCrawler(text);
+    IMP.page = 0;
     IMP.checked.clear();
     IMP.q = '';
     $('impSearch').value = '';
@@ -2257,10 +2284,19 @@ $('impImgs').onchange = e => {
   impRender();
 };
 
+$('impPager').addEventListener('click', e => {
+  const b = e.target.closest('.imp-pg');
+  if (!b || b.disabled) return;
+  IMP.page += Number(b.getAttribute('data-pg'));
+  impRender();
+  const list = $('impList');
+  if (list) list.scrollTop = 0;
+});
+
 $('impAll').onchange = e => {
   if (e.target.checked) {
-    // 只全选「当前搜索出来的」，否则搜完再点全选会把你没看见的也选上
-    const vis = IMP.shown || [];
+    // 只全选「当前这一页」，避免跨页把看不见的也选上（分页后 1285 款全选会超上限）
+    const vis = IMP.pageShown || [];
     let n = 0;
     vis.forEach(i => { if (n < IMP_MAX) { IMP.checked.add(i); n++; } });
     if (vis.length > IMP_MAX) toast('一次最多导 ' + IMP_MAX + ' 款，已选前 ' + IMP_MAX + ' 款');
@@ -2272,13 +2308,14 @@ $('impAll').onchange = e => {
 
 $('impSort').onchange = e => {
   IMP.sort = e.target.checked ? 'like' : '';
+  IMP.page = 0;
   impRender();
 };
 
 $('impSearch').addEventListener('input', e => {
   clearTimeout(IMP._qt);
   const v = e.target.value;
-  IMP._qt = setTimeout(() => { IMP.q = v; impRender(); }, 120);
+  IMP._qt = setTimeout(() => { IMP.q = v; IMP.page = 0; impRender(); }, 120);
 });
 
 $('impList').addEventListener('change', e => {
