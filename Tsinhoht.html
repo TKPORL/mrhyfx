@@ -348,6 +348,7 @@ body.gate-pending main{display:none!important}
         <h2>游戏内容</h2>
         <div class="row" style="gap:6px">
           <button type="button" class="btn btn-p" id="impBtn" title="用爬取工具导出的 HTML 批量建卡">↓ 从爬取结果导入</button>
+          <button type="button" class="btn btn-s" id="reimpBtn" title="上次导入的图片丢了？选回 images 文件夹，按导入顺序把图重新挂回卡片">补回导入的图片</button>
           <button type="button" class="btn btn-s" id="previewAll">预览全部</button>
           <button type="button" class="btn btn-s" id="exportImgs">导出图片 ZIP</button>
           <button type="button" class="btn btn-g" id="addGame">＋ 添加一个游戏</button>
@@ -2373,7 +2374,7 @@ $('impList').addEventListener('dblclick', e => {
 $('impLight').onclick = impLightHide;
 document.addEventListener('keydown', e => { if (e.key === 'Escape') impLightHide(); });
 
-$('impGo').onclick = () => {
+$('impGo').onclick = async () => {
   const idx = [...IMP.checked].sort((a, b) => a - b);
   if (!idx.length) return;
   impPruneEmpty();
@@ -2401,13 +2402,73 @@ $('impGo').onclick = () => {
   impSaveDone();
   renum();
   saveDraft();
+  // 2026-11-11 修：impAttach 只是把图片塞进内存里的 .g-files，从来没写进 IndexedDB，
+  // 一刷新图片全丢。这里补一次持久化，等写完再关窗。
+  try { await saveCardImages(); } catch (e) { console.warn('导入后保存图片失败', e); }
   impAfterImport();
   impClose();
-  toast('已导入 ' + n + ' 款，图片会在发布时自动上传');
+  toast('已导入 ' + n + ' 款，图片已存好，刷新不会丢');
   // 滚动放到关窗之后再做：弹窗关掉的瞬间布局会重排（body 溢出/滚动条恢复），
   // 之前同步滚动会被这次重排吃掉，表现成「只滑了一下，没到新卡片」（2026-11-02 修）
   if (first) setTimeout(() => { scrollCardIntoView(first); first.classList.add('newcard-focus'); }, 90);
 };
+// 2026-11-11：导入的图片只塞在内存的 .g-files 里（历史上没写 IndexedDB），刷新必丢。
+// 这个按钮按「上次导入记录（__impCache）+ images 文件夹」把图重新挂回卡片，救已建好的卡。
+function impAttachMany(card, files) {
+  const input = card.querySelector('.g-files');
+  if (!input || !files.length) return;
+  try {
+    const dt = new DataTransfer();
+    files.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  } catch (e) { return; }
+  if (typeof previewFiles === 'function') previewFiles(input);
+}
+
+$('reimpBtn').onclick = async () => {
+  let cache = null;
+  try { cache = await idbGet('__impCache'); } catch (e) {}
+  if (!cache || Array.isArray(cache) || !Array.isArray(cache.games) || !Array.isArray(cache.checked)) {
+    toast('找不到上次导入的记录，没法自动对位'); return;
+  }
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.multiple = true;
+  picker.setAttribute('webkitdirectory', '');
+  picker.onchange = () => reimpApply([...(picker.files || [])], cache);
+  picker.click();
+};
+
+async function reimpApply(pickedFiles, cache) {
+    const files = (pickedFiles || []).filter(f => /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
+    if (!files.length) { toast('这个文件夹里没找到图片'); return; }
+    const byName = new Map();
+    files.forEach(f => { const k = f.name.toLowerCase(); if (!byName.has(k)) byName.set(k, f); });
+    const order = cache.checked.slice().sort((a, b) => a - b).map(i => cache.games[i]).filter(Boolean);
+    const cards = [...$('gameBox').children];
+    const used = new Set();
+    let ok = 0, noFile = 0, noGame = 0, skip = 0;
+    cards.forEach((card, ci) => {
+      if (card.querySelector('.g-files').files.length) { skip++; return; }
+      const nm = (card.querySelector('.g-name').value || '').trim();
+      let gi = order.findIndex((g, k) => !used.has(k) && ((pickName(g.title) || g.title.slice(0, 40)) === nm));
+      if (gi < 0 && ci < order.length && !used.has(ci)) gi = ci;   // 名字对不上就按导入顺序兜底
+      if (gi < 0) { noGame++; return; }
+      used.add(gi);
+      const g = order[gi];
+      const fs = (g.imgs || []).map(s => byName.get(String(s).split('/').pop().toLowerCase())).filter(Boolean);
+      if (!fs.length) { noFile++; return; }
+      impAttachMany(card, fs);
+      ok++;
+    });
+    try { await saveCardImages(); } catch (e) {}
+    saveDraft();
+    toast('补图完成：' + ok + ' 张已挂图' +
+      (skip ? '，' + skip + ' 张本来就有图' : '') +
+      (noFile ? '，' + noFile + ' 张没找到图片' : '') +
+      (noGame ? '，' + noGame + ' 张对不上游戏' : ''));
+}
+
 $('exportImgs').onclick = async () => {
   const cards = [...$('gameBox').children];
   const total = cards.length;
