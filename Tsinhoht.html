@@ -583,6 +583,7 @@ body.gate-pending main{display:none!important}
       </div>
       <div class="row" style="align-items:center">
         <button type="button" class="btn btn-p" id="spAdd">添加一条</button>
+        <button type="button" class="btn btn-s" id="spSync" title="把库里「前台显示」的名单写进 sponsor.html，页面就不再依赖数据库">同步名单到赞助页</button>
         <label style="font-size:13px;color:#666;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="spVisible" checked style="width:auto;margin:0">前台显示
         </label>
@@ -3908,6 +3909,36 @@ async function delSponsor(id, nick, amount) {
 }
 if ($('refreshSponsors')) $('refreshSponsors').onclick = withRefresh('refreshSponsors', loadSponsors, 'sponsorList');
 if ($('spAdd')) $('spAdd').onclick = addSponsor;
+
+// 2026-11-12：把 Supabase 里「前台显示」的名单写进 sponsor.html 的 SPONSORS 静态块，
+// 前台页面从此不再请求数据库（站长要求「后台加完自动进 HTML」）。
+if ($('spSync')) $('spSync').onclick = async () => {
+  const btn = $('spSync'), st = $('statusSP');
+  btn.disabled = true;
+  try {
+    const repo = $('repo').value.trim(), token = $('token').value.trim();
+    if (!repo || !repo.includes('/')) throw new Error('先填 GitHub 仓库（用户名/仓库名）');
+    if (!token) throw new Error('先填 GitHub Token');
+    const bad = spGuard(); if (bad) throw new Error(bad);
+    show(st, '正在读取赞助记录…', 'warn');
+    const res = await fetch(sbBase() + '/rest/v1/sponsors?select=nick,paid_on,id&visible=eq.true&order=paid_on.asc,id.asc', { headers: spHeaders() });
+    if (!res.ok) throw new Error('读取赞助记录失败 HTTP ' + res.status);
+    const rows = await res.json();
+    const lis = rows.map(r => '      <li>' + esc(r.nick || '匿名') + '</li>').join('\n');
+    const block = '<!-- SPONSORS:BEGIN -->\n' + lis + '\n      <!-- SPONSORS:END -->';
+    const rawRes = await fetch('https://raw.githubusercontent.com/' + repo + '/main/sponsor.html?cb=' + Date.now());
+    if (!rawRes.ok) throw new Error('读取线上 sponsor.html 失败 HTTP ' + rawRes.status);
+    const raw = await rawRes.text();
+    if (raw.indexOf('<!-- SPONSORS:BEGIN -->') < 0) throw new Error('线上 sponsor.html 还没有 SPONSORS 标记块，先部署一次新版');
+    const next = raw.replace(/<!-- SPONSORS:BEGIN -->[\s\S]*?<!-- SPONSORS:END -->/, block);
+    if (next === raw) throw new Error('名单没有变化');
+    await putFile(repo, token, 'sponsor.html', btoa(unescape(encodeURIComponent(next))),
+      '赞助页：同步感谢名单（' + rows.length + ' 人）', st, '同步');
+    show(st, '已把 ' + rows.length + ' 人写进 sponsor.html，等 Actions 部署后生效', 'ok');
+  } catch (e) {
+    show(st, '同步失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+};
 if ($('spAmount')) $('spAmount').onkeydown = ev => { if (ev.key === 'Enter') addSponsor(); };
 
 async function loadComments() {
