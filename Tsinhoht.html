@@ -3877,6 +3877,7 @@ async function addSponsor() {
     $('spNick').value = ''; $('spAmount').value = ''; $('spVisible').checked = true;
     show(st, '已添加：' + nick + ' ' + spMoney(amount), 'ok');
     await loadSponsors();
+    scheduleSpSync();
   } catch (e) {
     show(st, '添加失败：' + e.message, 'err');
   } finally { btn.disabled = false; }
@@ -3892,6 +3893,7 @@ async function setSponsorVisible(id, visible) {
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.hint)) || ('HTTP ' + res.status)); }
     show(st, visible ? '已设为前台显示' : '已隐藏（前台不再出现）', 'ok');
     await loadSponsors();
+    scheduleSpSync();
   } catch (e) { show(st, '操作失败：' + e.message, 'err'); }
 }
 async function delSponsor(id, nick, amount) {
@@ -3905,22 +3907,31 @@ async function delSponsor(id, nick, amount) {
     if (!res.ok) { const d = await res.json().catch(() => null); throw new Error((d && (d.message || d.hint)) || ('HTTP ' + res.status)); }
     show(st, '已删除', 'ok');
     await loadSponsors();
+    scheduleSpSync();
   } catch (e) { show(st, '删除失败：' + e.message, 'err'); }
 }
 if ($('refreshSponsors')) $('refreshSponsors').onclick = withRefresh('refreshSponsors', loadSponsors, 'sponsorList');
 if ($('spAdd')) $('spAdd').onclick = addSponsor;
 
-// 2026-11-12：把 Supabase 里「前台显示」的名单写进 sponsor.html 的 SPONSORS 静态块，
-// 前台页面从此不再请求数据库（站长要求「后台加完自动进 HTML」）。
-if ($('spSync')) $('spSync').onclick = async () => {
+// 2026-11-12：把库里「前台显示」的名单写进 sponsor.html 的 SPONSORS 静态块，
+// 前台页面从此不再请求数据库。增删改之后会自动调用（带 1.2s 防抖，连续操作只提交一次）。
+let _spSyncTimer = null, _spSyncBusy = false;
+function scheduleSpSync() {
+  if (!window.$ || !$('spSync')) return;
+  clearTimeout(_spSyncTimer);
+  _spSyncTimer = setTimeout(function () { syncSponsorsToPage(true); }, 1200);
+}
+async function syncSponsorsToPage(silent) {
   const btn = $('spSync'), st = $('statusSP');
-  btn.disabled = true;
+  if (_spSyncBusy) { scheduleSpSync(); return; }
+  _spSyncBusy = true;
+  if (btn) btn.disabled = true;
   try {
     const repo = $('repo').value.trim(), token = $('token').value.trim();
     if (!repo || !repo.includes('/')) throw new Error('先填 GitHub 仓库（用户名/仓库名）');
     if (!token) throw new Error('先填 GitHub Token');
     const bad = spGuard(); if (bad) throw new Error(bad);
-    show(st, '正在读取赞助记录…', 'warn');
+    if (!silent) show(st, '正在读取赞助记录…', 'warn');
     const res = await fetch(sbBase() + '/rest/v1/sponsors?select=nick,paid_on,id&visible=eq.true&order=paid_on.asc,id.asc', { headers: spHeaders() });
     if (!res.ok) throw new Error('读取赞助记录失败 HTTP ' + res.status);
     const rows = await res.json();
@@ -3931,14 +3942,20 @@ if ($('spSync')) $('spSync').onclick = async () => {
     const raw = await rawRes.text();
     if (raw.indexOf('<!-- SPONSORS:BEGIN -->') < 0) throw new Error('线上 sponsor.html 还没有 SPONSORS 标记块，先部署一次新版');
     const next = raw.replace(/<!-- SPONSORS:BEGIN -->[\s\S]*?<!-- SPONSORS:END -->/, block);
-    if (next === raw) throw new Error('名单没有变化');
+    if (next === raw) { if (!silent) show(st, '名单没有变化，无需提交', 'ok'); return; }
     await putFile(repo, token, 'sponsor.html', btoa(unescape(encodeURIComponent(next))),
-      '赞助页：同步感谢名单（' + rows.length + ' 人）', st, '同步');
-    show(st, '已把 ' + rows.length + ' 人写进 sponsor.html，等 Actions 部署后生效', 'ok');
+      '赞助页：同步感谢名单（' + rows.length + ' 人）', silent ? null : st, '同步');
+    if (!silent) show(st, '已把 ' + rows.length + ' 人写进 sponsor.html，等 Actions 部署后生效', 'ok');
+    else if (typeof toast === 'function') toast('赞助页名单已自动同步（' + rows.length + ' 人），1-3 分钟后生效');
   } catch (e) {
-    show(st, '同步失败：' + (e && e.message ? e.message : e), 'err');
-  } finally { btn.disabled = false; }
-};
+    const msg = (e && e.message) ? e.message : String(e);
+    show(st, (silent ? '自动同步失败：' : '同步失败：') + msg + (silent ? '（可点「同步名单到赞助页」重试）' : ''), 'err');
+  } finally {
+    _spSyncBusy = false;
+    if (btn) btn.disabled = false;
+  }
+}
+if ($('spSync')) $('spSync').onclick = function () { syncSponsorsToPage(false); };
 if ($('spAmount')) $('spAmount').onkeydown = ev => { if (ev.key === 'Enter') addSponsor(); };
 
 async function loadComments() {
