@@ -3777,8 +3777,8 @@ async function sendReplyMail(url, to, toNick, content, adminNick) {
 }
 
 // ===== 赞助记录（2026-10-28 站长需求：赞助页显示「多少人、赞助了多少」）=====
-// 赞赏码无回调接口 → 数据只能手动录。前台 sponsor.html 只读 visible=true 的行。
-const SP_TABLE = 'sponsors';
+// 赞赏码无回调接口 → 数据只能手动录。2026-11-12 起前台 sponsor.html 用静态名单，本页签只负责录入+同步。
+// 表名直接写字面量：早期版用 const SP_TABLE，页面恢复上次「赞助记录」页签时会在常量初始化前调用而报 TDZ。
 function spHeaders() {
   const h = sbHeaders();
   const admin = $('sbSecret').value.trim();
@@ -3806,7 +3806,7 @@ async function loadSponsors() {
   if (!$('spDate').value) $('spDate').value = spToday();
   box.innerHTML = '<p class="hint">加载中…</p>';
   try {
-    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?select=*&order=amount.desc,paid_on.asc,id.asc', { headers: spHeaders() });
+    const res = await fetch(sbBase() + '/rest/v1/sponsors' + '?select=*&order=amount.desc,paid_on.asc,id.asc', { headers: spHeaders() });
     if (!res.ok) {
       const d = await res.json().catch(() => null);
       const msg = (d && (d.message || d.hint || d.details)) || ('HTTP ' + res.status);
@@ -3865,7 +3865,7 @@ async function addSponsor() {
   if (!(amount > 0)) { show(st, '金额要大于 0', 'err'); $('spAmount').focus(); return; }
   const btn = $('spAdd'); btn.disabled = true;
   try {
-    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE, {
+    const res = await fetch(sbBase() + '/rest/v1/sponsors', {
       method: 'POST',
       headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' }),
       body: JSON.stringify({ nick: nick, amount: Math.round(amount * 100) / 100, paid_on: date, visible: $('spVisible').checked })
@@ -3884,7 +3884,7 @@ async function addSponsor() {
 async function setSponsorVisible(id, visible) {
   const st = $('statusSP');
   try {
-    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?id=eq.' + encodeURIComponent(id), {
+    const res = await fetch(sbBase() + '/rest/v1/sponsors' + '?id=eq.' + encodeURIComponent(id), {
       method: 'PATCH',
       headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' }),
       body: JSON.stringify({ visible: visible })
@@ -3898,7 +3898,7 @@ async function delSponsor(id, nick, amount) {
   const st = $('statusSP');
   if (!confirm('确定删除这条赞助记录？\n\n' + nick + ' · ' + spMoney(amount) + '\n\n删除后无法恢复，前台排行榜会同步减少。')) return;
   try {
-    const res = await fetch(sbBase() + '/rest/v1/' + SP_TABLE + '?id=eq.' + encodeURIComponent(id), {
+    const res = await fetch(sbBase() + '/rest/v1/sponsors' + '?id=eq.' + encodeURIComponent(id), {
       method: 'DELETE',
       headers: Object.assign(spHeaders(), { 'Prefer': 'return=minimal' })
     });
