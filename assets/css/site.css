@@ -4,6 +4,8 @@
      且 sticky 无法越过含块上边界 → 导航永远回不到顶部。这里把 margin 归零，
      左右留白与底部留白改由本文件负责。 */
   body{margin:0}
+  /* 详情弹窗锁滚动时滚动条会消失，用常驻槽位避免整页横向跳（2026-11-15） */
+  html{scrollbar-gutter:stable}
   body.narrow{max-width:1280px !important;margin:0 auto !important;padding:0 20px 40px !important}
   /* ===== 全站统一顶部导航（与 scripts/gen.js 的 NAV_CSS 保持一致，改一处要同步改另一边）===== */
   /* 帖子页左右留白由 body.narrow 提供，header 只留下方间距，保证导航与正文左右对齐。

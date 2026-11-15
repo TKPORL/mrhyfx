@@ -132,8 +132,10 @@
 - ★**游戏介绍弹窗（FLIP）两条硬纪律**（2026-11-15 修）：
   ① 动画结束后必须把 `transform` 归零为 `none` 并清 `will-change`（`settleBox()`，420ms 后），
      否则元素常驻合成层，Windows 下小字会发虚——用户表现为「关掉重开就清楚」；
-  ② 锁滚动不能让滚动条白白消失：`lockScroll()` 按 `innerWidth - documentElement.clientWidth`
-     给 `body` 补 `padding-right`，`restore()` 里 `unlockScroll()` 清回。不补的话页面会横向抖一下。
+  ② 锁滚动时页面不能横向抖：**正确做法是 `site.css` 里的 `html{scrollbar-gutter:stable}`**（常驻滚动条槽位），
+     `lockScroll()` 只设 `body.overflow='hidden'`。
+     **不要再给 body 补 `padding-right`** —— `body.narrow` 是 `max-width` 居中容器，加右内边距会把内容顶偏，
+     用户看到的就是「打开弹窗后整页往左移」（2026-11-15 第一版就是这么错的）。
   **改 gen.js 的弹窗段后必须重跑 `node scripts/gen.js`，且只提交 gen.js 不提交生成物**（远端可能有后台新帖）。
 
 - ★**首页卡片「评论 N 条」必须分页拉全表**（2026-11-03 修）：`gen.js` 里给首页注入的脚本

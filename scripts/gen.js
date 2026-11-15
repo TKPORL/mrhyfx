@@ -677,13 +677,10 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
 
   // 打开时锁滚动会让滚动条消失、视口变宽，居中内容整体左移一点（站长反馈）。
   // 用 padding-right 补上滚动条宽度，关闭时还原。
+  // 只锁滚动。横向位移交给 CSS 的 html{scrollbar-gutter:stable}（site.css）——
+  // 给 body 补 padding-right 在 max-width 居中的布局里会把内容顶偏，反而更明显（2026-11-15 修）
   function lockScroll() {
-    _sbw = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
     document.body.style.overflow = 'hidden';
-    if (_sbw > 0) {
-      var cur = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
-      document.body.style.paddingRight = (cur + _sbw) + 'px';
-    }
   }
   function unlockScroll() {
     document.body.style.overflow = '';
