@@ -129,6 +129,13 @@
 
 ## 当前状态
 
+- ★**游戏介绍弹窗（FLIP）两条硬纪律**（2026-11-15 修）：
+  ① 动画结束后必须把 `transform` 归零为 `none` 并清 `will-change`（`settleBox()`，420ms 后），
+     否则元素常驻合成层，Windows 下小字会发虚——用户表现为「关掉重开就清楚」；
+  ② 锁滚动不能让滚动条白白消失：`lockScroll()` 按 `innerWidth - documentElement.clientWidth`
+     给 `body` 补 `padding-right`，`restore()` 里 `unlockScroll()` 清回。不补的话页面会横向抖一下。
+  **改 gen.js 的弹窗段后必须重跑 `node scripts/gen.js`，且只提交 gen.js 不提交生成物**（远端可能有后台新帖）。
+
 - ★**首页卡片「评论 N 条」必须分页拉全表**（2026-11-03 修）：`gen.js` 里给首页注入的脚本
   原本一次 `comments?select=url` 拉全表，被 **PostgREST 默认 1000 行上限**截断——全站评论破千后，
   首页数字会明显偏小（求助帖显示 659，实际 1016）。现在按 `limit/offset` 每页 1000 拉到不足一页再统计，
