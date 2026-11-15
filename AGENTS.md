@@ -562,7 +562,13 @@
     读 `__impCache` 的上次导入记录，让用户选爬取产物的 `images` 文件夹，按「卡片名 = pickName(title)」
     匹配、对不上再按导入顺序兜底，把 `g.imgs` 里的文件名取出来塞回卡片并落盘。
     已有图的卡跳过；结束 toast 报 成功/本来就有/没找到图/对不上 四个数。
-  - 一次最多 200 款（`IMP_MAX`，2026-11-03 由 20 上调——站长一次要导 100+ 款），
+  - ★**导入上限已放到 2000 并自动分批**（2026-11-15）：`IMP_MAX = 2000`；`impGo` 用 `for` + 每 25 张
+    `await setTimeout(0)` 让出主线程，按钮显示「导入中 x/N」。**不要退回一句 `forEach` 一次性建卡**——
+    一次性铺 500+ 张卡会卡死标签页。
+  - ★**卡片记源标题**：建卡时 `card.dataset.src = g.title`，草稿 `srcTitle` 字段保存/恢复；
+    `reimpApply`（补回导入的图片）**优先按源标题匹配**，改过卡片名也能对上图。
+  - ★**导入后自检**：`saveCardImages()` 之后读回 `cardsByCid`，有图卡片数少于应存数会 toast 警告
+    ——这是 2026-11-11「图片没写进 IndexedDB，刷新全丢」事故的防复现检查。
     导入时置 `window.__mrhxBulk`，跳过每张卡的 renum/聚焦/滚动，否则 100+ 张会 O(n²) 卡死。
   - ★**刷新后保留**：列表 + 勾选 + 搜索词 + 排序存 IndexedDB（`idbSet('__impCache', …)`，
     `impSaveCache()` 400ms 防抖），`impOpen()` 时若内存为空就 `impRestoreCache()` 恢复。

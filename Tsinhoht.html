@@ -1272,7 +1272,7 @@ function collectDraft() {
       cards: [...$('gameBox').children].map(el => {
         const c = readCard(el);
         // cid 必须一起存：草稿恢复时靠它把IndexedDB 里的图片对回本卡（2026-10-06 修串位）
-        return { cid: el.dataset.cid || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, sponsor: c.sponsor, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
+        return { cid: el.dataset.cid || '', srcTitle: el.dataset.src || '', name: c.name, intro: c.intro, unzip: c.unzip, cheat: c.cheat, sponsor: c.sponsor, imgs: c.imgs, linkM: c.linkM, linkB: c.linkB, customName: c.customName, customUrl: c.customUrl, files: c.files };
       }),
       removedImageUrls: [...removedImageUrls]
     },
@@ -1887,6 +1887,7 @@ function pickName(raw) {
 function fillCard(card, data) {
   // 沿用草稿里的 cid：图片在 IndexedDB 是按 cid 存的，cid 变了就再也对不回原图（2026-10-06 修串位）
   if (data.cid) card.dataset.cid = data.cid;
+  if (data.srcTitle) card.dataset.src = data.srcTitle;
   if (data.name != null) card.querySelector('.g-name').value = data.name;
   if (data.intro != null) card.querySelector('.g-intro').value = data.intro;
   if (data.unzip != null && card.querySelector('.g-unzip')) card.querySelector('.g-unzip').value = data.unzip;
@@ -1943,7 +1944,7 @@ const IMP = { games: [], checked: new Set(), map: null, base: null, urls: new Ma
 // 每页渲染 50 条：导入 1000+ 款时一次性铺 DOM 会让 Chrome 直接崩（0xe0000008 内存错误）
 const IMP_PAGE = 50;
 // 2026-11-03：上限 20 → 200。站长一次要导 100+ 款，20 太窄；200 仍能挡住"全选 280 张"的误操作。
-const IMP_MAX = 200;
+const IMP_MAX = 2000;
 // 刷新保留：解析结果 + 勾选 + 搜索词存 IndexedDB（localStorage 装不下 280 条的正文）。
 // 图片 File 对象无法持久化，所以刷新后缩略图会空，重选一次 images 文件夹即可按路径重新匹配。
 const IMP_CACHE_KEY = '__impCache';
@@ -2384,23 +2385,31 @@ $('impGo').onclick = async () => {
   let n = 0, first = null;
   // 批量模式：addGameCard 内部跳过 renum / 聚焦 / 滚动，否则 100+ 张会 O(n²) 卡死
   window.__mrhxBulk = true;
-  idx.forEach(i => {
-    const g = IMP.games[i];
-    if (!g) return;
+  const goBtn = $('impGo');
+  const total = idx.length;
+  // 分批建卡：每 25 张让出一次主线程，500+ 款也不会卡死页面（2026-11-15）
+  for (let k = 0; k < total; k++) {
+    const g = IMP.games[idx[k]];
+    if (!g) continue;
     const name = pickName(g.title) || g.title.slice(0, 40);
     const intro = g.title + (g.intro ? '\n' + g.intro : '');
     const card = addGameCard({
-      name, intro,
+      name, intro, srcTitle: g.title,
       unzip: g.unzip, cheat: g.cheat, sponsor: g.sponsor,
       imgs: '', linkB: g.linkB, linkM: g.linkM || ''
     });
+    if (card) card.dataset.src = g.title;
     const src = (g.imgs || [])[g.picked || 0];
     const file = src ? impFindFile(src) : null;
     if (file) impAttach(card, file);
     if (!first) first = card;
     IMP.done.add(impKey(g));
     n++;
-  });
+    if ((k + 1) % 25 === 0 && k + 1 < total) {
+      goBtn.textContent = '导入中 ' + (k + 1) + ' / ' + total;
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
   window.__mrhxBulk = false;
   impSaveDone();
   renum();
@@ -2408,6 +2417,17 @@ $('impGo').onclick = async () => {
   // 2026-11-11 修：impAttach 只是把图片塞进内存里的 .g-files，从来没写进 IndexedDB，
   // 一刷新图片全丢。这里补一次持久化，等写完再关窗。
   try { await saveCardImages(); } catch (e) { console.warn('导入后保存图片失败', e); }
+  // 自检：确认图片真的写进了 IndexedDB（2026-11-11 那次就是没写进去，刷新全丢）
+  try {
+    const savedMap = await idbGet('cardsByCid');
+    const savedCnt = savedMap && !Array.isArray(savedMap) ? Object.keys(savedMap).length : 0;
+    const expectCnt = [...$('gameBox').children].filter(c => c.querySelector('.g-files').files.length).length;
+    if (expectCnt > savedCnt) {
+      setTimeout(function () {
+        toast('注意：' + (expectCnt - savedCnt) + ' 张卡的图片没存进浏览器，刷新可能丢失；可点「补回导入的图片」救回');
+      }, 1200);
+    }
+  } catch (e) {}
   impAfterImport();
   impClose();
   toast('已导入 ' + n + ' 款，图片已存好，刷新不会丢');
@@ -2467,12 +2487,16 @@ async function reimpApply(pickedFiles, cache) {
     const miss = [];
     cards.forEach((card, ci) => {
       if (card.querySelector('.g-files').files.length) { skip++; return; }
+      // 优先用导入时的原始标题匹配（卡片名被改过也能对上），没有才退回卡片名
+      const srcTitle = card.dataset.src || '';
       const nm = (card.querySelector('.g-name').value || '').trim();
-      const key = norm(nm);
+      const key = norm(srcTitle || nm);
+      const altKey = srcTitle ? norm(nm) : '';
       if (!key) { noGame++; return; }
       let gi = pool.findIndex((g, k) => !used.has(k) && norm(pickName(g.title) || g.title.slice(0, 40)) === key);
       // 精确匹配不到再试「互相包含」，能救「标题带后缀、卡片名被截断」的情况
       if (gi < 0) gi = pool.findIndex((g, k) => !used.has(k) && (norm(g.title).indexOf(key) >= 0 || key.indexOf(norm(g.title)) >= 0));
+      if (gi < 0 && altKey) gi = pool.findIndex((g, k) => !used.has(k) && norm(pickName(g.title) || g.title.slice(0, 40)) === altKey);
       // 名字对不上时只有「确实记录了导入勾选」才按顺序兜底，否则会乱配图
       if (gi < 0 && hasOrder && ci < pool.length && !used.has(ci)) gi = ci;
       if (gi < 0) { noGame++; if (miss.length < 3) miss.push(nm.slice(0, 12)); return; }
@@ -2563,6 +2587,7 @@ if (!localStorage.getItem(DRAFT_FORM)) {
 function collectGames() {
   return [...$('gameBox').children].map(el => ({
     cid: el.dataset.cid || '',
+    srcTitle: el.dataset.src || '',
     name: el.querySelector('.g-name').value.trim(),
     intro: el.querySelector('.g-intro').value.trim(),
     unzip: el.querySelector('.g-unzip') ? el.querySelector('.g-unzip').value.trim() : '',
