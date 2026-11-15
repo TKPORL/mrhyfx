@@ -1525,6 +1525,34 @@
   var trigger = null;
   var isOpen = false;
   var closing = false;
+  var settleTimer = null;
+  var _sbw = 0;
+
+  // 打开时锁滚动会让滚动条消失、视口变宽，居中内容整体左移一点（站长反馈）。
+  // 用 padding-right 补上滚动条宽度，关闭时还原。
+  function lockScroll() {
+    _sbw = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    document.body.style.overflow = 'hidden';
+    if (_sbw > 0) {
+      var cur = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+      document.body.style.paddingRight = (cur + _sbw) + 'px';
+    }
+  }
+  function unlockScroll() {
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+  // 动画结束后必须把 transform 归零：停在 scale(1,1) 的合成层会让 Windows 上的文字发虚，
+  // 关掉重开走的是 transform:none 分支，所以「重开就清楚」（站长反馈）。
+  function settleBox() {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(function () {
+      if (!isOpen || closing) return;
+      box.style.transition = 'none';
+      box.style.transform = 'none';
+      box.style.willChange = '';
+    }, 420);
+  }
 
   // 取弹窗「未变形」时的位置：动画途中（弹窗正被缩放）关闭时，直接量会拿到缩小后的矩形，
   // 算出来的落点会偏。这里临时清掉 transform 再量，同一帧内还原，不会闪。
@@ -1556,7 +1584,7 @@
   function openFrom(el) {
     trigger = el;
     isOpen = true;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     box.style.willChange = 'transform';
     modal.classList.add('show');
     var a = reduce ? null : anchor();
@@ -1573,6 +1601,7 @@
       box.style.transform = 'none';
       box.style.opacity = '1';
     }
+    settleBox();
     try { closeBtn.focus({ preventScroll: true }); } catch (err) { closeBtn.focus(); }
   }
 
@@ -1582,7 +1611,8 @@
     box.style.opacity = '1';
     box.style.willChange = '';
     modal.classList.remove('show');
-    document.body.style.overflow = '';
+    unlockScroll();
+    clearTimeout(settleTimer);
     isOpen = false;
     closing = false;
     if (trigger && trigger.focus) {
