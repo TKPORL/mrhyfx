@@ -1018,7 +1018,7 @@
 </head>
       <body class="narrow mrhx-grid2">
   <!--mrhx-->
-<link rel="stylesheet" href="assets/css/site.css?v=d056dca1">
+<link rel="stylesheet" href="assets/css/site.css?v=731d13a3">
 <script>document.addEventListener('DOMContentLoaded',function(){var imgs=document.querySelectorAll('img.image,.covers img,.gcard .cover img');for(var i=0;i<imgs.length;i++){if(!imgs[i].complete){imgs[i].classList.add('mrhx-img-loading');imgs[i].addEventListener('load',function(){this.classList.remove('mrhx-img-loading')});imgs[i].addEventListener('error',function(){this.classList.remove('mrhx-img-loading')})}}});</script>
 <header>
 <div class="hd-bar">
@@ -1901,13 +1901,10 @@ PS：只有安卓的</span></div>
 
   // 打开时锁滚动会让滚动条消失、视口变宽，居中内容整体左移一点（站长反馈）。
   // 用 padding-right 补上滚动条宽度，关闭时还原。
+  // 只锁滚动。横向位移交给 CSS 的 html{scrollbar-gutter:stable}（site.css）——
+  // 给 body 补 padding-right 在 max-width 居中的布局里会把内容顶偏，反而更明显（2026-11-15 修）
   function lockScroll() {
-    _sbw = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
     document.body.style.overflow = 'hidden';
-    if (_sbw > 0) {
-      var cur = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
-      document.body.style.paddingRight = (cur + _sbw) + 'px';
-    }
   }
   function unlockScroll() {
     document.body.style.overflow = '';
