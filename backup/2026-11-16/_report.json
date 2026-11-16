@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-16T12:00:06.406Z",
+  "ok": true,
+  "home": 200,
+  "supabase": "ok",
+  "backup": {
+    "comments": 1000,
+    "daily_page_views": 1000
+  },
+  "errors": []
+}
