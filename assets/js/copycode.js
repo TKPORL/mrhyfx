@@ -29,7 +29,7 @@
         var code = cleanCode(rest);
         if (!code) return m0;
         if (!found[key]) found[key] = code;
-        return ''; // 整行移除：码不该再留在介绍里（截断的残段也不行）
+        return m0; // 2026-11-18 站长要求：码要留在介绍里当兜底（有人的浏览器不显示按钮）
       });
       // 第二趟：不带冒号 → 只吃到空白/标点为止（码里不会有这些），并用黑名单挡掉「解压码是什么」这类句子
       html2 = html2.replace(new RegExp('(?:\\s*<br\\s*\\/?>)?\\s*(解压码|解压密码|作弊码|赞助码)[ \\t]*(?!' + NOCODE + ')([^\\s<：:，。；、（）()【】「」]{2,40})', 'g'), function (m0, label, code0) {
@@ -37,7 +37,7 @@
         var code = cleanCode(code0);
         if (!code) return m0;
         if (!found[key]) found[key] = code;
-        return '';
+        return m0;
       });
       var mz = found.mz, zb = found.zb, zz = found.zz;
       if (!mz && !zb && !zz) return;
