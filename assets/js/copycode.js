@@ -59,6 +59,33 @@
       if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + escA(zz) + '" data-label="赞助码">赞助码</button>');
     });
   }
+  // 复制结果气泡：剪贴板写不进去时，至少让用户能看见码并长按选中（2026-11-18）
+  if (!document.getElementById('mrhxCodeTipStyle')) {
+    var st = document.createElement('style');
+    st.id = 'mrhxCodeTipStyle';
+    st.textContent = '.mrhx-code-tip{position:fixed;z-index:100000;display:none;max-width:78vw;background:#1f1d1b;color:#fff;'
+      + 'border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.5;box-shadow:0 8px 28px rgba(0,0,0,.28)}'
+      + '.mrhx-code-tip b{display:block;font-size:11px;font-weight:600;color:#ffd9a8;margin-bottom:4px}'
+      + '.mrhx-code-tip span{-webkit-user-select:all;user-select:all;word-break:break-all;font-family:ui-monospace,Menlo,monospace}';
+    document.head.appendChild(st);
+  }
+  var tipEl = null, tipTimer = null;
+  function showCodeTip(btn, code, ok) {
+    if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'mrhx-code-tip'; document.body.appendChild(tipEl); }
+    tipEl.innerHTML = '<b></b><span></span>';
+    tipEl.querySelector('b').textContent = ok ? '已复制到剪贴板' : '复制失败，长按下面的码手动复制';
+    tipEl.querySelector('span').textContent = code;
+    tipEl.style.display = 'block';
+    var r = btn.getBoundingClientRect();
+    var w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    var top = r.top - h - 8;
+    if (top < 8) top = r.bottom + 8;
+    tipEl.style.left = left + 'px';
+    tipEl.style.top = top + 'px';
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(function () { tipEl.style.display = 'none'; }, 4500);
+  }
   enhance(document);
   document.addEventListener('click', function (e) {
     var b = e.target && e.target.closest ? e.target.closest('.mrhx-unzip,.mrhx-cheat,.mrhx-sponsor') : null;
@@ -89,10 +116,31 @@
       } catch (err) {}
       window.prompt('复制' + label + '：', code);
     };
-    if (!code.trim()) { window.prompt('这条记录没有' + label + '，请联系站长', ''); return; }
+    if (!code.trim()) { showCodeTip(b, '（这条记录没有' + label + '）', false); return; }
+    var okTip = function () { done(); showCodeTip(b, code, true); };
+    var failTip = function () { showCodeTip(b, code, false); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done, fallback);
-    } else { fallback(); }
+      navigator.clipboard.writeText(code).then(okTip, function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = code; ta.setAttribute('readonly', '');
+          ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+          document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, code.length);
+          var ok2 = document.execCommand('copy'); document.body.removeChild(ta);
+          if (ok2) { okTip(); return; }
+        } catch (err) {}
+        failTip();
+      });
+    } else {
+      try {
+        var ta2 = document.createElement('textarea');
+        ta2.value = code; ta2.setAttribute('readonly', '');
+        ta2.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+        document.body.appendChild(ta2); ta2.select(); ta2.setSelectionRange(0, code.length);
+        var ok3 = document.execCommand('copy'); document.body.removeChild(ta2);
+        if (ok3) okTip(); else failTip();
+      } catch (err2) { failTip(); }
+    }
   });
 })();
 

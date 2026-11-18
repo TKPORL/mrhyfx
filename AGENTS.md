@@ -132,8 +132,11 @@
 - ★**解压码/作弊码按钮（`assets/js/copycode.js`）三条硬纪律**（2026-11-18 修「复制出来是空白」）：
   ① 按钮的 `data-code` **必须 HTML 转义**（`escA()`），码里含 `"`/`&`/`<` 时属性会被截断 → 读到空串；
      `gen.js` 搜索页那段同样是运行时拼串，也要转义；
-  ② 复制顺序固定为 `navigator.clipboard.writeText → document.execCommand('copy')(临时 textarea) → prompt`，
-     **不要只写 clipboard** —— 手机 WebView（QQ/夸克/微信）经常没有该 API 或静默 reject；
+  ② 复制顺序固定为 `navigator.clipboard.writeText → document.execCommand('copy')(临时 textarea) → 气泡兜底`，
+     **不要只写 clipboard，也不要依赖 `prompt`** —— 手机 WebView（QQ/夸克/微信/系统浏览器）经常没有该 API、
+     静默 reject，甚至 resolve 了却没真写（用户会报「显示已复制但没有内容」）；
+  ③ **点击后必须在页面上把码显示出来**（`showCodeTip()` 气泡，`user-select:all`），复制成功也显示。
+     剪贴板结果无法回读校验，气泡是唯一能让用户自己救回的手段，别删；
   ③ 按钮全靠页面运行时生成（`.note.mm-editor` + `.result .intro`），**改 copycode.js 后必须重跑 gen.js**
      更新 `?v=` 哈希，否则访客拿的还是旧缓存。
   判据：帖子页上 `document.querySelectorAll('.mrhx-unzip').length` 应等于该页含「解压码」的 note 数，
