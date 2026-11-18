@@ -3500,9 +3500,10 @@ function relTime(iso){
       if (cd) {
         cd.innerHTML = '';
         var _u = im.getAttribute('data-u'), _c = im.getAttribute('data-c'), _z = im.getAttribute('data-z');
-        if (_u) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + _u + '">解压码</button>');
-        if (_c) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + _c + '">作弊码</button>');
-        if (_z) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + _z + '">赞助码</button>');
+        var escA = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+        if (_u) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + escA(_u) + '">解压码</button>');
+        if (_c) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + escA(_c) + '">作弊码</button>');
+        if (_z) cd.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + escA(_z) + '">赞助码</button>');
       }
       d.classList.add('show');
       document.body.style.overflow = 'hidden';

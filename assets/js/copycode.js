@@ -50,9 +50,13 @@
         dl = document.createElement('div'); dl.className = 'mrhx-dl';
         nt.insertAdjacentElement('afterend', dl);
       }
-      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + mz + '" data-label="解压码">解压码</button>');
-      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + zb + '" data-label="作弊码">作弊码</button>');
-      if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + zz + '" data-label="赞助码">赞助码</button>');
+      var escA = function (v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      };
+      if (mz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-unzip" data-code="' + escA(mz) + '" data-label="解压码">解压码</button>');
+      if (zb) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-cheat" data-code="' + escA(zb) + '" data-label="作弊码">作弊码</button>');
+      if (zz) dl.insertAdjacentHTML('beforeend', '<button type="button" class="mrhx-sponsor" data-code="' + escA(zz) + '" data-label="赞助码">赞助码</button>');
     });
   }
   enhance(document);
@@ -68,9 +72,27 @@
       b.classList.add('ok'); b.textContent = '已复制 ✓';
       setTimeout(function () { b.classList.remove('ok'); b.textContent = label; }, 1600);
     };
+    // 移动端很多内置浏览器（QQ/夸克/微信 WebView）没有 clipboard 或会静默 reject，
+    // clipboard 失败就退到 execCommand，再失败才弹 prompt 手动长按复制（2026-11-18 修「复制出来是空白」）
+    var fallback = function () {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = code;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, code.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) { done(); return; }
+      } catch (err) {}
+      window.prompt('复制' + label + '：', code);
+    };
+    if (!code.trim()) { window.prompt('这条记录没有' + label + '，请联系站长', ''); return; }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done, function () { window.prompt('复制' + label + '：', code); });
-    } else { window.prompt('复制' + label + '：', code); }
+      navigator.clipboard.writeText(code).then(done, fallback);
+    } else { fallback(); }
   });
 })();
 

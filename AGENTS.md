@@ -129,6 +129,16 @@
 
 ## 当前状态
 
+- ★**解压码/作弊码按钮（`assets/js/copycode.js`）三条硬纪律**（2026-11-18 修「复制出来是空白」）：
+  ① 按钮的 `data-code` **必须 HTML 转义**（`escA()`），码里含 `"`/`&`/`<` 时属性会被截断 → 读到空串；
+     `gen.js` 搜索页那段同样是运行时拼串，也要转义；
+  ② 复制顺序固定为 `navigator.clipboard.writeText → document.execCommand('copy')(临时 textarea) → prompt`，
+     **不要只写 clipboard** —— 手机 WebView（QQ/夸克/微信）经常没有该 API 或静默 reject；
+  ③ 按钮全靠页面运行时生成（`.note.mm-editor` + `.result .intro`），**改 copycode.js 后必须重跑 gen.js**
+     更新 `?v=` 哈希，否则访客拿的还是旧缓存。
+  判据：帖子页上 `document.querySelectorAll('.mrhx-unzip').length` 应等于该页含「解压码」的 note 数，
+  且 `data-code` 无空值。
+
 - ★**游戏介绍弹窗（FLIP）两条硬纪律**（2026-11-15 修）：
   ① 动画结束后必须把 `transform` 归零为 `none` 并清 `will-change`（`settleBox()`，420ms 后），
      否则元素常驻合成层，Windows 下小字会发虚——用户表现为「关掉重开就清楚」；
