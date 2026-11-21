@@ -590,9 +590,9 @@
       "replied": false
     },
     {
-      "id": "68d93c63-1172-4c4d-81db-ba252a82ed0e",
+      "id": "76432a96-05bb-4412-9278-3aa6df5bc331",
       "url": "/qzt.html",
-      "pid": "1f5acd41-d3c9-4276-bfb0-b1e663dea09b",
+      "pid": null,
       "nick": "站长",
       "email": "Tshinos@qq.com",
       "content": "发布了 你到求助贴看看是不是这款",
@@ -602,9 +602,9 @@
       "replied": false
     },
     {
-      "id": "76432a96-05bb-4412-9278-3aa6df5bc331",
+      "id": "68d93c63-1172-4c4d-81db-ba252a82ed0e",
       "url": "/qzt.html",
-      "pid": null,
+      "pid": "1f5acd41-d3c9-4276-bfb0-b1e663dea09b",
       "nick": "站长",
       "email": "Tshinos@qq.com",
       "content": "发布了 你到求助贴看看是不是这款",
