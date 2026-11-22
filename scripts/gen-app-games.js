@@ -69,7 +69,7 @@ function parseBlock(block, file) {
     platform,
     size,
     tags: [...new Set(tags)].slice(0, 6),
-    intro: (note || title).slice(0, 200),
+    intro: (note || title).slice(0, 110),
     linkPc: links[0] || '',
     linkMobile: links[1] || links[0] || '',
     code,
