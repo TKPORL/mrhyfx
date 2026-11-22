@@ -50,13 +50,19 @@ function parseBlock(block, file, seq) {
   const note = strip(noteM ? noteM[1] : '');
 
   const tags = [];
-  const tagM = /【([^】]+)】/.exec(note);
-  if (tagM) {
-    tagM[1].split(/[\/／、,，]/).map(s => s.trim()).filter(Boolean).forEach(t => {
-      if (!/^\d/.test(t) && t.length <= 8 && !/^[A-Z]\d+$/.test(t)) tags.push(t);
+  const bracketRe = /【([^】]+)】/g;
+  let bm;
+  while ((bm = bracketRe.exec(note))) {
+    bm[1].split(/[\/／、,，]/).map(x => x.trim()).filter(Boolean).forEach(t => {
+      if (/^\d/.test(t)) return;
+      if (t.length > 10) return;
+      if (/^[A-Z]\d+$/.test(t)) return;
+      if (/\d+(?:\.\d+)?\s*[GMT]B?/i.test(t)) return;
+      if (t === '简介' || /^(PC|安卓|手机|双端)/.test(t)) return;
+      tags.push(t);
     });
   }
-  const sizeM = /【[^】]*?(\d+(?:\.\d+)?)\s*([GMT])B?[^】]*】/i.exec(note);
+  const sizeM = /(\d+(?:\.\d+)?)\s*([GMT])B?(?![A-Za-z])/i.exec(note);
   const size = sizeM ? sizeM[1] + sizeM[2].toUpperCase() : '';
 
   const codeM = /解压码[：:]\s*([^\s<【]+)/.exec(block);
@@ -78,9 +84,21 @@ function parseBlock(block, file, seq) {
 }
 
 function main() {
+  let ts = {};
+  try { ts = JSON.parse(fs.readFileSync(path.join(ROOT, 'timestamps.json'), 'utf8')); } catch (e) {}
+  const timeOf = f => {
+    const k = f.replace(/\.html$/i, '');
+    const v = ts[k];
+    let t = v ? Date.parse(v) : NaN;
+    if (isNaN(t)) {
+      const m = /^(\d{4})(\d{1,2})(\d{2})/.exec(k);
+      if (m) t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
+    }
+    return isNaN(t) ? 0 : t;
+  };
   const files = fs.readdirSync(ROOT)
     .filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f))
-    .sort().reverse();
+    .sort((a, b) => (timeOf(b) - timeOf(a)) || (a < b ? 1 : -1));
 
   const games = [];
   for (const file of files) {
