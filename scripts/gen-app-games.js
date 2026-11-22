@@ -34,9 +34,18 @@ function parseBlock(block, file, seq) {
   const title = strip(titleM ? titleM[1] : '');
   if (!title) return null;
 
-  const coverM = /data-full="([^"]+)"/.exec(block) || /<img[^>]+src="([^"]+)"/.exec(block);
-  const cover = coverM ? coverM[1] : '';
+  // 一个游戏块里可能有多张图：第一张当封面，其余当截图
+  const all = [];
+  const fullRe = /data-full="([^"]+)"/g;
+  let fm;
+  while ((fm = fullRe.exec(block))) all.push(fm[1]);
+  if (!all.length) {
+    const srcRe = /<img[^>]+src="([^"]+)"/g;
+    while ((fm = srcRe.exec(block))) all.push(fm[1]);
+  }
+  const cover = all[0] || '';
   if (!cover) return null;
+  const shots = [...new Set(all.slice(1))].slice(0, 8);
 
   const platM = /mrhx-plat-cover">([^<]*)</.exec(block);
   const platform = strip(platM ? platM[1] : '');
@@ -79,6 +88,7 @@ function parseBlock(block, file, seq) {
     linkPc: links[0] || '',
     linkMobile: links[1] || links[0] || '',
     code,
+    shots,
     date: dateOf(file)
   };
 }
