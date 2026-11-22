@@ -694,19 +694,19 @@ body.gate-pending main{display:none!important}
 
       <div id="appAnnEditor" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #eee">
         <div class="row"><span class="hint" style="width:64px">标题</span>
-          <input type="text" id="annTitle" placeholder="例：11.22 更新 · 新增 12 款" style="flex:1"></div>
+          <input type="text" id="apTitle" placeholder="例：11.22 更新 · 新增 12 款" style="flex:1"></div>
         <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">正文</span>
-          <textarea id="annBody" rows="5" placeholder="支持换行；一行一个要点更清楚" style="flex:1"></textarea></div>
+          <textarea id="apBody" rows="5" placeholder="支持换行；一行一个要点更清楚" style="flex:1"></textarea></div>
         <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">图片</span>
-          <textarea id="annImgs" rows="3" placeholder="一行一个图片地址（用后台图床上传后粘过来）" style="flex:1"></textarea></div>
+          <textarea id="apImgs" rows="3" placeholder="一行一个图片地址（用后台图床上传后粘过来）" style="flex:1"></textarea></div>
         <div class="row" style="margin-top:10px;gap:18px">
-          <label class="hint"><input type="checkbox" id="annPinned"> 置顶</label>
-          <label class="hint"><input type="checkbox" id="annVisible" checked> 前台显示</label>
-          <span class="hint" id="annDate"></span>
+          <label class="hint"><input type="checkbox" id="apPinned"> 置顶</label>
+          <label class="hint"><input type="checkbox" id="apVisible" checked> 前台显示</label>
+          <span class="hint" id="apDate"></span>
         </div>
         <div class="row" style="margin-top:14px;gap:10px">
-          <button type="button" class="btn btn-p" id="annConfirm">确定</button>
-          <button type="button" class="btn btn-s" id="annCancel">取消</button>
+          <button type="button" class="btn btn-p" id="apConfirm">确定</button>
+          <button type="button" class="btn btn-s" id="apCancel">取消</button>
         </div>
       </div>
 
@@ -5387,40 +5387,40 @@ document.addEventListener('input', function (e) {
 
   function openEditor(item) {
     editing = item ? item.id : null;
-    $id('annTitle').value = item ? item.title : '';
-    $id('annBody').value = item ? item.body : '';
-    $id('annImgs').value = item && item.imgs ? item.imgs.join('\n') : '';
-    $id('annPinned').checked = item ? !!item.pinned : false;
-    $id('annVisible').checked = item ? item.visible !== false : true;
-    $id('annDate').textContent = item ? '发布于 ' + (item.date || '') : '保存时自动写入今天';
+    $id('apTitle').value = item ? item.title : '';
+    $id('apBody').value = item ? item.body : '';
+    $id('apImgs').value = item && item.imgs ? item.imgs.join('\n') : '';
+    $id('apPinned').checked = item ? !!item.pinned : false;
+    $id('apVisible').checked = item ? item.visible !== false : true;
+    $id('apDate').textContent = item ? '发布于 ' + (item.date || '') : '保存时自动写入今天';
     $id('appAnnEditor').style.display = '';
-    $id('annTitle').focus();
+    $id('apTitle').focus();
   }
   function closeEditor() { $id('appAnnEditor').style.display = 'none'; editing = null; }
 
   $id('appAnnNew').onclick = () => openEditor(null);
-  $id('annCancel').onclick = closeEditor;
-  $id('annConfirm').onclick = () => {
-    const title = $id('annTitle').value.trim();
+  $id('apCancel').onclick = closeEditor;
+  $id('apConfirm').onclick = () => {
+    const title = $id('apTitle').value.trim();
     if (!title) { say('appSt', '标题不能为空', 'err'); return; }
-    const imgs = $id('annImgs').value.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    const imgs = $id('apImgs').value.split(/\n+/).map(x => x.trim()).filter(Boolean);
     const today = new Date().toISOString().slice(0, 10);
     if (editing) {
       const it = ANN.items.find(x => x.id === editing);
       if (it) {
         it.title = title;
-        it.body = $id('annBody').value;
+        it.body = $id('apBody').value;
         it.imgs = imgs;
-        it.pinned = $id('annPinned').checked;
-        it.visible = $id('annVisible').checked;
+        it.pinned = $id('apPinned').checked;
+        it.visible = $id('apVisible').checked;
         it.updated = today;
       }
     } else {
       ANN.items.unshift({
         id: 'a' + Date.now(),
-        title, body: $id('annBody').value, imgs,
-        pinned: $id('annPinned').checked,
-        visible: $id('annVisible').checked,
+        title, body: $id('apBody').value, imgs,
+        pinned: $id('apPinned').checked,
+        visible: $id('apVisible').checked,
         date: today, updated: today
       });
     }
@@ -5491,7 +5491,11 @@ document.addEventListener('input', function (e) {
         $id('appForceUpdate').checked = !!ver.force;
         $id('appVerSt').textContent = '线上 v' + (ver.version || '?') + (ver.updated ? ' · ' + ver.updated : '');
       }
-      say('appSt', '已读取线上 ' + repo(), 'ok');
+      const annMiss = !ann;
+      const verMiss = !ver;
+      say('appSt', annMiss || verMiss
+        ? '线上还没有 ' + [annMiss ? 'announcements.json' : '', verMiss ? 'version.json' : ''].filter(Boolean).join(' / ') + '，点下面「保存」会自动创建'
+        : '已读取线上 ' + repo(), annMiss || verMiss ? 'warn' : 'ok');
     } catch (err) { say('appSt', '读取失败：' + err.message, 'err'); }
   }
   $id('appReload').onclick = loadAll;
