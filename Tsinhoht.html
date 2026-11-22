@@ -694,7 +694,7 @@ body.gate-pending main{display:none!important}
 
       <div id="appAnnEditor" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #eee">
         <div class="row"><span class="hint" style="width:64px">标题</span>
-          <input type="text" id="apTitle" placeholder="例：11.22 更新 · 新增 12 款" style="flex:1"></div>
+          <input type="text" id="apTitle" placeholder="可留空；留空则 APP 只显示正文" style="flex:1"></div>
         <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">正文</span>
           <textarea id="apBody" rows="5" placeholder="支持换行；一行一个要点更清楚" style="flex:1"></textarea></div>
         <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">图片</span>
@@ -5402,7 +5402,9 @@ document.addEventListener('input', function (e) {
   $id('apCancel').onclick = closeEditor;
   $id('apConfirm').onclick = () => {
     const title = $id('apTitle').value.trim();
-    if (!title) { say('appSt', '标题不能为空', 'err'); return; }
+    const bodyText = $id('apBody').value.trim();
+    // 标题可以留空：APP 里只显示正文，避免标题和弹层标题重复
+    if (!bodyText) { say('appSt', '正文不能为空', 'err'); return; }
     const imgs = $id('apImgs').value.split(/\n+/).map(x => x.trim()).filter(Boolean);
     const today = new Date().toISOString().slice(0, 10);
     if (editing) {
