@@ -5494,6 +5494,7 @@ document.addEventListener('input', function (e) {
         $id('appForceUpdate').checked = !!ver.force;
         $id('appVerSt').textContent = '线上 v' + (ver.version || '?') + (ver.updated ? ' · ' + ver.updated : '');
       }
+      if (window.__appLinksReload) await window.__appLinksReload();
       const annMiss = !ann;
       const verMiss = !ver;
       say('appSt', annMiss || verMiss
@@ -5536,7 +5537,10 @@ document.addEventListener('input', function (e) {
         DATA.groups.map((g, i) => row('groups', i, g)).join('') : '')
       + (DATA.contacts.length ? '<div class="hint" style="margin:12px 0 6px">其他联系方式</div>' +
         DATA.contacts.map((c, i) => row('contacts', i, c)).join('') : '')
-      + (!DATA.groups.length && !DATA.contacts.length ? '<p class="hint">还没有配置，点下面的按钮添加。</p>' : '');
+      + (!DATA.groups.length && !DATA.contacts.length
+          ? '<p class="hint" style="color:#b26a00">没读到任何条目。如果线上本来有，点右边重新读取；确认没有就点下面的按钮添加。'
+            + ' <button type="button" class="btn btn-s" style="margin-left:8px" onclick="window.__appLinksReload&&window.__appLinksReload()">重新读取</button></p>'
+          : '');
   }
   function collect() {
     const out = { groups: [], contacts: [] };
@@ -5595,6 +5599,7 @@ document.addEventListener('input', function (e) {
     render();
   };
   $id('linkSave').onclick = save;
+  window.__appLinksReload = load;
 
   // 打开 APP 页签时跟随主面板一起加载
   const _boot = window.appAdminBoot;
