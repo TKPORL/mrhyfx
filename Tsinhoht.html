@@ -310,6 +310,7 @@ body.gate-pending main{display:none!important}
     <button type="button" class="tab" id="tabLinks" role="tab" aria-selected="false" aria-controls="panelLinks">链接配置</button>
     <button type="button" class="tab" id="tabHtml" role="tab" aria-selected="false" aria-controls="panelHtml">HTML 模式</button>
     <button type="button" class="tab" id="tabSponsor" role="tab" aria-selected="false" aria-controls="panelSponsor">赞助记录</button>
+    <button type="button" class="tab" id="tabApp" role="tab" aria-selected="false" aria-controls="panelApp">APP 管理</button>
   </div>
 
   <div class="panel on" id="panelForm">
@@ -667,6 +668,81 @@ body.gate-pending main{display:none!important}
       <p class="warn">模板载入后可直接改标题和内容，或整体替换为新的幕布导出。</p>
     </div>
   </div>
+  <div class="panel" id="panelApp">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>APP 管理</h2>
+        <span id="appSt" class="hint"></span>
+      </div>
+      <p class="hint" style="margin-bottom:14px">这块只管 APP 仓库里的 <code>announcements.json</code> 与 <code>version.json</code>，
+         <b>不读也不写本站的帖子 / 评论 / 赞助数据</b>，两边完全独立。</p>
+      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center">
+        <span class="hint">APP 仓库</span>
+        <input type="text" id="appRepo" value="TKPORL/mrhyfx-app" style="max-width:240px">
+        <button type="button" class="btn btn-s" id="appReload">读取线上</button>
+        <a class="btn btn-s" href="https://github.com/TKPORL/mrhyfx-app" target="_blank" rel="noopener">打开仓库</a>
+        <a class="btn btn-s" href="https://github.com/TKPORL/mrhyfx-app/actions" target="_blank" rel="noopener">构建记录</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>公告</h2>
+        <span class="hint" id="appAnnStat">—</span>
+      </div>
+      <div id="appAnnList" style="margin-top:10px"><p class="hint">点「读取线上」加载，或直接新增。</p></div>
+
+      <div id="appAnnEditor" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #eee">
+        <div class="row"><span class="hint" style="width:64px">标题</span>
+          <input type="text" id="annTitle" placeholder="例：11.22 更新 · 新增 12 款" style="flex:1"></div>
+        <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">正文</span>
+          <textarea id="annBody" rows="5" placeholder="支持换行；一行一个要点更清楚" style="flex:1"></textarea></div>
+        <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">图片</span>
+          <textarea id="annImgs" rows="3" placeholder="一行一个图片地址（用后台图床上传后粘过来）" style="flex:1"></textarea></div>
+        <div class="row" style="margin-top:10px;gap:18px">
+          <label class="hint"><input type="checkbox" id="annPinned"> 置顶</label>
+          <label class="hint"><input type="checkbox" id="annVisible" checked> 前台显示</label>
+          <span class="hint" id="annDate"></span>
+        </div>
+        <div class="row" style="margin-top:14px;gap:10px">
+          <button type="button" class="btn btn-p" id="annConfirm">确定</button>
+          <button type="button" class="btn btn-s" id="annCancel">取消</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;gap:10px">
+        <button type="button" class="btn btn-p" id="appAnnNew">＋ 新增公告</button>
+        <button type="button" class="btn btn-p" id="appAnnSave" style="background:#1a7f37">保存到 GitHub</button>
+        <button type="button" class="btn btn-s" id="appAnnPreview">预览 JSON</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>版本更新</h2><span class="hint" id="appVerSt"></span></div>
+      <div class="row" style="margin-top:10px"><span class="hint" style="width:64px">版本号</span>
+        <input type="text" id="appVerCode" placeholder="1.0.1" style="max-width:160px"></div>
+      <div class="row" style="margin-top:10px;align-items:flex-start"><span class="hint" style="width:64px">更新说明</span>
+        <textarea id="appVerNotes" rows="4" placeholder="一行一条" style="flex:1"></textarea></div>
+      <div class="row" style="margin-top:10px"><span class="hint" style="width:64px">APK 地址</span>
+        <input type="text" id="appApkUrl" placeholder="https://github.com/.../releases/download/v1.0.1/app.apk" style="flex:1"></div>
+      <div class="row" style="margin-top:12px;gap:18px;align-items:center">
+        <label class="hint"><input type="checkbox" id="appForceUpdate"> 强制更新（旧版必须升级）</label>
+        <button type="button" class="btn btn-p" id="appVerSave">保存版本</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>群与联系方式</h2><span class="hint" id="linkSt"></span></div>
+      <p class="hint" style="margin-bottom:12px">APP「我的」页读这份配置（<code>app-links.json</code>）。改完保存即可，
+         <b>用户不需要更新版本</b>；群满了就改这里的名称和链接。</p>
+      <div id="linkRows"></div>
+      <div class="row" style="margin-top:12px;gap:10px">
+        <button type="button" class="btn btn-s" id="linkAddQq">＋ 加一个 QQ 群</button>
+        <button type="button" class="btn btn-s" id="linkAddCt">＋ 加一个联系方式</button>
+        <button type="button" class="btn btn-p" id="linkSave">保存到 GitHub</button>
+      </div>
+    </div>
+  </div>
 </main>
 <div class="gate-body">
 <div class="overlay" id="overlay"></div>
@@ -694,6 +770,8 @@ body.gate-pending main{display:none!important}
     <button type="button" class="btn btn-p" id="impGo" disabled>导入选中的 0 款</button>
   </div>
 </div>
+
+
 <div class="imp-light" id="impLight"><img alt="大图预览"><span class="imp-light-hint">点任意处关闭 · 双击图片看大图</span></div>
 <div class="modal" id="previewModal">
   <div class="mhead"><h2>实时预览</h2><button type="button" class="modal-close" id="previewClose">×</button></div>
@@ -927,12 +1005,13 @@ $('imgBedSaveSite').onclick = async () => {
 syncImgModeUI();
 
 const TAB_KEY = 'mrhx_active_tab';
-const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml', tabSponsor: 'panelSponsor' };
+const tabs = { tabForm: 'panelForm', tabManage: 'panelManage', tabLinks: 'panelLinks', tabComments: 'panelComments', tabStats: 'panelStats', tabHtml: 'panelHtml', tabSponsor: 'panelSponsor', tabApp: 'panelApp' };
 function switchTab(id, skipStore) {
   Object.keys(tabs).forEach(k => { $('tab' + k.slice(3)).classList.toggle('on', k === id); $('panel' + k.slice(3)).classList.toggle('on', k === id); });
   if (!skipStore) localStorage.setItem(TAB_KEY, id);
   if (id === 'tabManage') loadPosts();
   if (id === 'tabSponsor') loadSponsors();
+  if (id === 'tabApp' && typeof appAdminBoot === 'function') appAdminBoot();
   if (id === 'tabLinks') { loadLinks(); loadSite(); }
   if (id === 'tabComments') loadComments();
   if (id === 'tabStats') { statsRefreshAll(); }
@@ -5248,6 +5327,268 @@ document.addEventListener('input', function (e) {
   if (!w) return;
   if (String(e.target.value || '').trim()) w.classList.remove('can-undo');
 });
+</script>
+<script>
+/* ===== APP 管理（独立数据，只读写 APP 仓库） ===== */
+(function () {
+  const $id = id => document.getElementById(id);
+  let ANN = { items: [] };
+  let editing = null;      // 正在编辑的 id，null = 新增
+  let booted = false;
+
+  const repo = () => ($id('appRepo').value || '').trim();
+  const token = () => (($id('token') && $id('token').value) || '').trim();
+  const say = (el, msg, kind) => {
+    const t = typeof el === 'string' ? $id(el) : el;
+    if (!t) return;
+    t.textContent = msg;
+    t.style.color = kind === 'err' ? '#e5484d' : kind === 'warn' ? '#b26a00' : '#1a7f37';
+  };
+  const b64 = obj => btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2))));
+
+  async function readJson(path) {
+    const res = await fetch('https://raw.githubusercontent.com/' + repo() + '/main/' + path + '?cb=' + Date.now());
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('读取 ' + path + ' 失败 HTTP ' + res.status);
+    return res.json();
+  }
+  async function writeJson(path, obj, msg) {
+    const tk = token();
+    if (!tk) throw new Error('先到「发布帖子」页填 GitHub Token');
+    await putFile(repo(), tk, path, b64(obj), msg, $id('appSt'), 'APP');
+  }
+
+  function rowHtml(it) {
+    const tags = [];
+    if (it.pinned) tags.push('<span style="color:#b26a00">置顶</span>');
+    if (it.visible === false) tags.push('<span style="color:#999">已隐藏</span>');
+    return '<div class="row" style="justify-content:space-between;border-top:1px solid #f0f0f0;padding:10px 0">'
+      + '<div style="min-width:0"><b style="display:block">' + escapeHtml(it.title || '(无标题)') + '</b>'
+      + '<span class="hint">' + (it.date || '') + ' ' + tags.join(' · ') + '</span></div>'
+      + '<div style="display:flex;gap:8px;flex-shrink:0">'
+      + '<button type="button" class="btn btn-s" data-act="pin" data-id="' + it.id + '">' + (it.pinned ? '取消置顶' : '置顶') + '</button>'
+      + '<button type="button" class="btn btn-s" data-act="vis" data-id="' + it.id + '">' + (it.visible === false ? '显示' : '隐藏') + '</button>'
+      + '<button type="button" class="btn btn-s" data-act="edit" data-id="' + it.id + '">编辑</button>'
+      + '<button type="button" class="btn btn-s" data-act="del" data-id="' + it.id + '" style="color:#e5484d">删除</button>'
+      + '</div></div>';
+  }
+  function escapeHtml(v) {
+    return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function render() {
+    const box = $id('appAnnList');
+    const list = ANN.items || [];
+    if (!list.length) { box.innerHTML = '<p class="hint">还没有公告，点下面「新增公告」。</p>'; }
+    else { box.innerHTML = list.map(rowHtml).join(''); }
+    const vis = list.filter(x => x.visible !== false).length;
+    $id('appAnnStat').textContent = '共 ' + list.length + ' 条 · 前台显示 ' + vis + ' 条';
+  }
+
+  function openEditor(item) {
+    editing = item ? item.id : null;
+    $id('annTitle').value = item ? item.title : '';
+    $id('annBody').value = item ? item.body : '';
+    $id('annImgs').value = item && item.imgs ? item.imgs.join('\n') : '';
+    $id('annPinned').checked = item ? !!item.pinned : false;
+    $id('annVisible').checked = item ? item.visible !== false : true;
+    $id('annDate').textContent = item ? '发布于 ' + (item.date || '') : '保存时自动写入今天';
+    $id('appAnnEditor').style.display = '';
+    $id('annTitle').focus();
+  }
+  function closeEditor() { $id('appAnnEditor').style.display = 'none'; editing = null; }
+
+  $id('appAnnNew').onclick = () => openEditor(null);
+  $id('annCancel').onclick = closeEditor;
+  $id('annConfirm').onclick = () => {
+    const title = $id('annTitle').value.trim();
+    if (!title) { say('appSt', '标题不能为空', 'err'); return; }
+    const imgs = $id('annImgs').value.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    const today = new Date().toISOString().slice(0, 10);
+    if (editing) {
+      const it = ANN.items.find(x => x.id === editing);
+      if (it) {
+        it.title = title;
+        it.body = $id('annBody').value;
+        it.imgs = imgs;
+        it.pinned = $id('annPinned').checked;
+        it.visible = $id('annVisible').checked;
+        it.updated = today;
+      }
+    } else {
+      ANN.items.unshift({
+        id: 'a' + Date.now(),
+        title, body: $id('annBody').value, imgs,
+        pinned: $id('annPinned').checked,
+        visible: $id('annVisible').checked,
+        date: today, updated: today
+      });
+    }
+    closeEditor(); render(); say('appSt', '已改在本地，记得点「保存到 GitHub」', 'warn');
+  };
+
+  $id('appAnnList').onclick = e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    const it = ANN.items.find(x => x.id === b.dataset.id);
+    if (!it) return;
+    const act = b.dataset.act;
+    if (act === 'edit') return openEditor(it);
+    if (act === 'pin') it.pinned = !it.pinned;
+    if (act === 'vis') it.visible = it.visible === false;
+    if (act === 'del') {
+      if (!confirm('删除公告「' + it.title + '」？保存到 GitHub 后前台才会消失。')) return;
+      ANN.items = ANN.items.filter(x => x.id !== it.id);
+    }
+    render(); say('appSt', '已改在本地，记得点「保存到 GitHub」', 'warn');
+  };
+
+  async function saveAnn() {
+    try {
+      ANN.updated = new Date().toISOString();
+      const sorted = ANN.items.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      await writeJson('announcements.json', { items: sorted, updated: ANN.updated },
+        'APP 公告更新（' + sorted.length + ' 条）');
+      say('appSt', '公告已提交，等 Actions 部署后 APP 就能拉到', 'ok');
+    } catch (err) { say('appSt', '保存失败：' + err.message, 'err'); }
+  }
+  $id('appAnnSave').onclick = saveAnn;
+  $id('appAnnPreview').onclick = () => {
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write('<pre style="white-space:pre-wrap;font:13px/1.6 ui-monospace,monospace">'
+      + escapeHtml(JSON.stringify({ items: ANN.items, updated: ANN.updated }, null, 2)) + '</pre>');
+  };
+
+  async function saveVer() {
+    try {
+      const code = $id('appVerCode').value.trim();
+      if (!code) { say('appVerSt', '版本号不能为空', 'err'); return; }
+      const obj = {
+        version: code,
+        notes: $id('appVerNotes').value.split(/\n+/).map(x => x.trim()).filter(Boolean),
+        apk: $id('appApkUrl').value.trim(),
+        force: $id('appForceUpdate').checked,
+        updated: new Date().toISOString().slice(0, 10)
+      };
+      await writeJson('version.json', obj, 'APP 版本更新 v' + code);
+      say('appVerSt', '已提交 v' + code, 'ok');
+    } catch (err) { say('appVerSt', '保存失败：' + err.message, 'err'); }
+  }
+  $id('appVerSave').onclick = saveVer;
+
+  async function loadAll() {
+    try {
+      say('appSt', '读取中…', 'warn');
+      const ann = await readJson('announcements.json');
+      ANN = ann && Array.isArray(ann.items) ? ann : { items: [] };
+      render();
+      const ver = await readJson('version.json');
+      if (ver) {
+        $id('appVerCode').value = ver.version || '';
+        $id('appVerNotes').value = (ver.notes || []).join('\n');
+        $id('appApkUrl').value = ver.apk || '';
+        $id('appForceUpdate').checked = !!ver.force;
+        $id('appVerSt').textContent = '线上 v' + (ver.version || '?') + (ver.updated ? ' · ' + ver.updated : '');
+      }
+      say('appSt', '已读取线上 ' + repo(), 'ok');
+    } catch (err) { say('appSt', '读取失败：' + err.message, 'err'); }
+  }
+  $id('appReload').onclick = loadAll;
+
+  window.appAdminBoot = function () {
+    render();
+    if (!booted) { booted = true; loadAll(); }
+  };
+})();
+</script>
+<script>
+/* ===== APP 群与联系方式（写 app-links.json，与站点数据无关） ===== */
+(function () {
+  const $id = id => document.getElementById(id);
+  let DATA = { groups: [], contacts: [] };
+  let loaded = false;
+
+  const repo = () => ($id('appRepo').value || 'TKPORL/mrhyfx-app').trim();
+  const token = () => (($id('token') && $id('token').value) || '').trim();
+  const say = (m, k) => { const t = $id('linkSt'); if (!t) return; t.textContent = m;
+    t.style.color = k === 'err' ? '#e5484d' : k === 'warn' ? '#b26a00' : '#1a7f37'; };
+
+  function row(kind, i, it) {
+    return '<div class="row" data-kind="' + kind + '" data-i="' + i + '" style="gap:8px;margin-bottom:8px">'
+      + '<input type="text" class="lk-name" value="' + (it.name || '') + '" placeholder="名称（主群 / 二群）" style="width:120px">'
+      + (kind === 'groups'
+          ? '<input type="text" class="lk-qq" value="' + (it.qq || '') + '" placeholder="群号" style="width:110px">'
+          : '')
+      + '<input type="text" class="lk-url" value="' + (it.url || '') + '" placeholder="https://..." style="flex:1">'
+      + '<button type="button" class="btn btn-s lk-del" style="color:#e5484d">删</button></div>';
+  }
+  function render() {
+    $id('linkRows').innerHTML =
+      (DATA.groups.length ? '<div class="hint" style="margin:2px 0 6px">QQ 群</div>' +
+        DATA.groups.map((g, i) => row('groups', i, g)).join('') : '')
+      + (DATA.contacts.length ? '<div class="hint" style="margin:12px 0 6px">其他联系方式</div>' +
+        DATA.contacts.map((c, i) => row('contacts', i, c)).join('') : '')
+      + (!DATA.groups.length && !DATA.contacts.length ? '<p class="hint">还没有配置，点下面的按钮添加。</p>' : '');
+  }
+  function collect() {
+    const out = { groups: [], contacts: [] };
+    document.querySelectorAll('#linkRows .row[data-kind]').forEach(r => {
+      const item = {
+        name: r.querySelector('.lk-name').value.trim(),
+        url: r.querySelector('.lk-url').value.trim()
+      };
+      const qq = r.querySelector('.lk-qq');
+      if (qq) item.qq = qq.value.trim();
+      if (!item.name && !item.url) return;
+      out[r.dataset.kind].push(item);
+    });
+    return out;
+  }
+
+  async function load() {
+    try {
+      say('读取中…', 'warn');
+      const res = await fetch('https://raw.githubusercontent.com/' + repo() + '/main/app-links.json?cb=' + Date.now());
+      if (res.ok) { const d = await res.json(); DATA = { groups: d.groups || [], contacts: d.contacts || [] }; }
+      else DATA = { groups: [], contacts: [] };
+      render();
+      say('已读取 ' + repo(), 'ok');
+    } catch (e) { say('读取失败：' + e.message, 'err'); }
+  }
+
+  async function save() {
+    try {
+      const tk = token();
+      if (!tk) { say('先到「发布帖子」页填 GitHub Token', 'err'); return; }
+      const data = collect();
+      data.updated = new Date().toISOString().slice(0, 10);
+      const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+      await putFile(repo(), tk, 'app-links.json', b64,
+        'APP 群与联系方式更新（' + data.groups.length + ' 群）', $id('linkSt'), 'APP');
+      say('已提交，APP 下次启动生效', 'ok');
+    } catch (e) { say('保存失败：' + e.message, 'err'); }
+  }
+
+  $id('linkAddQq').onclick = () => { DATA = collect(); DATA.groups.push({ name: '', qq: '', url: 'https://qm.qq.com/q/' }); render(); };
+  $id('linkAddCt').onclick = () => { DATA = collect(); DATA.contacts.push({ name: '', url: 'https://' }); render(); };
+  $id('linkRows').onclick = e => {
+    const b = e.target.closest('.lk-del'); if (!b) return;
+    const r = b.closest('.row');
+    DATA = collect();
+    DATA[r.dataset.kind].splice(Number(r.dataset.i), 1);
+    render();
+  };
+  $id('linkSave').onclick = save;
+
+  // 打开 APP 页签时跟随主面板一起加载
+  const _boot = window.appAdminBoot;
+  window.appAdminBoot = function () {
+    if (typeof _boot === 'function') _boot();
+    if (!loaded) { loaded = true; load(); }
+  };
+  if (window.appAdminBoot && $id('appRepo')) { /* 等页签打开时触发 */ }
+})();
 </script>
 </body>
 </html>
