@@ -115,8 +115,12 @@ function main() {
     }
   }
 
-  const payload = { updated: new Date().toISOString(), count: games.length, games };
+  const updated = new Date().toISOString();
+  const payload = { updated, count: games.length, games };
   fs.writeFileSync(OUT, JSON.stringify(payload, null, 2) + '\n');
+  // 轻量清单：APP 每次启动只拉这个（几百字节），变了才下载 8MB 的正文
+  fs.writeFileSync(path.join(ROOT, 'app-version.json'),
+    JSON.stringify({ updated, count: games.length }, null, 2) + '\n');
   console.log('app-games.json ok, games:', games.length);
   if (games.length) console.log('sample:', JSON.stringify(games[0]).slice(0, 300));
 }
