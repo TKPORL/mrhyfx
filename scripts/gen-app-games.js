@@ -29,7 +29,7 @@ function dateOf(file) {
   return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
 }
 
-function parseBlock(block, file) {
+function parseBlock(block, file, seq) {
   const titleM = /<div class="content mm-editor"[^>]*>\s*<span[^>]*>([\s\S]*?)<\/span>/.exec(block);
   const title = strip(titleM ? titleM[1] : '');
   if (!title) return null;
@@ -63,7 +63,7 @@ function parseBlock(block, file) {
   const code = codeM ? strip(codeM[1]) : '';
 
   return {
-    id: hashId(file + '|' + title),
+    id: hashId(file + '|' + title + '|' + seq),
     title,
     cover,
     platform,
@@ -83,17 +83,16 @@ function main() {
     .sort().reverse();
 
   const games = [];
-  const seen = new Set();
   for (const file of files) {
     let html;
     try { html = fs.readFileSync(path.join(ROOT, file), 'utf8'); } catch (e) { continue; }
     if (html.indexOf('class="node heading3') < 0) continue;
     const parts = html.split(/(?=<li class="node heading3)/).slice(1);
     for (const p of parts) {
-      const g = parseBlock(p, file);
+      const g = parseBlock(p, file, games.length);
       if (!g) continue;
-      if (seen.has(g.title)) continue;
-      seen.add(g.title);
+      // 不去重：同一游戏的不同版本（甚至同名不同版）都要保留
+      g.uid = file.replace(/\.html$/i, '') + '#' + games.length;
       games.push(g);
     }
   }

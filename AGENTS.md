@@ -123,7 +123,7 @@
 | `assets/thumb/` | **列表页缩略图**（2026-10-14 建，2166 个 / 24.8 MB）。首页封面 120×120、帖子页卡片 360×270；页面把原图地址存 `data-full` 并挂 `onerror` 兜底。**不要手删**（删了会自动重建，但首次要几十秒）；强制全量重建 = 删目录后跑 gen |
 | `scripts/gen.js` | 生成器（本地化图片 + 注入页头按钮动效评论区 + 生成首页） |
 | `scripts/parse.js` | 幕布 HTML → `games.json` |
-| `scripts/gen-app-games.js` | **APP 数据生成器**（2026-11-22 加）：只读帖子 HTML、只写根目录 `app-games.json`，供 Flutter 客户端（`mrhyfx-app`）拉取。字段契约 `{games:[{id,title,cover,platform,size,tags,intro,linkPc,linkMobile,code,date}]}`，`id` 由 `文件名|标题` 哈希，**不要改成下标**（收藏/最近浏览会错位）。`gen.js` 结尾会自动调用它，失败只 warn、不影响站点 |
+| `scripts/gen-app-games.js` | **APP 数据生成器**（2026-11-22 加）：只读帖子 HTML、只写根目录 `app-games.json`，供 Flutter 客户端（`mrhyfx-app`）拉取。字段契约 `{games:[{id,title,cover,platform,size,tags,intro,linkPc,linkMobile,code,date}]}`，**不去重**（站长 2026-11-22 明确要求：同名可能是不同版本，全部保留），每张卡一条；`id = hash(文件名|标题|序号)` 保证唯一。`gen.js` 结尾会自动调用它，失败只 warn、不影响站点 |
 | `scripts/*.js` | 各类链接 / 结构检查脚本 |
 | `supabase/` | 评论功能的 SQL 迁移与 Edge Functions |
 | `.github/workflows/` | `gen.yml`（推送后自动跑 gen.js）、`send-mail.yml`、`notify-comment.yml`、`backup-imgbed.yml`、`ops.yml` |
