@@ -3958,6 +3958,13 @@ ${likeScript}
   await applyThumbsToPages();
   await generateThumbs();
 
+  // ===== APP 数据（2026-11-22）：只读页面、只写 app-games.json，供 Flutter 客户端拉取 =====
+  try {
+    require('child_process').execFileSync(process.execPath, [path.join(__dirname, 'gen-app-games.js')], { stdio: 'inherit' });
+  } catch (e) {
+    console.warn('[app-games] 生成失败（不影响站点）：', e.message);
+  }
+
   // 自动 commit + push（GitHub Actions 中跳过，由 workflow 处理；--verify 模式不发布）
   if (NEW_TAG && NEW_TAG !== 'auto' && !process.env.CI) {
     // NEW_TAG 已在顶部校验过格式，此处双重保险防 shell 注入
