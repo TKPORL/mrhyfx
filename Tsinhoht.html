@@ -5424,7 +5424,10 @@ document.addEventListener('input', function (e) {
         date: today, updated: today
       });
     }
-    closeEditor(); render(); say('appSt', '已改在本地，记得点「保存到 GitHub」', 'warn');
+    closeEditor(); render();
+    const st = $id('appAnnStat');
+    if (st) st.textContent = st.textContent + ' · 未保存';
+    say('appSt', '已改在本地，记得点「保存到 GitHub」', 'warn');
   };
 
   $id('appAnnList').onclick = e => {
@@ -5557,7 +5560,11 @@ document.addEventListener('input', function (e) {
       if (res.ok) { const d = await res.json(); DATA = { groups: d.groups || [], contacts: d.contacts || [] }; }
       else DATA = { groups: [], contacts: [] };
       render();
-      say('已读取 ' + repo(), 'ok');
+      if (!DATA.groups.length && !DATA.contacts.length) {
+        say('线上这份是空的（可能被空数据覆盖过），添加后保存即可', 'warn');
+      } else {
+        say('已读取 ' + repo(), 'ok');
+      }
     } catch (e) { say('读取失败：' + e.message, 'err'); }
   }
 
@@ -5566,6 +5573,10 @@ document.addEventListener('input', function (e) {
       const tk = token();
       if (!tk) { say('先到「发布帖子」页填 GitHub Token', 'err'); return; }
       const data = collect();
+      if (!data.groups.length && !data.contacts.length) {
+        say('没有任何条目，已取消提交（避免把线上清空）', 'err');
+        return;
+      }
       data.updated = new Date().toISOString().slice(0, 10);
       const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
       await putFile(repo(), tk, 'app-links.json', b64,
