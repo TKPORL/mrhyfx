@@ -90,11 +90,12 @@ function parseBlock(block, file, seq) {
     code,
     shots,
     source: file === 'qzt.html' ? 'qzt' : 'post',
+    page: file.replace(/\.html$/i, ''),
     date: dateOf(file)
   };
 }
 
-function main() {
+async function main() {
   let ts = {};
   try { ts = JSON.parse(fs.readFileSync(path.join(ROOT, 'timestamps.json'), 'utf8')); } catch (e) {}
   const timeOf = f => {
@@ -132,13 +133,61 @@ function main() {
   }
 
   const updated = new Date().toISOString();
-  const payload = { updated, count: games.length, games };
+  // 列表只留轻量字段（不含长文本），详情走 app-details/<页面>.json 分片
+  const light = games.map(g => ({
+    id: g.id, title: g.title, cover: g.cover, platform: g.platform,
+    size: g.size, tags: g.tags, date: g.date, source: g.source, page: g.page,
+  }));
+  const payload = { updated, count: light.length, games: light };
   fs.writeFileSync(OUT, JSON.stringify(payload, null, 2) + '\n');
+
+  // 分片：一个帖子一个文件，点进详情才拉
+  const dir = path.join(ROOT, 'app-details');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  const byPage = {};
+  for (const g of games) (byPage[g.page] = byPage[g.page] || []).push({
+    id: g.id, intro: g.intro, code: g.code, linkPc: g.linkPc, linkMobile: g.linkMobile, shots: g.shots,
+  });
+  for (const page of Object.keys(byPage)) {
+    fs.writeFileSync(path.join(dir, page + '.json'), JSON.stringify(byPage[page]) + '\n');
+  }
   // 轻量清单：APP 每次启动只拉这个（几百字节），变了才下载 8MB 的正文
   fs.writeFileSync(path.join(ROOT, 'app-version.json'),
     JSON.stringify({ updated, count: games.length }, null, 2) + '\n');
   console.log('app-games.json ok, games:', games.length);
+  await buildHot();
   if (games.length) console.log('sample:', JSON.stringify(games[0]).slice(0, 300));
 }
 
-main();
+// 热门：按站点下载点击量聚合，产出 app-hot.json（失败不影响主流程）
+async function buildHot() {
+  const base = 'https://kydmccknlbpczeqppbtc.supabase.co';
+  const key = 'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9';
+  const rows = [];
+  try {
+    for (let off = 0; off < 20000; off += 1000) {
+      const res = await fetch(base + '/rest/v1/download_clicks?select=game_name&limit=1000&offset=' + off, {
+        headers: { apikey: key, Authorization: 'Bearer ' + key },
+      });
+      if (!res.ok) break;
+      const part = await res.json();
+      rows.push(...part);
+      if (part.length < 1000) break;
+    }
+  } catch (e) {
+    console.warn('[hot] 拉取失败，跳过：', e.message);
+    return;
+  }
+  const c = {};
+  for (const r of rows) {
+    const n = String(r.game_name || '').trim();
+    if (n) c[n] = (c[n] || 0) + 1;
+  }
+  const items = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 60)
+    .map(([name, count]) => ({ name, count }));
+  fs.writeFileSync(path.join(ROOT, 'app-hot.json'),
+    JSON.stringify({ updated: new Date().toISOString(), items }, null, 1) + '\n');
+  console.log('app-hot.json ok, top:', items.length);
+}
+
+main().catch(e => { console.error(e); process.exit(1); });
