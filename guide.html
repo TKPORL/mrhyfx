@@ -105,6 +105,14 @@ section:nth-of-type(n+4){animation-delay:120ms}
 .pill:active{transform:scale(.96)}
 .card{transition:box-shadow .2s}
 @media (prefers-reduced-motion: reduce){section{animation:none!important}.pill:hover,.pill:active{transform:none}}
+
+/* 2026-11-24 锚点跳转提醒：目标分组 3 秒渐隐闪烁 */
+.gt{transition:background .3s}
+.gt.flash{animation:gtFlash 3s ease}
+@keyframes gtFlash{0%,70%{background:rgba(229,72,77,.16);color:var(--red)}100%{background:transparent}}
+section.flash{animation:secFlash 3s ease}
+@keyframes secFlash{0%,70%{box-shadow:0 0 0 2px rgba(229,72,77,.45)}100%{box-shadow:none}}
+@media (prefers-reduced-motion: reduce){.gt.flash,section.flash{animation:none}}
 </style>
 </head>
 <body>
@@ -280,7 +288,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       </div>
       <p class="cap">下载按钮在每张卡片的底部</p>
     </div>
-    <div class="tip">不在网盘里直接下载，也不在网盘里解压。这两步省掉，后面八成会报错。</div>
+    <div class="tip">不要在网盘里直接下载，也不要在网盘里解压，这两步省掉，后面八成会报错。这两步省掉，后面八成会报错。</div>
   </div>
 </section>
 
@@ -313,13 +321,13 @@ section:nth-of-type(n+4){animation-delay:120ms}
   <div class="head"><span class="badge">04</span><h2>解压</h2></div>
   <div class="card">
     <ul>
-      <li>卡片下载行旁边有<b>「解压码」按钮</b>，点一下自动复制，别手打</li>
-      <li>个别帖子没这个按钮：点一下游戏封面图，密码写在<b>介绍</b>里</li>
+      <li>卡片下载按钮旁边有<b>「解压码」按钮</b>，点一下自动复制，别手打</li>
+      <li>个别游戏没这个按钮：点一下游戏封面图，解压码可能写在<b>介绍</b>里</li>
       <li>下到的不是压缩包（可能是 jpg、mp4、psd）：<b>把后缀改成 <code>.zip</code> 或 <code>.rar</code></b> 再解</li>
       <li>解完还不是游戏：<b>继续改压缩包后缀</b>，可能好几层，不止一层</li>
       <li>带 part1 / 001 的是分卷：全部下完放同一个文件夹，<b>只解第一个</b></li>
       <li><code>.lz4</code> 用 <a class="l" href="#g-unzip">lz4 解压工具</a>；<code>.enc</code> 用 <a class="l" href="#g-unzip">enc 解压工具</a>，普通解压软件打不开</li>
-      <li><b>必装</b>：电脑装 <a class="l" href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a>，手机装 <a class="l" href="https://pan.baidu.com/s/1HyfLA_9uu0fREYoI6eYqFg?pwd=839m" target="_blank" rel="noreferrer">RAR</a>。不装它们就<b>打不开下载的文件</b>。不要用手机自带的文件管理、也不要用 7-Zip 这些别的软件去解压</li>
+      <li><b>必装</b>：电脑装 <a class="l" href="https://pan.baidu.com/s/11dfLh1SqSUqJD4oDQaj6tg?pwd=839m" target="_blank" rel="noreferrer">WinRAR</a>，手机装 <a class="l" href="https://pan.baidu.com/s/1HyfLA_9uu0fREYoI6eYqFg?pwd=839m" target="_blank" rel="noreferrer">RAR</a>。不装它们就<b>打不开下载的文件</b>。不要用手机自带的文件管理、也不要用7-Zip等第三方解压工具去解压</li>
     </ul>
   </div>
 </section>
@@ -332,7 +340,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <li>日文游戏乱码：<a class="l" href="#g-rt">转区工具</a>里以日文模式启动，别改系统语言</li>
       <li>手机玩电脑游戏：<a class="l" href="#g-sim">Winlator</a>；安卓模拟器类（joi / 吉里吉里2 / Tyranor / ONScripter）都在<a class="l" href="#g-sim">模拟器组</a>里挑</li>
       <li>提示缺 RTP：<a class="l" href="#g-sim">rpg 三件套</a>装一遍就好</li>
-      <li>安卓包打不开：解压完的 <code>.apk</code> 直接装；<code>.exe</code> 手机玩不了，得用 Winlator</li>
+      <li>安卓包打不开：解压完的 <code>.apk</code> 直接装；<code>.exe</code> 手机玩不了，得用<a class="l" href="#g-sim">模拟器</a></li>
     </ul>
   </div>
 </section>
@@ -344,7 +352,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <div class="ans"><p>多数是 <b>mp4 类型</b>的资源：换<b>手机</b>下载，下载前清晰度必须选<b>原画</b>，选清晰度低的会被网盘转码，密码对也解不开。</p><p>转码过的文件只能重新下载。</p></div>
     </details>
     <details open><summary>提示文件损坏 / CRC 校验失败</summary>
-      <div class="ans"><p>文件<b>没下载完整</b>，不是解压码问题。重下出错的那个分卷；老断就用<a class="l" href="#g-dl">多线程下载器</a>。</p></div>
+      <div class="ans"><p>文件<b>没下载完整</b>，不是解压码问题。重下出错的那个分卷就好；没会员下载慢，看<a class="l" href="download.html" target="_blank" rel="noreferrer">百度不限速下载教程</a>。</p></div>
     </details>
     <details open><summary>解到一半提示需要下一卷 / 缺少分卷</summary>
       <div class="ans"><p>带 part1 / 001 的是分卷，<b>全部卷都要下载</b>、放同一个文件夹，再解第一个。少一卷都解不了。</p></div>
@@ -353,7 +361,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <div class="ans"><p>后缀被故意改过，内容其实还是压缩包。把 jpg、mp4、psd 这些后缀改成 <code>.zip</code> 或 <code>.rar</code> 再解。</p><p>解完还不是游戏，就继续改后缀，可能套了好几层。</p></div>
     </details>
     <details open><summary>直接在百度网盘里解压，一直出错</summary>
-      <div class="ans"><p>网盘内的在线解压必出错：<b>必须先转存到自己网盘</b>，再下载到本机，用 WinRAR / RAR 解压。</p></div>
+      <div class="ans"><p>网盘内的在线解压必出错：<b>必须先转存到自己网盘</b>，再下载到本机，用<a class="l" href="#g-unzip">WinRAR</a> / <a class="l" href="#g-unzip">RAR</a> 解压。</p></div>
     </details>
     <details open><summary>打开游戏提示缺少 xxx.dll / 0xc000007b</summary>
       <div class="ans"><p>缺运行库。装<a class="l" href="#g-rt">VC++ x64 和 x86</a>，老游戏再补 <a class="l" href="#g-rt">DirectX</a>。两个 VC++ 建议都装。</p></div>
@@ -365,7 +373,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <div class="ans"><p>缺 RPG 素材包。装<a class="l" href="#g-sim">rpg 三件套</a>里那个 RTP，装完重开游戏。</p></div>
     </details>
     <details open><summary>杀毒软件把游戏文件删了</summary>
-      <div class="ans"><p>破解补丁常被误报。<b>把游戏文件夹加入杀毒白名单</b>再解压，否则文件会被悄悄删掉，表现为打不开。</p></div>
+      <div class="ans"><p>破解补丁常被误报。<b>把游戏文件夹加入杀毒白名单</b>再解压，否则文件会被悄悄删掉，表现为打不开。<br>Windows 自带的「安全中心」也会拦：<b>病毒和威胁防护 → 实时保护</b>，解压和进游戏前先关掉，玩完再开。</p></div>
     </details>
     <details open><summary>.lz4 / .enc 后缀，解压软件不认</summary>
       <div class="ans"><p>这两种是加密格式，要用各自的专用工具：<a class="l" href="#g-unzip">lz4 解压工具</a>、<a class="l" href="#g-unzip">enc 解压工具</a>，普通解压软件打不开。</p></div>
@@ -434,7 +442,23 @@ section:nth-of-type(n+4){animation-delay:120ms}
 
 </div>
 
-<script src="assets/js/nav.js?v=678d3179"></script>
+<script src="assets/js/nav.js?v=88756cf6"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
+
+<script>
+// 页内锚点：跳过去后给目标加 3 秒高亮，让用户知道是这一块
+document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+  a.addEventListener('click', function () {
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if (!el) return;
+    var t = el.classList.contains('gt') ? el : (el.matches('section') ? el : el.querySelector('.gt') || el);
+    t.classList.remove('flash');
+    void t.offsetWidth;           // 重启动画
+    t.classList.add('flash');
+    setTimeout(function () { t.classList.remove('flash'); }, 3200);
+  });
+});
+</script>
 </body>
 </html>
