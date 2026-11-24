@@ -143,33 +143,45 @@ async function main() {
     }
   }
 
+  // 求助帖：页面底部才是最新 → 用 qztRank 标出（1 = 最新），首页只放前 10 条
+  const qztAll = games.filter(g => g.page === 'qzt');
+  const qztTotal = qztAll.length;
+  qztAll.forEach((g, i) => { g.qztRank = qztTotal - i; });
+
   // ★「最新游戏」= 首次被收录的日期。每次生成时比对上一次的 app-added.json：
   //   没见过的键 → 记今天（新帖/帖子里新加的游戏自然排到最前）；见过的 → 保留首次日期。
   const today = new Date().toISOString().slice(0, 10);
   const ADDED = path.join(ROOT, 'app-added.json');
   let added = {};
   try { added = JSON.parse(fs.readFileSync(ADDED, 'utf8')); } catch (e) {}
-  let qztSeq = 0;
   for (const g of games) {
     const key = g.page + '|' + g.title;
-    const isQztHead = g.page === 'qzt' && (qztSeq++ < 15);
     if (!added[key]) {
       // 首次建立基线：正式帖用帖子日期，求助帖没有日期 → 统一压到 30 天前，避免 262 条同时挤到最前
       const base = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
-      // 求助帖没有单条时间：首次把前 15 条当作「最近加的」，其余压到基线之后
-      added[key] = isQztHead ? today : ((g.page === 'qzt' || !g.date) ? base : g.date);
+      if (g.page === 'qzt') {
+        // 求助帖底部 10 条（qztRank 1..10）= 最近加的 → 记今天；其余压到基线
+        added[key] = g.qztRank <= 10 ? today : base;
+      } else {
+        added[key] = g.date || base;
+      }
     }
     g.date = added[key];
   }
   fs.writeFileSync(ADDED, JSON.stringify(added) + '\n');
   // 稳定排序：日期新的在前，同一天保持原顺序（帖子内顺序即发布顺序）
-  games.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  games.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    const ar = a.qztRank || 0, br = b.qztRank || 0;
+    if (ar && br) return ar - br;       // 同一天：求助帖按「最新在前」
+    return 0;
+  });
 
   const updated = new Date().toISOString();
   // 列表只留轻量字段（不含长文本），详情走 app-details/<页面>.json 分片
   const light = games.map(g => ({
     id: g.id, title: g.title, cover: g.cover, platform: g.platform,
-    size: g.size, tags: g.tags, date: g.date, source: g.source, page: g.page,
+    size: g.size, tags: g.tags, date: g.date, source: g.source, page: g.page, qztRank: g.qztRank || 0,
   }));
   const payload = { updated, count: light.length, games: light };
   fs.writeFileSync(OUT, JSON.stringify(payload, null, 2) + '\n');
