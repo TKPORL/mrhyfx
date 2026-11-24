@@ -10,7 +10,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'app-games.json');
 const EXCLUDE = new Set([
-  'index.html', 'Tsinhoht.html', 'qzt.html', 'guide.html', 'tutorial.html', 'tools.html',
+  'index.html', 'Tsinhoht.html', 'guide.html', 'tutorial.html', 'tools.html',
   '404.html', 'mianze.html', 'sponsor.html', 'email-preview.html', 'site-preview.html',
   'comments-preview.html', 'search.html', 'template-skeleton.html'
 ]);
@@ -89,6 +89,7 @@ function parseBlock(block, file, seq) {
     linkMobile: links[1] || links[0] || '',
     code,
     shots,
+    source: file === 'qzt.html' ? 'qzt' : 'post',
     date: dateOf(file)
   };
 }
@@ -110,7 +111,9 @@ function main() {
     .filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f))
     // 跳过 _ 开头的草稿/demo/备份页（_demo_app游戏库_v6.html 这类），
     // 否则 demo 里的示例卡会被当成真实游戏灌进 APP（2026-11-24 实测多算 175 条）
-    .filter(f => /^\d/.test(f))   // 只认「数字开头的帖子页」（20261023pc.html / 8.10.html），原型与 demo 一律不进
+    // 只认「数字开头的帖子页」（20261023pc.html / 8.10.html）+ 求助帖 qzt.html；
+    // 原型页与 _demo_* 一律不进（2026-11-24 实测它们会多算 175 条）
+    .filter(f => /^\d/.test(f) || f === 'qzt.html')
     .sort((a, b) => (timeOf(b) - timeOf(a)) || (a < b ? 1 : -1));
 
   const games = [];
