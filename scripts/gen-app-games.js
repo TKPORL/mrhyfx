@@ -25,8 +25,18 @@ function strip(s) {
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 }
 function dateOf(file) {
-  const m = /^(\d{4})(\d{2})(\d{2})/.exec(file);
-  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+  const k = String(file).replace(/\.html$/i, '');
+  let m = /^(\d{4})(\d{2})(\d{2})/.exec(k);          // 20261023
+  if (m && +m[2] >= 1 && +m[2] <= 12 && +m[3] >= 1 && +m[3] <= 31) {
+    return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  m = /^(\d{4})(\d)(\d{2})$/.exec(k);                 // 2026825 → 2026-08-25
+  if (m) return `${m[1]}-0${m[2]}-${m[3]}`;
+  m = /^(\d{1,2})\.(\d{1,2})/.exec(k);                // 8.10 → 2026-08-10
+  if (m && +m[1] >= 1 && +m[1] <= 12) {
+    return `2026-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}`;
+  }
+  return '';
 }
 
 function parseBlock(block, file, seq) {
@@ -91,7 +101,7 @@ function parseBlock(block, file, seq) {
     shots,
     source: file === 'qzt.html' ? 'qzt' : 'post',
     page: file.replace(/\.html$/i, ''),
-    date: file === 'qzt.html' ? new Date().toISOString().slice(0, 10) : dateOf(file)
+    date: dateOf(file)
   };
 }
 
@@ -99,7 +109,7 @@ async function main() {
   let ts = {};
   try { ts = JSON.parse(fs.readFileSync(path.join(ROOT, 'timestamps.json'), 'utf8')); } catch (e) {}
   const timeOf = f => {
-    if (f === 'qzt.html') return Date.now();   // 求助帖随时在更新，永远排最前
+    if (f === 'qzt.html') return 0;   // 求助帖无发布时间，排序交给「首次收录日期」
     const k = f.replace(/\.html$/i, '');
     const v = ts[k];
     let t = v ? Date.parse(v) : NaN;
@@ -132,6 +142,28 @@ async function main() {
       games.push(g);
     }
   }
+
+  // ★「最新游戏」= 首次被收录的日期。每次生成时比对上一次的 app-added.json：
+  //   没见过的键 → 记今天（新帖/帖子里新加的游戏自然排到最前）；见过的 → 保留首次日期。
+  const today = new Date().toISOString().slice(0, 10);
+  const ADDED = path.join(ROOT, 'app-added.json');
+  let added = {};
+  try { added = JSON.parse(fs.readFileSync(ADDED, 'utf8')); } catch (e) {}
+  let qztSeq = 0;
+  for (const g of games) {
+    const key = g.page + '|' + g.title;
+    const isQztHead = g.page === 'qzt' && (qztSeq++ < 15);
+    if (!added[key]) {
+      // 首次建立基线：正式帖用帖子日期，求助帖没有日期 → 统一压到 30 天前，避免 262 条同时挤到最前
+      const base = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+      // 求助帖没有单条时间：首次把前 15 条当作「最近加的」，其余压到基线之后
+      added[key] = isQztHead ? today : ((g.page === 'qzt' || !g.date) ? base : g.date);
+    }
+    g.date = added[key];
+  }
+  fs.writeFileSync(ADDED, JSON.stringify(added) + '\n');
+  // 稳定排序：日期新的在前，同一天保持原顺序（帖子内顺序即发布顺序）
+  games.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
   const updated = new Date().toISOString();
   // 列表只留轻量字段（不含长文本），详情走 app-details/<页面>.json 分片
