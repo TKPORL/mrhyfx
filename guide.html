@@ -14,6 +14,98 @@
 <meta property="og:description" content="找游戏、转存、下载、解压、运行 + 排错速查 + 游戏工具下载。">
 <meta property="og:url" content="https://tkporl.github.io/mrhyfx/guide.html">
 <link rel="stylesheet" href="assets/css/site.css?v=19891cb4">
+<style>
+:root{
+  --bg:#fbfaf7; --card:#fff; --line:#eeece7; --ink:#2b2b2b; --ink2:#5f5b55; --ink3:#9b968d;
+  --red:#e5484d; --red-soft:#fdf3f3; --red-line:#f0b4b6; --amber:#b26a00; --amber-soft:#fff6e8;
+  --r:14px; --sh:0 1px 2px rgba(0,0,0,.03),0 6px 18px -12px rgba(0,0,0,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{overflow-x:clip}
+body{background:var(--bg);color:var(--ink2);font:14.5px/1.78 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding-bottom:56px}
+.wrap{max-width:700px;margin:0 auto;padding:0 18px}
+
+header{padding:38px 0 4px}
+.crumb{font-size:12.5px;color:var(--ink3)}
+.crumb a{color:var(--ink3);text-decoration:none}
+.crumb a:hover{color:var(--red)}
+h1{font-size:26px;line-height:1.32;color:var(--ink);font-weight:750;margin:10px 0 8px;letter-spacing:.2px}
+.lead{font-size:14px;color:var(--ink2);max-width:32em}
+
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:20px 0 2px}
+.st{display:block;text-align:center;padding:10px 4px;background:var(--card);border:1px solid var(--line);border-radius:11px;text-decoration:none;color:var(--ink2);transition:.16s}
+.st:hover{border-color:var(--red-line);background:var(--red-soft);color:var(--red)}
+.st b{display:block;font-size:13px;color:var(--ink);font-weight:650}
+.st:hover b{color:var(--red)}
+.st span{display:block;font-size:11.5px;color:var(--ink3);margin-top:1px}
+.st i{display:block;font-style:normal;font-size:10.5px;color:#cfcabf;letter-spacing:.08em}
+
+section{margin-top:26px}
+.head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.badge{flex:0 0 auto;font:700 11px/1 -apple-system,sans-serif;color:var(--red);background:var(--red-soft);border:1px solid var(--red-line);border-radius:6px;padding:4px 7px;letter-spacing:.06em}
+.head h2{font-size:17.5px;color:var(--ink);font-weight:700}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:15px 17px}
+ul{list-style:none}
+li{position:relative;padding-left:17px;margin-bottom:8px;font-size:14.5px;color:var(--ink2)}
+li:last-child{margin-bottom:0}
+li::before{content:"";position:absolute;left:3px;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--red);opacity:.5}
+li b{color:var(--ink);font-weight:650}
+a.l{color:var(--red);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(229,72,77,.28)}
+a.l:hover{border-bottom-color:var(--red)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f6f4f0;border:1px solid var(--line);padding:0 5px;border-radius:4px;color:var(--ink)}
+
+.fig{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.fig .box{background:#f7f6f2;border:1px solid var(--line);border-radius:10px;padding:10px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:11.5px;color:var(--ink3);margin-top:7px;text-align:center}
+
+.tip{margin-top:11px;padding:10px 12px;border-radius:9px;background:var(--amber-soft);border:1px solid #f2ddb8;color:var(--amber);font-size:13.5px;line-height:1.7}
+
+details{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:0 15px;margin-bottom:8px;box-shadow:var(--sh)}
+details summary{list-style:none;cursor:pointer;padding:12px 0;font-size:14.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:9px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"+";flex:0 0 16px;width:16px;height:16px;border-radius:5px;background:var(--red-soft);color:var(--red);font-size:13px;font-weight:700;display:grid;place-items:center;line-height:1}
+details[open] summary::before{content:"−"}
+details .ans{padding:0 0 13px 25px}
+details .ans p{font-size:14px;color:var(--ink2);margin-bottom:6px}
+details .ans p:last-child{margin-bottom:0}
+details .ans b{color:var(--ink);font-weight:650}
+
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border:1px solid var(--line);background:var(--card);border-radius:9px;font-size:13.5px;color:var(--ink2);text-decoration:none;transition:.16s}
+.pill .icw{width:36px;height:36px;border-radius:10px;background:#f4f3f1;flex:0 0 36px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pill .icw img,.pill .icw svg{width:22px;height:22px;object-fit:contain;display:block}
+.pill .icw svg{stroke:#555;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.pill:hover{color:var(--red);border-color:var(--red-line);background:var(--red-soft)}
+.pill i{font-style:normal;font-size:13px;line-height:1;opacity:.9}
+.pill b{font-weight:600;color:inherit}
+.pill.hot b{font-weight:700;color:var(--red)}
+.pill span{font-size:11px;color:var(--ink3)}
+.gt{font-size:12.5px;color:var(--ink3);margin:15px 0 8px;letter-spacing:.05em}
+.gt:first-child{margin-top:0}
+
+footer{margin-top:26px;padding:14px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);font-size:13.5px;color:var(--ink2);box-shadow:var(--sh)}
+footer b{color:var(--ink)}
+footer a{color:var(--red);text-decoration:none;font-weight:600}
+
+@media (max-width:640px){
+  h1{font-size:22px}
+  .steps{grid-template-columns:repeat(3,1fr)}
+}
+
+/* 2026-11-24 动效：区块入场错峰（≤400ms）+ pill 按压/悬浮 */
+section{animation:rise .34s cubic-bezier(.22,.61,.36,1) both}
+section:nth-of-type(2){animation-delay:40ms}
+section:nth-of-type(3){animation-delay:80ms}
+section:nth-of-type(n+4){animation-delay:120ms}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pill{transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .16s,background .16s}
+.pill:hover{transform:translateY(-1px)}
+.pill:active{transform:scale(.96)}
+.card{transition:box-shadow .2s}
+@media (prefers-reduced-motion: reduce){section{animation:none!important}.pill:hover,.pill:active{transform:none}}
+</style>
 </head>
 <body>
 <!--mrhx-header-start--><header>
@@ -127,7 +219,6 @@
 <div class="wrap">
 
 <div class="hero">
-  <p class="crumb"><a href="index.html">首页</a> / 使用说明</p>
   <h1>怎么用这个站</h1>
   <p class="lead">游戏都放百度网盘。顺序是找到、转存、下载、解压、运行。卡在哪一步，就翻到哪一节。</p>
 
@@ -343,7 +434,7 @@
 
 </div>
 
-<script src="assets/js/nav.js?v=678d3179"></script>
+<script src="assets/js/nav.js?v=88756cf6"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 </body>
 </html>
