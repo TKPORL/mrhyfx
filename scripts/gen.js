@@ -478,7 +478,11 @@ if (fs.existsSync('site.json')) {
 // #48：非帖子页排除名单从 site.json 的 build.excludePosts 读；硬编码默认名单兼并，配置丢了也不会把后台页当帖子
 const DEFAULT_EXCLUDE = ['index.html', 'publish.html', 'Tsinhoht.html', 'search.html', 'email-preview.html', 'comments-preview.html', 'site-preview.html', 'jinri.html', '404.html', 'download.html', 'mianze.html', 'daily.html', 'guide.html', '卡片布局原型.html', '图床对接演示.html'];
 const EXCLUDE = new Set([...DEFAULT_EXCLUDE, ...((SITE.build && Array.isArray(SITE.build.excludePosts)) ? SITE.build.excludePosts : [])]);
-const files = fs.readdirSync(POST_DIR).filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f));
+// 2026-11-24：只处理「数字开头的帖子页」，_demo_* / *原型 / app-demo 这类草稿不再当帖子，
+// 否则它们的示例链接会让发布自检报「非法链接格式」并中止整个生成（search.html 都写不出来）
+const files = fs.readdirSync(POST_DIR)
+  .filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f))
+  .filter(f => /^\d/.test(f) || f === 'qzt.html');   // 求助帖也要生成
 if (!files.length) console.warn('未找到每日分享导出文件，将生成空首页');
 
 const DOWNLOAD_BUTTONS = (SITE.downloadButtons && Array.isArray(SITE.downloadButtons))
@@ -3155,25 +3159,89 @@ function relTime(iso){
   if (!q) { countEl.textContent = ''; resBox.innerHTML = '<div class="empty-box"><h3>请使用上方搜索框搜索游戏</h3><p>点顶部搜索图标，输入游戏名称或关键词即可搜索</p><a class="btn-dl btn-dl-m" href="index.html" style="border:none;cursor:pointer">回到首页</a></div>'; setMore(false); bindHistClick(); return; }
   // 2026-10-20 双层索引；2026-10-21 v2：大索引改为结果出来后再后台拉（不再与首屏抢带宽），
   // 进页先渲染骨架卡 + 扫光动效让用户看到「正在搜索」；小索引 0 结果或失败时回退整库匹配
-  var kw = q.toLowerCase();
+  // 2026-11-24 搜索容错：归一化（全角/空白/标点）+ 数字写法互换（十七↔17、III↔3）
+  function normQ(s) {
+    var out = '';
+    var t = String(s || '').toLowerCase();
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charCodeAt(i);
+      if (c >= 0xFF01 && c <= 0xFF5E) { out += String.fromCharCode(c - 0xFEE0); continue; }
+      if (c >= 0x2160 && c <= 0x216B) { out += String(c - 0x215F); continue; }   // Ⅰ-Ⅻ → 1-12
+      var ch = t[i];
+      if (ch.trim() === '') continue;
+      if ('·・_-—－:：,，。.、!！?？"'\''“”‘’（）()[]【】《》<>~～/\\|'.indexOf(ch) > -1) continue;
+      out += ch;
+    }
+    return out;
+  }
+  var CN_DIGIT = { '零': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+  function cnNum(s) {
+    var out = '';
+    var i = 0;
+    while (i < s.length) {
+      var ch = s[i];
+      if (CN_DIGIT[ch] === undefined && ch !== '十') { out += ch; i++; continue; }
+      var j = i;
+      while (j < s.length && (CN_DIGIT[s[j]] !== undefined || s[j] === '十')) j++;
+      var seg = s.slice(i, j);
+      var p10 = seg.indexOf('十');
+      if (p10 > -1) {
+        var ten = p10 === 0 ? 1 : (CN_DIGIT[seg[0]] || 0);
+        var one = seg.length > p10 + 1 ? (CN_DIGIT[seg[p10 + 1]] || 0) : 0;
+        out += String(ten * 10 + one);
+      } else {
+        for (var k = 0; k < seg.length; k++) out += String(CN_DIGIT[seg[k]]);
+      }
+      i = j;
+    }
+    return out;
+  }
+  function romanNum(s) {
+    var map = { 'viii': '8', 'vii': '7', 'iii': '3', 'iv': '4', 'vi': '6', 'ix': '9', 'ii': '2', 'xi': '11', 'x': '10', 'v': '5', 'i': '1' };
+    var m = s.match(new RegExp('(viii|vii|iii|iv|vi|ix|ii|xi|x|v|i)$'));
+    if (!m) return s;
+    return s.slice(0, s.length - m[1].length) + map[m[1]];
+  }
+  var kwBase = normQ(q);
+  var kwSet = [kwBase];
+  var _rv = romanNum(kwBase); if (_rv !== kwBase) kwSet.push(_rv);
+  var _cv = cnNum(kwBase); if (_cv !== kwBase && kwSet.indexOf(_cv) < 0) kwSet.push(_cv);
+  var kw = kwBase;
+  function hitAny(text) {
+    var t0 = normQ(text);
+    var tv = [t0];
+    var rt = romanNum(t0); if (rt !== t0) tv.push(rt);   // 标题里的 III / II 也转成数字
+    var ct = cnNum(t0); if (ct !== t0) tv.push(ct);
+    for (var i = 0; i < kwSet.length; i++) {
+      var v = kwSet[i];
+      for (var j = 0; j < tv.length; j++) { if (tv[j].indexOf(v) > -1) return true; }
+      // 顺序打乱/少字：查询词按顺序出现在标题里也算（如「纳利亚之泪」→「库莱纳利亚奈落之泪」）
+      if (v.length >= 3) {
+        var pi = 0;
+        for (var ti = 0; ti < t0.length && pi < v.length; ti++) { if (t0[ti] === v[pi]) pi++; }
+        if (pi === v.length) return true;
+      }
+    }
+    return false;
+  }
   function fuzzyMatch(text, pattern) {
-    var t = (text || '').toLowerCase();
-    var p = pattern.toLowerCase();
+    var t = normQ(text);
+    var p = pattern || kwBase;
     if (t.indexOf(p) > -1) return true;
     var pi = 0;
-    for (var ti = 0; ti < t.length && pi < p.length; ti++) {
-      if (t[ti] === p[pi]) pi++;
-    }
+    for (var ti = 0; ti < t.length && pi < p.length; ti++) { if (t[ti] === p[pi]) pi++; }
     return pi === p.length;
   }
   function matchScore(g) {
-    var titleLower = (g.title || '').toLowerCase();
-    var introLower = (g.intro || '').toLowerCase();
-    if (titleLower === kw) return 0;
-    if (titleLower.indexOf(kw) > -1) return 1;
-    if (introLower.indexOf(kw) > -1) return 2;
-    if (titleLower.indexOf(kw.split('').join('%')) > -1) return 3;
-    return 4;
+    var nt = normQ(g.title), ni = normQ(g.intro);
+    var best = 4;
+    for (var i = 0; i < kwSet.length; i++) {
+      var v = kwSet[i];
+      if (nt === v) return 0;
+      if (nt.indexOf(v) > -1) best = Math.min(best, 1);
+      else if (ni.indexOf(v) > -1) best = Math.min(best, 2);
+    }
+    return best;
   }
   saveHist(q);
   var hw = document.getElementById('histWrap');
@@ -3259,7 +3327,7 @@ function relTime(iso){
     var relaxed = false;
     if (!_hits.length && kw.length >= 2) {
       function looseMatch(text, pattern) {
-        var t = (text || '').toLowerCase();
+        var t = normQ(text);
         var counts = {};
         for (var i = 0; i < t.length; i++) counts[t[i]] = (counts[t[i]] || 0) + 1;
         for (var j = 0; j < pattern.length; j++) {
@@ -3281,7 +3349,7 @@ function relTime(iso){
         var v = kw.slice(0, vi) + kw.slice(vi + 1);
         if (v.length < 2 || seenV[v]) continue;
         seenV[v] = 1;
-        _hits = data.filter(function (g) { return (g.title || '').toLowerCase().indexOf(v) > -1; });
+        _hits = data.filter(function (g) { return normQ(g.title).indexOf(v) > -1; });
       }
       if (_hits.length) { relaxed = true; _hits.forEach(function (g) { g._exact = false; }); }
     }
@@ -3289,7 +3357,7 @@ function relTime(iso){
     if (!_hits.length) {
       // Show random recommended games
       var shuffled = data.slice().sort(function () { return 0.5 - Math.random(); });
-      _hits = shuffled.slice(0, 12);
+      _hits = shuffled.slice(0, 20);
       _hits.forEach(function (g) { g._exact = false; });
       resBox.innerHTML = '<div class="empty-box"><h3>没有找到与「' + esc(kw) + '」相关的游戏</h3><p>为你推荐以下游戏</p></div>';
       renderMore();
@@ -3390,7 +3458,7 @@ function relTime(iso){
     // KW 为 null 时退化成原来的「只搜标题+平台」。
     function localHits(KW) {
       return TITLES.filter(function (g, i) {
-        return fuzzyMatch(g.title, kw) || fuzzyMatch(g.plat, kw) || (KW && fuzzyMatch(KW[i], kw));
+        return hitAny(g.title) || hitAny(g.plat) || (KW && hitAny(KW[i]));
       });
     }
     function paint(hits) {
