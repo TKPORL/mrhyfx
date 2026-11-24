@@ -110,8 +110,14 @@ section:nth-of-type(n+4){animation-delay:120ms}
 
 /* 2026-11-24 锚点定位与闪烁（v2） */
 .gt,.pill{scroll-margin-top:78px}
-.pill.flash{animation:pillFlash 1.1s ease-in-out 5;z-index:1}
-@keyframes pillFlash{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}50%{box-shadow:0 0 0 4px rgba(229,72,77,.55),0 0 14px rgba(229,72,77,.5);border-color:var(--red)}}
+/* 萌系提示：粉色柔光呼吸 + 果冻轻弹 + 阴影浮动，无硬边框 */
+.pill.flash{animation:pillFlash 1.2s ease-in-out 5;z-index:1;border-color:transparent}
+@keyframes pillFlash{
+  0%,100%{box-shadow:0 1px 3px rgba(0,0,0,.04);transform:scale(1)}
+  35%{transform:scale(1.045)}
+  50%{box-shadow:0 6px 22px rgba(229,72,77,.30),0 0 34px rgba(255,182,193,.45);transform:scale(1.03)}
+  65%{transform:scale(.995)}
+}
 .gt.flash{animation:gtFlash2 1.1s ease-in-out 5}
 @keyframes gtFlash2{0%,100%{color:var(--ink3)}50%{color:var(--red);text-shadow:0 0 8px rgba(229,72,77,.5)}}
 @media (max-width:600px){
@@ -451,7 +457,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
 
 </div>
 
-<script src="assets/js/nav.js?v=678d3179"></script>
+<script src="assets/js/nav.js?v=88756cf6"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 
 <script>
