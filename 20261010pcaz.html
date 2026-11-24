@@ -2831,8 +2831,8 @@ Sismes.exe
         }).filter(Boolean);
         // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
         coverBox.innerHTML = ''; imgsBox.innerHTML = '';
-        if (_urls[0]) { var _c = document.createElement('img'); _c.src = _urls[0]; _c.alt = ''; _c.loading = 'lazy'; coverBox.appendChild(_c); }
-        _urls.slice(1).forEach(function (u) { var _m = document.createElement('img'); _m.src = u; _m.alt = ''; _m.loading = 'lazy'; imgsBox.appendChild(_m); });
+        if (_urls[0]) { var _c = document.createElement('img'); _c.src = _urls[0]; _c.alt = ''; _c.decoding = 'async'; coverBox.appendChild(_c); }
+        _urls.slice(1).forEach(function (u) { var _m = document.createElement('img'); _m.src = u; _m.alt = ''; _m.decoding = 'async'; imgsBox.appendChild(_m); });
       }
       from.innerHTML = '<b>游戏介绍</b>';
       text.textContent = gamePlat || '';
