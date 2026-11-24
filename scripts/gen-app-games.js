@@ -108,6 +108,9 @@ function main() {
   };
   const files = fs.readdirSync(ROOT)
     .filter(f => /\.html$/i.test(f) && !EXCLUDE.has(f))
+    // 跳过 _ 开头的草稿/demo/备份页（_demo_app游戏库_v6.html 这类），
+    // 否则 demo 里的示例卡会被当成真实游戏灌进 APP（2026-11-24 实测多算 175 条）
+    .filter(f => /^\d/.test(f))   // 只认「数字开头的帖子页」（20261023pc.html / 8.10.html），原型与 demo 一律不进
     .sort((a, b) => (timeOf(b) - timeOf(a)) || (a < b ? 1 : -1));
 
   const games = [];
