@@ -91,7 +91,7 @@ function parseBlock(block, file, seq) {
     shots,
     source: file === 'qzt.html' ? 'qzt' : 'post',
     page: file.replace(/\.html$/i, ''),
-    date: dateOf(file)
+    date: file === 'qzt.html' ? new Date().toISOString().slice(0, 10) : dateOf(file)
   };
 }
 
@@ -99,6 +99,7 @@ async function main() {
   let ts = {};
   try { ts = JSON.parse(fs.readFileSync(path.join(ROOT, 'timestamps.json'), 'utf8')); } catch (e) {}
   const timeOf = f => {
+    if (f === 'qzt.html') return Date.now();   // 求助帖随时在更新，永远排最前
     const k = f.replace(/\.html$/i, '');
     const v = ts[k];
     let t = v ? Date.parse(v) : NaN;
