@@ -71,7 +71,9 @@
     救法：git 对象层树手术（`git commit-tree` 拼新 tree，assets 回滚至事故前 `a98d6ffc`
     完整集，保留后续新增文件），恢复 commit `de49502b`。**没走任何删图/拉图指令，
     本地磁盘零改动**。
-  - **提交前强制核验（每次 push 前必做，缺一不可）**：
+  - **提交前强制核验（每次 push 前必做，缺一不可）
+  - **APP 数据文件（app-games / app-details / app-added）同样是后台+CI 直写的「本地落后」文件**（2026-11-25 事故）：本地缺某帖子页时重算 gen-app-games 会把该帖分片暂存成删除。流程 = 先 `git show FETCH_HEAD:<帖子页>` 拉回本地 → 重算 → add 前核验暂存区 D 数 = 0。
+**：
     ① `git diff --name-status <父提交>..HEAD | grep -c "^D.*assets/"` 必须 = 0；
     ② 只 add 过具体文件（`git status` 里暂存区无 ` D assets/` 记录）；
     ③ 核验不过就停，不许推。`git add -u .` / `git add .` / `git commit -a` 在
@@ -112,7 +114,7 @@
 | `8.10.html` 等 | 每日分享页（幕布导出原风格） |
 | `Tsinhoht.html` | 后台管理（发布 / 编辑 / 置顶 / 评论 / 链接配置 / 赞助记录 / **APP 管理**）。★APP 管理页签（2026-11-22 加）**只读写 APP 仓库 `TKPORL/mrhyfx-app` 的 `announcements.json`、`version.json` 与 `app-links.json`**，与本站帖子/评论/赞助数据**完全隔离**，不要把它接到 Supabase；仓库地址在面板内的「APP 仓库」输入框，Token 复用「发布帖子」页那一栏。**★APP 面板内的控件 id 一律用 `ap*` 前缀**（如 `apTitle`/`apBody`），因为站点设置面板已有 `annTitle` 等同名 id，`getElementById` 只会拿到第一个，会导致「标题不能为空」这类假报错（2026-11-23 踩过） |
 | `sponsor.html` | 赞助页（收款码 + **感谢名单**）。★2026-11-12 起**名单是静态写在 HTML 里的**：`#spList` 内含 `<!-- SPONSORS:BEGIN -->…<!-- SPONSORS:END -->` 标记块，页面**不请求任何数据库**，只数 `<li>` 条数；块为空则整块隐藏。后台「赞助记录」页签的 **「同步名单到赞助页」** 按钮会把库里 `visible=true` 的名字写进这个块并自动提交。金额、统计卡都已按站长要求移除 |
-| `guide.html` | **小白指南**（2026-11-02 建）：这站是什么 / 四步上手 / 工具去哪找 / 怎么解压 / 网盘不限速 / 常见错误对照 / 常见坑 / 加群。正文手维护，gen.js 只重写页头区（已加入 `standalone` 清单） |
+| `guide.html` | **新手指南**（2026-11-24 改版：原小白指南+解压教程合并为 v5 版式——6 步流程+11 条排错+28 个工具胶囊；`tutorial.html` 已删除，「新手指南」在导航赞助之后；正文含锚点闪烁跳工具区）：这站是什么 / 四步上手 / 工具去哪找 / 怎么解压 / 网盘不限速 / 常见错误对照 / 常见坑 / 加群。正文手维护，gen.js 只重写页头区（已加入 `standalone` 清单） |
 | ↑ `guide.html` 的硬性配套 | **必须同时在 `DEFAULT_EXCLUDE` 里**。只加 `standalone` 不加排除时，gen.js 会把它当帖子处理：标题被改成文件名、页面底部被注入「上一期/下一期 + 评论区」（2026-11-02 踩过）。判据：`grep -c "comments.js" guide.html` 必须为 0 |
 | `supabase/add_sponsors.sql` | **赞助记录表建表脚本**（`public.sponsors`）。新环境 / 换库时必须在 SQL Editor 跑一次，否则后台「赞助记录」页签和赞助页统计都不会有数据 |
 | `assets/<日期>/` | 本地化的游戏封面图（**只存线上，本地不保留**） |
@@ -123,12 +125,23 @@
 | `assets/thumb/` | **列表页缩略图**（2026-10-14 建，2166 个 / 24.8 MB）。首页封面 120×120、帖子页卡片 360×270；页面把原图地址存 `data-full` 并挂 `onerror` 兜底。**不要手删**（删了会自动重建，但首次要几十秒）；强制全量重建 = 删目录后跑 gen |
 | `scripts/gen.js` | 生成器（本地化图片 + 注入页头按钮动效评论区 + 生成首页） |
 | `scripts/parse.js` | 幕布 HTML → `games.json` |
-| `scripts/gen-app-games.js` | **APP 数据生成器**（2026-11-22 加）：只读帖子 HTML、只写根目录 `app-games.json`，供 Flutter 客户端（`mrhyfx-app`）拉取。字段契约 `{games:[{id,title,cover,platform,size,tags,intro,linkPc,linkMobile,code,date}]}`，**不去重**（站长 2026-11-22 明确要求：同名可能是不同版本，全部保留），每张卡一条；`id = hash(文件名|标题|序号)` 保证唯一。`gen.js` 结尾会自动调用它，失败只 warn、不影响站点。同时产出 **`app-version.json`**（只有 `updated`+`count`，几百字节）：APP 每次启动先比对它，变了才下载 8MB 的 `app-games.json`，所以发帖后大约 Actions 跑完（1-3 分钟）就能在 APP 里看到 |
+| `scripts/gen.js` 的搜索段 | **搜索容错（2026-11-24 加）**：`normQ()` 归一化（去空格/全角转半角/去标点/Ⅰ-Ⅻ→数字），`cnNum()` 中文数字→阿拉伯（十七→17），`romanNum()` 词尾罗马数字→数字（III→3），三者合成 `kwSet` 查询变体；`hitAny()` 命中判定 = 变体包含 + 子序列（支持「纳利亚之泪」这类少字查询）；标题库 0 命中时**推荐 20 款**（原 12）。**改这段必须重跑 `gen.js`**（`search.html` 是生成物），且跑完**务必抽 script 块做语法校验**：`gen.js` 里的搜索脚本处于模板字符串内，`\'`、`\"` 会被还原、写坏生成的 JS（2026-11-24 因此线上搜索页整页空白）。另：`files` 只收「数字开头的帖子页 + qzt.html」，`_demo_*`/`*原型`/`app-demo.html` 等草稿**不能进帖子列表**，否则发布自检会因它们的示例链接报「非法链接格式」并中止，`search.html` 根本写不出来（2026-11-24 真实踩到） |
+| `scripts/gen-app-games.js` | **APP 数据生成器**（2026-11-22 加）：只读帖子 HTML、只写根目录 `app-games.json`，供 Flutter 客户端（`mrhyfx-app`）拉取。字段契约 `{games:[{id,title,cover,platform,size,tags,intro,linkPc,linkMobile,code,date}]}`，**不去重**（站长 2026-11-22 明确要求：同名可能是不同版本，全部保留），每张卡一条；`id = hash(文件名|标题|序号)` 保证唯一。**只统计「数字开头的帖子页」**（`20261023pc.html` / `8.10.html`），`qzt.html`、`_demo_*.html`、`*原型.html` 等非数字开头的页面一律不读——2026-11-24 实测它们会灌进 demo 示例卡，导致条数虚高 175 条（本地 5279 vs 线上 5104）。**求助帖 `qzt.html` 已纳入**（站长 2026-11-24 确认），条目带 `source` 字段（`post` / `qzt`），共 262 条；总计 5366 条。
+  **2026-11-24 起拆包**：`app-games.json` 只留轻量字段（id/title/cover/platform/size/tags/date/source/page，约 2MB），长文本与下载链接拆到 **`app-details/<帖子名>.json`**（详情页打开时按 `page` 懒加载）；另产出 **`app-hot.json`**（热门榜）：拉 Supabase `download_clicks` 按 `game_name` 聚合，取前 60；APP 有独立的「热门」页签（底部第 2 个 tab），每次进入重新拉榜单。**排序看 `app-added.json`**：记录每个游戏键 `页面|标题` 的 **首次收录日期**，`app-games.json` 的 `date` 就用它，再按日期倒序稳定排序 → 新帖的整批游戏、以及老帖里新加的单款，都会自动排到最前；没变过的老游戏保持原日期不会漂。**该文件必须提交**，否则 CI 每次都会重建基线、把所有游戏刷成当天。求助帖 `qzt.html` 没有单条时间，且**页面底部才是最新**：按页面顺序倒着编 `qztRank`（1 = 最新），`qztRank<=10` 的记当天排最前，其余压到 30 天前基线。APP 侧：首页置顶这 10 条、剩下 250 多条**每 6 条穿插一条**融进列表（不整块堆一处），另有独立「求助」页签看全量。**改了列表字段就必须同步改 APP 的 `Game` 模型与 `withDetail()`**，否则详情页没有简介。`gen.js` 结尾会自动调用它，失败只 warn、不影响站点。同时产出 **`app-version.json`**（只有 `updated`+`count`，几百字节）：APP 每次启动先比对它，变了才下载 8MB 的 `app-games.json`，所以发帖后大约 Actions 跑完（1-3 分钟）就能在 APP 里看到 |
 | `scripts/*.js` | 各类链接 / 结构检查脚本 |
 | `supabase/` | 评论功能的 SQL 迁移与 Edge Functions |
 | `.github/workflows/` | `gen.yml`（推送后自动跑 gen.js）、`send-mail.yml`、`notify-comment.yml`、`backup-imgbed.yml`、`ops.yml` |
 
 ## 当前状态
+
+- **新手指南（2026-11-24）**：`guide.html` = 原小白指南+解压教程合并版（v5 版式：6 步流程+11 条排错+28 工具）。`tutorial.html` 已删除；导航「新手指南」在**赞助之后**。★导航有两处真相：`gen.js` NAV_MENU + **`links.json`**（NAV 常量），改导航两处都要动。
+
+- **帮助页（`guide.html` / `tutorial.html`）内容纪律**：只用站长给的渠道——解压软件仅 WinRAR 与手机 RAR（网盘链接见 memory 2026-11-24）、`.lz4`/`.enc` 专用工具、其余工具统一指 `tools.html`；不限速一律链 `download.html`；**必须强调先转存、禁止网盘内解压**；mp4 类密码错误要写「换手机下、清晰度选原画」；图片包可能套很多层，要写「继续改 zip」。**不要自行补充站里没有的工具或说法。**
+
+- **搜索页动效（2026-11-24 加，在 `gen.js` 的 search 页样式段）**：`.result` 结果卡片 `mrhxFade .3s` + 前 6 张 15ms 错峰、其余 90ms；`.result:active` 与 `.search-btn:active` 按压缩放；`.mrhx-detail` 弹窗改为 `opacity+visibility` 过渡 + 内容 `scale(.96)→1`（原来是 `display:none` 硬切）。**该段在模板字符串里，改完必须抽 script/style 校验**。
+- **卡片动效（2026-11-24 加，在 `assets/css/site.css`）**：`.node` 入场 `mrhxFade .3s` + 前 6 张错峰 15ms、其余 90ms（整体 ≤390ms，动效库「元素进场节奏」要求 400ms 内）；`.node:active` 缩 3.5%、封面反向放大 1.03（「按压回弹」要求 3%–5%）；跨页用 `@view-transition`（Chrome 126+ 生效，老浏览器自动忽略）；全部带 `prefers-reduced-motion` 降级。**改 `site.css` 后必须重跑 `gen.js`**（页面引用的是内容哈希地址），这两条别写回 gen.js 的 NAV_CSS。
+
+- ★**弹窗里的图片不能加 `loading="lazy"`**（2026-11-24）：游戏介绍弹窗有 FLIP 动画，初始被判不可见，懒加载永不触发、img 高度为 0，表现为「弹窗只有文字没有图」。弹窗内图片用 `decoding="async"`。
 
 - ★**解压码/作弊码按钮（`assets/js/copycode.js`）三条硬纪律**（2026-11-18 修「复制出来是空白」）：
   ⓪ **码要同时留在介绍文本里**（2026-11-18 站长要求）。两趟提取规则的 `return ''` 已改回 `return m0`，
