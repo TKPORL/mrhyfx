@@ -1126,7 +1126,7 @@
 
 <div class="nav-mask" id="mrhxNavMask"></div>
 </header>
-<script src="assets/js/nav.js?v=678d3179"></script>
+<script src="assets/js/nav.js?v=88756cf6"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
 <!--mrhx-end-->
   <div class="title">求助贴-可在此贴求游戏</div>
@@ -9006,447 +9006,7 @@ winRAR解压方法：
 
 你能成功吗？还是你的任务会失败？
 解压码：xiebao</span></div>
-  </li>
-  </ul>
-  <div class="publish" style="display: flex; align-items: center; justify-content: center;">
-        <span>by&nbsp;</span>
-        <span style="color:#dc9b04">Tsinho</span>
-        <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
-      </div>
-<!--mrhx-stagger--><style>
-.node:nth-child(1){animation-delay:0s}
-.node:nth-child(2){animation-delay:0.05s}
-.node:nth-child(3){animation-delay:0.1s}
-.node:nth-child(4){animation-delay:0.15s}
-.node:nth-child(5){animation-delay:0.2s}
-.node:nth-child(6){animation-delay:0.25s}
-.node:nth-child(7){animation-delay:0.3s}
-.node:nth-child(8){animation-delay:0.35s}
-.node:nth-child(9){animation-delay:0.4s}
-.node:nth-child(10){animation-delay:0.45s}
-.node:nth-child(11){animation-delay:0.5s}
-.node:nth-child(12){animation-delay:0.55s}
-.node:nth-child(13){animation-delay:0.6s}
-.node:nth-child(14){animation-delay:0.65s}
-.node:nth-child(15){animation-delay:0.7s}
-.node:nth-child(16){animation-delay:0.75s}
-.node:nth-child(17){animation-delay:0.8s}
-.node:nth-child(18){animation-delay:0.85s}
-.node:nth-child(19){animation-delay:0.9s}
-.node:nth-child(20){animation-delay:0.95s}
-</style>
-    <button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
-<script>
-(function () {
-  var b = document.getElementById('mrhxTopBtn');
-  if (!b) return;
-  // 先无条件显示一次：旧版只有滚动时才加 .show，一旦下面的滚动监听因任何原因没跑起来，
-  // 按钮就永远 opacity:0（表现为"点了没反应"）。这里兜底，滚动后仍由 t() 负责后续状态。
-  b.classList.add('show');
-  function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
-  // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
-  function targetY() {
-    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
-    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
-    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
-    if (!el) return maxScroll();
-    // 2026-10-14（站长实测反馈）：原来留视口 30%（最多 200px）会导致"钳到页面最底"时正好把
-    //   发表评论表单切在屏幕底边。改成小偏移：让"评论区"标题落在靠近顶部，整段评论区完整可见；
-    //   配合 site.css 给评论区加的底部留白，评论区后面有落脚空间。
-    var off = Math.min(Math.round((window.innerHeight || 800) * 0.08), 72);
-    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
-  }
-  // 2026-11-01（站长反馈「连点两次会先往下再猛往上」）：
-  //   根因是两套滚动同时在跑 —— 向下用自绘逐帧、向上用浏览器 smooth，第二次点击叠到第一条动画上；
-  //   而且滚动过程中 t() 会翻转按钮方向，第二下点到的其实是另一个函数。
-  //   现在统一成一套自绘动画：同一方向进行中就忽略重复点击、动画期间锁死方向、最后 320px 减速收尾。
-  //   手动滚轮 / 触摸 / 键盘仍可打断（不然会失控）。
-  var raf = 0, dir = 0;
-  function stopAnim() {
-    if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    dir = 0;
-  }
-  function glide(d) {
-    stopAnim();
-    dir = d;
-    var v = 0;
-    var frame = function () {
-      var y = window.scrollY || document.documentElement.scrollTop || 0;
-      var ty = d > 0 ? targetY() : 0;
-      var dist = ty - y;
-      var ad = Math.abs(dist);
-      if (ad <= 2) { stopAnim(); t(); return; }
-      v = Math.min(v + 2.2, 96);
-      var step = ad < 320 ? Math.max(1.2, ad * 0.24) : Math.min(v, ad);
-      window.scrollTo(0, y + (dist > 0 ? step : -step));
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-  }
-  // 2026-11-01 站长二次澄清：不是「同方向忽略」，而是**每次点击立刻打断上一次并反向**。
-  //   正在滚 → 反向；静止 → 过了一半回顶、否则到底。箭头跟着"下一次去向"变。
-  function toggleScroll() {
-    var nd;
-    if (dir !== 0) nd = -dir;
-    else {
-      var yy = window.scrollY || document.documentElement.scrollTop || 0;
-      nd = yy > targetY() / 2 ? -1 : 1;
-    }
-    glide(nd);
-  }
-  function t() {
-    var y = window.scrollY || document.documentElement.scrollTop;
-    // 方向感知：最近一次是往下滑就提供"去底部↓"，往上滑就"回顶部↑"；贴顶强制↓、贴底强制↑。
-    var dirDown = y >= lastY; lastY = y;
-    var nearTop = y < 100;
-    var nearBottom = targetY() - y < 100;
-    // 箭头表示「下一次点击会去哪」：动画中就是反向，静止时按位置判断
-    var next = dir !== 0 ? -dir : (y > targetY() / 2 ? -1 : 1);
-    if (dir === 0 && nearTop) next = 1;
-    if (dir === 0 && nearBottom) next = -1;
-    b.textContent = next > 0 ? '↓' : '↑';
-    b.title = next > 0 ? '滚动到底部' : '滚动到顶部';
-    b.onclick = toggleScroll;
-    b.classList.add('show');
-  }
-  var lastY = 0;
-  function onUserScroll() { if (dir !== 0) stopAnim(); }
-  window.addEventListener('wheel', onUserScroll, { passive: true });
-  window.addEventListener('touchstart', onUserScroll, { passive: true });
-  window.addEventListener('keydown', onUserScroll);
-  window.addEventListener('scroll', t, { passive: true });
-  t();
-})();
-</script>
-  
-  <!--mrhx-daynav--><div class="mrhx-navrow"><span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">← 上一期</span><div class="mrhx-navmid"><a class="mrhx-btn mrhx-btn-nav" href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
-    <a class="mrhx-btn mrhx-btn-nav" href="guide.html">新手指南</a>
-    <a class="mrhx-btn mrhx-btn-nav mrhx-btn-sponsor" href="sponsor.html">赞助本站</a></div><a class="mrhx-btn mrhx-btn-nav" href="20261125pcaz.html">下一期 →</a></div><!--mrhx-daynav-end-->
-  <!--mrhx-comments-->
-<script>window.MRHXC={sb:'https://kydmccknlbpczeqppbtc.supabase.co',key:'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',path:'/qzt.html',fold:6};</script>
-<script src="assets/js/comments.js"></script>
-<!--mrhx-comments-end-->
-  <!--view-track-->
-<script>window.MRHXT={sb:'https://kydmccknlbpczeqppbtc.supabase.co',key:'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',path:'/qzt.html'};</script>
-<script src="assets/js/track.js"></script>
-<!--view-track-end--><!--mrhx-expand--><script>
-(function () {
-  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  // 创建模态框容器
-  var modal = document.createElement('div');
-  modal.className = 'mrhx-detail';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
-  modal.setAttribute('aria-label', '游戏介绍');
-  // data-lenis-prevent：Lenis 平滑滚动接管了全页 wheel，弹窗内盒子有 overflow:auto 却不告诉它，
-  //   滚轮就全被拿去滚底层页面（2026-10-06 用户反馈：点开游戏介绍滑不动，滚的是帖子）。
-  //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
-  modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
-  document.body.appendChild(modal);
-  var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
-  var backBtn = box.querySelector('.mrhx-detail-back');
-  var h2 = box.querySelector('h2');
-  var coverBox = box.querySelector('.mrhx-detail-cover');
-  var imgsBox = box.querySelector('.mrhx-detail-imgs');
-  var from = box.querySelector('.mrhx-detail-from');
-  var text = box.querySelector('.mrhx-detail-text');
-
-  // 2026-10-19 修复回归：帖子页弹窗此前没有「锁 body + 滚到底抖动提醒」，
-  //   滚到内容末尾后滚轮穿透到页面（用户反馈旧修复失效）。这里补齐：open 锁 body、restore 解锁、
-  //   盒内滚到底（或内容不足一屏）时抖一下并吞掉向下的滚轮。
-  var lastBump = 0;
-  function bump() {
-    var now = Date.now();
-    if (now - lastBump < 450) return;
-    lastBump = now;
-    box.classList.remove('mrhx-bump');
-    void box.offsetWidth;
-    box.classList.add('mrhx-bump');
-  }
-  function atBottom() { return box.scrollTop + box.clientHeight >= box.scrollHeight - 2; }
-  box.addEventListener('scroll', function () { if (atBottom()) bump(); }, { passive: true });
-  box.addEventListener('wheel', function (e) {
-    if (e.deltaY > 0 && atBottom()) { bump(); e.preventDefault(); }
-  }, { passive: false });
-
-  // ===== 弹窗从「被点击的那张游戏卡片」长出来，关闭时原路收回同一张卡片 =====
-  // 做法：分别量出触发卡片与弹窗在屏幕上的位置，把弹窗先摆到卡片上（起始帧），
-  //       再过渡到最终位置（FLIP）。起点锚定在触发元素上，不会从屏幕中央凭空出现。
-  var ANIM_IN = 'transform .36s cubic-bezier(.2,1.16,.32,1),opacity .18s ease';
-  var ANIM_OUT = 'transform .26s cubic-bezier(.4,0,.72,.35),opacity .2s ease';
-  var trigger = null;
-  var isOpen = false;
-  var closing = false;
-  var settleTimer = null;
-  var _sbw = 0;
-
-  // 打开时锁滚动会让滚动条消失、视口变宽，居中内容整体左移一点（站长反馈）。
-  // 用 padding-right 补上滚动条宽度，关闭时还原。
-  // 只锁滚动。横向位移交给 CSS 的 html{scrollbar-gutter:stable}（site.css）——
-  // 给 body 补 padding-right 在 max-width 居中的布局里会把内容顶偏，反而更明显（2026-11-15 修）
-  function lockScroll() {
-    document.body.style.overflow = 'hidden';
-  }
-  function unlockScroll() {
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
-  // 动画结束后必须把 transform 归零：停在 scale(1,1) 的合成层会让 Windows 上的文字发虚，
-  // 关掉重开走的是 transform:none 分支，所以「重开就清楚」（站长反馈）。
-  function settleBox() {
-    clearTimeout(settleTimer);
-    settleTimer = setTimeout(function () {
-      if (!isOpen || closing) return;
-      box.style.transition = 'none';
-      box.style.transform = 'none';
-      box.style.willChange = '';
-    }, 420);
-  }
-
-  // 取弹窗「未变形」时的位置：动画途中（弹窗正被缩放）关闭时，直接量会拿到缩小后的矩形，
-  // 算出来的落点会偏。这里临时清掉 transform 再量，同一帧内还原，不会闪。
-  function boxRect() {
-    var prev = box.style.transform;
-    box.style.transform = 'none';
-    var r = box.getBoundingClientRect();
-    box.style.transform = prev;
-    return r;
-  }
-
-  function anchor() {
-    if (!trigger || !trigger.getBoundingClientRect) return null;
-    var t = trigger.getBoundingClientRect();
-    var b = boxRect();
-    if (!b.width || !b.height) return null;
-    // 触发卡片滚出视口后，把锚点夹回视口内，避免弹窗朝屏幕外飞走
-    var cx = Math.min(Math.max(t.left + t.width / 2, 0), window.innerWidth);
-    var cy = Math.min(Math.max(t.top + t.height / 2, 0), window.innerHeight);
-    var sx = Math.max(Math.min(t.width / b.width, 1), .04);
-    var sy = Math.max(Math.min(t.height / b.height, 1), .04);
-    return { dx: cx - (b.left + b.width / 2), dy: cy - (b.top + b.height / 2), sx: sx, sy: sy };
-  }
-
-  function at(a) {
-    return 'translate(' + a.dx.toFixed(1) + 'px,' + a.dy.toFixed(1) + 'px) scale(' + a.sx.toFixed(4) + ',' + a.sy.toFixed(4) + ')';
-  }
-
-  function openFrom(el) {
-    trigger = el;
-    isOpen = true;
-    lockScroll();
-    box.style.willChange = 'transform';
-    modal.classList.add('show');
-    var a = reduce ? null : anchor();
-    box.style.transition = 'none';
-    if (a) {
-      box.style.transformOrigin = 'center center';
-      box.style.transform = at(a);   // 起始帧就贴在触发卡片上
-      box.style.opacity = '0';
-      void box.offsetWidth;          // 强制回流，保证起始帧先渲染出来再动
-      box.style.transition = ANIM_IN;
-      box.style.transform = 'translate(0px,0px) scale(1,1)';
-      box.style.opacity = '1';
-    } else {
-      box.style.transform = 'none';
-      box.style.opacity = '1';
-    }
-    settleBox();
-    try { closeBtn.focus({ preventScroll: true }); } catch (err) { closeBtn.focus(); }
-  }
-
-  function restore() {
-    box.style.transition = 'none';
-    box.style.transform = 'none';
-    box.style.opacity = '1';
-    box.style.willChange = '';
-    modal.classList.remove('show');
-    unlockScroll();
-    clearTimeout(settleTimer);
-    isOpen = false;
-    closing = false;
-    if (trigger && trigger.focus) {
-      try { trigger.focus({ preventScroll: true }); } catch (err) { trigger.focus(); }
-    }
-    trigger = null;
-  }
-
-  function closeModal() {
-    if (!isOpen || closing) return;
-    closing = true;
-    var a = reduce ? null : anchor();
-    if (!a) { restore(); return; }
-    var finished = false;
-    var finish = function () {
-      if (finished) return;
-      finished = true;
-      box.removeEventListener('transitionend', onEnd);
-      restore();
-    };
-    var onEnd = function (e) {
-      if (e && (e.target !== box || e.propertyName !== 'transform')) return;
-      finish();
-    };
-    box.style.transition = ANIM_OUT;
-    box.style.transform = at(a);
-    box.style.opacity = '0';
-    box.addEventListener('transitionend', onEnd);
-    setTimeout(finish, 420);   // 兜底：过渡被中断时也要收干净
-  }
-
-  modal.addEventListener('click', function (e) {
-    if (e.target === modal || e.target === closeBtn || e.target === backBtn) closeModal();
-  });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
-
-  document.querySelectorAll('.node.heading3').forEach(function (n) {
-    if (n.classList.contains('node-full')) return;
-    var img = n.querySelector('.image-list img');
-    if (!img) return;
-    var tip = document.createElement('span');
-    tip.className = 'img-tip';
-    tip.textContent = '点击图片查看完整介绍';
-    n.appendChild(tip);
-    // 提取游戏名（从 content 的 em.mrhx-plat 前的文本）
-    var contentEl = n.querySelector('.content');
-    var gameName = '';
-    var gamePlat = '';
-    if (contentEl) {
-      var em = contentEl.querySelector('.mrhx-plat');
-      // 2026-10-16：平台徽章改到封面图上后 content 里不再有内联徽章，回退读封面徽章（弹窗标题 [平台] 不丢）
-      if (!em) em = n.querySelector('.image-list .mrhx-plat');
-      gamePlat = em ? em.textContent.trim() : '';
-      var clone = contentEl.cloneNode(true);
-      var emInClone = clone.querySelector('.mrhx-plat');
-      if (emInClone) emInClone.remove();
-      gameName = clone.textContent.replace(/s+/g, ' ').trim();
-    }
-    // 提取来源（从 note 或 content）
-    var noteEl = n.querySelector('.note');
-    var fromText = '';
-    if (noteEl) {
-      var noteClone = noteEl.cloneNode(true);
-      noteClone.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
-      fromText = noteClone.textContent.replace(/s+/g, ' ').trim();
-    }
-    img.setAttribute('tabindex', '0');
-    img.setAttribute('role', 'button');
-    img.setAttribute('aria-label', '查看完整介绍：' + gameName);
-    function activate(e) {
-      if (e) { e.preventDefault(); e.stopPropagation(); }
-      if (closing) return;
-      h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
-      // 2026-10-13 图片：卡片只显示封面，其余图在弹窗里看（封面在顶部，其余排成图集）
-      if (coverBox && imgsBox) {
-        var _urls = Array.prototype.map.call(n.querySelectorAll('.image-list img'), function (i) {
-          return i.getAttribute('data-full') || i.getAttribute('src') || i.getAttribute('data-src') || '';
-        }).filter(Boolean);
-        // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
-        coverBox.innerHTML = ''; imgsBox.innerHTML = '';
-        if (_urls[0]) { var _c = document.createElement('img'); _c.src = _urls[0]; _c.alt = ''; _c.decoding = 'async'; coverBox.appendChild(_c); }
-        _urls.slice(1).forEach(function (u) { var _m = document.createElement('img'); _m.src = u; _m.alt = ''; _m.decoding = 'async'; imgsBox.appendChild(_m); });
-      }
-      from.innerHTML = '<b>游戏介绍</b>';
-      text.textContent = gamePlat || '';
-      // note 区域的游戏描述放到弹窗正文
-      if (noteEl) {
-        var noteDesc = noteEl.cloneNode(true);
-        noteDesc.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
-        var descText = noteDesc.textContent.replace(/s+/g, ' ').trim();
-        if (descText) text.textContent = descText;
-      }
-      openFrom(img);
-    }
-    img.addEventListener('click', activate);
-    // 键盘同样可打开（图片原本只响应鼠标点击）
-    img.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(e);
-    });
-  });
-})();
-</script>
-<script src="assets/js/copycode.js?v=92f30ad6"></script>
-    <!--qzt-page-assets--><style>
-/* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
-.node[hidden]{display:none!important}
-.qzt-more{margin:26px 0 10px;text-align:center}
-.qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
-.qzt-more button:hover{background:#e5484d;color:#fff}
-.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
-.qzt-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
-.qzt-modal-mask.show{display:flex}
-.qzt-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
-.qzt-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
-.qzt-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
-.qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
-.qzt-modal button:hover{opacity:.9}
-/* 2026-10-10 求助公告专用块（替代 node-full 游戏卡结构）：自有样式，不受游戏卡布局规则影响 */
-li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px solid #f0dcdc;border-radius:12px;padding:2px 16px 8px;margin:0}
-li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
-li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
-</style>
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  var ul=document.querySelector('ul.node-list'); if(!ul) return;
-  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var FIRST=100; if(lis.length<=FIRST) return;
-  var box=document.getElementById('qztMore'); if(!box) return;
-  var info=document.getElementById('qztMoreInfo');
-  var shown=FIRST;
-  function fill(li){
-    li.removeAttribute('hidden');
-    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
-    });
-  }
-  function refresh(){
-    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
-    if(shown>=lis.length) box.style.display='none';
-  }
-  function showBatch(){
-    var end=Math.min(shown+FIRST,lis.length);
-    for(var j=shown;j<end;j++) fill(lis[j]);
-    shown=end; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
-  }
-  function showAll(){
-    lis.forEach(fill);
-    shown=lis.length; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
-  }
-  box.removeAttribute('hidden');
-  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
-  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
-  var _saved = null;
-  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
-  if (_saved === 'all') { showAll(); }
-  else if (_saved && parseInt(_saved, 10) > 0) {
-    var _n = parseInt(_saved, 10);
-    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
-  }
-  refresh();
-  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
-  if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
-  var btn=document.getElementById('qztMoreBtn');
-  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
-  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
-  if(btn) btn.addEventListener('click',function(){
-    showBatch();
-  });
-  if('IntersectionObserver' in window && document.getElementById('qztMore')){
-    var _io=new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting && shown < lis.length){ showBatch(); }
-      });
-    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
-    _io.observe(document.getElementById('qztMore'));
-  }
-});
-</script><!--/qzt-page-assets-->
-  </body>
-    </html>
-  
-<li class="node heading3" hidden>
+  </li><li class="node heading3" hidden>
     <div class="bullet">
     <div class="bullet-dot"></div>
   </div>
@@ -11409,36 +10969,26 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
     <ul class="image-list">
     <li class="image-row"><em class="mrhx-plat mrhx-plat-cover">PC+安卓</em>
     <img loading="lazy" decoding="async"
-      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__rp9qs8k75o@360x270.webp"
+      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__o2al45ws8w@360x270.webp"
      
       
       class="image"
     />
   </li>
   </ul>
-    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1gAxWuUssAzPt5lDzf2UwBw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
-    <div class="note mm-editor"><span>[SLG/汉化]忍者后宫-异族崛起JikageRisingv2.26fArc3PC+安卓汉化版[3.5G]
-【游戏名字】：忍者后宫-异族崛起  Jikage Rising v2.26f Arc 3 PC+安卓汉化版
-【游戏语言】：中文
-【游戏大小】：3.5G
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1LByw_AgOWR4nOO4RnROaOA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <div class="note mm-editor"><span>【日式SLG/后宫同人/动态】火影同人：忍者后宫-异族崛起 Jikage Rising V2.23a Arc3 汉化中文【PC+安卓
 
-游戏介绍：
-在木叶从未取得过什么成就，你突然发现自己回到了过去。
-在神秘的萨鲁的帮助下，你解锁了氏族的力量，
-并获得了将他人变成你的追随者的能力。
-你将不得不追踪并灌输关键的kunoichi，这将有助于你恢复你的氏族。
-更新日志
-当前版本: 2.26f Arc 3 
-现在可以在玖辛奈觉醒且香燐提供样本文件后
-（即可以招募小南之后），将多由也招募到村庄。
-现在可以将琴招募到村庄，需先招募多由也。
-添加了多由也的BJ和Woohoo场景。
-添加了琴的BJ和Woohoo场景。
-修复了多个故事内容问题，如拼写和一致性。
-界面进行了调整。
-增加了更多服装自定义选项。
-解压码：GUOTAKU
-赞助码：异族崛起v2.26</span></div>
+【内容介绍】：
+毫无疑问，老外对火影的兴趣非常浓厚，所以又诞生一款火影同人游戏。
+这个游戏里你本来已经死了，却被祖先传送到了过去。
+祖先的目的是让你复兴家族，顺便把所有的女忍者都变成自己的后宫（RBQ）！
+所以游戏的任务就是要通过各种手段把火影里的女角们全部催眠弄到手。
+平时可以吃饭睡觉，买武器买道具等等，人物有属性状态，因为是有战斗的。
+只要到手的女孩，晚上就可以随意使唤来做嘿嘿的事情。
+并且エロ的时候有多种自由选项，还是全动态进行的哦！！！
+游戏中还有特殊的战斗场面，千万别输，否则游戏就结束了。
+解压码：starxk</span></div>
   </li><li class="node heading3" hidden>
     <div class="bullet">
     <div class="bullet-dot"></div>
@@ -11447,40 +10997,26 @@ PS：从网盘中下载，可大概率避免下载压缩包解压出错的问题
     <ul class="image-list">
     <li class="image-row"><em class="mrhx-plat mrhx-plat-cover">PC+安卓</em>
     <img loading="lazy" decoding="async"
-      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__1t3253x758@360x270.webp"
+      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__o2al45ws8w@360x270.webp"
      
       
       class="image"
     />
   </li>
   </ul>
-    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1cmxNwCAjbY9C2iW-ls7UFQ?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
-    <div class="note mm-editor"><span>【日式SLG/后宫同人】火影同人：忍者后宫-异族崛起 火影崛起 次影崛起 Jikage Rising 2.36a Act 3 AI汉化版【PC+安卓/3.6G/更新】
-译名: 时影崛起
-原名: Jikage Rising
-作者: Smiling Dog
-发布日: 2019年4月
-形式: Ren’Py视觉小说SLG，有动画，无CV
-分类: 2D CG 动态CG 后宫 精神控制 堕落 BDSM 足交 熟女 男主角 同人模仿
-容量: 1.72 GB
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1LByw_AgOWR4nOO4RnROaOA?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <div class="note mm-editor"><span>【日式SLG/后宫同人/动态】火影同人：忍者后宫-异族崛起 Jikage Rising V2.23a Arc3 汉化中文【PC+安卓
 
-游戏内容:
-你从未在木叶村取得过什么成就，突然有一天，你发现自己回到了过去。在神秘人物猿（Saru）的帮助下，你成功解锁了自身家族传承的力量，从而获得了将他人转化为自己忠实追随者的特殊能力。
-
-从这一刻起，你将开始追踪并教化那些关键的女忍者。她们不仅拥有强大的忍术与独特魅力，更是复兴你家族的重要基石。通过巧妙地运用家族力量，你将一步步影响她们的心灵，最终让她们成为助力你实现目标的伙伴。
-
-进入Act 3后，故事焦点转移到来自其他忍者村落的少女们身上。无论是雾隐村、岩隐村还是其他地方的知名女忍者，你都有机会将她们转化为自己的力量。游戏提供了较高的自由度，玩家可以按照个人节奏推进不同角色的教化进程，体验分支剧情与多样互动。
-
-游戏采用Ren’Py引擎开发，融合了精神控制、堕落与后宫构建等元素，玩家将在忍者世界中书写属于自己的传奇篇章。动画场景与精美立绘将为你的每一次选择增添生动细节。
-
-更新日志:
-更新时间: 2026-08-01
-
-由木人、玖辛奈和芙的婚礼场景已添加
-由木人、玖辛奈和芙的服装已添加
-触发芽衣和黑土三人行场景的条件变得更容易了
-对黑土的BJ场景进行了一些细微调整
-解压码：007721</span></div>
+【内容介绍】：
+毫无疑问，老外对火影的兴趣非常浓厚，所以又诞生一款火影同人游戏。
+这个游戏里你本来已经死了，却被祖先传送到了过去。
+祖先的目的是让你复兴家族，顺便把所有的女忍者都变成自己的后宫（RBQ）！
+所以游戏的任务就是要通过各种手段把火影里的女角们全部催眠弄到手。
+平时可以吃饭睡觉，买武器买道具等等，人物有属性状态，因为是有战斗的。
+只要到手的女孩，晚上就可以随意使唤来做嘿嘿的事情。
+并且エロ的时候有多种自由选项，还是全动态进行的哦！！！
+游戏中还有特殊的战斗场面，千万别输，否则游戏就结束了。
+解压码：starxk</span></div>
   </li><li class="node heading3" hidden>
     <div class="bullet">
     <div class="bullet-dot"></div>
@@ -15086,32 +14622,41 @@ v1.5.7发布
     <ul class="image-list">
     <li class="image-row"><em class="mrhx-plat mrhx-plat-cover">PC</em>
     <img loading="lazy" decoding="async"
-      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__1wrixyfs3b@360x270.webp"
+      data-src="https://tkporl.github.io/mrhyfx/assets/thumb/qzt__oikx8ecawl@360x270.webp"
      
       
       class="image"
     />
   </li>
   </ul>
-    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/1yW8DXtbYlPiZryPK9iWdyw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
-    <div class="note mm-editor"><span>赫雷斯的角斗场1 v1.2.1【PC/日系SLG/经营/养成/策略/后宫/步兵/Steam/官方中文】自带存档
+    <div class="mrhx-dl"><a class="mrhx-btn mrhx-btn-b" data-type="baidu" href="https://pan.baidu.com/s/12E9oy2MCOPu8S-AgAIk6uw?pwd=839m" target="_blank" rel="noreferrer">百度网盘</a></div>
+    <div class="note mm-editor"><span>更新[战场SLG/战斗H/动态] 赫雷斯的角斗场 Ⅲ v1.013 官中步兵版 [PC 1.80G]
+开发者：#WorkNite Games
+▫️贩卖日：2025 年 6 月 24 日
+▫️标签：#精品 #SLG #SLG #官中 #PC #动态 #无码 #CV #王道 #多结局 #冒险
 
-游戏介绍
+故事背景
+在一个远离人烟、僻静向阳的山谷中，居住着一支百年前为躲避战乱而迁徙至此的狐人族。
+村长班罗有一位美丽的妻子，以及两个年轻貌美的女儿——长女奥蕾蒂与次女梅兰妮。某天，一伙凶残的人口贩子闯入村庄，掳走了大量村民。
 
+被人口贩子带走的奥蕾蒂被卖到王都赫雷斯最黑暗的街区。
+她的主人是被称为“黑街帝王”的奴隶主古洛斯，此人好色易怒、残暴无情，从不把奴隶的性命放在眼里。
+奥蕾蒂在这里遇见了同为奴隶、早已失去希望、不再渴望自由的珊塔，以及在地下角斗场拥有“精灵女帝”美誉的艾洛芬。
 
-格伦是一名视财如命的奴隶商人，在一次拍卖会中拍下了前贵族奎涅尔家族的千金克菈蒂雅。 为了重获自由，克菈蒂雅缔结了替格伦赚足金钱便能赎身的约定，毅然决然地踏入险恶的斗技场， 她所面临的将是胜者的荣耀、家族的复兴，亦或者是受尽屈辱的地狱？
+奥蕾蒂必须想办法在古洛斯无尽的压榨中生存下来，摆脱奴隶纹魔法的束缚，并设法寻找盟友。
+为了与家人重逢，她必须与伙伴并肩作战，努力逃离古洛斯的恐怖统治。
 
+■回合制战斗X地图探索X20万字+文本量
+这是一款传统王道日系RPG，延续角斗士世界观的作品。
+玩家将扮演奴隶少女奥蕾蒂，在暗潮涌动的王都黑街中，寻找生存的意义。
 
+除了参与非法的地下角斗场比赛，奥蕾蒂还必须在妓院、酒馆等场所打工赚钱，以满足古洛斯的贪婪欲望。
+你将在一场场战斗与艾洛芬的训练中逐步成长。
+多样化的技能搭配与角色养成系统，将帮助你积累实力，这将成为摆脱古洛斯统治的关键！
 
-而随着神秘暗精灵艾琳的加入，三人间又将掀起一场脸红心跳的大风波…… 游戏玩法 本游戏设有多重结局，透过不同条件可触发多种剧情，剧情选项及斗技场胜负结果将影响游戏的走向， 因此玩家需谨慎分配每日行动点数，透过训练来养成美丽的角斗士们，并藉由委托及斗技比赛赚取收入。 
-
-
-
-游戏特色 多达10万字的剧情文本 丰富的剧情、事件。
-
-（250+ CG枚数、25+事件数.）
-
-风格截然不同的双女主角路线，对应复数结局的多元走向。 简单明快的养成模式，刺激的战斗体验。 随心所欲养成自己的角斗士。</span></div>
+是要坚守初衷，相信终有一天能与家人团聚？
+还是沉沦于欲望，彻底堕落为古洛斯的玩物？
+多路线结局，黑街的生存之道，全由你亲手抉择！</span></div>
   </li><li class="node heading3" hidden>
     <div class="bullet">
     <div class="bullet-dot"></div>
@@ -16566,6 +16111,436 @@ v2.4
         <span style="color:#dc9b04">Tsinho</span>
         <span>&nbsp;发布&nbsp;·&nbsp;本站仅供学习交流，请支持正版</span>
       </div>
-</body>
+<!--mrhx-stagger--><style>
+.node:nth-child(1){animation-delay:0s}
+.node:nth-child(2){animation-delay:0.05s}
+.node:nth-child(3){animation-delay:0.1s}
+.node:nth-child(4){animation-delay:0.15s}
+.node:nth-child(5){animation-delay:0.2s}
+.node:nth-child(6){animation-delay:0.25s}
+.node:nth-child(7){animation-delay:0.3s}
+.node:nth-child(8){animation-delay:0.35s}
+.node:nth-child(9){animation-delay:0.4s}
+.node:nth-child(10){animation-delay:0.45s}
+.node:nth-child(11){animation-delay:0.5s}
+.node:nth-child(12){animation-delay:0.55s}
+.node:nth-child(13){animation-delay:0.6s}
+.node:nth-child(14){animation-delay:0.65s}
+.node:nth-child(15){animation-delay:0.7s}
+.node:nth-child(16){animation-delay:0.75s}
+.node:nth-child(17){animation-delay:0.8s}
+.node:nth-child(18){animation-delay:0.85s}
+.node:nth-child(19){animation-delay:0.9s}
+.node:nth-child(20){animation-delay:0.95s}
+</style>
+    <button type="button" class="mrhx-top" id="mrhxTopBtn" title="滚动到底部">↓</button>
+<script>
+(function () {
+  var b = document.getElementById('mrhxTopBtn');
+  if (!b) return;
+  // 先无条件显示一次：旧版只有滚动时才加 .show，一旦下面的滚动监听因任何原因没跑起来，
+  // 按钮就永远 opacity:0（表现为"点了没反应"）。这里兜底，滚动后仍由 t() 负责后续状态。
+  b.classList.add('show');
+  function maxScroll() { return document.documentElement.scrollHeight - window.innerHeight; }
+  // 2026-10-10：滚到"底部"的目标改为评论区上方（上一期/下一期导航处）——用户要的是看完游戏而不是评论；无评论区时回退真底部
+  function targetY() {
+    // 2026-10-14（站长）：滚到底不要贴页面最底，停在评论区——让用户"看得见评论区"，暗示下面能评论。
+    //   优先评论区，其次上一期/下一期导航，都没有才回退真底部；视口 30%（最多 200px）留给上一屏内容。
+    var el = document.getElementById('mrhx-comments') || document.querySelector('.mrhx-navrow');
+    if (!el) return maxScroll();
+    // 2026-10-14（站长实测反馈）：原来留视口 30%（最多 200px）会导致"钳到页面最底"时正好把
+    //   发表评论表单切在屏幕底边。改成小偏移：让"评论区"标题落在靠近顶部，整段评论区完整可见；
+    //   配合 site.css 给评论区加的底部留白，评论区后面有落脚空间。
+    var off = Math.min(Math.round((window.innerHeight || 800) * 0.08), 72);
+    return Math.min(el.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop) - off, maxScroll());
+  }
+  // 2026-11-01（站长反馈「连点两次会先往下再猛往上」）：
+  //   根因是两套滚动同时在跑 —— 向下用自绘逐帧、向上用浏览器 smooth，第二次点击叠到第一条动画上；
+  //   而且滚动过程中 t() 会翻转按钮方向，第二下点到的其实是另一个函数。
+  //   现在统一成一套自绘动画：同一方向进行中就忽略重复点击、动画期间锁死方向、最后 320px 减速收尾。
+  //   手动滚轮 / 触摸 / 键盘仍可打断（不然会失控）。
+  var raf = 0, dir = 0;
+  function stopAnim() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    dir = 0;
+  }
+  function glide(d) {
+    stopAnim();
+    dir = d;
+    var v = 0;
+    var frame = function () {
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      var ty = d > 0 ? targetY() : 0;
+      var dist = ty - y;
+      var ad = Math.abs(dist);
+      if (ad <= 2) { stopAnim(); t(); return; }
+      v = Math.min(v + 2.2, 96);
+      var step = ad < 320 ? Math.max(1.2, ad * 0.24) : Math.min(v, ad);
+      window.scrollTo(0, y + (dist > 0 ? step : -step));
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+  }
+  // 2026-11-01 站长二次澄清：不是「同方向忽略」，而是**每次点击立刻打断上一次并反向**。
+  //   正在滚 → 反向；静止 → 过了一半回顶、否则到底。箭头跟着"下一次去向"变。
+  function toggleScroll() {
+    var nd;
+    if (dir !== 0) nd = -dir;
+    else {
+      var yy = window.scrollY || document.documentElement.scrollTop || 0;
+      nd = yy > targetY() / 2 ? -1 : 1;
+    }
+    glide(nd);
+  }
+  function t() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    // 方向感知：最近一次是往下滑就提供"去底部↓"，往上滑就"回顶部↑"；贴顶强制↓、贴底强制↑。
+    var dirDown = y >= lastY; lastY = y;
+    var nearTop = y < 100;
+    var nearBottom = targetY() - y < 100;
+    // 箭头表示「下一次点击会去哪」：动画中就是反向，静止时按位置判断
+    var next = dir !== 0 ? -dir : (y > targetY() / 2 ? -1 : 1);
+    if (dir === 0 && nearTop) next = 1;
+    if (dir === 0 && nearBottom) next = -1;
+    b.textContent = next > 0 ? '↓' : '↑';
+    b.title = next > 0 ? '滚动到底部' : '滚动到顶部';
+    b.onclick = toggleScroll;
+    b.classList.add('show');
+  }
+  var lastY = 0;
+  function onUserScroll() { if (dir !== 0) stopAnim(); }
+  window.addEventListener('wheel', onUserScroll, { passive: true });
+  window.addEventListener('touchstart', onUserScroll, { passive: true });
+  window.addEventListener('keydown', onUserScroll);
+  window.addEventListener('scroll', t, { passive: true });
+  t();
+})();
+</script>
+  
+  <!--mrhx-daynav--><div class="mrhx-navrow"><span class="mrhx-btn mrhx-btn-nav" style="opacity:.35;cursor:default">← 上一期</span><div class="mrhx-navmid"><a class="mrhx-btn mrhx-btn-nav" href="https://link3.cc/Tsinho" target="_blank" rel="noreferrer">官网</a>
+    <a class="mrhx-btn mrhx-btn-nav" href="guide.html">新手指南</a>
+    <a class="mrhx-btn mrhx-btn-nav mrhx-btn-sponsor" href="sponsor.html">赞助本站</a></div><a class="mrhx-btn mrhx-btn-nav" href="20261125pcaz.html">下一期 →</a></div><!--mrhx-daynav-end-->
+  <!--mrhx-comments-->
+<script>window.MRHXC={sb:'https://kydmccknlbpczeqppbtc.supabase.co',key:'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',path:'/qzt.html',fold:6};</script>
+<script src="assets/js/comments.js"></script>
+<!--mrhx-comments-end-->
+  <!--view-track-->
+<script>window.MRHXT={sb:'https://kydmccknlbpczeqppbtc.supabase.co',key:'sb_publishable_OfNqFNohTdrmzZ8dtu5bZQ_LcTk5iF9',path:'/qzt.html'};</script>
+<script src="assets/js/track.js"></script>
+<!--view-track-end--><!--mrhx-expand--><script>
+(function () {
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // 创建模态框容器
+  var modal = document.createElement('div');
+  modal.className = 'mrhx-detail';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-label', '游戏介绍');
+  // data-lenis-prevent：Lenis 平滑滚动接管了全页 wheel，弹窗内盒子有 overflow:auto 却不告诉它，
+  //   滚轮就全被拿去滚底层页面（2026-10-06 用户反馈：点开游戏介绍滑不动，滚的是帖子）。
+  //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
+  modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
+  document.body.appendChild(modal);
+  var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
+  var backBtn = box.querySelector('.mrhx-detail-back');
+  var h2 = box.querySelector('h2');
+  var coverBox = box.querySelector('.mrhx-detail-cover');
+  var imgsBox = box.querySelector('.mrhx-detail-imgs');
+  var from = box.querySelector('.mrhx-detail-from');
+  var text = box.querySelector('.mrhx-detail-text');
+
+  // 2026-10-19 修复回归：帖子页弹窗此前没有「锁 body + 滚到底抖动提醒」，
+  //   滚到内容末尾后滚轮穿透到页面（用户反馈旧修复失效）。这里补齐：open 锁 body、restore 解锁、
+  //   盒内滚到底（或内容不足一屏）时抖一下并吞掉向下的滚轮。
+  var lastBump = 0;
+  function bump() {
+    var now = Date.now();
+    if (now - lastBump < 450) return;
+    lastBump = now;
+    box.classList.remove('mrhx-bump');
+    void box.offsetWidth;
+    box.classList.add('mrhx-bump');
+  }
+  function atBottom() { return box.scrollTop + box.clientHeight >= box.scrollHeight - 2; }
+  box.addEventListener('scroll', function () { if (atBottom()) bump(); }, { passive: true });
+  box.addEventListener('wheel', function (e) {
+    if (e.deltaY > 0 && atBottom()) { bump(); e.preventDefault(); }
+  }, { passive: false });
+
+  // ===== 弹窗从「被点击的那张游戏卡片」长出来，关闭时原路收回同一张卡片 =====
+  // 做法：分别量出触发卡片与弹窗在屏幕上的位置，把弹窗先摆到卡片上（起始帧），
+  //       再过渡到最终位置（FLIP）。起点锚定在触发元素上，不会从屏幕中央凭空出现。
+  var ANIM_IN = 'transform .36s cubic-bezier(.2,1.16,.32,1),opacity .18s ease';
+  var ANIM_OUT = 'transform .26s cubic-bezier(.4,0,.72,.35),opacity .2s ease';
+  var trigger = null;
+  var isOpen = false;
+  var closing = false;
+  var settleTimer = null;
+  var _sbw = 0;
+
+  // 打开时锁滚动会让滚动条消失、视口变宽，居中内容整体左移一点（站长反馈）。
+  // 用 padding-right 补上滚动条宽度，关闭时还原。
+  // 只锁滚动。横向位移交给 CSS 的 html{scrollbar-gutter:stable}（site.css）——
+  // 给 body 补 padding-right 在 max-width 居中的布局里会把内容顶偏，反而更明显（2026-11-15 修）
+  function lockScroll() {
+    document.body.style.overflow = 'hidden';
+  }
+  function unlockScroll() {
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+  // 动画结束后必须把 transform 归零：停在 scale(1,1) 的合成层会让 Windows 上的文字发虚，
+  // 关掉重开走的是 transform:none 分支，所以「重开就清楚」（站长反馈）。
+  function settleBox() {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(function () {
+      if (!isOpen || closing) return;
+      box.style.transition = 'none';
+      box.style.transform = 'none';
+      box.style.willChange = '';
+    }, 420);
+  }
+
+  // 取弹窗「未变形」时的位置：动画途中（弹窗正被缩放）关闭时，直接量会拿到缩小后的矩形，
+  // 算出来的落点会偏。这里临时清掉 transform 再量，同一帧内还原，不会闪。
+  function boxRect() {
+    var prev = box.style.transform;
+    box.style.transform = 'none';
+    var r = box.getBoundingClientRect();
+    box.style.transform = prev;
+    return r;
+  }
+
+  function anchor() {
+    if (!trigger || !trigger.getBoundingClientRect) return null;
+    var t = trigger.getBoundingClientRect();
+    var b = boxRect();
+    if (!b.width || !b.height) return null;
+    // 触发卡片滚出视口后，把锚点夹回视口内，避免弹窗朝屏幕外飞走
+    var cx = Math.min(Math.max(t.left + t.width / 2, 0), window.innerWidth);
+    var cy = Math.min(Math.max(t.top + t.height / 2, 0), window.innerHeight);
+    var sx = Math.max(Math.min(t.width / b.width, 1), .04);
+    var sy = Math.max(Math.min(t.height / b.height, 1), .04);
+    return { dx: cx - (b.left + b.width / 2), dy: cy - (b.top + b.height / 2), sx: sx, sy: sy };
+  }
+
+  function at(a) {
+    return 'translate(' + a.dx.toFixed(1) + 'px,' + a.dy.toFixed(1) + 'px) scale(' + a.sx.toFixed(4) + ',' + a.sy.toFixed(4) + ')';
+  }
+
+  function openFrom(el) {
+    trigger = el;
+    isOpen = true;
+    lockScroll();
+    box.style.willChange = 'transform';
+    modal.classList.add('show');
+    var a = reduce ? null : anchor();
+    box.style.transition = 'none';
+    if (a) {
+      box.style.transformOrigin = 'center center';
+      box.style.transform = at(a);   // 起始帧就贴在触发卡片上
+      box.style.opacity = '0';
+      void box.offsetWidth;          // 强制回流，保证起始帧先渲染出来再动
+      box.style.transition = ANIM_IN;
+      box.style.transform = 'translate(0px,0px) scale(1,1)';
+      box.style.opacity = '1';
+    } else {
+      box.style.transform = 'none';
+      box.style.opacity = '1';
+    }
+    settleBox();
+    try { closeBtn.focus({ preventScroll: true }); } catch (err) { closeBtn.focus(); }
+  }
+
+  function restore() {
+    box.style.transition = 'none';
+    box.style.transform = 'none';
+    box.style.opacity = '1';
+    box.style.willChange = '';
+    modal.classList.remove('show');
+    unlockScroll();
+    clearTimeout(settleTimer);
+    isOpen = false;
+    closing = false;
+    if (trigger && trigger.focus) {
+      try { trigger.focus({ preventScroll: true }); } catch (err) { trigger.focus(); }
+    }
+    trigger = null;
+  }
+
+  function closeModal() {
+    if (!isOpen || closing) return;
+    closing = true;
+    var a = reduce ? null : anchor();
+    if (!a) { restore(); return; }
+    var finished = false;
+    var finish = function () {
+      if (finished) return;
+      finished = true;
+      box.removeEventListener('transitionend', onEnd);
+      restore();
+    };
+    var onEnd = function (e) {
+      if (e && (e.target !== box || e.propertyName !== 'transform')) return;
+      finish();
+    };
+    box.style.transition = ANIM_OUT;
+    box.style.transform = at(a);
+    box.style.opacity = '0';
+    box.addEventListener('transitionend', onEnd);
+    setTimeout(finish, 420);   // 兜底：过渡被中断时也要收干净
+  }
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal || e.target === closeBtn || e.target === backBtn) closeModal();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen) closeModal(); });
+
+  document.querySelectorAll('.node.heading3').forEach(function (n) {
+    if (n.classList.contains('node-full')) return;
+    var img = n.querySelector('.image-list img');
+    if (!img) return;
+    var tip = document.createElement('span');
+    tip.className = 'img-tip';
+    tip.textContent = '点击图片查看完整介绍';
+    n.appendChild(tip);
+    // 提取游戏名（从 content 的 em.mrhx-plat 前的文本）
+    var contentEl = n.querySelector('.content');
+    var gameName = '';
+    var gamePlat = '';
+    if (contentEl) {
+      var em = contentEl.querySelector('.mrhx-plat');
+      // 2026-10-16：平台徽章改到封面图上后 content 里不再有内联徽章，回退读封面徽章（弹窗标题 [平台] 不丢）
+      if (!em) em = n.querySelector('.image-list .mrhx-plat');
+      gamePlat = em ? em.textContent.trim() : '';
+      var clone = contentEl.cloneNode(true);
+      var emInClone = clone.querySelector('.mrhx-plat');
+      if (emInClone) emInClone.remove();
+      gameName = clone.textContent.replace(/s+/g, ' ').trim();
+    }
+    // 提取来源（从 note 或 content）
+    var noteEl = n.querySelector('.note');
+    var fromText = '';
+    if (noteEl) {
+      var noteClone = noteEl.cloneNode(true);
+      noteClone.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+      fromText = noteClone.textContent.replace(/s+/g, ' ').trim();
+    }
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', '查看完整介绍：' + gameName);
+    function activate(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (closing) return;
+      h2.textContent = gameName + (gamePlat ? ' [' + gamePlat + ']' : '');
+      // 2026-10-13 图片：卡片只显示封面，其余图在弹窗里看（封面在顶部，其余排成图集）
+      if (coverBox && imgsBox) {
+        var _urls = Array.prototype.map.call(n.querySelectorAll('.image-list img'), function (i) {
+          return i.getAttribute('data-full') || i.getAttribute('src') || i.getAttribute('data-src') || '';
+        }).filter(Boolean);
+        // 用 DOM API 建图（不用 innerHTML 拼 src=，否则会被 gen 的链接检查器误判为非法链接）
+        coverBox.innerHTML = ''; imgsBox.innerHTML = '';
+        if (_urls[0]) { var _c = document.createElement('img'); _c.src = _urls[0]; _c.alt = ''; _c.decoding = 'async'; coverBox.appendChild(_c); }
+        _urls.slice(1).forEach(function (u) { var _m = document.createElement('img'); _m.src = u; _m.alt = ''; _m.decoding = 'async'; imgsBox.appendChild(_m); });
+      }
+      from.innerHTML = '<b>游戏介绍</b>';
+      text.textContent = gamePlat || '';
+      // note 区域的游戏描述放到弹窗正文
+      if (noteEl) {
+        var noteDesc = noteEl.cloneNode(true);
+        noteDesc.querySelectorAll('.mrhx-btn,.mrhx-dl').forEach(function(b){b.remove();});
+        var descText = noteDesc.textContent.replace(/s+/g, ' ').trim();
+        if (descText) text.textContent = descText;
+      }
+      openFrom(img);
+    }
+    img.addEventListener('click', activate);
+    // 键盘同样可打开（图片原本只响应鼠标点击）
+    img.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(e);
+    });
+  });
+})();
+</script>
+<script src="assets/js/copycode.js?v=3e634516"></script>
+    <!--qzt-page-assets--><style>
+/* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
+.node[hidden]{display:none!important}
+.qzt-more{margin:26px 0 10px;text-align:center}
+.qzt-more button{display:inline-block;padding:11px 34px;border:1px solid #e5484d;border-radius:999px;background:#fff;color:#e5484d;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.qzt-more button:hover{background:#e5484d;color:#fff}
+.qzt-more-info{display:block;margin-top:8px;font-size:12px;color:#b8b2aa}
+.qzt-modal-mask{position:fixed;inset:0;z-index:9999;background:rgba(43,43,43,.45);display:none;align-items:center;justify-content:center;padding:20px}
+.qzt-modal-mask.show{display:flex}
+.qzt-modal{background:#fff;border-radius:16px;max-width:380px;width:100%;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.qzt-modal p{font-size:14px;color:#444;line-height:1.8;margin-bottom:18px}
+.qzt-modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qzt-modal button{padding:10px 20px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2ded8;background:#fff;color:#666}
+.qzt-modal button.pri{background:#e5484d;color:#fff;border-color:#e5484d}
+.qzt-modal button:hover{opacity:.9}
+/* 2026-10-10 求助公告专用块（替代 node-full 游戏卡结构）：自有样式，不受游戏卡布局规则影响 */
+li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px solid #f0dcdc;border-radius:12px;padding:2px 16px 8px;margin:0}
+li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
+li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var ul=document.querySelector('ul.node-list'); if(!ul) return;
+  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
+  var FIRST=100; if(lis.length<=FIRST) return;
+  var box=document.getElementById('qztMore'); if(!box) return;
+  var info=document.getElementById('qztMoreInfo');
+  var shown=FIRST;
+  function fill(li){
+    li.removeAttribute('hidden');
+    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
+      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
+    });
+  }
+  function refresh(){
+    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
+    if(shown>=lis.length) box.style.display='none';
+  }
+  function showBatch(){
+    var end=Math.min(shown+FIRST,lis.length);
+    for(var j=shown;j<end;j++) fill(lis[j]);
+    shown=end; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
+  }
+  function showAll(){
+    lis.forEach(fill);
+    shown=lis.length; refresh();
+    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
+  }
+  box.removeAttribute('hidden');
+  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
+  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
+  var _saved = null;
+  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
+  if (_saved === 'all') { showAll(); }
+  else if (_saved && parseInt(_saved, 10) > 0) {
+    var _n = parseInt(_saved, 10);
+    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
+  }
+  refresh();
+  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
+  if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
+  var btn=document.getElementById('qztMoreBtn');
+  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
+  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
+  if(btn) btn.addEventListener('click',function(){
+    showBatch();
+  });
+  if('IntersectionObserver' in window && document.getElementById('qztMore')){
+    var _io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && shown < lis.length){ showBatch(); }
+      });
+    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
+    _io.observe(document.getElementById('qztMore'));
+  }
+});
+</script><!--/qzt-page-assets-->
+  </body>
     </html>
   
