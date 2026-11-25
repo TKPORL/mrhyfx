@@ -4,11 +4,36 @@
  * 评论区 DOM 骨架（MRHX_SKELETON）由本脚本注入到自身标签之前。 */
 var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrhx-comments\">\n  <h2>评论区<span class=\"mrhx-cnum\" id=\"mrhx-cnum\"></span><span class=\"mrhx-cfbar\" id=\"mrhx-cfbar\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfbar-btn\">缩短评论</button></span></h2>\n  \n  <div class=\"mrhx-cfold-wrap\" id=\"mrhx-cfold-wrap\">\n    <div id=\"mrhx-clist\"></div>\n    <div class=\"mrhx-cfold-mask\" id=\"mrhx-cfold-mask\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cfold-btn\">展开评论</button></div>\n  </div>\n  <div class=\"mrhx-cmore-wrap\" id=\"mrhx-cmore-wrap\" style=\"display:none\"><button type=\"button\" class=\"mrhx-cfbtn\" id=\"mrhx-cmore-btn\">加载更多评论</button></div>\n  <form id=\"mrhx-cform\" class=\"mrhx-cform\">\n    <div style=\"position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden\" aria-hidden=\"true\">\n      <label>请不要填写此栏<input type=\"text\" id=\"mrhx-hp\" name=\"website\" tabindex=\"-1\" autocomplete=\"off\"></label>\n    </div>\n    <div class=\"mrhx-cform-title\">💬 发表评论</div>\n    <div class=\"mrhx-crow\">\n      <input type=\"text\" id=\"mrhx-nick\" placeholder=\"昵称\" maxlength=\"30\" required>\n      <input type=\"email\" id=\"mrhx-mail\" placeholder=\"常用邮箱（站长回复会发到这里）\" required>\n    </div>\n    <textarea id=\"mrhx-ctext\" placeholder=\"友善评论，请支持正版…\" maxlength=\"2000\" required></textarea>\n    <div class=\"mrhx-crow mrhx-csub\">\n      <span id=\"mrhx-creply\" class=\"mrhx-creply\"></span>\n      <button type=\"submit\">发表评论</button>\n    </div>\n  </form>\n</div>\n<div class=\"mrhx-cpop\" id=\"mrhx-cpop\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"mrhx-cpop-title\">\n  <div class=\"mrhx-cpop-box\">\n    <h3 id=\"mrhx-cpop-title\">邮箱填写提示</h3>\n    <p>请填写您日常使用的电子邮箱地址。当网站管理员对您做出回复后，系统将自动把管理员的回复内容发送至您所填写的邮箱地址，以便您及时查收和查看回复信息。</p>\n    <button type=\"button\" class=\"mrhx-cpop-ok\" id=\"mrhx-cpop-ok\">知道了</button>\n  </div>\n</div>";
 (function () {
+  /* 2026-11-25：localStorage 容错（Safari 无痕/内置浏览器禁存储会抛异常，一抛整块评论就没了） */
+  function lsGet(k) { try { return lsGet(k); } catch (e) { return ''; } }
+  function lsSet(k, v) { try { lsSet(k, v); } catch (e) {} }
+  /* 2026-11-25：alert 会影响移动端（部分 WebView 直接拦掉，点了发送毫无反馈），改用页内提示 */
+  var _tipEl = null, _tipTimer = null;
+  function tip(msg) {
+    try {
+      if (!_tipEl) {
+        _tipEl = document.createElement('div');
+        _tipEl.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(8px);' +
+          'max-width:80vw;padding:10px 16px;border-radius:10px;background:rgba(30,30,32,.94);color:#fff;' +
+          'font-size:13px;line-height:1.5;z-index:99999;opacity:0;transition:opacity .18s,transform .18s;' +
+          'pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25);text-align:center;';
+        document.body.appendChild(_tipEl);
+      }
+      _tipEl.textContent = String(msg).replace(/\s+/g, ' ');
+      _tipEl.style.opacity = '1';
+      _tipEl.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(_tipTimer);
+      _tipTimer = setTimeout(function () {
+        _tipEl.style.opacity = '0';
+        _tipEl.style.transform = 'translateX(-50%) translateY(8px)';
+      }, 2600);
+    } catch (e) {}
+  }
   var C = window.MRHXC || {};
   if (!C.sb || !C.key || !C.path) return;
   document.currentScript.insertAdjacentHTML('beforebegin', MRHX_SKELETON);
   var SB = C.sb, KEY = C.key, PATH = C.path;
-  var ADMIN = localStorage.getItem('mrhx_comments_admin') || '';
+  var ADMIN = lsGet('mrhx_comments_admin');
   var list = document.getElementById('mrhx-clist');
   var form = document.getElementById('mrhx-cform');
   var nickEl = document.getElementById('mrhx-nick'), mailEl = document.getElementById('mrhx-mail'), textEl = document.getElementById('mrhx-ctext');
@@ -157,9 +182,9 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
         frow.className = 'mrhx-cinline-row';
         var inick = document.createElement('input');
         inick.type = 'text'; inick.placeholder = '昵称'; inick.maxLength = 30;
-        inick.value = localStorage.getItem('mrhx_nick') || '';
+        inick.value = lsGet('mrhx_nick');
         var imail = document.createElement('input');
-        imail.type = 'email'; imail.placeholder = '邮箱'; imail.value = localStorage.getItem('mrhx_mail') || '';
+        imail.type = 'email'; imail.placeholder = '邮箱'; imail.value = lsGet('mrhx_mail');
         var sendBtn = document.createElement('button');
         sendBtn.type = 'button'; sendBtn.className = 'mrhx-cinline-send'; sendBtn.textContent = '发送';
         var cancelBtn = document.createElement('button');
@@ -173,8 +198,8 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
         cancelBtn.onclick = function () { iform.remove(); };
         sendBtn.onclick = function () {
           var nick = inick.value.trim(), mail = imail.value.trim(), content = ta.value.trim();
-          if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+          if (!nick || !mail || !content) { tip('请填写昵称、邮箱和内容'); return; }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { tip('邮箱格式不正确'); return; }
           sendBtn.disabled = true; sendBtn.textContent = '发送中…';
           fetch(SB + '/rest/v1/rpc/guard_comment', {
             method: 'POST',
@@ -186,11 +211,11 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
             return r.json();
           }).then(function (d) {
             if (d && d.ok === false) throw new Error(d.error || '评论未通过检查');
-            localStorage.setItem('mrhx_nick', nick);
-            localStorage.setItem('mrhx_mail', mail);
+            lsSet('mrhx_nick', nick);
+            lsSet('mrhx_mail', mail);
             load();
             // 回复通知：已由 Supabase 触发器自动发邮件（supabase/upgrade_reply_notify.sql），前端不再持有密钥直调
-          }).catch(function (e) { alert('发送失败：' + e.message); }).finally(function () { sendBtn.disabled = false; sendBtn.textContent = '发送'; });
+          }).catch(function (e) { tip('发送失败：' + e.message); }).finally(function () { sendBtn.disabled = false; sendBtn.textContent = '发送'; });
         };
       };
       bar.appendChild(rp);
@@ -212,11 +237,11 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
           saveBtn.style.cssText = 'margin-top:6px;margin-right:6px;background:#e5484d;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px';
           saveBtn.onclick = function () {
             var val = ta.value.trim();
-            if (!val) { alert('内容不能为空'); return; }
+            if (!val) { tip('内容不能为空'); return; }
             saveBtn.disabled = true; saveBtn.textContent = '保存中…';
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ content: val }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('编辑失败：' + e.message); saveBtn.disabled = false; saveBtn.textContent = '保存'; });
+              .catch(function (e) { tip('编辑失败：' + e.message); saveBtn.disabled = false; saveBtn.textContent = '保存'; });
           };
           var cancelBtn = h('button', 'mrhx-cbtn', '取消');
           cancelBtn.type = 'button';
@@ -234,7 +259,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
           if (!confirm('删除这条评论及其回复？')) return;
           fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'DELETE', headers: Object.assign(headers(), { 'x-admin-key': ADMIN }) })
             .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-            .catch(function (e) { alert('删除失败：' + e.message); });
+            .catch(function (e) { tip('删除失败：' + e.message); });
         };
         bar.appendChild(dl);
         if (!c.pid) {
@@ -243,7 +268,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
           pin.onclick = function () {
             fetch(SB + '/rest/v1/comments?id=eq.' + c.id, { method: 'PATCH', headers: Object.assign(headers(), { 'x-admin-key': ADMIN, 'Prefer': 'return=minimal' }), body: JSON.stringify({ pinned: !c.pinned }) })
               .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); load(); })
-              .catch(function (e) { alert('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
+              .catch(function (e) { tip('置顶失败：' + e.message + '\n请先在 Supabase 运行 README 中的升级 SQL（comments 表添加 pinned 字段）。'); });
           };
           bar.appendChild(pin);
         }
@@ -347,8 +372,8 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
     e.preventDefault();
     if (hpEl && hpEl.value) { form.reset(); return; }
     var nick = nickEl.value.trim(), mail = mailEl.value.trim(), content = textEl.value.trim();
-    if (!nick || !mail || !content) { alert('请填写昵称、邮箱和内容'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { alert('邮箱格式不正确'); return; }
+    if (!nick || !mail || !content) { tip('请填写昵称、邮箱和内容'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { tip('邮箱格式不正确'); return; }
     var btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = '发送中…';
     fetch(SB + '/rest/v1/rpc/guard_comment', {
       method: 'POST',
@@ -363,7 +388,7 @@ var MRHX_SKELETON = "<!--mrhx-comments-->\n<div class=\"mrhx-comments\" id=\"mrh
       form.reset();
       load();
       // 新评论通知站长：已由 Supabase 触发器自动发邮件（supabase/upgrade_notify_comment.sql），前端不再持有密钥直调
-    }).catch(function (e) { var m = String((e && e.message) || e); alert(/fetch|network|Failed|Load|timeout/i.test(m) ? '发送失败：请检查网络，或开启 VPN（梯子）后重试' : '发送失败：' + m); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
+    }).catch(function (e) { var m = String((e && e.message) || e); tip(/fetch|network|Failed|Load|timeout/i.test(m) ? '发送失败：请检查网络，或开启 VPN（梯子）后重试' : '发送失败：' + m); }).finally(function () { btn.disabled = false; btn.textContent = '发表评论'; });
   };
   load();
 })();

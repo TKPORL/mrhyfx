@@ -416,11 +416,11 @@ ${RES_LINKS.map(l => '        ' + resLinkA(l)).join('\n')}
         <img src="${SITE_LOGO_IMG}" alt="${esc(SITE_NAME)}">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
-      <div class="drawer-body" data-lenis-prevent>
+      <div class="drawer-body">
         <nav class="drop-menu" aria-label="站点导航">
 ${navLinksHtml('          ', current, true, true)}
         </nav>
-        <div class="drawer-res" id="mrhxDrawerRes" data-lenis-prevent>
+        <div class="drawer-res" id="mrhxDrawerRes">
           <button type="button" class="drawer-res-btn" aria-expanded="false" aria-controls="mrhxDrawerResG">
             <svg class="nic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
             其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
@@ -438,6 +438,10 @@ ${annPanelHtml()}
 
 let TIMESTAMPS = {};
 if (fs.existsSync('timestamps.json')) TIMESTAMPS = readJson('timestamps.json');
+// 2026-11-25：HTML 实体解码（搜索索引/标题里的 &amp; 会让关键词命中不到）
+const decodeEnt = s0 => String(s0 == null ? '' : s0)
+  .replace(/&amp;/g, '&').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
 
 let PINS = [];
 if (fs.existsSync('pins.json')) {
@@ -638,7 +642,7 @@ const nodeExpandScript = `<!--mrhx-expand--><script>
   // data-lenis-prevent：Lenis 平滑滚动接管了全页 wheel，弹窗内盒子有 overflow:auto 却不告诉它，
   //   滚轮就全被拿去滚底层页面（2026-10-06 用户反馈：点开游戏介绍滑不动，滚的是帖子）。
   //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
-  modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
+  modal.innerHTML = '<div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
   document.body.appendChild(modal);
   var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
   var backBtn = box.querySelector('.mrhx-detail-back');
@@ -1618,7 +1622,7 @@ const allGames = [];
 // 单文件 JS 分页：卡片全在页面里（SEO/搜索索引不受影响），脚本按每 50 张一组切换显示；
 // 非当前页的 img 把 src 暂存 data-src 并清空，翻到才加载（display:none 挡不住非 lazy img 发请求，必须清 src）。
 // 幂等：页码栏与样式脚本都用注释标记先删后插；DOM 不包壳，reorderNodes 输入输出无痕。
-const QZT_MORE_COUNT = 100;
+const QZT_MORE_COUNT = 100;   // 仅首页 gwGrid 分批在用的常量；qzt 已改全量（2026-11-25）
 function qztUnwrapPager(html) {
   // 兼容清理：2026-10-01 短暂上线过的折叠壳（横幅 + hidden 容器），剥掉还原成纯净卡片流
   html = html.replace(/<div class="qzt-fold-box">[\s\S]*?<\/div>\s*/g, '');
@@ -1636,30 +1640,18 @@ function qztUnwrapPager(html) {
   return html;
 }
 function qztInjectPager(html) {
-  // 先删掉上次注入的分页栏副本（幂等——否则每次跑生成器都追加一条，2026-10-03 曾堆到 3 条）
-  html = html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
-  const end = html.lastIndexOf('</ul>');
-  if (end < 0) return html;
-  return html.slice(0, end + 5)
-    + '\n  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->'
-    + html.slice(end + 5);
+  // 2026-11-25（站长）：求助帖改为「进入即全量显示」，不再分批、不再有「显示更多」。
+  //   这里只做幂等清理：把历史注入的分页块删干净。
+  return html.replace(/<!--qzt-pager-->[\s\S]*?<!--\/qzt-pager-->\s*/g, '');
 }
 function qztDeferImages(s) {
-  // 生成期真·延迟加载：第 60 张卡之后的 img 不写 src（写 data-src），li 加 hidden——
-  // 浏览器解析 HTML 时就不会发起这 144 个图片请求（此前只在浏览器端摘 src，
-  // 为时已晚，206 张图并发把用户网络打爆，前 60 张也转圈——2026-10-09 用户实测踩坑）。
-  // ⚠️ 入参是 node-list 的 inner（以第一张卡开头），split 后 parts[0] = 卡 0，parts[i] = 卡 i
-  return s.split(/(?=<li class="node heading3)/).map(function (p, i) {
-    if (i < QZT_MORE_COUNT) {
-      // 前 60 卡反向还原：上轮被 defer 的卡若因新帖插入排进前 60，必须拿回真 src
-      return p.replace(/(<img\b[^>]*?)\sdata-src="([^"]*)"/g, '$1 src="$2"');
-    }
-    return p
-      .replace(/(<img\b[^>]*?)\ssrc="([^"]*)"/g, '$1 data-src="$2"')
-      // hidden 必须插在 class 之后——gen.js 守卫与搜索索引都按 '<li class="node heading3' 前缀数卡，
-      // 写成 '<li hidden class=...' 会让统计掉到 61 触发发布自检（2026-10-09 踩坑）
-      .replace(/<li class="node heading3">/, '<li class="node heading3" hidden>');
-  }).join('');
+  // 2026-11-25（站长）：求助帖进入即全量显示，取消分批与生成期 defer。
+  //   旧 data-src 变体一律还原真 src；hidden 去掉；所有 img 挂原生 loading="lazy"，
+  //   浏览器只加载视口附近的缩略图，408 张也不会一次性并发。
+  return s
+    .replace(/(<img\b[^>]*?)\sdata-src="([^"]*)"/g, '$1 src="$2"')
+    .replace(/<li class="node heading3" hidden>/g, '<li class="node heading3">')
+    .replace(/(<img\b)(?![^>]*\bloading=)/g, '$1 loading="lazy"');
 }
 const QZT_PAGE_ASSETS = `<style>
 /* hidden 卡必须显式压过 body.mrhx-grid2 .node 的 display:flex（作者样式永远胜 UA 的 [hidden]），否则 146 张 defer 卡全部照常显示——2026-10-09 用户实测踩坑 */
@@ -1681,64 +1673,7 @@ li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px sol
 li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
 li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
 </style>
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  var ul=document.querySelector('ul.node-list'); if(!ul) return;
-  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var FIRST=${QZT_MORE_COUNT}; if(lis.length<=FIRST) return;
-  var box=document.getElementById('qztMore'); if(!box) return;
-  var info=document.getElementById('qztMoreInfo');
-  var shown=FIRST;
-  function fill(li){
-    li.removeAttribute('hidden');
-    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
-    });
-  }
-  function refresh(){
-    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
-    if(shown>=lis.length) box.style.display='none';
-  }
-  function showBatch(){
-    var end=Math.min(shown+FIRST,lis.length);
-    for(var j=shown;j<end;j++) fill(lis[j]);
-    shown=end; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
-  }
-  function showAll(){
-    lis.forEach(fill);
-    shown=lis.length; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
-  }
-  box.removeAttribute('hidden');
-  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
-  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
-  var _saved = null;
-  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
-  if (_saved === 'all') { showAll(); }
-  else if (_saved && parseInt(_saved, 10) > 0) {
-    var _n = parseInt(_saved, 10);
-    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
-  }
-  refresh();
-  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
-  if(/p\\d+/.test(location.hash) && parseInt((location.hash.match(/p(\\d+)/)||[])[1],10)>1) showAll();
-  var btn=document.getElementById('qztMoreBtn');
-  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
-  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
-  if(btn) btn.addEventListener('click',function(){
-    showBatch();
-  });
-  if('IntersectionObserver' in window && document.getElementById('qztMore')){
-    var _io=new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting && shown < lis.length){ showBatch(); }
-      });
-    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
-    _io.observe(document.getElementById('qztMore'));
-  }
-});
-</script>`;
+`;
 
 // 后台搜索用的「帖子级别」索引：key=短文件名（如 "8.10"），value={title,games,intro}
 const gameIndex = {};
@@ -2068,7 +2003,11 @@ ${navHeaderHtml('')}
       // #10：帖子级 url（搜索结果标题跳转用）。缺失会导致点击结果 404/空链接
       return { title, intro, img, links, plat, url: file, source: TITLES[shortName] || shortName };
     }).filter(g => g.title);
-    searchIndex.push(...games);
+    // 2026-11-25：标题/简介里的 HTML 实体解码后再入索引（否则搜 & 命中不到、结果显示 &amp;）
+    searchIndex.push(...games.map(g => Object.assign({}, g, {
+      title: decodeEnt(g.title),
+      intro: decodeEnt(g.intro)
+    })));
     allGames.push(...games.map(g => ({ ...g, file })));
 
     // #24/#25：分享卡用本期首游戏封面（无封面回退 logo）；description 拼本期游戏名
@@ -3960,7 +3899,7 @@ ${likeScript}
       for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
       return h % SHARDS;
     };
-    const titlesIndex = slimIndex.map(g => ({ title: g.title, url: g.url, plat: g.plat, n: g.n, d: g.d, p: shardOf(g) }));
+    const titlesIndex = slimIndex.map(g => ({ title: decodeEnt(g.title), url: g.url, plat: g.plat, n: g.n, d: g.d, p: shardOf(g) }));
     const shardBuckets = Array.from({ length: SHARDS }, () => []);
     slimIndex.forEach(g => shardBuckets[shardOf(g)].push(g));
     for (let s = 0; s < SHARDS; s++) {
