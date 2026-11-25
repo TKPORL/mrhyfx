@@ -48,7 +48,7 @@ li{position:relative;padding-left:17px;margin-bottom:8px;font-size:14.5px;color:
 li:last-child{margin-bottom:0}
 li::before{content:"";position:absolute;left:3px;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--red);opacity:.5}
 li b{color:var(--ink);font-weight:650}
-a.l{color:var(--red);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(229,72,77,.28)}
+a.l{color:var(--red);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(229,72,77,.28);margin:0 .22em}/* 2026-11-26（站长）：跳转红字前后要留空，否则贴着前后汉字 */
 a.l:hover{border-bottom-color:var(--red)}
 code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:#f6f4f0;border:1px solid var(--line);padding:0 5px;border-radius:4px;color:var(--ink)}
 
@@ -81,6 +81,13 @@ details .ans b{color:var(--ink);font-weight:650}
 .pill span{font-size:11px;color:var(--ink3)}
 .gt{font-size:12.5px;color:var(--ink3);margin:15px 0 8px;letter-spacing:.05em}
 .gt:first-child{margin-top:0}
+/* 2026-11-26：对照表（密码表 / 后缀表）。窄屏可横向滑动，不撑破卡片 */
+.sfx{width:100%;border-collapse:collapse;font-size:13px;line-height:1.65;margin:2px 0 6px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sfx th,.sfx td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.sfx th{font-size:12px;font-weight:650;color:var(--ink3);background:#faf9f6;white-space:nowrap}
+.sfx tr:last-child td{border-bottom:none}
+.sfx td:first-child{white-space:nowrap;color:var(--ink)}
+@media (max-width:520px){.sfx td:first-child{white-space:normal}}
 
 footer{margin-top:26px;padding:14px 16px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);font-size:13.5px;color:var(--ink2);box-shadow:var(--sh)}
 footer b{color:var(--ink)}
@@ -88,7 +95,12 @@ footer a{color:var(--red);text-decoration:none;font-weight:600}
 
 @media (max-width:640px){
   h1{font-size:22px}
-  .steps{grid-template-columns:repeat(3,1fr)}
+  /* 2026-11-26（站长）：9 格铺成三行会把手机首屏占满，改成单行横向滑动 */
+  .steps{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .steps::-webkit-scrollbar{display:none}
+  .st{flex:0 0 auto;width:82px;scroll-snap-align:start;padding:8px 3px}
+  .st b{font-size:12.5px}
+  .st span{font-size:11px;margin-top:0}
 }
 
 /* 2026-11-24 动效：区块入场错峰（≤400ms）+ pill 按压/悬浮 */
@@ -248,10 +260,12 @@ section:nth-of-type(n+4){animation-delay:120ms}
     <a class="st" href="#a1"><i>01</i><b>找游戏</b><span>搜索</span></a>
     <a class="st" href="#a2"><i>02</i><b>转存</b><span>先保存</span></a>
     <a class="st" href="#a3"><i>03</i><b>下载</b><span>到本机</span></a>
-    <a class="st" href="#a4"><i>04</i><b>解压</b><span>密码在介绍</span></a>
-    <a class="st" href="#a5"><i>05</i><b>运行</b><span>转区</span></a>
-    <a class="st" href="#tools"><i>06</i><b>工具</b><span>下载软件</span></a>
-    <a class="st" href="#fix"><i>07</i><b>排错</b><span>出问题看</span></a>
+    <a class="st" href="#pw"><i>04</i><b>解压密码</b><span>在哪看</span></a>
+    <a class="st" href="#a4"><i>05</i><b>解压</b><span>改后缀</span></a>
+    <a class="st" href="#a5"><i>06</i><b>运行</b><span>转区</span></a>
+    <a class="st" href="#tools"><i>07</i><b>工具</b><span>下载软件</span></a>
+    <a class="st" href="#fix"><i>08</i><b>排错</b><span>出问题看</span></a>
+    <a class="st" href="#other"><i>09</i><b>其他</b><span>浏览器/梯子</span></a>
   </nav>
 </div>
 
@@ -287,6 +301,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <li>点帖子里的<b>「百度网盘」</b>按钮</li>
       <li>先点<b>保存到我的网盘</b>，不要直接下载</li>
       <li>再从自己的网盘下到本机</li>
+      <li>打开链接发现里面全是「学习资料」别懵，那就是游戏：<b>认准里面的视频文件</b>，只下视频，其余不用管</li>
     </ul>
     <div class="fig">
       <div class="box">
@@ -302,7 +317,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       </div>
       <p class="cap">下载按钮在每张卡片的底部</p>
     </div>
-    <div class="tip">不要在网盘里直接下载，也不要在网盘里解压，这两步省掉，后面八成会报错。这两步省掉，后面八成会报错。</div>
+    <div class="tip">不要在网盘里直接下载，也不要在网盘里解压，这两步省掉，后面八成会报错。</div>
   </div>
 </section>
 
@@ -331,28 +346,87 @@ section:nth-of-type(n+4){animation-delay:120ms}
   </div>
 </section>
 
-<section id="a4">
-  <div class="head"><span class="badge">04</span><h2>解压</h2></div>
+<section id="pw">
+  <div class="head"><span class="badge">04</span><h2>解压密码</h2></div>
   <div class="card">
     <ul>
       <li>卡片下载按钮旁边有<b>「解压码」按钮</b>，点一下自动复制，别手打</li>
-      <li>个别游戏没这个按钮：点一下游戏封面图，解压码可能写在<b>介绍</b>里</li>
-      <li>下到的不是压缩包（可能是 jpg、mp4、psd）：<b>把后缀改成 <code>.zip</code> 或 <code>.rar</code></b> 再解</li>
-      <li>解完还不是游戏：<b>继续改压缩包后缀</b>，可能好几层，不止一层</li>
-      <li>带 part1 / 001 的是分卷：全部下完放同一个文件夹，<b>只解第一个</b></li>
-      <li><code>.lz4</code> 用 <a class="l" href="#tool-lz4解压工具">lz4 解压工具</a>；<code>.enc</code> 用 <a class="l" href="#tool-enc解压工具">enc 解压工具</a>，普通解压软件打不开</li>
-      <li><b>必装</b>：电脑装 <a class="l" href="#tool-WinRAR">WinRAR</a>，手机装 <a class="l" href="#tool-RAR">RAR</a>。不装它们就<b>打不开下载的文件</b>。不要用手机自带的文件管理、也不要用7-Zip等第三方解压工具去解压</li>
+      <li>没这个按钮的游戏：<b>点一下游戏封面图</b>会弹出「介绍」，密码写在介绍里，拉到最下面看</li>
+      <li>复制了还提示密码错误：多半把<b>备注一起复制</b>了，或者末尾带了空格。手动只留密码本身再试一次</li>
+      <li>密码是<b>「悦悦」</b>的那种，在电脑上解经常报密码错误或缺文件：<b>换手机解</b>。手机下载 → 手机 RAR 解压 → 要电脑玩再传过去</li>
     </ul>
+    <p class="gt">看文件名认密码</p>
+    <p style="margin:6px 0 10px">网盘里的文件名常常就是线索，对上了直接试，不用到处问人。</p>
+    <table class="sfx">
+      <thead><tr><th>文件名 / 特征</th><th>解压码</th></tr></thead>
+      <tbody>
+        <tr><td>带「二小姐」</td><td><code>xiebao</code></td></tr>
+        <tr><td>带「多平台真实案例」</td><td><code>game</code>（先把 <code>.mp4</code> 改成 <code>.zip</code> 或 <code>.rar</code>）</td></tr>
+        <tr><td>带「hh」</td><td><code>1435.kt</code></td></tr>
+        <tr><td>带「第DEEE节」</td><td><code>摸摸鱼ACG</code></td></tr>
+        <tr><td>文件夹「动画免责声明」，或分卷以 <code>LXNDGP691</code> 开头</td><td><code>LXNDLXND</code>（同一批分卷用的是同一个密码）</td></tr>
+        <tr><td>后缀是 <code>.enc</code></td><td><code>ykacg</code>（先用 enc 工具解密出 zip，再解压）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="a4">
+  <div class="head"><span class="badge">05</span><h2>解压</h2></div>
+  <div class="card">
+    <ul>
+      <li><b>必装</b>：电脑装 <a class="l" href="#tool-WinRAR">WinRAR</a>，手机装 <a class="l" href="#tool-RAR">RAR</a>。不装它们就打不开下载的文件。主用这两个，别用手机自带的文件管理，也别用 UC 之类的浏览器解压</li>
+      <li><b>千万别在百度网盘里解压</b>（那叫线上解压）：网盘只能用来存，解压一定下载到本机再做，在网盘里解基本都会出错</li>
+      <li><b>改后缀之前</b>，先让系统把后缀显示出来，否则你改的不是真后缀（会变成 <code>xxx.mp4.txt</code>）。<br>Win10：文件资源管理器 → 顶部「查看」→ 勾「文件扩展名」<br>Win11：「查看」→「显示」→ 勾「文件扩展名」<br>手机不用设置，RAR 里长按文件 → 重命名即可</li>
+    </ul>
+    <p class="gt">后缀对照表</p>
+    <table class="sfx">
+      <thead><tr><th>看到的后缀</th><th>怎么处理</th></tr></thead>
+      <tbody>
+        <tr><td><code>.exe</code></td><td>多数直接双击就是自解压包；个别是伪装后缀，改成 <code>.zip</code> / <code>.rar</code> 再解</td></tr>
+        <tr><td><code>.tar</code></td><td>直接解压</td></tr>
+        <tr><td><code>.jpg</code> <code>.png</code> <code>.psd</code> <code>.txt</code> <code>.00</code></td><td>改成 <code>.zip</code> 或 <code>.rar</code> 再解</td></tr>
+        <tr><td><code>.mp4</code> <code>.mkv</code> <code>.pack</code></td><td>改成 <code>.zip</code> 或 <code>.rar</code> 再解（视频/封装后缀只是伪装）</td></tr>
+        <tr><td><code>.tif</code></td><td>改成 <code>.7z</code>，用 <a class="l" href="#tool-7-Zip">7-Zip</a> 解</td></tr>
+        <tr><td><code>.7z</code></td><td>WinRAR 能开；打不开就装 <a class="l" href="#tool-7-Zip">7-Zip</a></td></tr>
+        <tr><td>分卷 <code>part1</code> / <code>.001</code></td><td>全部下载放同一个文件夹，只解 <b>part1</b></td></tr>
+        <tr><td><code>.lz4</code></td><td>用 <a class="l" href="#tool-lz4解压工具">lz4 解压工具</a>，普通解压软件打不开</td></tr>
+        <tr><td><code>.enc</code></td><td>先用 <a class="l" href="#tool-enc解压工具">enc 解压工具</a>解出 zip，再解那个 zip</td></tr>
+      </tbody>
+    </table>
+    <ul style="margin-top:12px">
+      <li>解完还不是游戏：<b>继续看后缀继续改</b>，可能套了好几层，一直改到出现游戏文件夹为止</li>
+      <li>分卷少一卷都解不了：全部卷都要下载，放同一个文件夹</li>
+    </ul>
+    <p class="gt">.enc 怎么解（四步）</p>
+    <ul>
+      <li>下载 <a class="l" href="#tool-enc解压工具">enc 解压工具</a>，解压出来直接运行，不用安装</li>
+      <li>把 <code>.enc</code> 文件拖进程序窗口（或点按钮手动选）</li>
+      <li>等它跑完，会在同一个文件夹里生成一个 zip</li>
+      <li>再按上面的方法正常解压那个 zip；加密出来的只是 zip，不是游戏本体，别漏了最后一步</li>
+    </ul>
+    <p class="gt">手机（安卓）怎么解压</p>
+    <ul>
+      <li>装 <a class="l" href="#tool-RAR">RAR</a> 或 <a class="l" href="#tool-ZArchiverPro">ZArchiver Pro</a>，改后缀、解分卷都在里面做</li>
+      <li>长按文件 → 重命名 → 改后缀；再点开压缩包 → 解压到当前文件夹</li>
+    </ul>
+    <p class="gt">压缩包损坏怎么修（WinRAR）</p>
+    <ul>
+      <li>选中坏的压缩包，用 <a class="l" href="#tool-WinRAR">WinRAR</a> 打开 → 点上方「工具」→ 选「修复压缩文件」</li>
+      <li>弹窗里选格式（RAR 或 ZIP）和修复后文件放哪，点「确定」开始</li>
+      <li>跑到 100% 后去那个文件夹，会多出一个 <code>fixed.</code> 开头的包，解它就行</li>
+    </ul>
+    <div class="tip">提示压缩包损坏时：先在 WinRAR 里把包<b>打开看看</b>。能正常打开、看到里面的文件，就别修了，直接把文件拖出来解；一打开就报错，才去重新下载。</div>
   </div>
 </section>
 
 <section id="a5">
-  <div class="head"><span class="badge">05</span><h2>运行</h2></div>
+  <div class="head"><span class="badge">06</span><h2>运行</h2></div>
   <div class="card">
     <ul>
       <li>电脑直接双击 <code>.exe</code>；报缺 dll 就装<a class="l" href="#tool-VCx64">VC++</a> / <a class="l" href="#tool-DirectX">DirectX</a></li>
       <li>日文游戏乱码：<a class="l" href="#tool-转区工具">转区工具</a>里以日文模式启动，别改系统语言</li>
-      <li>手机玩电脑游戏：<a class="l" href="#tool-Winlator">Winlator</a>；安卓模拟器类（joi / 吉里吉里2 / Tyranor / ONScripter）都在<a class="l" href="#g-sim">模拟器组</a>里挑</li>
+      <li>手机玩电脑游戏：装 <a class="l" href="#tool-Winlator">Winlator</a>。吉里吉里 / ONS / Tyranor 这类按游戏类型在<a class="l" href="#g-sim">模拟器组</a>里挑</li>
       <li>提示缺 RTP：<a class="l" href="#tool-rpg三件套">rpg 三件套</a>装一遍就好</li>
       <li>安卓包打不开：解压完的 <code>.apk</code> 直接装；<code>.exe</code> 手机玩不了，得用<a class="l" href="#g-sim">模拟器</a></li>
     </ul>
@@ -395,6 +469,15 @@ section:nth-of-type(n+4){animation-delay:120ms}
     <details open><summary>改了后缀还是解不开</summary>
       <div class="ans"><p>多层压缩包：<b>每解出一层就再看一次后缀</b>，还是图片就继续改 zip，一直改到出现游戏文件夹为止。</p></div>
     </details>
+    <details open><summary>解压出来的文件名全是乱码</summary>
+      <div class="ans"><p>不是文件坏了，是编码问题。在 WinRAR 解压窗口里把<b>文件名编码选成日文（Shift-JIS）</b>再解；还乱就先<a class="l" href="#tool-转区工具">转区</a>再解压。</p></div>
+    </details>
+    <details open><summary>解压到一半提示路径太长 / 失败</summary>
+      <div class="ans"><p>压缩包放太深了。把它挪到短路径再解，比如 <code>D:\game\</code>，别放在桌面里套好几层文件夹。</p></div>
+    </details>
+    <details open><summary>进游戏文字全是方框 / 存档找不到</summary>
+      <div class="ans"><p>用<a class="l" href="#tool-转区工具">转区工具</a>以日文模式启动，别去改系统区域设置。存档多数在游戏自己文件夹里，找不到就用转区工具打开存档目录看一眼。</p></div>
+    </details>
   </div>
 </section>
 
@@ -412,6 +495,7 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <a id="tool-lz4解压工具" class="pill" href="https://pan.baidu.com/s/13Bs3RyYl5df2AKwCwMejzg?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M2 9h20"/><path d="M12 4v7"/><path d="M9.5 8.5 12 11l2.5-2.5"/></svg></span><b>lz4 解压工具</b><span>.lz4</span></a>
       <a id="tool-enc解压工具" class="pill" href="https://pan.baidu.com/s/1JxWiph5imY8Z-3kEM-9ORg?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 10.9-1"/><rect x="3.5" y="10.5" width="17" height="10.5" rx="2.5"/><circle cx="12" cy="15.6" r="1.4"/><path d="M12 17v1.6"/></svg></span><b>enc 解压工具</b><span>.enc</span></a>
       <a id="tool-一键改后缀" class="pill" href="https://pan.baidu.com/s/1dBPgAiNgFyi9ocmUq5fH3A?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span><b>一键改后缀</b><span>图片转 zip</span></a>
+      <a id="tool-7-Zip" class="pill" href="https://pan.baidu.com/s/1oBYkgLj6tUYUn2m6lTYklA?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M4 6.5 6 4h12l2 2.5"/><path d="M12 10v3.5"/><path d="M12 16.2v.6"/></svg></span><b>7-Zip</b><span>.tif / .7z</span></a>
     </div>
 
     <p class="gt" id="g-sim">模拟器</p>
@@ -424,6 +508,15 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <a id="tool-ONScripter" class="pill" href="https://pan.baidu.com/s/1r4vr-0aqdAF6Odn9v9fz6g?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><img class="ic" alt="" src="data:image/webp;base64,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"></span><b>ONScripter</b></a>
       <a id="tool-mtool" class="pill" href="https://pan.baidu.com/s/10E3u4MipRvSNh5JD3N1VjQ?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><img class="ic" alt="" src="data:image/webp;base64,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"></span><b>mtool</b><span>模拟/翻译</span></a>
       <a id="tool-rpg三件套" class="pill" href="https://pan.baidu.com/s/1mcs0sMEv1vmAbfwUqnmkFw?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="10" rx="4"/><path d="M7 10v4M5 12h4"/><circle cx="16" cy="11" r=".9"/><circle cx="18.4" cy="13" r=".9"/></svg></span><b>rpg 三件套</b><span>RTP 提示修复</span></a>
+    </div>
+
+    <p class="gt" id="g-simtut">模拟器视频教程</p>
+    <div class="pills">
+      <a id="tool-KRKR安卓" class="pill" href="https://www.bilibili.com/video/BV1wAhQeQEaG/" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10.4 9.6 4.4 2.4-4.4 2.4z" fill="currentColor" stroke="none"/></svg></span><b>KRKR 模拟器</b><span>安卓</span></a>
+      <a id="tool-KRKR苹果" class="pill" href="https://www.bilibili.com/video/BV1fq4y1b7bD/" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10.4 9.6 4.4 2.4-4.4 2.4z" fill="currentColor" stroke="none"/></svg></span><b>KRKR 模拟器</b><span>苹果</span></a>
+      <a id="tool-ONS安卓" class="pill" href="https://www.bilibili.com/video/BV13F4m177Ff/" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10.4 9.6 4.4 2.4-4.4 2.4z" fill="currentColor" stroke="none"/></svg></span><b>ONS 模拟器</b><span>安卓</span></a>
+      <a id="tool-ONS苹果" class="pill" href="https://www.bilibili.com/video/BV1JF411N79Y" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10.4 9.6 4.4 2.4-4.4 2.4z" fill="currentColor" stroke="none"/></svg></span><b>ONS 模拟器</b><span>苹果</span></a>
+      <a id="tool-Ty安卓" class="pill" href="https://www.bilibili.com/video/BV1Ht421N79E/" target="_blank" rel="noreferrer"><span class="icw"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10.4 9.6 4.4 2.4-4.4 2.4z" fill="currentColor" stroke="none"/></svg></span><b>Ty 模拟器</b><span>安卓</span></a>
     </div>
 
     <p class="gt" id="g-cn">汉化与改数据</p>
@@ -452,7 +545,21 @@ section:nth-of-type(n+4){animation-delay:120ms}
   </div>
 </section>
 
-<footer><b>还是不行？</b>去<a href="qzt.html">求助帖</a>留言，写清三件事：卡在哪一步、屏幕提示什么字、你用的是电脑还是手机。</footer>
+<section id="other">
+  <div class="head"><span class="badge">其他</span><h2>浏览器与注意事项</h2></div>
+  <div class="card">
+    <ul>
+      <li><b>浏览器</b>：电脑用谷歌 Chrome，手机用 Via 或 X 浏览器。系统自带浏览器和 UC 容易<b>进不来本站</b>——会被直接拦截，不是文件出问题</li>
+      <li><b>进不来或加载慢</b>：建议自备梯子，以后站子换了入口也能进（<a class="l" href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">破解版梯子推荐</a>）</li>
+      <li><b>别在网盘里在线解压</b>：很容易把资源弄没，务必转存后下载到本机再解</li>
+      <li>资源来自网络，仅供个人学习交流，请在下载后 <b>24 小时内删除</b></li>
+      <li>禁止转载到社交、直播、视频类平台；禁止直接搬运原始文件，转载需重新压制，严禁商用</li>
+      <li>发现侵权内容可邮件联系 <b>Tsinhos@qq.com</b>，核实后会及时删除</li>
+    </ul>
+  </div>
+</section>
+
+<footer><b>还是不明白？</b>去<a href="qzt.html">求助帖</a>留言，写清三件事：卡在哪一步、有没有提示什么、你用的是手机还是电脑。</footer>
 
 </div>
 
