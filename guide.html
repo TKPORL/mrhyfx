@@ -106,7 +106,9 @@ section:nth-of-type(n+4){animation-delay:120ms}
 @media (prefers-reduced-motion: reduce){.gt.flash,section.flash{animation:none}}
 
 /* 2026-11-24 锚点定位与闪烁（v2） */
-.gt,.pill{scroll-margin-top:78px}
+/* 偏移量由 --hdh（顶栏实测高度）推导，nav-h.js 会在加载/缩放/旋转时回写；
+   回退值 78px 只在脚本失效时生效，避免写死数值在手机上算错 */
+.gt,.pill{scroll-margin-top:calc(var(--hdh, 68px) + 10px)}
 /* 萌系提示：粉色柔光呼吸 + 果冻轻弹 + 阴影浮动，无硬边框 */
 .pill.flash{animation:pillFlash 1.2s ease-in-out 5;z-index:1;border-color:transparent}
 @keyframes pillFlash{
@@ -456,6 +458,28 @@ section:nth-of-type(n+4){animation-delay:120ms}
 
 <script src="assets/js/nav.js?v=678d3179"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
+
+<script>
+/* 顶栏实测高度回写 --hdh，给 .gt/.pill 的 scroll-margin-top 用（2026-11-25）。
+   写死 px 在手机上会算错：顶栏高度随断点、系统字号、能否换行而变。 */
+(function(){
+  var root = document.documentElement;
+  function sync(){
+    var h = document.querySelector('header');
+    if(!h) return;
+    var v = Math.round(h.getBoundingClientRect().height);
+    if(v > 0) root.style.setProperty('--hdh', v + 'px');
+  }
+  sync();
+  window.addEventListener('load', sync);
+  window.addEventListener('resize', sync, {passive:true});
+  window.addEventListener('orientationchange', function(){ setTimeout(sync, 260); });
+  if(window.ResizeObserver){
+    var hd = document.querySelector('header');
+    if(hd){ try{ new ResizeObserver(sync).observe(hd); }catch(e){} }
+  }
+})();
+</script>
 
 <script>
 var FLASH_MS = 5600;

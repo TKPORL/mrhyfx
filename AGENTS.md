@@ -860,3 +860,12 @@
 8. **报错误判要留样本**：出现 D1_TYPE_ERROR / 兼容层报错时，先在同一环境复现并保存原始报错文本，禁止凭"部署版本不对"结案（10-16 的误判导致同一 bug 拖三天）。
 9. **模式切换必须覆盖所有写路径**："切 SB"要同时检查：访客写（rpc）、后台管理写（评论 POST/PATCH/DELETE）、导入、缓存失效；透传第三方时必须转发认证头（apikey/authorization）。
 10. **每次 push 前的三步核验不变**：① 暂存区 0 个 `^D`（尤其 assets/）② 只 add 具体文件 ③ 数据文件已与远端 diff 核对。另：本项目 git 输出会"说谎"（commit 报 `no changes added` 实际已成功），**一切以 `git log`/`git show` 二次核实为准**。
+
+## 2026-11-25 收尾清理（三件）
+
+1. **根目录与 scripts 瘦身**：删除 12 个 `scripts/_*.js` 调试脚本（45KB）+ 24 个根目录原型/草稿页（约 1.8MB，`_demo_*` 各版本、`_l.html`、`app-demo.html`、`pc_live2.html`、`pcaz_live.html`、`导航栏原型.html`、`导航栏悬浮效果对比.html`），全部进**回收站**可还原。
+   **只保留两个基准稿**：`_demo_app游戏库_v6.html`（APP 视觉基准）、`_demo_help_v5.html`（帮助页版式基准）。根目录 HTML 现在 113 个（111 帖子 + 2 基准稿）。
+   `scripts/gen.js:483` 与 `scripts/gen-app-games.js:124` 里「跳过 `_demo_*` / 原型页」的逻辑保留未动。
+2. **后台「30 天热门」口径修好**（`Tsinhoht.html` `loadTopDl()`）：原先先用 `created_at=gte.since` 数出 30 天总数，真正分页拉数据时**漏了这个过滤条件**（`order=id.asc&limit&offset` 直拉全表），等于按全时段排名。已补 `&created_at=gte.${since}`。
+   ⚠️ `scripts/gen-app-games.js` 的 `buildHot()`（APP 的 `app-hot.json`）**仍是全时段 top60**，口径与后台不同，改不改等站长定。
+3. **锚点偏移改为自适应**（`guide.html` / `tools.html`）：原写死 `.gt,.pill{scroll-margin-top:78px}`、`.sect[id]{88px / 74px}`，手机顶栏高度随断点/系统字号变化会算歪。现统一 `calc(var(--hdh, 68px) + 10px)`，由页面底部内联脚本把顶栏实测高度（`getBoundingClientRect().height`）写进 `--hdh`，并在 `load` / `resize` / `orientationchange` / `ResizeObserver` 时刷新。**这两个页面不在 gen.js 生成流程内，改锚点要直接改文件**。

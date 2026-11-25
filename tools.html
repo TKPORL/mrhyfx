@@ -125,9 +125,9 @@ footer b{color:#e5484d}
   .tut-card{padding:15px 14px;font-size:13px}
   .tut-key{font-size:16px}
 }
-/* 2026-10-24：从别的页面锚点跳进来时，给 sticky 顶栏让出高度 */
-.sect[id]{scroll-margin-top:88px}
-@media (max-width:720px){.sect[id]{scroll-margin-top:74px}}
+/* 2026-10-24：从别的页面锚点跳进来时，给 sticky 顶栏让出高度
+   2026-11-25：改成读 --hdh（顶栏实测高度），写死 px 在手机上会算错 */
+.sect[id]{scroll-margin-top:calc(var(--hdh, 68px) + 10px)}
 
 /* 2026-10-24：工具字母圆标（按分类分色，纯 CSS 无外链） */
 .tool-ico{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;letter-spacing:-.2px;line-height:1;text-transform:none;user-select:none}
@@ -500,5 +500,25 @@ footer b{color:#e5484d}
 <!-- 旧导航脚本已移除，改用 assets/js/nav.js -->
 <script src="assets/js/nav.js?v=678d3179"></script>
 <script src="assets/js/smooth.js?v=a53dfb02"></script>
+<script>
+/* 顶栏实测高度回写 --hdh，给 .sect[id] 的 scroll-margin-top 用（2026-11-25） */
+(function(){
+  var root = document.documentElement;
+  function sync(){
+    var h = document.querySelector('header');
+    if(!h) return;
+    var v = Math.round(h.getBoundingClientRect().height);
+    if(v > 0) root.style.setProperty('--hdh', v + 'px');
+  }
+  sync();
+  window.addEventListener('load', sync);
+  window.addEventListener('resize', sync, {passive:true});
+  window.addEventListener('orientationchange', function(){ setTimeout(sync, 260); });
+  if(window.ResizeObserver){
+    var hd = document.querySelector('header');
+    if(hd){ try{ new ResizeObserver(sync).observe(hd); }catch(e){} }
+  }
+})();
+</script>
 </body>
 </html>

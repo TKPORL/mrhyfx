@@ -4870,7 +4870,7 @@ async function loadTopDl() {
       for (let off = 0; off < Math.max(total, 1); off += pageSize) starts.push(off);
       for (let i = 0; i < starts.length; i += 8) { // 8 页并发，3 万行约 4 轮拿完
         const batch = await Promise.all(starts.slice(i, i + 8).map(off =>
-          fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&order=id.asc&limit=${pageSize}&offset=${off}`, {
+          fetch(`${sbUrl}/rest/v1/download_clicks?select=game_name&created_at=gte.${since}&order=id.asc&limit=${pageSize}&offset=${off}`, {
             headers: Object.assign(sbHeaders(), { 'x-admin-key': sbSecret })
           }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         ));
