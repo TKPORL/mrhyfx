@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-25T02:17:36.099Z",
+  "updated": "2026-11-25T02:46:41.797Z",
   "count": 5757,
   "games": [
     {
@@ -41449,17 +41449,10 @@
     {
       "id": 1291622777,
       "title": "赫雷斯的角斗场1",
-      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__1wrixyfs3b@360x270.webp",
+      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__oikx8ecawl@360x270.webp",
       "platform": "PC",
-      "size": "",
-      "tags": [
-        "日系SLG",
-        "经营",
-        "养成",
-        "策略",
-        "后宫",
-        "步兵"
-      ],
+      "size": "1.80G",
+      "tags": [],
       "date": "2026-10-26",
       "source": "qzt",
       "page": "qzt",
@@ -42405,13 +42398,13 @@
     {
       "id": 1025563049,
       "title": "异族崛起",
-      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__1t3253x758@360x270.webp",
+      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__o2al45ws8w@360x270.webp",
       "platform": "PC+安卓",
-      "size": "3.6G",
+      "size": "",
       "tags": [
         "日式SLG",
         "后宫同人",
-        "更新"
+        "动态"
       ],
       "date": "2026-10-26",
       "source": "qzt",
@@ -42421,13 +42414,13 @@
     {
       "id": 1025563048,
       "title": "异族崛起",
-      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__rp9qs8k75o@360x270.webp",
+      "cover": "https://tkporl.github.io/mrhyfx/assets/thumb/qzt__o2al45ws8w@360x270.webp",
       "platform": "PC+安卓",
-      "size": "3.5G",
+      "size": "",
       "tags": [
-        "游戏名字",
-        "游戏语言",
-        "游戏大小"
+        "日式SLG",
+        "后宫同人",
+        "动态"
       ],
       "date": "2026-10-26",
       "source": "qzt",
