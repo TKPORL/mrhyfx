@@ -134,6 +134,8 @@
 
 ## 当前状态
 
+- **求助帖（qzt.html）2026-11-25 起为全量显示**：不再分批、没有「显示更多」按钮，408 张卡一次全出，图片靠原生 `loading="lazy"` 控带宽。gen.js 里 `qztDeferImages` 只做 data-src 还原 + 加 lazy，`qztInjectPager` 只清理不注入。**改这段时严禁整段删 QZT_PAGE_ASSETS 的 <script>**——该模板常量里还有评论计数等其它脚本。
+
 - **新手指南（2026-11-24）**：`guide.html` = 原小白指南+解压教程合并版（v5 版式：6 步流程+11 条排错+28 工具）。`tutorial.html` 已删除；导航「新手指南」在**赞助之后**。★导航有两处真相：`gen.js` NAV_MENU + **`links.json`**（NAV 常量），改导航两处都要动。
 
 - **帮助页（`guide.html` / `tutorial.html`）内容纪律**：只用站长给的渠道——解压软件仅 WinRAR 与手机 RAR（网盘链接见 memory 2026-11-24）、`.lz4`/`.enc` 专用工具、其余工具统一指 `tools.html`；不限速一律链 `download.html`；**必须强调先转存、禁止网盘内解压**；mp4 类密码错误要写「换手机下、清晰度选原画」；图片包可能套很多层，要写「继续改 zip」。**不要自行补充站里没有的工具或说法。**
