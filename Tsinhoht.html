@@ -783,9 +783,9 @@ body.gate-pending main{display:none!important}
 </div>
 <script>
 /* 2026-11-25：localStorage 容错——Safari 无痕/存储被禁时原生调用会抛异常，后台脚本一抛就整体中断（表现为面板空白） */
-function lsGet(k){try{return lsGet(k)}catch(e){return null}}
-function lsSet(k,v){try{lsSet(k,v);return true}catch(e){return false}}
-function lsDel(k){try{lsDel(k)}catch(e){}}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
 // ===== 密码门禁（防误入，非服务器级防护）=====
 // 2026-10-18：改用 SHA-256 加盐哈希（旧版 djb2 玩家级算法+密码提示注释等于公开密码）；
 // 密码本身为 20 位混合强口令，源码中无任何明文/提示
