@@ -1078,7 +1078,7 @@
         <img src="logo.webp" alt="Tsinho黄油站">
         <button type="button" class="drawer-close" data-nav-close aria-label="关闭菜单">×</button>
       </div>
-      <div class="drawer-body" data-lenis-prevent>
+      <div class="drawer-body">
         <nav class="drop-menu" aria-label="站点导航">
           <a href="index.html"><svg class="nic" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></svg>首页</a>
           <a href="sponsor.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-9.2-8.5C1.4 8.4 3.3 5 6.7 5c2.1 0 3.5 1.1 4.3 2.4h2C13.8 6.1 15.2 5 17.3 5c3.4 0 5.3 3.4 3.9 6.5C19 15.7 12 20 12 20Z"/></svg>赞助</a>
@@ -1088,7 +1088,7 @@
           <a href="mianze.html"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.2c0 4.6 3.2 8 7.5 9.8 4.3-1.8 7.5-5.2 7.5-9.8V6L12 3Z"/></svg>免责声明</a>
           <a href="https://tkporl.github.io/hyfxdyx/" target="_blank" rel="noreferrer"><svg class="nic" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9s1.4-6.4 3.9-9Z"/></svg>备用站</a>
         </nav>
-        <div class="drawer-res" id="mrhxDrawerRes" data-lenis-prevent>
+        <div class="drawer-res" id="mrhxDrawerRes">
           <button type="button" class="drawer-res-btn" aria-expanded="false" aria-controls="mrhxDrawerResG">
             <svg class="nic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
             其他资源<svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
@@ -1120,7 +1120,6 @@
   <div class="title">新帖子标题</div>
         <ul class="node-list">
   </ul>
-  <!--qzt-pager--><div class="qzt-more" id="qztMore" hidden><button type="button" id="qztMoreBtn">显示更多</button><span class="qzt-more-info" id="qztMoreInfo"></span></div><!--/qzt-pager-->
   <div class="publish" style="display: flex; align-items: center; justify-content: center;">
         <span>by&nbsp;</span>
         <span style="color:#dc9b04">Tsinho</span>
@@ -1222,7 +1221,7 @@
   // data-lenis-prevent：Lenis 平滑滚动接管了全页 wheel，弹窗内盒子有 overflow:auto 却不告诉它，
   //   滚轮就全被拿去滚底层页面（2026-10-06 用户反馈：点开游戏介绍滑不动，滚的是帖子）。
   //   加上这个官方属性后，滚轮在弹窗内部生效，弹窗内容可正常上下滑。
-  modal.innerHTML = '<div class="mrhx-detail-box" data-lenis-prevent><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
+  modal.innerHTML = '<div class="mrhx-detail-box"><button type="button" class="mrhx-detail-close" aria-label="关闭">✕</button><h2></h2><div class="mrhx-detail-cover"></div><div class="mrhx-detail-imgs"></div><div class="mrhx-detail-from"></div><div class="mrhx-detail-text"></div><button type="button" class="mrhx-detail-back">返回</button></div>';
   document.body.appendChild(modal);
   var box = modal.querySelector('.mrhx-detail-box');  var closeBtn = box.querySelector('.mrhx-detail-close');
   var backBtn = box.querySelector('.mrhx-detail-back');
@@ -1466,64 +1465,7 @@ li.mrhx-announce{grid-column:1/-1;list-style:none;background:#fff;border:1px sol
 li.mrhx-announce .mra-t{font-size:15px;font-weight:700;text-align:center;padding:10px 0 7px;border-bottom:1px dashed #f0dcdc;margin-bottom:8px}
 li.mrhx-announce .mra-b{font-size:13px;line-height:1.65;color:#333;white-space:pre-line}
 </style>
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  var ul=document.querySelector('ul.node-list'); if(!ul) return;
-  var lis=Array.prototype.slice.call(ul.children).filter(function(el){return el.tagName==='LI';});
-  var FIRST=100; if(lis.length<=FIRST) return;
-  var box=document.getElementById('qztMore'); if(!box) return;
-  var info=document.getElementById('qztMoreInfo');
-  var shown=FIRST;
-  function fill(li){
-    li.removeAttribute('hidden');
-    Array.prototype.forEach.call(li.querySelectorAll('img'),function(im){
-      if(!im.getAttribute('src') && im.getAttribute('data-src')){ im.src=im.getAttribute('data-src'); im.removeAttribute('data-src'); }
-    });
-  }
-  function refresh(){
-    if(info) info.textContent='已显示 '+shown+' 款 · 共 '+lis.length+' 款游戏';
-    if(shown>=lis.length) box.style.display='none';
-  }
-  function showBatch(){
-    var end=Math.min(shown+FIRST,lis.length);
-    for(var j=shown;j<end;j++) fill(lis[j]);
-    shown=end; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', String(Math.ceil(shown / FIRST))); } catch (e) {}
-  }
-  function showAll(){
-    lis.forEach(fill);
-    shown=lis.length; refresh();
-    try { localStorage.setItem('mrhx_qzt_show', 'all'); } catch (e) {}
-  }
-  box.removeAttribute('hidden');
-  // 2026-10-11 站长要求：记住用户「显示更多」的选择，刷新后不再回到 100 款
-  //   'all' = 显示全部；数字 N = 已点 N 次「再显示 100 款」
-  var _saved = null;
-  try { _saved = localStorage.getItem('mrhx_qzt_show'); } catch (e) {}
-  if (_saved === 'all') { showAll(); }
-  else if (_saved && parseInt(_saved, 10) > 0) {
-    var _n = parseInt(_saved, 10);
-    for (var _k = 0; _k < _n && shown < lis.length; _k++) showBatch();
-  }
-  refresh();
-  // 旧分页链接兼容：#p2 这类页码直达 → 直接显示全部
-  if(/p\d+/.test(location.hash) && parseInt((location.hash.match(/p(\d+)/)||[])[1],10)>1) showAll();
-  var btn=document.getElementById('qztMoreBtn');
-  // 2026-10-16（站长）改为滚动自动加载：不再弹窗询问——「显示更多」区域进入视口就自动补一批 60 张，
-  // 模态框逻辑保留但只在手动点按钮时出现（按钮本身被观察器覆盖后基本用不到，作为无 JS 观察器的兜底）。
-  if(btn) btn.addEventListener('click',function(){
-    showBatch();
-  });
-  if('IntersectionObserver' in window && document.getElementById('qztMore')){
-    var _io=new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting && shown < lis.length){ showBatch(); }
-      });
-    },{rootMargin:'600px 0px'}); // 提前 600px 预加载，滚到底部前图已就位
-    _io.observe(document.getElementById('qztMore'));
-  }
-});
-</script><!--/qzt-page-assets-->
+<!--/qzt-page-assets-->
   </body>
     </html>
   
