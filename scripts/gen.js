@@ -3107,6 +3107,13 @@ function relTime(iso){
   // 进页先渲染骨架卡 + 扫光动效让用户看到「正在搜索」；小索引 0 结果或失败时回退整库匹配
   // 2026-11-24 搜索容错：归一化（全角/空白/标点）+ 数字写法互换（十七↔17、III↔3）
   var PUNCT = ['·','・','_','-','—','－',':','：',',','，','。','.','、','!','！','?','？','"',"'",'“','”','‘','’','（','）','(',')','[',']','【','】','《','》','<','>','~','～','/','|'];
+  // 2026-11-27（站长）：繁体/异体字归一。「梅麻吕」搜不到「梅麻呂」就是这类问题——字形不同、意思一样。
+  // 成对写：偶数位＝原字形，奇数位＝简体。只收形近异体，不动同义词。
+  var VAR_PAIRS = '呂吕裡里裏里說说們们來来時时後后這这個个學学會会國国對对開开關关麼么沒没現现點点與与為为從从過过還还讓让實实應应該该幾几樣样動动發发嗎吗婬淫師师殺杀愛爱體体麗丽氣气龍龙願愿樂乐歡欢聲声語语讀读寫写買买賣卖錢钱貓猫趕赶兒儿兩两給给帶带種种機机電电腦脑網网遊游戲戏級级絕绝統统練练習习戰战鬥斗劍剑術术姫姬歩步円圆髙高濱滨擬拟險险檢检验验證证錄录鐘钟間间題题頭头臉脸腳脚喬乔補补備备檔档壓压縮缩傳传鏈链結结頁页圖图資资訊讯標标籤签選选擇择確确認认錯错誤误壞坏損损復复製制裝装啟启運运轉转區区軟软螢萤療疗惡恶劇剧亂乱慾欲顏颜髮发嘆叹豔艳嬌娇癡痴誘诱蕩荡濕湿褲裤襪袜嬰婴歲岁夢梦鏡镜陰阴陽阳靈灵緣缘纏缠綿绵濃浓滿满覺觉當当誰谁變变數数織织燒烧餵喂燙烫戀恋灑洒癢痒綁绑縛缚鎖锁鑰钥鍵键觸触';
+  var VAROBJ = {};
+  (function () {
+    for (var _i = 0; _i < VAR_PAIRS.length - 1; _i += 2) VAROBJ[VAR_PAIRS.charAt(_i)] = VAR_PAIRS.charAt(_i + 1);
+  })();
   function normQ(s) {
     var out = '';
     var t = String(s || '').toLowerCase();
@@ -3117,6 +3124,7 @@ function relTime(iso){
       var ch = t[i];
       if (ch.trim() === '') continue;
       if (PUNCT.indexOf(ch) > -1) continue;
+      if (VAROBJ[ch]) { out += VAROBJ[ch]; continue; }   // 異體/繁體 → 简体，两边同标准才能对上
       out += ch;
     }
     return out;
@@ -3167,6 +3175,16 @@ function relTime(iso){
         var pi = 0;
         for (var ti = 0; ti < t0.length && pi < v.length; ti++) { if (t0[ti] === v[pi]) pi++; }
         if (pi === v.length) return true;
+      }
+      // 2026-11-27（站长）：4 字以上再放宽一个字——漏字、打错字、异体字表没收录的，也能命中。
+      // 只放宽一个字，且顺序必须一致，避免「催眠」这类两字查询命中一大片。
+      if (v.length >= 4) {
+        for (var k = 0; k < v.length; k++) {
+          var vv = v.slice(0, k) + v.slice(k + 1);
+          var pj = 0;
+          for (var tj = 0; tj < t0.length && pj < vv.length; tj++) { if (t0[tj] === vv[pj]) pj++; }
+          if (pj === vv.length) return true;
+        }
       }
     }
     return false;

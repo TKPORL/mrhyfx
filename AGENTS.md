@@ -894,3 +894,30 @@
 - 密码表里的是站内真实密码，改动前先问站长。
 
 **2026-11-26 补充**：`guide.html` 的 `a.l` 加 `margin:0 .22em` —— 内联红色跳转前后必须留空，否则贴着前后汉字；用 em 单位随字号缩放。`tools.html` 与帖子页的同款链接未加，站长只要求新手指南。
+
+## 2026-11-27 搜索：繁体/异体字归一 + 一字容错
+
+**问题**：站长搜「梅麻吕」只出 1 条，搜「梅麻呂」（吕的异体）能出 5 条 —— `normQ()` 从来没处理繁体/异体字，只做了全角、罗马数字、标点、空白。
+
+**改法**（都在 `scripts/gen.js` 搜索模板段，`search.html` 是生成物）：
+1. `VAR_PAIRS` + `VAROBJ`：成对写「原字形→简体」（`呂吕`、`師师`、`惡恶`、`療疗`、`滿满`…约 170 对），`normQ()` 逐字查表。查询词与正文同一套归一化，两边才能对上。
+2. `hitAny()` 加「4 字以上放宽一个字」：去掉查询中任意一个字再做子序列匹配，兜住字表没收录的异体字、错别字、漏字。两字查询不放宽（避免「催眠」命中一片）。
+
+**实测**：`search_index.json`（6012 条）里搜「梅麻吕」从 1 条 → **10 条**（含【梅麻呂3D】系列、梅麻吕23部视频合集等）。
+
+**加字的规矩**：只改 `VAR_PAIRS`，成对追加（偶原形、奇简体）；改完 `node --check scripts/gen.js`，跑 gen 后抽 `search.html` 的 script 块做语法校验。
+
+## ★2026-11-27 同步铁律（站长再次强调）
+
+**本地必须与远端一致，否则不许跑 gen.js、不许 push。** 落后时按这个顺序做：
+
+1. `git fetch https://github.com/TKPORL/mrhyfx.git main`
+2. 找本地缺的页面：`git ls-tree --name-only FETCH_HEAD | grep -E "\.html$" | while read f; do [ -f "$f" ] || echo "$f"; done`
+3. 缺的用 `git show FETCH_HEAD:<页面> > <页面>` 拉回（只补缺，不删本地）
+4. `git reset --soft FETCH_HEAD` → `git reset`（只动 HEAD 与索引，工作区不动）
+5. **把本地页面与数据整体对齐远端**：`git checkout FETCH_HEAD -- "*.html" "*.json" "*.md" "*.xml" "*.txt" assets/css assets/js`
+   —— 只补缺失文件不够：远端改过的帖子页本地是旧版，卡片数会少，`search_index` 会少条（实测 6005 vs 6012）。
+6. 跑 `node scripts/gen.js`，核 `search_index.json` 条数**等于远端**、qzt 卡片数 = 站长当前值（2026-11-27 为 415）
+7. 只 `git add` 自己要改的源文件；生成物交给 CI 重生
+
+**副作用提醒**：第 5 步会把本地 `AGENTS.md`、`*.md` 文档一起还原成远端版本 —— 本地没推的文档增量会丢，追加完记得再写一遍。
