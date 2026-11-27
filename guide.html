@@ -79,7 +79,7 @@ details .ans b{color:var(--ink);font-weight:650}
 .pill b{font-weight:600;color:inherit}
 .pill.hot b{font-weight:700;color:var(--red)}
 .pill span{font-size:11px;color:var(--ink3)}
-.gt{font-size:12.5px;color:var(--ink3);margin:15px 0 8px;letter-spacing:.05em}
+.gt{font-size:15px;color:var(--ink);font-weight:700;margin:26px 0 10px;padding-left:9px;border-left:3px solid var(--red);line-height:1.45;letter-spacing:0}/* 2026-11-27（站长）：子标题太弱看不出分组，改成带红条的实心标题 */
 .gt:first-child{margin-top:0}
 /* 2026-11-26：对照表（密码表 / 后缀表）。窄屏可横向滑动，不撑破卡片 */
 .sfx{width:100%;border-collapse:collapse;font-size:13px;line-height:1.65;margin:2px 0 6px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -257,15 +257,13 @@ section:nth-of-type(n+4){animation-delay:120ms}
   <p class="lead">游戏都放百度网盘。顺序是找到、转存、下载、解压、运行。卡在哪一步，就翻到哪一节。</p>
 
   <nav class="steps">
-    <a class="st" href="#a1"><i>01</i><b>找游戏</b><span>搜索</span></a>
-    <a class="st" href="#a2"><i>02</i><b>转存</b><span>先保存</span></a>
-    <a class="st" href="#a3"><i>03</i><b>下载</b><span>到本机</span></a>
-    <a class="st" href="#pw"><i>04</i><b>解压密码</b><span>在哪看</span></a>
-    <a class="st" href="#a4"><i>05</i><b>解压</b><span>改后缀</span></a>
-    <a class="st" href="#a5"><i>06</i><b>运行</b><span>转区</span></a>
-    <a class="st" href="#tools"><i>07</i><b>工具</b><span>下载软件</span></a>
-    <a class="st" href="#fix"><i>08</i><b>排错</b><span>出问题看</span></a>
-    <a class="st" href="#other"><i>09</i><b>其他</b><span>浏览器/梯子</span></a>
+    <a class="st" href="#a1"><i>01</i><b>找到游戏</b><span>搜索</span></a>
+    <a class="st" href="#a2"><i>02</i><b>弄到本机</b><span>转存+下载</span></a>
+    <a class="st" href="#a4"><i>03</i><b>解开压缩包</b><span>密码+改后缀</span></a>
+    <a class="st" href="#a5"><i>04</i><b>跑起来</b><span>转区/模拟器</span></a>
+    <a class="st" href="#fix"><i>05</i><b>出问题</b><span>报错对照</span></a>
+    <a class="st" href="#tools"><i>工具</i><b>下载区</b><span>解压/模拟器</span></a>
+    <a class="st" href="#vtut"><i>视频</i><b>视频教程</b><span>7 个专题</span></a>
   </nav>
 </div>
 
@@ -295,12 +293,12 @@ section:nth-of-type(n+4){animation-delay:120ms}
 </section>
 
 <section id="a2">
-  <div class="head"><span class="badge">02</span><h2>先转存，再下载</h2></div>
+  <div class="head"><span class="badge">02</span><h2>弄到本机</h2></div>
   <div class="card">
+    <p class="gt">2.1 先转存，别直接下</p>
     <ul>
       <li>点帖子里的<b>「百度网盘」</b>按钮</li>
       <li>先点<b>保存到我的网盘</b>，不要直接下载</li>
-      <li>再从自己的网盘下到本机</li>
       <li>打开链接发现里面全是「学习资料」别懵，那就是游戏：<b>认准里面的视频文件</b>，只下视频，其余不用管</li>
     </ul>
     <div class="fig">
@@ -318,13 +316,10 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <p class="cap">下载按钮在每张卡片的底部</p>
     </div>
     <div class="tip">不要在网盘里直接下载，也不要在网盘里解压，这两步省掉，后面八成会报错。</div>
-  </div>
-</section>
 
-<section id="a3">
-  <div class="head"><span class="badge">03</span><h2>下载</h2></div>
-  <div class="card">
+    <p class="gt">2.2 下载到本机</p>
     <ul>
+      <li>从<b>自己的网盘</b>下到本机，别在网盘里点开看</li>
       <li><b>mp4 类型的资源用手机下</b>，电脑下容易解压失败</li>
       <li>下载时<b>清晰度必须选「原画」</b>，选了别的文件会被转码，密码就对不上</li>
       <li>嫌慢看<a class="l" href="https://pan.baidu.com/s/1OyxyEx7iR5nAAsK9FrYSIw?pwd=839m" target="_blank" rel="noreferrer">百度不限速教程</a></li>
@@ -346,16 +341,18 @@ section:nth-of-type(n+4){animation-delay:120ms}
   </div>
 </section>
 
-<section id="pw">
-  <div class="head"><span class="badge">04</span><h2>解压密码</h2></div>
+<section id="a4">
+  <div class="head"><span class="badge">03</span><h2>解开压缩包</h2></div>
   <div class="card">
+    <p class="gt">3.1 先找解压码</p>
     <ul>
       <li>卡片下载按钮旁边有<b>「解压码」按钮</b>，点一下自动复制，别手打</li>
       <li>没这个按钮的游戏：<b>点一下游戏封面图</b>会弹出「介绍」，密码写在介绍里，拉到最下面看</li>
       <li>复制了还提示密码错误：多半把<b>备注一起复制</b>了，或者末尾带了空格。手动只留密码本身再试一次</li>
       <li>密码是<b>「悦悦」</b>的那种，在电脑上解经常报密码错误或缺文件：<b>换手机解</b>。手机下载 → 手机 RAR 解压 → 要电脑玩再传过去</li>
     </ul>
-    <p class="gt">看文件名认密码</p>
+
+    <p class="gt">3.2 看文件名认密码</p>
     <p style="margin:6px 0 10px">网盘里的文件名常常就是线索，对上了直接试，不用到处问人。</p>
     <table class="sfx">
       <thead><tr><th>文件名 / 特征</th><th>解压码</th></tr></thead>
@@ -368,18 +365,15 @@ section:nth-of-type(n+4){animation-delay:120ms}
         <tr><td>后缀是 <code>.enc</code></td><td><code>ykacg</code>（先用 enc 工具解密出 zip，再解压）</td></tr>
       </tbody>
     </table>
-  </div>
-</section>
 
-<section id="a4">
-  <div class="head"><span class="badge">05</span><h2>解压</h2></div>
-  <div class="card">
+    <p class="gt">3.3 装好工具，让后缀露出来</p>
     <ul>
-      <li><b>必装</b>：电脑装 <a class="l" href="#tool-WinRAR">WinRAR</a>，手机装 <a class="l" href="#tool-RAR">RAR</a>。不装它们就打不开下载的文件。主用这两个，别用手机自带的文件管理，也别用 UC 之类的浏览器解压</li>
       <li><b>千万别在百度网盘里解压</b>（那叫线上解压）：网盘只能用来存，解压一定下载到本机再做，在网盘里解基本都会出错</li>
+      <li><b>必装</b>：电脑装 <a class="l" href="#tool-WinRAR">WinRAR</a>，手机装 <a class="l" href="#tool-RAR">RAR</a>。不装它们就打不开下载的文件。主用这两个，别用手机自带的文件管理，也别用 UC 之类的浏览器解压</li>
       <li><b>改后缀之前</b>，先让系统把后缀显示出来，否则你改的不是真后缀（会变成 <code>xxx.mp4.txt</code>）。<br>Win10：文件资源管理器 → 顶部「查看」→ 勾「文件扩展名」<br>Win11：「查看」→「显示」→ 勾「文件扩展名」<br>手机不用设置，RAR 里长按文件 → 重命名即可</li>
     </ul>
-    <p class="gt">后缀对照表</p>
+
+    <p class="gt">3.4 后缀对照表</p>
     <table class="sfx">
       <thead><tr><th>看到的后缀</th><th>怎么处理</th></tr></thead>
       <tbody>
@@ -398,30 +392,34 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <li>解完还不是游戏：<b>继续看后缀继续改</b>，可能套了好几层，一直改到出现游戏文件夹为止</li>
       <li>分卷少一卷都解不了：全部卷都要下载，放同一个文件夹</li>
     </ul>
-    <p class="gt">.enc 怎么解（四步）</p>
+
+    <p class="gt">3.5 .enc 加密文件怎么解</p>
     <ul>
       <li>下载 <a class="l" href="#tool-enc解压工具">enc 解压工具</a>，解压出来直接运行，不用安装</li>
       <li>把 <code>.enc</code> 文件拖进程序窗口（或点按钮手动选）</li>
       <li>等它跑完，会在同一个文件夹里生成一个 zip</li>
       <li>再按上面的方法正常解压那个 zip；加密出来的只是 zip，不是游戏本体，别漏了最后一步</li>
     </ul>
-    <p class="gt">手机（安卓）怎么解压</p>
+
+    <p class="gt">3.6 手机（安卓）怎么解压</p>
     <ul>
       <li>装 <a class="l" href="#tool-RAR">RAR</a> 或 <a class="l" href="#tool-ZArchiverPro">ZArchiver Pro</a>，改后缀、解分卷都在里面做</li>
       <li>长按文件 → 重命名 → 改后缀；再点开压缩包 → 解压到当前文件夹</li>
     </ul>
-    <p class="gt">压缩包损坏怎么修（WinRAR）</p>
+
+    <p class="gt">3.7 压缩包坏了怎么修</p>
     <ul>
       <li>选中坏的压缩包，用 <a class="l" href="#tool-WinRAR">WinRAR</a> 打开 → 点上方「工具」→ 选「修复压缩文件」</li>
       <li>弹窗里选格式（RAR 或 ZIP）和修复后文件放哪，点「确定」开始</li>
       <li>跑到 100% 后去那个文件夹，会多出一个 <code>fixed.</code> 开头的包，解它就行</li>
     </ul>
     <div class="tip">提示压缩包损坏时：先在 WinRAR 里把包<b>打开看看</b>。能正常打开、看到里面的文件，就别修了，直接把文件拖出来解；一打开就报错，才去重新下载。</div>
+    <p style="margin:14px 0 0;font-size:13.5px;color:var(--ink3)">每种格式都有视频，包括 enc / lz4 / 7z / mp4 / 分卷 —— 见页面最下面<a class="l" href="#vtut">视频教程</a></p>
   </div>
 </section>
 
 <section id="a5">
-  <div class="head"><span class="badge">06</span><h2>运行</h2></div>
+  <div class="head"><span class="badge">04</span><h2>跑起来</h2></div>
   <div class="card">
     <ul>
       <li>电脑直接双击 <code>.exe</code>；报缺 dll 就装<a class="l" href="#tool-VCx64">VC++</a> / <a class="l" href="#tool-DirectX">DirectX</a></li>
@@ -434,8 +432,9 @@ section:nth-of-type(n+4){animation-delay:120ms}
 </section>
 
 <section id="fix">
-  <div class="head"><span class="badge">!</span><h2>出问题怎么办</h2></div>
+  <div class="head"><span class="badge">05</span><h2>出问题怎么办</h2></div>
   <div class="card">
+    <p class="gt">5.1 常见报错</p>
     <details open><summary>提示密码错误，但复制的就是解压码</summary>
       <div class="ans"><p>多数是 <b>mp4 类型</b>的资源：换<b>手机</b>下载，下载前清晰度必须选<b>原画</b>，选清晰度低的会被网盘转码，密码对也解不开。</p><p>转码过的文件只能重新下载。</p></div>
     </details>
@@ -478,6 +477,18 @@ section:nth-of-type(n+4){animation-delay:120ms}
     <details open><summary>进游戏文字全是方框 / 存档找不到</summary>
       <div class="ans"><p>用<a class="l" href="#tool-转区工具">转区工具</a>以日文模式启动，别去改系统区域设置。存档多数在游戏自己文件夹里，找不到就用转区工具打开存档目录看一眼。</p></div>
     </details>
+    <p class="gt">5.2 浏览器与梯子</p>
+    <ul>
+      <li><b>浏览器</b>：电脑用谷歌 Chrome，手机用 Via 或 X 浏览器。系统自带浏览器和 UC 容易<b>进不来本站</b>——会被直接拦截，不是文件出问题</li>
+      <li><b>进不来或加载慢</b>：建议自备梯子，以后站子换了入口也能进（<a class="l" href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">破解版梯子推荐</a>）</li>
+    </ul>
+    <p class="gt">5.3 下载之后</p>
+    <ul>
+      <li><b>别在网盘里在线解压</b>：很容易把资源弄没，务必转存后下载到本机再解</li>
+      <li>资源来自网络，仅供个人学习交流，请在下载后 <b>24 小时内删除</b></li>
+      <li>禁止转载到社交、直播、视频类平台；禁止直接搬运原始文件，转载需重新压制，严禁商用</li>
+      <li>发现侵权内容可邮件联系 <b>Tsinhos@qq.com</b>，核实后会及时删除</li>
+    </ul>
   </div>
 </section>
 
@@ -541,20 +552,21 @@ section:nth-of-type(n+4){animation-delay:120ms}
       <a id="tool-NDM" class="pill" href="https://pan.baidu.com/s/1OY59z55BrtpmhiUEMnc6gQ?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><img class="ic" alt="" src="data:image/webp;base64,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"></span><b>NDM</b><span>电脑</span></a>
       <a id="tool-ADM" class="pill" href="https://pan.baidu.com/s/1-x2yw_f0KSmplgY8aSTUxQ?pwd=839m" target="_blank" rel="noreferrer"><span class="icw"><img class="ic" alt="" src="data:image/webp;base64,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"></span><b>ADM</b><span>安卓</span></a>
     </div>
-
   </div>
 </section>
 
-<section id="other">
-  <div class="head"><span class="badge">其他</span><h2>浏览器与注意事项</h2></div>
+<section id="vtut">
+  <div class="head"><span class="badge">视频</span><h2>视频教程</h2></div>
   <div class="card">
+    <p style="margin:0 0 6px;font-size:13.5px;color:var(--ink3)">都是网盘里的视频，点「观看教程」直接看，不用下载。</p>
     <ul>
-      <li><b>浏览器</b>：电脑用谷歌 Chrome，手机用 Via 或 X 浏览器。系统自带浏览器和 UC 容易<b>进不来本站</b>——会被直接拦截，不是文件出问题</li>
-      <li><b>进不来或加载慢</b>：建议自备梯子，以后站子换了入口也能进（<a class="l" href="https://yun.139.com/shareweb/#/w/i/2sNZYCq0tEPqe" target="_blank" rel="noreferrer">破解版梯子推荐</a>）</li>
-      <li><b>别在网盘里在线解压</b>：很容易把资源弄没，务必转存后下载到本机再解</li>
-      <li>资源来自网络，仅供个人学习交流，请在下载后 <b>24 小时内删除</b></li>
-      <li>禁止转载到社交、直播、视频类平台；禁止直接搬运原始文件，转载需重新压制，严禁商用</li>
-      <li>发现侵权内容可邮件联系 <b>Tsinhos@qq.com</b>，核实后会及时删除</li>
+      <li>enc 加密文件怎么解 <a class="l" href="https://pan.baidu.com/s/110tpRMTwfv1u93LA61H1AA?pwd=839m" target="_blank" rel="noreferrer">观看教程</a><a class="l" href="#tool-enc解压工具">enc解压工具</a></li>
+      <li>lz4 文件怎么解 <a class="l" href="https://pan.baidu.com/s/1vKTQt2fMe10Ee0Vhp9grHA?pwd=839m" target="_blank" rel="noreferrer">观看教程</a><a class="l" href="#tool-lz4解压工具">lz4解压工具</a></li>
+      <li>7z 文件怎么解 <a class="l" href="https://pan.baidu.com/s/1U_xoMHoYYkwDV6VLIImzuA?pwd=839m" target="_blank" rel="noreferrer">观看教程</a></li>
+      <li>mp4 视频包怎么解 <a class="l" href="https://pan.baidu.com/s/1fLJ_RRBdgkij-QBVZEl1Tw?pwd=839m" target="_blank" rel="noreferrer">观看教程</a></li>
+      <li>「学习资料」那种视频包怎么解 <a class="l" href="https://pan.baidu.com/s/1kSLEtxp0a6J-um3uu9jLaw?pwd=839m" target="_blank" rel="noreferrer">观看教程</a></li>
+      <li>jpg / png 图片包怎么改成压缩包 <a class="l" href="https://pan.baidu.com/s/1E-hjKVJKwHUap40k-SnBOg?pwd=839m" target="_blank" rel="noreferrer">观看教程</a></li>
+      <li>分卷压缩包怎么解 <a class="l" href="https://pan.baidu.com/s/1CJyejoWkMRAvVzXKnoVdKA?pwd=839m" target="_blank" rel="noreferrer">观看教程</a></li>
     </ul>
   </div>
 </section>
